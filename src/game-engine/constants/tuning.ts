@@ -314,9 +314,9 @@ export const TUNING = {
   DROP_RARITY_SHARES_BY_LEVEL: [
     [1, { common: 75, uncommon: 22, rare: 3, epic: 0 }],
     [5, { common: 55, uncommon: 33, rare: 11, epic: 1 }],
-    [10, { common: 30, uncommon: 40, rare: 25, epic: 5 }],
-    [20, { common: 10, uncommon: 40, rare: 38, epic: 12 }],
-    [30, { common: 0, uncommon: 35, rare: 48, epic: 17 }],
+    [10, { common: 30, uncommon: 40, rare: 27, epic: 3 }],
+    [20, { common: 10, uncommon: 40, rare: 41, epic: 9 }],
+    [30, { common: 0, uncommon: 35, rare: 51, epic: 14 }],
   ] as [number, { common: number; uncommon: number; rare: number; epic: number }][],
   // Physical/magic starting-stat split: createCharacter picks one of these
   // [physical share, magic share] pairs uniformly at random from the ones that

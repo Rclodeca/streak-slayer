@@ -153,14 +153,14 @@ describe('dropRarityShares', () => {
   it('matches the table at each row', () => {
     expectShares(dropRarityShares(1), [75, 22, 3, 0]);
     expectShares(dropRarityShares(5), [55, 33, 11, 1]);
-    expectShares(dropRarityShares(10), [30, 40, 25, 5]);
-    expectShares(dropRarityShares(20), [10, 40, 38, 12]);
-    expectShares(dropRarityShares(30), [0, 35, 48, 17]);
+    expectShares(dropRarityShares(10), [30, 40, 27, 3]);
+    expectShares(dropRarityShares(20), [10, 40, 41, 9]);
+    expectShares(dropRarityShares(30), [0, 35, 51, 14]);
   });
 
   it('blends linearly between rows', () => {
-    expectShares(dropRarityShares(15), [20, 40, 31.5, 8.5]);
-    expectShares(dropRarityShares(25), [5, 37.5, 43, 14.5]);
+    expectShares(dropRarityShares(15), [20, 40, 34, 6]);
+    expectShares(dropRarityShares(25), [5, 37.5, 46, 11.5]);
   });
 
   it('uses the level-30 row for every level past it', () => {
@@ -178,8 +178,8 @@ describe('dropRarityShares', () => {
 
   it("doubles the rare and epic shares for Magpie's Diamond, then scales back to 100%", () => {
     expectShares(dropRarityShares(1, true), [7500 / 103, 2200 / 103, 600 / 103, 0]);
-    expectShares(dropRarityShares(10, true), [3000 / 130, 4000 / 130, 5000 / 130, 1000 / 130]);
-    expectShares(dropRarityShares(30, true), [0, 3500 / 165, 9600 / 165, 3400 / 165]);
+    expectShares(dropRarityShares(10, true), [3000 / 130, 4000 / 130, 5400 / 130, 600 / 130]);
+    expectShares(dropRarityShares(30, true), [0, 3500 / 165, 10200 / 165, 2800 / 165]);
   });
 });
 
