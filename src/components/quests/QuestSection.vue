@@ -65,7 +65,7 @@ function onCheckOff(quest: Quest) {
   <section class="panel quest-section" :class="{ locked: !open }">
     <div class="quest-header">
       <h2><Lock v-if="!open" :size="14" class="lock-icon" />Quests</h2>
-      <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true">+ New quest</button>
+      <button v-if="open" type="button" class="add-button" aria-label="Add task" @click="showAdd = true">+ New task</button>
     </div>
     <div v-if="!open" class="lock-area">
       <div class="lock-ghost" aria-hidden="true"><i /><i /></div>
