@@ -1678,7 +1678,22 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-weight: 600;
   }
 
-  .enchanted :is(.gear-enchanted, .gear-bonus-value) {
+  // The same on the popup that reveals an enchant: its title, the doubled
+  // values and a pale glow round the diamond.
+  .hero.enchanted .icon-frame {
+    box-shadow:
+      0 0 30px -8px rgba(170, 220, 240, 0.85),
+      inset 0 0 0 4px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 5px color-mix(in srgb, var(--rarity) 35%, transparent);
+  }
+
+  // Only as wide as the word, so the whole opal shows across it.
+  .modal-content:has(.hero.enchanted) .modal-header h3 {
+    flex: none;
+  }
+
+  .enchanted :is(.gear-enchanted, .gear-bonus-value, .bonus-value),
+  .modal-content:has(.hero.enchanted) .modal-header h3 {
     background: $opal-shine 0 0 / 300% 100% no-repeat, $opal;
     -webkit-background-clip: text;
     background-clip: text;
@@ -2237,7 +2252,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // Still opal, without the light.
-  :root[data-theme='ashen'] .enchanted :is(.gear-enchanted, .gear-bonus-value) {
+  :root[data-theme='ashen'] .enchanted :is(.gear-enchanted, .gear-bonus-value, .bonus-value),
+  :root[data-theme='ashen'] .modal-content:has(.hero.enchanted) .modal-header h3 {
     background: $opal;
     -webkit-background-clip: text;
     background-clip: text;

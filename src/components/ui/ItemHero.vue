@@ -13,7 +13,7 @@ const enchanted = computed(() => props.factor > 1);
 </script>
 
 <template>
-  <div class="hero" :class="`rarity-${item.rarity}`">
+  <div class="hero" :class="[`rarity-${item.rarity}`, { enchanted }]">
     <div class="icon-frame">
       <img class="icon" :src="`${baseUrl}sprites/${item.icon}.png`" :alt="item.name" />
     </div>
@@ -21,7 +21,7 @@ const enchanted = computed(() => props.factor > 1);
     <strong class="name">{{ item.name }}</strong>
     <div v-if="chips.length" class="bonuses">
       <span v-for="chip in chips" :key="`${chip.stat}${chip.text}`" class="bonus" :class="{ enchanted, drawback: chip.text.startsWith('\u2212') }">
-        <StatIcon :name="BOOST_STAT_ICON[chip.stat]" />{{ chip.text }} <span class="bonus-label">{{ chip.label }}</span>
+        <StatIcon :name="BOOST_STAT_ICON[chip.stat]" /><span class="bonus-value">{{ chip.text }}</span> <span class="bonus-label">{{ chip.label }}</span>
       </span>
     </div>
     <p v-else class="consumable">{{ describeItemBonus(item) }}</p>
