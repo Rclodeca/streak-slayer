@@ -41,6 +41,10 @@ $brass: #d2bb85;
 $brass-solid: #b39a66;
 $ash-deep: #5c554a;
 $ember: #e0783a;
+// An enchanted item's opal (teal to violet to rose), and the light that runs
+// through it.
+$opal: linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc);
+$opal-shine: linear-gradient(90deg, transparent 30%, #8ff5ea 40%, #fff 50%, #f0b0ff 60%, transparent 70%);
 // A panel is a lit surface, a little above the page.
 $frame: #141720;
 // A dark well set into a panel or popup: an inner box with no frame.
@@ -1642,11 +1646,44 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-transform: capitalize;
   }
 
+  // Enchanted: "Enchanted" and the doubled values are opal, with a slow light
+  // running through them, and the slot glows pale
+  // (docs/mockups/enchanted-opal.html, shimmering).
+  .gear-row.enchanted {
+    box-shadow: none;
+  }
+
+  .gear-row.enchanted .gear-icon {
+    box-shadow:
+      inset 0 0 0 3px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 4px color-mix(in srgb, var(--rarity) 22%, transparent),
+      0 0 18px -5px rgba(170, 220, 240, 0.85);
+  }
+
   .gear-enchanted {
-    @include plain-label($label-sm);
-    background: rgba(200, 169, 110, 0.1);
-    border-color: rgba(200, 169, 110, 0.5);
-    border-radius: $radius-pill;
+    @include plain-label($label-md, 600);
+    margin-left: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .gear-enchanted::before {
+    content: '· ';
+    color: var(--text);
+  }
+
+  .enchanted .gear-bonus-value {
+    font-weight: 600;
+  }
+
+  .enchanted :is(.gear-enchanted, .gear-bonus-value) {
+    background: $opal-shine 0 0 / 300% 100% no-repeat, $opal;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: ashen-opal-shine 5.5s linear infinite;
   }
 
   // Quest complete.
@@ -2170,6 +2207,15 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 }
 
+@keyframes ashen-opal-shine {
+  from {
+    background-position: 100% 0, 0 0;
+  }
+  to {
+    background-position: 0 0, 0 0;
+  }
+}
+
 @keyframes ashen-fog {
   to {
     transform: translateX(4%);
@@ -2188,6 +2234,14 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   :root[data-theme='ashen'] .boss-plat,
   :root[data-theme='ashen'] .hero-plat {
     transition: none;
+  }
+
+  // Still opal, without the light.
+  :root[data-theme='ashen'] .enchanted :is(.gear-enchanted, .gear-bonus-value) {
+    background: $opal;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: none;
   }
 
   :root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked.lit {

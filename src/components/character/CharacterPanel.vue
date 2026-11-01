@@ -322,7 +322,7 @@ onBeforeUnmount(() => {
               <span v-if="item.type === 'consumable'" class="gear-bonus">{{ describeItemBonus(item) }}</span>
               <span v-else class="gear-bonuses">
                 <span v-for="part in describeItemBonusParts(item, itemDoubleFactor(character, item.id))" :key="`${part.stat}${part.text}`" class="gear-bonus">
-                  <StatIcon :name="BOOST_STAT_ICON[part.stat]" />{{ part.text }} <span class="gear-bonus-label">{{ part.label }}</span>
+                  <StatIcon :name="BOOST_STAT_ICON[part.stat]" /><span class="gear-bonus-value">{{ part.text }}</span> <span class="gear-bonus-label">{{ part.label }}</span>
                 </span>
               </span>
               <span v-if="item.effectText" class="gear-effect">{{ item.effectText }}</span>

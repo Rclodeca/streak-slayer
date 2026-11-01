@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Enchanted colours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@500;600;700&family=Noto+Sans+Runic&display=swap" />
+<style>
+/* Character popup > Equipment, rebuilt from the live Ashen (Moonlit) computed
+   styles at iPhone width. Option E (Inscribed) from enchanted-gear.html
+   in different colours. Open through the dev server so the sprite masks load:
+   http://localhost:5173/streak-slayer/docs/mockups/enchanted-colors.html */
+:root {
+  --bg: #07080c; --frame: #141720; --well: rgba(0, 0, 0, 0.22);
+  --text: #a9adb6; --text-h: #e8ebf0; --moon-solid: #a9b4c8;
+  --gold: #e6cf9a; --gold-solid: #c8a96e; --gold-rgb: 230, 207, 154;
+  --item-slot: 76px; --item-art: 180px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text-h); font: 500 16px/1.45 'Alegreya Sans', system-ui, sans-serif; letter-spacing: 0.18px; }
+.page { max-width: 2200px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 24px; }
+.cols { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+.col { width: 340px; flex: none; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 92px; margin-bottom: 8px; }
+.panel { background: var(--frame); border-radius: 6px; padding: 14px 12px 16px; box-shadow: inset 0 1px 0 rgba(200, 214, 240, .08); }
+.group-label { margin: 0 0 8px; font: 600 11.2px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+
+/* ---------- The row as it is in the app ---------- */
+.gear-list { display: flex; flex-direction: column; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.gear-row { position: relative; display: flex; align-items: center; gap: .6rem; padding: .3rem .6rem; background: var(--well); border-left: 2px solid var(--rarity); border-radius: 4px; }
+.gear-icon { position: relative; flex-shrink: 0; width: var(--item-slot); height: var(--item-slot); border: 1px solid color-mix(in srgb, var(--rarity) 55%, transparent); border-radius: 4px; background: radial-gradient(circle, color-mix(in srgb, var(--rarity) 22%, transparent), rgba(0, 0, 0, .55) 72%); box-shadow: inset 0 0 0 3px rgba(0, 0, 0, .55), inset 0 0 0 4px color-mix(in srgb, var(--rarity) 22%, transparent), 0 0 14px -6px var(--rarity); }
+.gear-art { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.gear-art img { --rim: color-mix(in srgb, var(--rarity) 55%, #000); position: absolute; left: 50%; top: 50%; width: var(--item-art); height: var(--item-art); transform: translate(-50%, -50%); image-rendering: pixelated; filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)) drop-shadow(0 0 6px color-mix(in srgb, var(--rarity) 45%, transparent)); }
+.gear-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
+.gear-name { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .4rem; color: var(--text-h); font: 600 16px 'Alegreya', Georgia, serif; }
+.gear-rarity { color: var(--rarity); font: 600 13.6px 'Alegreya Sans', sans-serif; text-transform: capitalize; }
+.gear-bonuses { display: flex; flex-wrap: wrap; gap: .2rem .75rem; }
+.gear-bonus { display: inline-flex; align-items: center; gap: .3rem; color: var(--moon-solid); font-size: 12.8px; }
+.gear-bonus svg { width: 14px; height: 14px; color: var(--k); }
+.gear-bonus-label { color: var(--text); }
+.gear-effect { color: var(--rarity); font-size: 12px; }
+.tag, .tag-cap, .runes, .glint, .spark, .aura { display: none; }
+
+/* Option E, with the colour carried by --ench / --ench-hi / --ench-rgb and
+   the rune light by --shine (over a static --base under it). */
+.enchanted .gear-icon { box-shadow: inset 0 0 0 3px rgba(0, 0, 0, .55), inset 0 0 0 4px color-mix(in srgb, var(--rarity) 22%, transparent), 0 0 18px -5px rgba(var(--ench-rgb), .85); }
+.enchanted .gear-bonus .v { color: var(--ench); font-weight: 600; }
+.enchanted .tag { display: inline; font: 600 13.6px 'Alegreya Sans', sans-serif; color: var(--ench); }
+.enchanted .tag::before { content: '· '; color: var(--text); }
+.enchanted .runes {
+  display: block; margin-top: 1px; font: 400 12px 'Noto Sans Runic', serif; letter-spacing: .32em; white-space: nowrap; overflow: hidden;
+  background: var(--shine) 0 0 / 300% 100% no-repeat, var(--base);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 0 8px rgba(var(--ench-rgb), .25);
+  animation: inscribe 5.5s linear infinite var(--delay, 0s);
+}
+@keyframes inscribe { from { background-position: 100% 0, 0 0; } to { background-position: 0 0, 0 0; } }
+.col { --base: linear-gradient(rgba(var(--ench-rgb), .3), rgba(var(--ench-rgb), .3)); --shine: linear-gradient(90deg, transparent 32%, var(--ench-hi) 50%, transparent 68%); }
+/* Gradient text for the two-tone options. */
+.iri .enchanted .gear-bonus .v, .iri .enchanted .tag { background: var(--text-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.c-gold { --ench: #e6cf9a; --ench-hi: #fff2d2; --ench-rgb: 230, 207, 154; }
+.c-spectral { --ench: #7fe6de; --ench-hi: #e6fffc; --ench-rgb: 110, 230, 220; }
+.c-witch { --ench: #e690f2; --ench-hi: #ffe3ff; --ench-rgb: 225, 130, 240; }
+.c-opal { --ench: #b8e6f0; --ench-hi: #ffffff; --ench-rgb: 170, 220, 240;
+  --base: linear-gradient(90deg, rgba(110, 230, 220, .42), rgba(190, 140, 255, .42), rgba(255, 150, 190, .42), rgba(110, 230, 220, .42));
+  --shine: linear-gradient(90deg, transparent 30%, #8ff5ea 40%, #fff 50%, #f0b0ff 60%, transparent 70%);
+  --text-grad: linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc); }
+.c-blood { --ench: #ff7a86; --ench-hi: #ffd9dc; --ench-rgb: 255, 95, 110; }
+.c-twilight { --ench: #c7a6ff; --ench-hi: #ffe3a6; --ench-rgb: 190, 150, 255;
+  --shine: linear-gradient(90deg, transparent 30%, #f5c97a 42%, #fff1cf 50%, #f5c97a 58%, transparent 70%);
+  --text-grad: linear-gradient(90deg, #c7a6ff, #f0c987); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Enchanted colours</h1>
+  <p class="lede">Option E (Inscribed). The colour runs through the runes, the doubled stats, "Enchanted" and the glow.</p>
+  <div class="cols" id="cols"></div>
+</div>
+<script>
+const SPR = '../../public/sprites/items/';
+const ICON = {
+  sword: ['#d0604f', '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>'],
+  shield: ['#a8a092', '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>'],
+  heart: ['#c33a2e', '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'],
+  heal: ['#92bf88', '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>'],
+};
+const ITEMS = [
+  { id: 'executioners-axe', name: "Executioner's Axe", rarity: 'rare', color: '#7f9fd1', ench: true, delay: '0s', runes: 'ᚺᛖᚨᛞᛊ · ᚠᚨᛚᛚ · ᛒᛖᚠᛟᚱᛖ', bonus: [['sword', '+52%', 'Physical damage'], ['shield', '+300', 'Armor']] },
+  { id: 'dragons-heart', name: "Dragon's Heart", rarity: 'rare', color: '#7f9fd1', bonus: [['heart', '+20%', 'Max health'], ['sword', '+10%', 'Physical damage']] },
+  { id: 'plate-armor', name: 'Plate Armor', rarity: 'uncommon', color: '#86b08b', bonus: [['heart', '+10%', 'Max health']] },
+  { id: 'ember-heart', name: 'Ember Heart', rarity: 'relic', color: '#ec8338', ench: true, delay: '-2.2s', runes: 'ᛖᛗᛒᛖᚱ · ᚾᛖᚢᛖᚱ · ᛞᛁᛖᛊ', effect: 'Heal 5% of max HP each day.', bonus: [['heart', '+20%', 'Max health'], ['heal', '+20%', 'Healing']] },
+];
+const OPTS = [
+  ['gold', '', 'Gold', 'E as mocked: the gold EXP and rewards already use.'],
+  ['spectral', '', '1 · Spectral', 'Ghostly cyan, like a spirit bound in the steel. Nothing else in the app is this colour.'],
+  ['witch', '', '2 · Witchfire', 'Bright magenta. Close to the epic purple, but pinker and hotter.'],
+  ['opal', 'iri', '3 · Opal', 'Iridescent: the runes shift teal to violet to rose, and the light passes through all three.'],
+  ['blood', '', '4 · Blood moon', 'Crimson-rose. Dramatic, but red stat text can read like a drawback.'],
+  ['twilight', 'iri', '5 · Twilight', 'Violet runes with golden light running through them; the stats fade violet to gold.'],
+];
+const svg = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--k:${ICON[k][0]}">${ICON[k][1]}</svg>`;
+const row = (it, tagClass) => `
+  <li class="gear-row${it.ench ? ' enchanted' : ''}" style="--rarity:${it.color};--src:url('${SPR}${it.id}.png');--delay:${it.delay || '0s'}">
+    <span class="gear-icon"><span class="gear-art"><span class="aura"></span><img src="${SPR}${it.id}.png" alt="" /><span class="glint"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span></span></span>
+    <div class="gear-text">
+      <span class="tag-cap">Enchanted</span>
+      <span class="gear-name">${it.name} <span class="gear-rarity">${it.rarity}</span><span class="${tagClass}">Enchanted</span></span>
+      <span class="gear-bonuses">${it.bonus.map(([k, v, l]) => `<span class="gear-bonus">${svg(k)}<span class="v">${v}</span> <span class="gear-bonus-label">${l}</span></span>`).join('')}</span>
+      ${it.effect ? `<span class="gear-effect">${it.effect}</span>` : ''}
+      <span class="runes">${it.runes || ''}</span>
+    </div>
+  </li>`;
+document.getElementById('cols').innerHTML = OPTS.map(([k, extra, t, d]) => `
+  <div class="col c-${k} ${extra}">
+    <div class="key"><b>${t}</b>${d}</div>
+    <div class="panel"><h4 class="group-label">Equipment</h4><ul class="gear-list">${ITEMS.map((it) => row(it, 'tag')).join('')}</ul></div>
+  </div>`).join('');
+</script>
+</body>
+</html>
