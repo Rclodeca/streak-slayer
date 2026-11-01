@@ -1,14 +1,15 @@
 <script setup lang="ts">
 // Mirrors Habitica's ui/sprite.vue pattern: given a bare image name (a
-// path segment relative to public/sprites/), render the art. New sprites
-// can drop in later without any component changes.
-defineProps<{ imageName: string; alt?: string }>();
+// path segment relative to public/sprites/), render the art in the build for
+// this screen (see spriteUrl). New sprites can drop in later without any
+// component changes.
+import { spriteUrl } from './spriteUrl';
 
-const baseUrl = import.meta.env.BASE_URL;
+defineProps<{ imageName: string; alt?: string }>();
 </script>
 
 <template>
-  <img class="sprite" :src="`${baseUrl}sprites/${imageName}.png`" :alt="alt ?? imageName" />
+  <img class="sprite" :src="spriteUrl(imageName)" :alt="alt ?? imageName" />
 </template>
 
 <style scoped>

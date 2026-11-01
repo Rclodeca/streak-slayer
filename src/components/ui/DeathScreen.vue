@@ -8,6 +8,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import { rankNumeral } from '../habits/habitDisplay';
 import Modal from './Modal.vue';
+import { spriteUrl } from './spriteUrl';
 import StatIcon from './StatIcon.vue';
 
 const { isDead } = useDeathScreen();
@@ -16,7 +17,6 @@ const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const habitStore = useHabitStore();
 
-const baseUrl = import.meta.env.BASE_URL;
 const heroClass = computed(() => heroClassFor(characterStore.character));
 const heroLabel = computed(() => heroClass.value.charAt(0).toUpperCase() + heroClass.value.slice(1));
 
@@ -34,7 +34,7 @@ const embers = computed(() =>
     <div class="death">
       <p class="title">You died</p>
       <div class="fallen">
-        <img :src="`${baseUrl}sprites/player/${heroClass}.png`" alt="" />
+        <img :src="spriteUrl(`player/${heroClass}`)" alt="" />
       </div>
 
       <h2>Level {{ characterStore.character.level }} {{ heroLabel }}</h2>

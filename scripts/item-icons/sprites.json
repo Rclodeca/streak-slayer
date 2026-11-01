@@ -1,0 +1,192 @@
+{
+  "bosses/balanced": {
+    "source": "wizard-cloak-dark-black-flowing-hooded_20260225_190428.png",
+    "canvas": 192,
+    "size": 180.5,
+    "left": 26.7,
+    "bottom": 7.7,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/tank": {
+    "source": "rpg-troll-chief-large-troll-062-v2-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 165.3,
+    "left": 15.3,
+    "bottom": 15.3,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/armored": {
+    "source": "celestial-paladin-radiant-shield-blessed-sword-plate-armor_20260217_155248.png",
+    "canvas": 192,
+    "size": 178.6,
+    "left": 41.9,
+    "bottom": 7.7,
+    "mirror": true,
+    "outline": false
+  },
+  "bosses/armored3x": {
+    "source": "8bit-plate-armor-heavy-armor-005-2026-03-10T18-57-54.png",
+    "canvas": 192,
+    "size": 182.4,
+    "left": 32.4,
+    "bottom": 5.8,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/armored4x": {
+    "source": "mediev-plate-armor-full-armor-031-v4-2026-03-25T19-14-54.png",
+    "canvas": 192,
+    "size": 178.6,
+    "left": 49.5,
+    "bottom": 7.7,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/armored5x": {
+    "source": "celestial-paladin-radiant-shield-blessed-sword-plate-armor_20260217_155514.png",
+    "canvas": 192,
+    "size": 178.6,
+    "left": 7.7,
+    "bottom": 7.7,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/warded": {
+    "source": "forbidden-tome-dark-chains-locked-black-leather_20260225_183200.png",
+    "canvas": 192,
+    "size": 167.2,
+    "left": 28.6,
+    "bottom": 11.5,
+    "mirror": true,
+    "outline": false
+  },
+  "bosses/warded3x": {
+    "source": "rpg-ice-troll-blue-frozen-060-v2-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 163.4,
+    "left": 22.9,
+    "bottom": 19.1,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/warded4x": {
+    "source": "rpg-troll-ghost-spectral-troll-184-v4-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 174.8,
+    "left": 17.2,
+    "bottom": 11.5,
+    "mirror": true,
+    "outline": false
+  },
+  "bosses/warded5x": {
+    "source": "celestial-guardian-golden-armor-ethereal-wings-divine-aura_20260217_154507.png",
+    "canvas": 192,
+    "size": 167.2,
+    "left": 17.2,
+    "bottom": 11.5,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/brute": {
+    "source": "rpg-troll-warrior-armored-troll-107-v3-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 165.3,
+    "left": 15.3,
+    "bottom": 15.3,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/brute3x": {
+    "source": "rpg-axe-troll-battle-axe-088-v2-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 159.6,
+    "left": 13.4,
+    "bottom": 13.4,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/brute4x": {
+    "source": "rpg-spiked-troll-spine-covered-147-v3-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 167.2,
+    "left": 17.2,
+    "bottom": 11.5,
+    "mirror": true,
+    "outline": false
+  },
+  "bosses/brute5x": {
+    "source": "rpg-ancient-red-dragon-massive-067-v2-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 159.6,
+    "left": 17.2,
+    "bottom": 17.2,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/arcane": {
+    "source": "starter-hero-mage-staff-robes-magical-death-falling_20260217_212554.png",
+    "canvas": 192,
+    "size": 180.5,
+    "left": 55.2,
+    "bottom": 7.7,
+    "mirror": true,
+    "outline": false
+  },
+  "bosses/arcane3x": {
+    "source": "celestial-mage-holy-staff-divine-robes-golden-trim-casting_20260217_155139.png",
+    "canvas": 192,
+    "size": 174.8,
+    "left": 45.7,
+    "bottom": 9.6,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/arcane4x": {
+    "source": "cultist.png",
+    "canvas": 192,
+    "size": 182.4,
+    "left": 38.1,
+    "bottom": 5.8,
+    "mirror": true,
+    "outline": false
+  },
+  "bosses/arcane5x": {
+    "source": "rpg-black-dragon-dark-shadow-104-v3-2026-03-03T17-02-45.png",
+    "canvas": 192,
+    "size": 165.3,
+    "left": 15.3,
+    "bottom": 21.0,
+    "mirror": true,
+    "outline": false
+  },
+  "player/warrior": {
+    "source": "starter-hero-warrior-sword-shield-plate-armor-idle-standing_20260217_212146.png",
+    "canvas": 168,
+    "size": 147.83,
+    "left": 19.13,
+    "bottom": 5.22,
+    "mirror": true,
+    "outline": true
+  },
+  "player/cleric": {
+    "source": "starter-hero-cleric-holy-mace-armor-divine-cast-heal-aura_20260217_213000.png",
+    "canvas": 180,
+    "size": 160.08,
+    "left": 24.36,
+    "bottom": 6.96,
+    "mirror": true,
+    "outline": true
+  },
+  "player/ranger": {
+    "source": "starter-hero-ranger-bow-cloak-nature-hurt-taking-damage_20260217_212747.png",
+    "canvas": 168,
+    "size": 149.57,
+    "left": 10.43,
+    "bottom": 3.48,
+    "mirror": false,
+    "outline": true,
+    "cutoff": 0.3
+  }
+}

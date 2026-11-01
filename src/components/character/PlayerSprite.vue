@@ -7,17 +7,17 @@
 import { computed } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import type { Character } from '../../game-engine';
+import { spriteUrl } from '../ui/spriteUrl';
+import { HERO_CANVAS } from './heroArt';
 
 const props = defineProps<{ character: Character }>();
-
-const baseUrl = import.meta.env.BASE_URL;
 
 const heroClass = computed(() => heroClassFor(props.character));
 </script>
 
 <template>
-  <div class="player-sprite">
-    <img class="hero" :src="`${baseUrl}sprites/player/${heroClass}.png`" alt="Player" />
+  <div class="player-sprite" :style="{ '--hero-canvas': `${HERO_CANVAS[heroClass]}px` }">
+    <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="Player" />
   </div>
 </template>
 

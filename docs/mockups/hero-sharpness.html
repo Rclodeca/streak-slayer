@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StreakSlayer — hero & boss sharpness (Ashen)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+/* Warrior and brute about 150px tall, like the hero on the fight stage.
+   A is today's art at today's stage scale (1.74 CSS px per art pixel, so
+   pixels land 3 or 4 device px wide on 2x). B-D are rebuilt from source with
+   pixel-icon.cjs and drawn at whole device pixels on a 2x screen: B and C at
+   1.5 CSS px, the items' own pixel size there; D at 1 CSS px. The sword is
+   at its 2x phone size, 63px. Images are sized in exact px below and laid
+   out with fixed gaps so they don't land on half pixels. */
+:root {
+  --text: #a1988a; --text-h: #ece3cd; --bone: #d8cdb5;
+  --gold: #c8a96e; --gold-hi: #e6cf9a; --ember: #e0783a;
+  --line: rgba(200, 169, 110, 0.2); --line-mid: rgba(200, 169, 110, 0.4);
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; color: var(--bone); background: radial-gradient(ellipse 70% 40% at 50% -5%, rgba(200,169,110,.1), transparent 70%), #070606; font: 500 17px/1.35 'Cormorant Garamond', Garamond, Georgia, serif; }
+h1, h2, p { margin: 0; font-weight: inherit; }
+.engraved { font-family: 'Cinzel', Georgia, serif; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+
+.page { max-width: 1640px; margin: 0 auto; padding: 30px 16px 60px; }
+.page > h1 { text-align: center; font-size: 14px; letter-spacing: .32em; color: var(--gold-hi); margin-bottom: 6px; }
+.page > p { text-align: center; font-style: italic; color: var(--text); margin-bottom: 28px; }
+
+.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 22px; }
+.opt { border: 1px solid var(--line); padding: 14px 14px 16px; position: relative; }
+.opt::before, .opt::after { content: ''; position: absolute; width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); top: -4px; }
+.opt::before { left: -4px; } .opt::after { right: -4px; }
+.opt h2 { font-size: 12px; color: var(--gold-hi); }
+.opt .sub { font-size: 15px; font-style: italic; color: var(--text); margin: 4px 0 12px; }
+
+.stage { height: 200px; display: flex; align-items: flex-end; gap: 30px; padding: 0 10px 14px; border-bottom: 1px solid var(--line-mid); background: radial-gradient(ellipse 60% 50% at 50% 100%, rgba(224,120,58,.08), transparent 70%); }
+.stage img { image-rendering: pixelated; display: block; flex: none; }
+
+.slot { margin-top: 14px; display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text); }
+.slot span.box { width: 76px; height: 76px; display: grid; place-items: center; border: 1px solid var(--line-mid); background: rgba(200,169,110,.04); flex: none; }
+.slot img { width: 63px; height: 63px; image-rendering: pixelated; }
+.slot b { color: var(--text-h); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="engraved">Hero &amp; boss sharpness</h1>
+  <p>Same height on the stage. View on a 2x screen.</p>
+
+  <div class="options">
+    <section class="opt">
+      <h2 class="engraved">A · Today</h2>
+      <p class="sub">87 cells tall, 48 colours, uneven pixels</p>
+      <div class="stage">
+        <img src="hero-grid/warrior-today.png" style="width:127px;height:151px" alt="Warrior, today" />
+        <img src="hero-grid/brute-today.png" style="width:146px;height:151px" alt="Brute, today" />
+      </div>
+      <div class="slot"><span class="box"><img src="hero-grid/steel-sword.png" alt="Steel sword" /></span><span>Hero pixel <b>1.15×</b> an item pixel</span></div>
+    </section>
+
+    <section class="opt">
+      <h2 class="engraved">B · Item pixel</h2>
+      <p class="sub">100 cells tall, 48 colours, exact pixels</p>
+      <div class="stage">
+        <img src="hero-grid/warrior-98-48.png" style="width:124.5px;height:150px" alt="Warrior, 100 cells" />
+        <img src="hero-grid/brute-98-48.png" style="width:141px;height:147px" alt="Brute, 98 cells" />
+      </div>
+      <div class="slot"><span class="box"><img src="hero-grid/steel-sword.png" alt="Steel sword" /></span><span>Hero pixel <b>equals</b> an item pixel</span></div>
+    </section>
+
+    <section class="opt">
+      <h2 class="engraved">C · Item pixel, 24 colours</h2>
+      <p class="sub">100 cells tall, 24 colours, exact pixels</p>
+      <div class="stage">
+        <img src="hero-grid/warrior-98-24.png" style="width:124.5px;height:150px" alt="Warrior, 100 cells, 24 colours" />
+        <img src="hero-grid/brute-98-24.png" style="width:141px;height:147px" alt="Brute, 98 cells, 24 colours" />
+      </div>
+      <div class="slot"><span class="box"><img src="hero-grid/steel-sword.png" alt="Steel sword" /></span><span>Hero pixel <b>equals</b> an item pixel</span></div>
+    </section>
+
+    <section class="opt">
+      <h2 class="engraved">D · Fine</h2>
+      <p class="sub">150 cells tall, 48 colours, exact pixels</p>
+      <div class="stage">
+        <img src="hero-grid/warrior-148-48.png" style="width:124px;height:150px" alt="Warrior, 150 cells" />
+        <img src="hero-grid/brute-148-48.png" style="width:142px;height:148px" alt="Brute, 148 cells" />
+      </div>
+      <div class="slot"><span class="box"><img src="hero-grid/steel-sword.png" alt="Steel sword" /></span><span>Hero pixel <b>⅔</b> an item pixel</span></div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

@@ -607,28 +607,15 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 18px -8px var(--accent);
 }
 
-/* The hero at its file size, which is 2 screen px per art pixel. Every hero
-   is 142px wide at that size; the transparent canvas around it overflows this
-   box. The rim and glow match the gear icons'. */
+/* The hero at its stage size (its canvas, so whole device pixels per art
+   pixel, the gear icons' size). Every hero is about 124px wide there; the
+   transparent canvas around it overflows this box. The rim and glow match the
+   gear icons'. */
 .hero-sprite {
   flex-shrink: 0;
   display: flex;
   justify-content: center;
-  width: 142px;
-}
-
-/* A tad under that on dense screens, at the nearest size that is still a
-   whole number of device pixels per art pixel: 3 on 2x screens, 5 on 3x. */
-@media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) {
-  .hero-sprite {
-    zoom: 0.75;
-  }
-}
-
-@media (min-resolution: 3dppx), (-webkit-min-device-pixel-ratio: 3) {
-  .hero-sprite {
-    zoom: 0.8333;
-  }
+  width: 124px;
 }
 
 .hero-sprite .player-sprite {
@@ -639,8 +626,8 @@ onBeforeUnmount(() => {
 
 .hero-sprite :deep(.hero) {
   --rim: color-mix(in srgb, var(--accent) 25%, #000);
-  width: auto;
-  height: auto;
+  width: var(--hero-canvas);
+  height: var(--hero-canvas);
   filter:
     drop-shadow(2px 0 0 var(--rim))
     drop-shadow(-2px 0 0 var(--rim))

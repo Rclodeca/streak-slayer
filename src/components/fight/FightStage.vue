@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 290px;
     --u: 1px;
-    --split-x: calc(93% - 516px);
+    --split-x: calc(93% - 498px);
     --split-yl: 0px;
     --split-yr: 212px;
     --split-x2: max(var(--split-x), calc(7% + 450px));

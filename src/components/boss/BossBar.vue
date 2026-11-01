@@ -6,6 +6,7 @@ import type { CelebrationPhase } from '../../composables/useCelebration';
 import { useDamagePopup } from '../../composables/useDamagePopup';
 import HealthBar from '../ui/HealthBar.vue';
 import Sprite from '../ui/Sprite.vue';
+import { spriteUrl } from '../ui/spriteUrl';
 
 // Once the fight stage has scrolled off the top, at every width, this bar
 // drops in so every hit stays in view while ticking skills (FightStage decides
@@ -29,8 +30,6 @@ const props = defineProps<{
   /** The boss's skill breakpoints (see bossSkillMarks); mirrored below, since this bar drains to the right. */
   marks?: { at: number; state: 'armed' | 'fired' | 'spent' }[];
 }>();
-
-const baseUrl = import.meta.env.BASE_URL;
 
 // Below this share of HP the ring pulses, since it has no numbers to read.
 const LOW_HEALTH_SHARE = 0.25;
@@ -56,7 +55,7 @@ const { popups: heroPopups, isHit: heroHit } = useDamagePopup(() => props.heroCu
         <circle class="arc" cx="22" cy="22" :r="RING_RADIUS" :stroke-dasharray="RING_LENGTH" :stroke-dashoffset="ringOffset" />
       </svg>
       <span class="ring-face">
-        <img class="hero" :src="`${baseUrl}sprites/player/${heroClass}.png`" alt="" />
+        <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="" />
       </span>
       <span class="level"><span>{{ heroLevel }}</span></span>
       <span v-for="popup in heroPopups" :key="popup.id" class="damage-popup" aria-hidden="true">-{{ formatCompact(popup.amount) }}</span>

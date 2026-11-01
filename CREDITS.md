@@ -2,7 +2,7 @@
 
 ## FreePixel art
 
-Every boss sprite, item icon and player hero comes from [FreePixel](https://freepixel.art/), used under the [FreePixel Asset License](https://freepixel.art/license/): free for personal and commercial games and apps, modification allowed, no attribution required (credited here anyway). The raw asset files themselves must not be redistributed, so only the processed sprites live in the repo. Processing: items are cropped, reduced to a 48px grid (or 32px) with 12 colours and a 1px dark outline (`npm run item-icon -- <source.png> <item-id>`, see `scripts/item-icons/`; `npm run item-icons -- --grid <32|48>` rebuilds every icon from the item table below, so keep it current); bosses are reduced by averaging 2x2 blocks with 48 colours.
+Every boss sprite, item icon and player hero comes from [FreePixel](https://freepixel.art/), used under the [FreePixel Asset License](https://freepixel.art/license/): free for personal and commercial games and apps, modification allowed, no attribution required (credited here anyway). The raw asset files themselves must not be redistributed, so only the processed sprites live in the repo. Processing: items are cropped, reduced to a 48px grid (or 32px) with 12 colours and a 1px dark outline (`npm run item-icon -- <source.png> <item-id>`, see `scripts/item-icons/`; `npm run item-icons -- --grid <32|48>` rebuilds every icon from the item table below, so keep it current); bosses and heroes are rebuilt with `npm run sprites` (`scripts/item-icons/rebuild-sprites.cjs`, settings per sprite in `sprites.json`) in two builds drawn at the same size, `<name>.png` for 2x screens and `<name>@3x.png` for 3x, each on the item icons' screen pixel size there, with 48 colours.
 
 ### Boss sprites
 
@@ -129,7 +129,7 @@ Every boss sprite, item icon and player hero comes from [FreePixel](https://free
 
 ### Player heroes
 
-Picked per run from the rolled starting stats (`heroClassFor` in `character.ts`). Processed like the bosses: cropped to the figure, then 2x2 blocks with 48 colours, then the item icons' 1-pixel dark outline (`node scripts/item-icons/outline-sprite.cjs <file> 2`). The ranger was rebuilt from its source with a 30% coverage cutoff (like `--thin` for items) so its bowstring survives.
+Picked per run from the rolled starting stats (`heroClassFor` in `character.ts`). Processed like the bosses (`npm run sprites`), plus the item icons' 1-pixel dark outline. The ranger uses a 30% coverage cutoff (like `--thin` for items) so its bowstring survives, and is drawn at 0.915 of its source's size to stand as tall as the others.
 
 | File | FreePixel source |
 |---|---|

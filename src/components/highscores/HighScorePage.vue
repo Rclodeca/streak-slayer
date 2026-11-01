@@ -11,6 +11,7 @@ import { runHabitRank, runHero, useHighScoreStore } from '../../store/highScoreS
 import { PERSONALITY_SPRITE } from '../boss/bossSprites';
 import RankDiamonds from '../habits/RankDiamonds.vue';
 import Modal from '../ui/Modal.vue';
+import { spriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
 import type { StatIconName } from '../ui/statIcons';
 
@@ -29,7 +30,7 @@ const sheetOpen = computed({
 const openHero = computed(() => (openRun.value ? runHero(openRun.value) : undefined));
 
 function heroArt(run: HighScoreRun): string {
-  return `${baseUrl}sprites/player/${runHero(run).heroClass}.png`;
+  return spriteUrl(`player/${runHero(run).heroClass}`);
 }
 
 // Only what the hero wore; older runs also saved the unequipped items.
@@ -106,7 +107,7 @@ const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
           <img
             v-if="openRun.bossPersonality"
             class="duel-boss"
-            :src="`${baseUrl}sprites/${PERSONALITY_SPRITE[openRun.bossPersonality]}.png`"
+            :src="spriteUrl(PERSONALITY_SPRITE[openRun.bossPersonality])"
             alt=""
           />
         </div>

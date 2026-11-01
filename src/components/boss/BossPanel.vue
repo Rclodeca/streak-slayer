@@ -176,7 +176,8 @@ const statTiles = computed<StatTile[]>(() => {
    on its phone geometry (--u scales the art on narrow phones). */
 .boss-panel {
   display: contents;
-  --boss-w: calc(190 * var(--u));
+  /* The sprite's canvas, so whole device pixels per art pixel (see spriteUrl). */
+  --boss-w: calc(192 * var(--u));
 }
 
 .boss-plat {
@@ -272,13 +273,13 @@ const statTiles = computed<StatTile[]>(() => {
 
 @media (min-width: 821px) {
   .boss-panel {
-    --boss-w: 210px;
+    --boss-w: 192px;
   }
 
   .boss-plat {
     right: calc(7% + 4px);
-    top: 186px;
-    width: 206px;
+    top: 168px;
+    width: 186px;
   }
 
   .boss-figure {
@@ -288,7 +289,7 @@ const statTiles = computed<StatTile[]>(() => {
   .boss-block {
     top: 30px;
     left: auto;
-    right: calc(7% + 236px);
+    right: calc(7% + 218px);
     width: 280px;
   }
 }
@@ -455,8 +456,8 @@ const statTiles = computed<StatTile[]>(() => {
   color: var(--text);
 }
 
-/* 2 screen px per art pixel like the gear icons, with their dark rim and a
-   glow, in the boss's damage colour. */
+/* Art pixels the gear icons' size, with their dark rim and a glow, in the
+   boss's damage colour. */
 .boss-figure :deep(.sprite),
 .hero-sprite :deep(.sprite) {
   --rim: color-mix(in srgb, var(--damage-color) 20%, #000);
@@ -505,8 +506,8 @@ const statTiles = computed<StatTile[]>(() => {
 }
 
 .hero-sprite :deep(.sprite) {
-  width: 200px;
-  height: 200px;
+  width: 192px;
+  height: 192px;
   margin-bottom: 6px;
 }
 

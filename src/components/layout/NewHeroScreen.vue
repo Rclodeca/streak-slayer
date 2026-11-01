@@ -12,6 +12,7 @@ import { HERO_PICK_PLACEMENT } from '../character/heroArt';
 import PlayerSprite from '../character/PlayerSprite.vue';
 import RuleList from '../ui/RuleList.vue';
 import type { Rule } from '../ui/RuleList.vue';
+import { spriteUrl } from '../ui/spriteUrl';
 
 // Full-screen greeting shown in place of the dashboard while the hero is
 // unnamed (see Character.name): the very first launch, and every new run after
@@ -22,7 +23,6 @@ const characterStore = useCharacterStore();
 const { fallen } = useFallenHero();
 const { beginRun } = useCombatActions();
 
-const baseUrl = import.meta.env.BASE_URL;
 const name = ref('');
 
 const PICKS: HeroPick[] = [...HERO_CLASSES, 'fate'];
@@ -97,7 +97,7 @@ function begin() {
               v-for="heroClass in HERO_CLASSES"
               v-show="heroClass === shownClass"
               :key="heroClass"
-              :src="`${baseUrl}sprites/player/${heroClass}.png`"
+              :src="spriteUrl(`player/${heroClass}`)"
               :style="placementFor(heroClass)"
               alt=""
               draggable="false"

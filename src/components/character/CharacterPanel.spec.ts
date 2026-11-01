@@ -74,10 +74,10 @@ describe('CharacterPanel', () => {
   it('places each hero by its class', async () => {
     setClass(600, 300);
     const wrapper = mount(CharacterPanel);
-    expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 160');
+    expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 168');
     setClass(300, 600);
     await nextTick();
-    expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 174');
+    expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 180');
   });
 
   describe('boss-skill effects', () => {
