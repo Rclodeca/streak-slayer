@@ -250,7 +250,7 @@ function onZoneClick(event: MouseEvent) {
   border-style: dashed;
 }
 
-/* A done Overdrive skill's check keeps a pulsing ember halo while it has
+/* A done Overdrive skill's check keeps a slowly breathing ember halo while it has
    charges left. Only the ring's opacity animates, which stays cheap. */
 .check.overdrive-ready {
   position: relative;
@@ -262,14 +262,14 @@ function onZoneClick(event: MouseEvent) {
   inset: -6px;
   border: 1.5px solid var(--overdrive-color);
   border-radius: 10px;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--overdrive-color) 55%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--overdrive-color) 25%, transparent);
   pointer-events: none;
-  animation: overdrive-halo 2.4s ease-in-out infinite;
+  animation: overdrive-halo 5s ease-in-out infinite;
 }
 
 @keyframes overdrive-halo {
   50% {
-    opacity: 0.3;
+    opacity: 0.55;
   }
 }
 

@@ -808,8 +808,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item .check.overdrive-ready::before {
     inset: -5px;
     border-width: 1px;
+    border-color: rgba(224, 120, 58, 0.75);
     border-radius: 0;
-    box-shadow: 0 0 12px 2px rgba(224, 120, 58, 0.5);
+    box-shadow: 0 0 6px 0 rgba(224, 120, 58, 0.25);
   }
 
   .habit-item .name {
