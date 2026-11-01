@@ -1,0 +1,19 @@
+/* Idea 5: carved capitals for titles and tiny group labels only; buttons and small text in the serif, normal case. */
+:root[data-theme='ashen'] .add-button,
+:root[data-theme='ashen'] .ok-button,
+:root[data-theme='ashen'] .cancel-button,
+:root[data-theme='ashen'] .remove-button,
+:root[data-theme='ashen'] .quest-item .meta,
+:root[data-theme='ashen'] .gear-rarity,
+:root[data-theme='ashen'] .reward-exp,
+:root[data-theme='ashen'] .skill-meta,
+:root[data-theme='ashen'] .rank-label {
+  font-family: var(--sans) !important; font-size-adjust: 0.5 !important; text-transform: none !important; letter-spacing: 0.01em !important; font-weight: 700 !important;
+}
+:root[data-theme='ashen'] .add-button { font-size: 0.9rem !important; }
+:root[data-theme='ashen'] .quest-item .meta,
+:root[data-theme='ashen'] .skill-meta { font-size: 0.88rem !important; font-weight: 600 !important; font-style: italic; }
+:root[data-theme='ashen'] .gear-rarity { font-size: 0.95rem !important; font-style: italic; font-weight: 600 !important; }
+:root[data-theme='ashen'] .rank-label { font-size: 0.92rem !important; color: var(--text-h) !important; }
+:root[data-theme='ashen'] .remove-button { font-size: 0.85rem !important; }
+:root[data-theme='ashen'] .reward-exp { font-size: 0.72rem !important; }

@@ -1,0 +1,4 @@
+/* Small fixes: heavier body text on near-black, upright log lines, lining numerals in running text. */
+:root[data-theme='ashen'] body { font-weight: 600; font-variant-numeric: lining-nums; }
+:root[data-theme='ashen'] .activity-log li { font-style: normal !important; }
+:root[data-theme='ashen'] .habit-item .name.done { color: #8a8274 !important; }

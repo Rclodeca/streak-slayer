@@ -4,7 +4,7 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
-import { createRng } from '../../game-engine';
+import { createRng, dailyPeriodKey } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { TUNING } from '../../game-engine/constants/tuning';
 import { useHabitStore } from '../../store/habitStore';
@@ -89,6 +89,30 @@ describe('HabitListItem', () => {
     for (let i = 0; i < TUNING.OVERDRIVE_MAX_EXTRA_USES; i++) await check.trigger('click');
     expect(check.classes()).not.toContain('overdrive-ready');
     expect(check.attributes('disabled')).toBeDefined();
+  });
+
+  describe('check light', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('lights the check once when the skill lands, then lets it settle', async () => {
+      vi.useFakeTimers();
+      const wrapper = mountSkill();
+      const check = wrapper.find('input.check');
+
+      await check.trigger('click');
+      expect(check.classes()).toContain('lit');
+
+      vi.advanceTimersByTime(900);
+      await nextTick();
+      expect(check.classes()).not.toContain('lit');
+    });
+
+    it('a skill already done when the list opens is not lit', () => {
+      const wrapper = mountSkill({ lastCompletedPeriodKey: dailyPeriodKey(new Date()) });
+      expect(wrapper.find('input.check').classes()).not.toContain('lit');
+    });
   });
 
   describe('rank', () => {

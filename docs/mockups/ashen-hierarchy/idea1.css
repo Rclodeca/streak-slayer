@@ -1,0 +1,27 @@
+/* Idea 1: gold only for what you touch or have earned; structure in ash grey. */
+:root[data-theme='ashen'] { --ash-line: rgba(150, 141, 126, 0.22); --ash-mark: #6b6458; }
+:root[data-theme='ashen'] .panel { border-color: var(--ash-line) !important; }
+:root[data-theme='ashen'] .panel::before,
+:root[data-theme='ashen'] .modal-content::before { --accent-solid: var(--ash-mark); }
+:root[data-theme='ashen'] .layout section.panel::after { border-color: var(--ash-mark) !important; }
+:root[data-theme='ashen'] .panel h2,
+:root[data-theme='ashen'] .modal-header h3 { color: var(--text-h) !important; }
+:root[data-theme='ashen'] .modal-header h3::before { background: linear-gradient(90deg, transparent, var(--ash-line)) !important; }
+:root[data-theme='ashen'] .modal-header h3::after { background: linear-gradient(270deg, transparent, var(--ash-line)) !important; }
+:root[data-theme='ashen'] .modal-content { border-color: var(--ash-line) !important; box-shadow: 0 40px 80px -30px #000, 0 0 0 4px rgba(0,0,0,.6), 0 0 0 5px rgba(150,141,126,.1) !important; }
+:root[data-theme='ashen'] .habit-group-title::after { background: linear-gradient(90deg, var(--ash-line), transparent) !important; }
+:root[data-theme='ashen'] .progress-bar > span { color: var(--text) !important; }
+:root[data-theme='ashen'] .quest-item { border-color: rgba(150, 141, 126, 0.1) !important; }
+:root[data-theme='ashen'] .menu-label { color: var(--text) !important; }
+/* The touchable things get the gold, a bit brighter than before. */
+:root[data-theme='ashen'] .add-button,
+:root[data-theme='ashen'] .menu-button { color: var(--accent) !important; border-color: rgba(200, 169, 110, 0.7) !important; }
+:root[data-theme='ashen'] .habit-item:not(.bad) .check:not(:checked),
+:root[data-theme='ashen'] .quest-item .check:not(:checked) { border-color: var(--accent) !important; }
+/* Hero popup: inner frames and rules go ash too; rarity keeps its colour. */
+:root[data-theme='ashen'] .hero:has(> .hero-sprite) { --accent-border: var(--ash-line); border-color: var(--ash-line) !important; box-shadow: none !important; }
+:root[data-theme='ashen'] .group-label::after { background: linear-gradient(90deg, var(--ash-line), transparent) !important; }
+:root[data-theme='ashen'] .gear-row, :root[data-theme='ashen'] .stat-tile { border-color: rgba(150, 141, 126, 0.14) !important; }
+:root[data-theme='ashen'] .gear-row { border-left-color: var(--rarity) !important; }
+:root[data-theme='ashen'] .gear-icon::before { --accent-solid: var(--ash-mark); }
+:root[data-theme='ashen'] .hero-level { color: var(--text-h) !important; }

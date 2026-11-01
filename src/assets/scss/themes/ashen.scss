@@ -1,6 +1,13 @@
-// Ashen — Souls-like dark fantasy: near-black, hairline gold frames,
-// engraved Roman caps (Cinzel) over Cormorant body text, diamond markers,
-// and a boss that rises out of fog. Imported once from main.ts.
+// Ashen — Souls-like dark fantasy: near-black, lit frames edged in ash,
+// engraved Roman caps (Cinzel) for titles over Cormorant body text, and a
+// boss that rises out of fog. Imported once from main.ts.
+//
+// Three rules keep it scannable (docs/mockups/ashen-hierarchy.html):
+// - Gold means touch: buttons, checks and what the hero has earned. Frames,
+//   rules and titles are ash and bone.
+// - The diamond marks what you tick. Ranks are bars, difficulty is dots.
+// - Engraved caps are for titles and the tiny group labels; buttons, tags
+//   and small text are plain serif.
 //
 // Every rule lives under :root[data-theme='ashen'] (see store/themeStore.ts).
 // That prefix also outranks the components' scoped styles — it adds a
@@ -10,13 +17,20 @@
 
 @use 'sass:list';
 
-$line: rgba(200, 169, 110, 0.2);
-$line-mid: rgba(200, 169, 110, 0.4);
-$line-faint: rgba(200, 169, 110, 0.07);
+// Structure: frames, rules and dividers, in ash.
+$line: rgba(150, 141, 126, 0.2);
+$line-mid: rgba(150, 141, 126, 0.32);
+$line-faint: rgba(150, 141, 126, 0.08);
+$ash-mark: #6b6458;
+// The frame of something you can touch.
+$gold-line: rgba(200, 169, 110, 0.55);
 $ash-deep: #5c554a;
 $ember: #e0783a;
-$frame-top: rgb(27, 24, 21);
-$frame-bottom: rgb(14, 13, 11);
+// A panel is a lit surface, a little above the page.
+$frame-top: rgb(33, 29, 24);
+$frame-bottom: rgb(23, 20, 15);
+// A dark well set into a panel or popup: an inner box with no frame.
+$well: rgba(0, 0, 0, 0.28);
 
 // The boss sprite's dark rim and ember glow, on the stage and in its details.
 $boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
@@ -32,7 +46,7 @@ $caps-sm: 0.75rem; // buttons, menu items, choice titles
 $caps-md: 0.8rem; // primary buttons, event cards
 $caps-lg: 0.85rem; // panel and popup titles
 
-// Engraved caps — every heading, label and button.
+// Engraved caps — titles and the tiny group labels (DAILY, EQUIPMENT).
 @mixin engraved($size, $tracking: 0.2em) {
   font-family: var(--heading);
   font-size: $size;
@@ -42,9 +56,24 @@ $caps-lg: 0.85rem; // panel and popup titles
   text-transform: uppercase;
 }
 
+// Plain serif — buttons, tags and small text, in the case they're written.
+// Keeps the root's font-size-adjust, so sizes match the body text.
+$serif-sm: 0.8rem; // tags, captions, small notes
+$serif-md: 0.85rem; // buttons, menu items
+$serif-lg: 0.95rem; // primary buttons, choice titles
+
+@mixin serif-label($size: $serif-md, $weight: 600) {
+  font-family: var(--sans);
+  font-size: $size;
+  font-size-adjust: 0.5;
+  font-weight: $weight;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
 // Hairline gold frame button.
-@mixin ghost-button($size: $caps-sm, $color: var(--accent), $border: $line-mid) {
-  @include engraved($size, 0.18em);
+@mixin ghost-button($size: $serif-md, $color: var(--accent), $border: $gold-line) {
+  @include serif-label($size);
   color: $color;
   background: transparent;
   border: 1px solid $border;
@@ -60,14 +89,14 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 }
 
-// Gold L-brackets on the corners of a frame — all four, or just those along
-// one edge (`$edges: top` or `bottom`).
+// Ash L-brackets on the corners of an outer frame — all four, or just those
+// along one edge (`$edges: top` or `bottom`).
 @mixin corner-brackets($inset: -1px, $edges: top bottom, $length: 12px) {
   $layers: ();
   @each $edge in $edges {
     @each $side in left, right {
-      $layers: list.append($layers, linear-gradient(var(--accent-solid), var(--accent-solid)) $edge $side / $length 1px no-repeat, $separator: comma);
-      $layers: list.append($layers, linear-gradient(var(--accent-solid), var(--accent-solid)) $edge $side / 1px $length no-repeat, $separator: comma);
+      $layers: list.append($layers, linear-gradient($ash-mark, $ash-mark) $edge $side / $length 1px no-repeat, $separator: comma);
+      $layers: list.append($layers, linear-gradient($ash-mark, $ash-mark) $edge $side / 1px $length no-repeat, $separator: comma);
     }
   }
 
@@ -97,22 +126,31 @@ $caps-lg: 0.85rem; // panel and popup titles
   animation: ashen-embers 14s linear infinite;
 }
 
-// A lit gold diamond — the "done" state of every checkbox.
+// The checkbox: a crisp gold diamond while it waits, a dim solid one once
+// done, so what's left draws the eye. Landing it (`.lit`, HabitListItem)
+// burns it bright for a moment, then it settles.
 @mixin diamond-check {
+  --check-glow: rgba(230, 180, 90, 0.7);
   width: 13px;
   height: 13px;
   margin: 0 4px;
   transform: rotate(45deg);
   background: rgba(0, 0, 0, 0.45);
-  border: 1px solid var(--accent-solid);
+  border: 1px solid var(--accent);
   transition:
     background 0.3s,
     box-shadow 0.3s;
 
   &:checked {
-    background: radial-gradient(circle, #fff3d0 0, #e6c77f 38%, #a8832f 82%);
-    border-color: #f3dda6;
-    box-shadow: 0 0 12px 1px rgba(230, 180, 90, 0.55);
+    background: #5e5137;
+    border-color: #7d6c4a;
+    box-shadow: none;
+  }
+
+  // The fill lands at once, so the flash burns a solid diamond.
+  &:checked.lit {
+    animation: ashen-check-settle 0.9s ease-out;
+    transition: none;
   }
 
   &:checked::after {
@@ -128,7 +166,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   --code-bg: #161411;
   // The frame's shade at the foot of the boss's stage, where BossPanel's fog
   // band meets it (the panel here; the details box below).
-  --stage-fog: rgb(17, 15, 13);
+  --stage-fog: rgb(25, 22, 17);
   --accent: #e6cf9a;
   --accent-solid: #c8a96e;
   --accent-bg: rgba(200, 169, 110, 0.08);
@@ -176,6 +214,10 @@ $caps-lg: 0.85rem; // panel and popup titles
   // Cormorant has a small x-height and reads a size smaller than system-ui;
   // this evens it out so every component's existing font-size still fits.
   font-size-adjust: 0.5;
+  // Cormorant's hairlines thin out on near-black: body text a weight up, and
+  // lining figures so numbers in running text sit on the line.
+  font-weight: 600;
+  font-variant-numeric: lining-nums;
   background: var(--bg);
 
   // A faint gold glow over the top of the screen, held to the viewport (iOS
@@ -203,7 +245,7 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   .panel {
     background: linear-gradient(180deg, $frame-top, $frame-bottom);
-    border-color: $line;
+    border-color: $line-faint;
     box-shadow:
       0 24px 50px -24px rgba(0, 0, 0, 0.95),
       inset 0 1px 0 rgba(255, 236, 200, 0.04);
@@ -213,29 +255,16 @@ $caps-lg: 0.85rem; // panel and popup titles
     @include corner-brackets;
   }
 
-  // A small diamond set into the top edge of each main section.
-  .layout section.panel::after {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: 50%;
-    width: 7px;
-    height: 7px;
-    transform: translateX(-50%) rotate(45deg);
-    background: var(--bg);
-    border: 1px solid var(--accent-solid);
-  }
-
   .panel h2 {
     @include engraved($caps-lg, 0.2em);
-    color: var(--accent);
+    color: var(--text-h);
   }
 
   // ---------- Top bar + menu ----------
 
   .progress-bar > span {
     @include engraved($caps-sm, 0.28em);
-    color: var(--accent-solid);
+    color: var(--text);
   }
 
   .nav-button,
@@ -250,7 +279,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .menu-panel {
-    background: linear-gradient(180deg, rgba(24, 21, 18, 0.985), rgba(10, 9, 8, 0.985));
+    background: linear-gradient(180deg, rgba($frame-top, 0.985), rgba($frame-bottom, 0.985));
     border-color: $line-mid;
     box-shadow:
       0 24px 50px -20px #000,
@@ -262,7 +291,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .menu-item {
-    @include engraved($caps-sm, 0.16em);
+    @include serif-label;
   }
 
   .menu-item:hover {
@@ -466,7 +495,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .hero:has(> .hero-sprite > .sprite) {
-    --stage-fog: rgb(15, 14, 11);
+    --stage-fog: rgb(21, 19, 15);
   }
 
   .boss-panel .sprite,
@@ -543,7 +572,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   .exp-bar {
     overflow: visible;
     background: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(200, 169, 110, 0.32);
+    border: 1px solid $line-mid;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
   }
 
@@ -556,7 +585,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   .exp-bar {
     height: 5px;
     margin-bottom: calc(0.7rem + 4px);
-    border-color: rgba(200, 169, 110, 0.24);
+    border-color: $line;
   }
 
   .health-bar-fill {
@@ -709,13 +738,14 @@ $caps-lg: 0.85rem; // panel and popup titles
   // A bad habit's diamond is red, and lights red once checked: giving in
   // is a blow taken, not a skill landed.
   .habit-item.bad .check {
+    --check-glow: rgba(200, 64, 47, 0.7);
     border-color: var(--damage-color);
   }
 
   .habit-item.bad .check:checked {
-    background: radial-gradient(circle, #ffd6c8 0, #d0604f 38%, #7c1d15 82%);
-    border-color: #eba08f;
-    box-shadow: 0 0 12px 1px rgba(200, 64, 47, 0.55);
+    background: #4f241d;
+    border-color: #74352b;
+    box-shadow: none;
   }
 
   .habit-item.bad .check:hover:not(:disabled) {
@@ -736,7 +766,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .habit-item .name.done {
-    text-decoration-color: rgba(200, 169, 110, 0.45);
+    color: #8a8274;
+    text-decoration-color: rgba(150, 141, 126, 0.5);
   }
 
   .sigil.special {
@@ -768,11 +799,11 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .habit-item .next-day {
-    @include engraved($caps-xs, 0.16em);
-    padding: 4px 5px 3px;
+    @include serif-label($serif-sm, 600);
+    padding: 3px 5px;
     border: 1px solid $line-mid;
     border-radius: 0;
-    color: var(--accent-solid);
+    color: var(--text);
   }
 
   .rest-fold summary {
@@ -843,10 +874,11 @@ $caps-lg: 0.85rem; // panel and popup titles
     }
   }
 
+  // Difficulty: round dots, so the diamond stays the check's alone.
   .pip {
-    width: 5px;
-    height: 5px;
-    transform: rotate(45deg);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
     background: transparent;
     border: 1px solid $ash-deep;
   }
@@ -857,10 +889,17 @@ $caps-lg: 0.85rem; // panel and popup titles
     box-shadow: none;
   }
 
-  // Skill ranks: gold diamonds, one per rank.
+  // Skill ranks: a gold bar per rank, not a diamond, so they never read
+  // as checks.
+  .rank-diamonds {
+    gap: 2px;
+  }
+
   .rank-diamonds i {
-    background: radial-gradient(circle, var(--accent), var(--accent-solid) 60%, #8a6a2c);
-    box-shadow: 0 0 5px rgba(230, 207, 154, 0.35);
+    width: 3px;
+    height: 11px;
+    transform: none;
+    background: var(--accent-solid);
   }
 
   // A rank-up: a gold sweep across the row and the new rank rising off it.
@@ -876,15 +915,16 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   // ---------- Quests ----------
 
+  // A well edged only by its due tone.
   .quest-item {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 12%, transparent), rgba(0, 0, 0, 0.22) 55%);
-    border-color: rgba(200, 169, 110, 0.12);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 12%, transparent), $well 55%);
+    border-color: transparent;
     border-left: 2px solid var(--tone);
     box-shadow: none;
   }
 
   .quest-item.side {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--side-quest-color) 14%, transparent), rgba(0, 0, 0, 0.22) 55%);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--side-quest-color) 14%, transparent), $well 55%);
     box-shadow: none;
   }
 
@@ -898,7 +938,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .quest-item .meta {
-    @include engraved($caps-xs, 0.14em);
+    @include serif-label($serif-sm, 600);
+    font-style: italic;
   }
 
   .reward-exp {
@@ -908,7 +949,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   // The glow sits behind the icon itself, not the icon + label block.
   .reward-exp {
     isolation: isolate;
-    @include engraved($caps-xs, 0.08em);
+    @include serif-label(0.72rem);
     color: var(--accent);
   }
 
@@ -933,7 +974,6 @@ $caps-lg: 0.85rem; // panel and popup titles
   .activity-log li {
     padding: 0.32rem 0;
     border-bottom: 1px solid $line-faint;
-    font-style: italic;
   }
 
   .activity-log li:first-child {
@@ -944,8 +984,18 @@ $caps-lg: 0.85rem; // panel and popup titles
     border-bottom: 0;
   }
 
-  .activity-log :is(.log-damage, .log-heal, .log-stat, .log-true-damage, .log-exp) {
-    font-style: normal;
+  .log-end-rule {
+    background: linear-gradient(90deg, transparent, $line-mid);
+  }
+
+  .log-end-gem,
+  .log-end-gem.small {
+    border-radius: 50%;
+    border-color: $ash-mark;
+  }
+
+  .log-end-gem.small {
+    background: $ash-mark;
   }
 
   // ---------- Buttons ----------
@@ -954,11 +1004,11 @@ $caps-lg: 0.85rem; // panel and popup titles
   .submit,
   .restart-button,
   .ok-button {
-    @include engraved($caps-md, 0.22em);
+    @include serif-label($serif-lg, 700);
     padding: 0.85rem 1rem;
     color: var(--text-h);
     background: linear-gradient(180deg, rgba(146, 124, 80, 0.25), rgba(60, 48, 28, 0.25));
-    border: 1px solid $line-mid;
+    border: 1px solid $gold-line;
     box-shadow: none;
     filter: none;
     transition:
@@ -989,17 +1039,16 @@ $caps-lg: 0.85rem; // panel and popup titles
   // Tighter, so the replace list keeps room for item names on a phone.
   .replace-button {
     padding-inline: 0.6rem;
-    letter-spacing: 0.12em;
   }
 
   .drop-button {
     padding: 0.6rem 0.8rem;
-    @include ghost-button($caps-sm, var(--text), $line);
+    @include ghost-button($serif-md, var(--text), $line-mid);
   }
 
-  // Quiet: a line of red caps, not a framed button.
+  // Quiet: a line of red, not a framed button.
   .remove-button {
-    @include engraved($caps-xs, 0.2em);
+    @include serif-label($serif-md);
     color: rgba(200, 64, 47, 0.8);
     transition: color 0.2s;
 
@@ -1007,7 +1056,7 @@ $caps-lg: 0.85rem; // panel and popup titles
       color: var(--dmg-physical);
     }
 
-    // Added today: ash caps, and an italic "Tomorrow" under them.
+    // Added today: ash, and an italic "Tomorrow" under it.
     &.locked,
     &.locked:hover {
       color: $ash-deep;
@@ -1024,7 +1073,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .confirm-remove-button {
-    @include engraved($caps-sm, 0.18em);
+    @include serif-label($serif-lg);
     padding: 0.7rem;
     color: var(--text-h);
     background: linear-gradient(180deg, rgba(160, 34, 30, 0.38), rgba(90, 16, 13, 0.38));
@@ -1033,7 +1082,7 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   // Overdrive burns ember, the same fire as the check's halo.
   .overdrive-button {
-    @include engraved($caps-sm, 0.18em);
+    @include serif-label($serif-lg);
     padding: 0.7rem;
     color: var(--text-h);
     background: linear-gradient(180deg, rgba(160, 60, 20, 0.35), rgba(90, 30, 10, 0.35));
@@ -1050,7 +1099,6 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .overdrive-button small {
-    letter-spacing: 0.1em;
     color: var(--accent);
     opacity: 1;
   }
@@ -1080,12 +1128,9 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   .modal-content {
     position: relative;
-    background: linear-gradient(180deg, rgba(24, 21, 18, 0.985), rgba(10, 9, 8, 0.985));
+    background: linear-gradient(180deg, rgba($frame-top, 0.985), rgba($frame-bottom, 0.985));
     border-color: $line-mid;
-    box-shadow:
-      0 40px 80px -30px #000,
-      0 0 0 4px rgba(0, 0, 0, 0.6),
-      0 0 0 5px rgba(200, 169, 110, 0.13);
+    box-shadow: 0 40px 80px -30px #000;
   }
 
   .modal-content::before {
@@ -1096,7 +1141,7 @@ $caps-lg: 0.85rem; // panel and popup titles
     border-top-color: $line;
   }
 
-  // Title centred between two fading gold rules — centred across the whole
+  // Title centred between two fading rules — centred across the whole
   // popup: the close button is taken out of the flow (with matching padding
   // on both sides of the title) so it can't push the title off-centre.
   .modal-header {
@@ -1110,7 +1155,7 @@ $caps-lg: 0.85rem; // panel and popup titles
     justify-content: center;
     gap: 14px;
     @include engraved($caps-lg, 0.24em);
-    color: var(--accent);
+    color: var(--text-h);
     text-align: center;
 
     &::before,
@@ -1173,8 +1218,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .intro {
-    background: rgba(0, 0, 0, 0.25);
-    border-color: $line;
+    background: $well;
+    border-color: transparent;
     font-style: italic;
   }
 
@@ -1183,7 +1228,7 @@ $caps-lg: 0.85rem; // panel and popup titles
     padding: 0.75rem 0.9rem;
     background: rgba(0, 0, 0, 0.35);
     border: 1px solid $line;
-    border-left: 2px solid $line-mid;
+    border-left: 2px solid $gold-line;
     transition:
       border-color 0.3s,
       box-shadow 0.3s;
@@ -1200,7 +1245,7 @@ $caps-lg: 0.85rem; // panel and popup titles
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid $line-mid;
+    border: 1px solid $gold-line;
     background: radial-gradient(circle, rgba(230, 199, 127, 0.16), transparent 70%);
     box-shadow:
       inset 0 0 0 3px rgba(0, 0, 0, 0.5),
@@ -1212,7 +1257,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   button.card .card-title {
-    @include engraved($caps-md, 0.14em);
+    @include serif-label($serif-lg, 700);
   }
 
   button.card .card-desc {
@@ -1309,7 +1354,9 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .hero .rarity {
-    @include engraved($caps-xs, 0.28em);
+    @include serif-label($serif-lg, 600);
+    font-style: italic;
+    text-transform: capitalize;
   }
 
   .hero:has(> .icon-frame) .name {
@@ -1318,7 +1365,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .equipped-note {
-    @include engraved($caps-sm, 0.2em);
+    @include serif-label($serif-md);
   }
 
   .replace-label {
@@ -1333,8 +1380,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   // Daily update + missed deadlines.
   li.card,
   .miss-card {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 13%, transparent), rgba(0, 0, 0, 0.25) 60%);
-    border: 1px solid $line;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 13%, transparent), $well 60%);
+    border: 1px solid transparent;
     border-left: 2px solid var(--tone);
     box-shadow: none;
   }
@@ -1345,12 +1392,12 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .outcome {
-    @include engraved($caps-xs, 0.14em);
+    @include serif-label($serif-sm, 600);
   }
 
   .pill,
   .redeem {
-    border-color: $line-mid;
+    border-color: $gold-line;
     font-style: italic;
   }
 
@@ -1380,7 +1427,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   .name-input,
   .date-input {
     background: rgba(0, 0, 0, 0.35);
-    border-color: $line-mid;
+    border-color: $gold-line;
   }
 
   .name-input:focus,
@@ -1395,7 +1442,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   label.card .card-title {
-    @include engraved($caps-sm, 0.16em);
+    @include serif-label($serif-lg, 700);
   }
 
   .quest-form .chip {
@@ -1412,7 +1459,8 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   // Habit details: the hit worked out like a sum.
   .skill-meta {
-    @include engraved($caps-xs, 0.2em);
+    @include serif-label($serif-md, 600);
+    font-style: italic;
     gap: 10px;
   }
 
@@ -1424,12 +1472,12 @@ $caps-lg: 0.85rem; // panel and popup titles
     font-style: italic;
   }
 
-  // Rank block: the rank in caps beside its diamonds, a gold bar to the next.
+  // Rank block: the rank beside its bars, a gold bar to the next.
   .rank-block {
     margin: 0 0 14px;
     padding: 10px 10px 9px;
-    border: 1px solid $line;
-    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid transparent;
+    background: $well;
   }
 
   .rank-top {
@@ -1437,8 +1485,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .rank-label {
-    @include engraved($caps-xs, 0.24em);
-    color: var(--accent);
+    @include serif-label($serif-lg, 700);
+    color: var(--text-h);
   }
 
   .rank-bar {
@@ -1500,13 +1548,15 @@ $caps-lg: 0.85rem; // panel and popup titles
     text-shadow: 0 0 22px color-mix(in srgb, var(--c) 35%, transparent);
   }
 
-  // Boss / character details.
+  // Boss / character details: the figure in a well, no frame.
   .hero:has(> .hero-sprite) {
-    background: linear-gradient(180deg, rgba(200, 169, 110, 0.05), rgba(0, 0, 0, 0.3));
+    background: $well;
+    border-color: transparent;
   }
 
   .hero-tag {
-    @include engraved($caps-xs, 0.2em);
+    @include serif-label($serif-md, 600);
+    font-style: italic;
   }
 
   .hero-name,
@@ -1515,8 +1565,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .stat-tile {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: $line;
+    background: $well;
+    border-color: transparent;
   }
 
   .tile-value {
@@ -1530,18 +1580,13 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .gear-row {
-    background: rgba(0, 0, 0, 0.25);
-    border-color: $line;
+    background: $well;
+    border-color: transparent;
     border-left: 2px solid var(--rarity);
   }
 
   .gear-row.empty {
-    border-left: 1px dashed $line;
-  }
-
-  .gear-icon::before {
-    @include corner-brackets(-1px, top bottom, 7px);
-    opacity: 0.9;
+    border-left: 1px dashed $line-mid;
   }
 
   .gear-name {
@@ -1549,11 +1594,13 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .gear-rarity {
-    @include engraved($caps-xs, 0.16em);
+    @include serif-label($serif-md, 600);
+    font-style: italic;
+    text-transform: capitalize;
   }
 
   .gear-enchanted {
-    @include engraved($caps-xs, 0.12em);
+    @include serif-label($serif-sm);
     background: rgba(200, 169, 110, 0.1);
     border-color: rgba(200, 169, 110, 0.5);
   }
@@ -1562,8 +1609,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   .hero:has(> .seal) {
     background:
       radial-gradient(circle at 50% 30%, rgba(230, 199, 127, 0.12), transparent 60%),
-      rgba(0, 0, 0, 0.3);
-    border-color: $line-mid;
+      $well;
+    border-color: transparent;
   }
 
   .seal {
@@ -1647,7 +1694,8 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   .epitaph-days,
   .run-dates {
-    @include engraved($caps-xs, 0.16em);
+    @include serif-label($serif-sm, 600);
+    font-style: italic;
     color: $ash-deep;
     opacity: 1;
   }
@@ -1748,7 +1796,7 @@ $caps-lg: 0.85rem; // panel and popup titles
     filter: drop-shadow(0 0 14px rgba(0, 0, 0, 0.9));
   }
 
-  // The hero pick: engraved name, ember-lit Fate mark, diamond markers.
+  // The hero pick: engraved name, ember-lit Fate mark, round markers.
   .new-hero .pick-name {
     @include engraved($caps-lg, 0.3em);
     color: var(--text-h);
@@ -1760,7 +1808,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .new-hero .pick-dots i {
-    transform: rotate(45deg);
+    border-radius: 50%;
     border-color: $line-mid;
 
     &.on {
@@ -1769,14 +1817,14 @@ $caps-lg: 0.85rem; // panel and popup titles
     }
   }
 
-  // Title between two fading gold rules, like the popup headers.
+  // Title between two fading rules, like the popup headers.
   .new-hero .oath-title {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 14px;
     @include engraved($caps-lg, 0.26em);
-    color: var(--accent);
+    color: var(--text-h);
 
     &::before,
     &::after {
@@ -1815,8 +1863,8 @@ $caps-lg: 0.85rem; // panel and popup titles
   // ---------- Quests: sealed until level 3, then the unlock popup ----------
 
   .lock-ghost i {
-    background: linear-gradient(90deg, rgba(200, 169, 110, 0.1), rgba(0, 0, 0, 0.25) 60%);
-    border-color: rgba(200, 169, 110, 0.12);
+    background: linear-gradient(90deg, rgba(150, 141, 126, 0.1), $well 60%);
+    border-color: transparent;
     border-left: 2px solid $line-mid;
   }
 
@@ -1840,12 +1888,13 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .lock-text {
-    @include engraved($caps-xs, 0.26em);
+    @include serif-label($serif-lg, 600);
+    font-style: italic;
   }
 
   .emblem {
     border-radius: 50%;
-    border-color: $line-mid;
+    border-color: $gold-line;
     background: radial-gradient(circle, rgba(230, 199, 127, 0.2), transparent 70%);
     box-shadow:
       inset 0 0 0 4px rgba(0, 0, 0, 0.5),
@@ -2000,13 +2049,13 @@ $caps-lg: 0.85rem; // panel and popup titles
     font-style: italic;
   }
 
-  // The kept skills' header, between two fading gold rules.
+  // The kept skills' header, between two fading rules.
   .death .kept {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     @include engraved($caps-xs, 0.22em);
-    color: var(--accent);
+    color: var(--text-h);
   }
 
   .death .kept::before,
@@ -2087,7 +2136,7 @@ $caps-lg: 0.85rem; // panel and popup titles
 
   .hint-title {
     @include engraved($caps-sm, 0.18em);
-    color: var(--accent);
+    color: var(--text-h);
   }
 
   .hint-text {
@@ -2100,7 +2149,7 @@ $caps-lg: 0.85rem; // panel and popup titles
   }
 
   .hint-action {
-    @include engraved($caps-xs, 0.18em);
+    @include serif-label;
     color: var(--accent);
   }
 
@@ -2114,6 +2163,14 @@ $caps-lg: 0.85rem; // panel and popup titles
     color: var(--text);
   }
 
+}
+
+// A landed check: the dim diamond burns gold (or red) and cools back down.
+@keyframes ashen-check-settle {
+  from {
+    filter: brightness(2.3);
+    box-shadow: 0 0 14px 2px var(--check-glow);
+  }
 }
 
 @keyframes ashen-embers {
@@ -2140,6 +2197,10 @@ $caps-lg: 0.85rem; // panel and popup titles
   :root[data-theme='ashen'] .boss-plat,
   :root[data-theme='ashen'] .hero-plat {
     transition: none;
+  }
+
+  :root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked.lit {
+    animation: none;
   }
 }
 

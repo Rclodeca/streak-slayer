@@ -1,0 +1,9 @@
+/* Idea 3: the diamond only marks things you tick. Rank and difficulty become bars/dots; the panel crest goes. */
+:root[data-theme='ashen'] .rank-diamonds { gap: 2px !important; }
+:root[data-theme='ashen'] .rank-diamonds i { transform: none !important; width: 3px !important; height: 11px !important; border-radius: 1px; box-shadow: none !important; background: var(--accent-solid) !important; }
+:root[data-theme='ashen'] .pip { transform: none !important; border-radius: 50%; width: 6px !important; height: 6px !important; }
+:root[data-theme='ashen'] .layout section.panel::after { display: none !important; }
+/* Idea 4: done settles to a dim solid diamond, no glow; what's left stays crisp. */
+:root[data-theme='ashen'] .habit-item .check:checked,
+:root[data-theme='ashen'] .quest-item .check:checked { background: #5e5137 !important; border-color: #7d6c4a !important; box-shadow: none !important; }
+:root[data-theme='ashen'] .habit-item.bad .check:checked { background: #4f241d !important; border-color: #74352b !important; box-shadow: none !important; }

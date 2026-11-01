@@ -65,7 +65,21 @@ watch(
     flareTimer = setTimeout(() => (flareRank.value = 0), RANK_FLARE_MS);
   },
 );
-onBeforeUnmount(() => clearTimeout(flareTimer));
+// Landing a skill lights its check for a moment before it settles (Ashen
+// plays the light; Minimalist has none). Mounting done plays nothing.
+const CHECK_LIGHT_MS = 900;
+const checkLit = ref(false);
+let litTimer: ReturnType<typeof setTimeout> | undefined;
+watch(isCompletedThisPeriod, (done, before) => {
+  if (!done || before) return;
+  checkLit.value = true;
+  clearTimeout(litTimer);
+  litTimer = setTimeout(() => (checkLit.value = false), CHECK_LIGHT_MS);
+});
+onBeforeUnmount(() => {
+  clearTimeout(flareTimer);
+  clearTimeout(litTimer);
+});
 
 // A Special or Ult skill's sigil travels with the name's last word, so it
 // never wraps onto a line alone.
@@ -101,7 +115,7 @@ function onZoneClick(event: MouseEvent) {
       <input
         type="checkbox"
         class="check"
-        :class="{ 'overdrive-ready': canOverdrive }"
+        :class="{ 'overdrive-ready': canOverdrive, lit: checkLit }"
         :aria-label="canOverdrive ? `Overdrive ${habit.name}` : `Complete ${habit.name}`"
         :checked="isCompletedThisPeriod"
         :disabled="checkDisabled"

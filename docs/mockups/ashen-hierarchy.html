@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Ashen hierarchy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), level-14 sample save. Each column
+   is the CSS layers in ashen-hierarchy/ injected over Ashen. */
+:root { --text: #a1988a; --text-h: #ece3cd; --gold-hi: #e6cf9a; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 17px/1.35 'Cormorant Garamond', Georgia, serif; }
+.page { max-width: 1720px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: var(--gold-hi); margin: 0 0 6px; }
+.lede { text-align: center; font-style: italic; color: var(--text); margin: 0 0 30px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 34px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.part { margin-top: 60px; }
+.part > h3 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .28em; color: var(--text-h); margin: 0 0 18px; }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.col { width: 316px; max-width: 100%; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { font-style: italic; color: var(--text); font-size: 15px; min-height: 96px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Ashen hierarchy</h1>
+  <p class="lede">The real app with CSS layers on top. Each column below adds one idea to 1 + 3 + 4.</p>
+
+  <div id="next"></div>
+  <div class="part" id="earlier"><h3>Earlier · ideas 1, 3, 4</h3></div>
+</div>
+<script>
+const SCREENS = [['list', 'Skills · quests · log'], ['hero', 'Hero popup'], ['skill', 'Skill popup'], ['top', 'Fight']];
+const NEXT = [
+  ['idea134', '1 + 3 + 4', 'The picked base: gold means touch, diamond only for ticking, done settles dim.'],
+  ['plus2', '+ 2 · Surfaces', 'Panels are lit fills, not outlines. Popups lose their inner frames; rows become dark wells.'],
+  ['plus5', '+ 5 · Type', 'Carved capitals for titles and tiny group labels only. Buttons, tags and small text in the serif, normal case.'],
+  ['plussmall', '+ Small fixes', 'Heavier body text, upright log lines, lining numerals in text, done names a touch dimmer.'],
+  ['plusall', 'Everything', '1 + 2 + 3 + 4 + 5 + small fixes.'],
+];
+const EARLIER = [
+  ['before', 'Before', 'Ashen as it ships.'],
+  ['idea1', '1 · Gold means touch', 'Structure in ash grey; gold for buttons, checkboxes and what you earned.'],
+  ['idea134', '1 + 3 + 4', 'Diamond only for ticking; rank bars, difficulty dots; done settles dim.'],
+];
+function build(el, cols) {
+  el.insertAdjacentHTML('beforeend', `<div class="row">${cols.map(([, t, d]) => `<div class="col key"><b>${t}</b>${d}</div>`).join('')}</div>`);
+  for (const [s, label] of SCREENS) {
+    el.insertAdjacentHTML('beforeend', `<h2>${label}</h2><div class="row">${cols.map(([v]) => `<div class="col"><img src="ashen-hierarchy/${s}-${v}.png" alt=""></div>`).join('')}</div>`);
+  }
+}
+build(document.getElementById('next'), NEXT);
+build(document.getElementById('earlier'), EARLIER);
+</script>
+</body>
+</html>
