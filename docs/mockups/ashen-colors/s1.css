@@ -1,0 +1,10 @@
+/* 1 · Cool stone */
+:root[data-theme='ashen'] { --bg: #0a0a0b !important; --code-bg: #0a0a0b !important; }
+:root[data-theme='ashen'] body { background: #0a0a0b !important; }
+:root[data-theme='ashen'] body::before { background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(200,169,110,.09), transparent 70%) !important; }
+:root[data-theme='ashen'] .boss-bar { background: linear-gradient(180deg, rgba(22,23,25,.97), rgba(10,10,11,.97)) !important; }
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(230,199,127,.42) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(230,199,127,.06), transparent), #18191b !important; }
+:root[data-theme='ashen'] .menu-panel { background: #18191b !important; }
+:root[data-theme='ashen'] { --stage-fog: #18191b !important; --border: #2f3033 !important; }

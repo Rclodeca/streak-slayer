@@ -1,0 +1,2 @@
+/* Double strike: two thin silver lines. */
+:root[data-theme='ashen'] .habit-item .name.done { opacity: 1 !important; color: #6c717c !important; text-decoration-style: double !important; text-decoration-color: rgba(195,204,218,.8) !important; text-decoration-thickness: 1px !important; }

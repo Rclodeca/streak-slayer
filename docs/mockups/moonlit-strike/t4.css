@@ -1,0 +1,3 @@
+/* Ruled across: one silver line through the whole name column, fading out to the right. */
+:root[data-theme='ashen'] .habit-item .name.done, :root[data-theme='ashen'] .habit-item .name.done .name-end { text-decoration: none !important; }
+:root[data-theme='ashen'] .habit-item .name.done { opacity: 1 !important; color: #6c717c !important; background: linear-gradient(90deg, rgba(195,204,218,.8) 55%, transparent) left 56% / 100% 1.5px no-repeat !important; }

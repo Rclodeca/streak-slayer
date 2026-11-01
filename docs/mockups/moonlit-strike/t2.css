@@ -1,0 +1,2 @@
+/* Bold silver: a 2px silver line over a fainter word. */
+:root[data-theme='ashen'] .habit-item .name.done { opacity: 1 !important; color: #6c717c !important; text-decoration-color: #c3ccda !important; text-decoration-thickness: 2px !important; }

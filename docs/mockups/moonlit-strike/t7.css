@@ -1,0 +1,2 @@
+/* Halfway to 1. */
+:root[data-theme='ashen'] .habit-item .name.done { opacity: 1 !important; color: #787c87 !important; text-decoration-color: rgba(180,190,205,.62) !important; text-decoration-thickness: 1.25px !important; }

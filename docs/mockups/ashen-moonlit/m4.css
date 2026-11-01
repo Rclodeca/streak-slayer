@@ -1,0 +1,24 @@
+/* 5 · Moonlit silver */
+:root[data-theme='ashen'] { --bg: #07080c !important; --code-bg: #07080c !important; }
+:root[data-theme='ashen'] body { background: #07080c !important; }
+:root[data-theme='ashen'] body::before { background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(150,170,210,.1), transparent 70%) !important; }
+:root[data-theme='ashen'] .boss-bar { background: linear-gradient(180deg, rgba(19,22,30,.97), rgba(7,8,12,.97)) !important; }
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(200,214,240,.4) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(200,214,240,.06), transparent), #141720 !important; }
+:root[data-theme='ashen'] .menu-panel { background: #141720 !important; }
+:root[data-theme='ashen'] { --accent: #dbe2ee !important; --accent-solid: #a9b4c8 !important; --accent-border: rgba(170,185,215,.45) !important; --portrait-border: rgba(170,185,215,.45) !important; --side-quest-color: #a9b4c8 !important; }
+:root[data-theme='ashen'] :is(.nav-button, .menu-button, .add-button, .replace-button, .back, .cancel-button) { background: rgba(170,185,215,.14) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #3c4352 !important; border-color: #566074 !important; }
+:root[data-theme='ashen'] .rank-numeral { border-color: rgba(170,185,215,.45) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] :is(.primary-button, .submit, .restart-button, .ok-button.boon, .ok-button.redeemed) { background: linear-gradient(180deg, rgba(190,204,230,.32), rgba(110,124,152,.26)) !important; border-color: rgba(190,204,230,.45) !important; }
+:root[data-theme='ashen'] { --stage-fog: #141720 !important; --border: #2a2f3b !important; --text: #a9adb6 !important; --text-h: #e8ebf0 !important; }
+/* Ember seam: firelight along the top of panels and popups, an ember crest. */
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(240,140,70,.5) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(240,140,70,.07), transparent), #141720 !important; }
+:root[data-theme='ashen'] .layout section.panel::after { border-color: #e0783a !important; }
+:root[data-theme='ashen'] body::before { background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(224,120,58,.08), transparent 70%) !important; }
+/* Ember marks, take 2: rank plates (numeral and border) and done checks burn ember; the streak flame stays as Moonlit has it. */
+:root[data-theme='ashen'] .rank-numeral { color: #f2a467 !important; border-color: rgba(224,120,58,.55) !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #5a321d !important; border-color: #7a4426 !important; }

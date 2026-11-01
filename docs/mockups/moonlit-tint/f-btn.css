@@ -1,0 +1,3 @@
+/* Frost buttons: CTAs a step bluer than the silver. */
+:root[data-theme='ashen'] :is(.nav-button, .menu-button, .add-button, .replace-button, .back, .cancel-button) { background: rgba(130,170,220,.16) !important; color: #b9d3ee !important; }
+:root[data-theme='ashen'] :is(.primary-button, .submit, .restart-button, .ok-button.boon, .ok-button.redeemed) { background: linear-gradient(180deg, rgba(140,180,230,.34), rgba(80,110,160,.28)) !important; border-color: rgba(160,195,235,.45) !important; }

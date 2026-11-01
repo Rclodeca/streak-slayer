@@ -1,0 +1,23 @@
+/* 5 · Moonlit silver */
+:root[data-theme='ashen'] { --bg: #07080c !important; --code-bg: #07080c !important; }
+:root[data-theme='ashen'] body { background: #07080c !important; }
+:root[data-theme='ashen'] body::before { background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(150,170,210,.1), transparent 70%) !important; }
+:root[data-theme='ashen'] .boss-bar { background: linear-gradient(180deg, rgba(19,22,30,.97), rgba(7,8,12,.97)) !important; }
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(200,214,240,.4) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(200,214,240,.06), transparent), #141720 !important; }
+:root[data-theme='ashen'] .menu-panel { background: #141720 !important; }
+:root[data-theme='ashen'] { --accent: #dbe2ee !important; --accent-solid: #a9b4c8 !important; --accent-border: rgba(170,185,215,.45) !important; --portrait-border: rgba(170,185,215,.45) !important; --side-quest-color: #a9b4c8 !important; }
+:root[data-theme='ashen'] :is(.nav-button, .menu-button, .add-button, .replace-button, .back, .cancel-button) { background: rgba(170,185,215,.14) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #3c4352 !important; border-color: #566074 !important; }
+:root[data-theme='ashen'] .rank-numeral { border-color: rgba(170,185,215,.45) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] :is(.primary-button, .submit, .restart-button, .ok-button.boon, .ok-button.redeemed) { background: linear-gradient(180deg, rgba(190,204,230,.32), rgba(110,124,152,.26)) !important; border-color: rgba(190,204,230,.45) !important; }
+:root[data-theme='ashen'] { --stage-fog: #141720 !important; --border: #2a2f3b !important; --text: #a9adb6 !important; --text-h: #e8ebf0 !important; }
+/* Brass ranks: plates in old, dim gold, the colour of what you earn. */
+:root[data-theme='ashen'] .rank-numeral { color: #d2bb85 !important; border-color: rgba(190,160,100,.45) !important; }
+/* Brass level: the hero's level, on the stage and in the top bar. */
+:root[data-theme='ashen'] :is(.fight-stage .level-number, .fight-stage .name-tail::after, .fight-stage .name-line::after) { color: #c9b07c !important; }
+:root[data-theme='ashen'] .boss-bar .level { color: #d2bb85 !important; border-color: #b39a66 !important; }
+:root[data-theme='ashen'] .pip.lit { background: #b39a66 !important; border-color: #b39a66 !important; }
+/* Double strike: two thin silver lines. */
+:root[data-theme='ashen'] .habit-item .name.done { opacity: 1 !important; color: #6c717c !important; text-decoration-style: double !important; text-decoration-color: rgba(195,204,218,.8) !important; text-decoration-thickness: 1px !important; }

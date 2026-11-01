@@ -1,0 +1,3 @@
+/* Ember marks, take 2: rank plates (numeral and border) and done checks burn ember; the streak flame stays as Moonlit has it. */
+:root[data-theme='ashen'] .rank-numeral { color: #f2a467 !important; border-color: rgba(224,120,58,.55) !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #5a321d !important; border-color: #7a4426 !important; }

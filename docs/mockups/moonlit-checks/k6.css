@@ -1,0 +1,2 @@
+/* Moonstone: a pale silver-to-blue gem with a faint glow. */
+:root[data-theme='ashen'] :is(.habit-item:not(.bad), .quest-item) .check:checked { background: linear-gradient(135deg, #f1f4f9, #9fb6d8 70%, #7d95bd) !important; border-color: #c9d6ea !important; box-shadow: 0 0 7px rgba(150,180,225,.45) !important; }

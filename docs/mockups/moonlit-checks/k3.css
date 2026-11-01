@@ -1,0 +1,2 @@
+/* Bright brass: a solid brass diamond, like the ranks and level. */
+:root[data-theme='ashen'] :is(.habit-item:not(.bad), .quest-item) .check:checked { background: #c9b07c !important; border-color: #e0c992 !important; box-shadow: none !important; }

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Ashen moonlit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), level-14 sample save. Each column
+   is a CSS layer from ashen-moonlit/ over Ashen as it is now (9c2c391); m1 = b2 + m-seam, m2 = m1 + m-marks, m4 = m1 + m-marks2 (m3 = m2 + m-buttons, dropped). */
+:root { --text: #b0a796; --text-h: #ece3cd; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 1700px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 20px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 30px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.scroll { overflow-x: auto; padding-bottom: 6px; }
+.row { display: flex; gap: 14px; width: max-content; margin: 0 auto; }
+.col { width: 316px; flex: none; }
+.col.gap { margin-left: 26px; }
+.tier { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8d8475; margin-bottom: 6px; min-height: 14px; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 88px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Moonlit with ember</h1>
+  <p class="lede">Moonlit with a little ember. A and B as before; B2 is B with ember rank borders and no ember streak.</p>
+  <div id="cmp"></div>
+</div>
+<script>
+const COLS = [
+  ['now', '', 'Original', 'Ashen as it is now: warm brown panels, gold for touch.'],
+  ['b2', '', 'Moonlit', 'Blue-black stone, pale silver for touch, gold only on what you earn.'],
+  ['m1', 'A little ember', 'A · Ember seam', 'Moonlit, with firelight along the top of each panel and popup and an ember crest.'],
+  ['m2', 'More ember', 'B · Ember marks', 'A, plus the streak flames, rank numerals and done checks burn ember.'],
+  ['m4', 'More ember', 'B2 · Ember ranks', 'A, plus the rank plates (numeral and border) and done checks burn ember. Streak flames stay ash.'],
+];
+const SCREENS = [['list', 'Skills · quests · log'], ['top', 'Fight'], ['hero', 'Hero popup'], ['skill', 'Skill popup']];
+const col = (c, i, inner) => `<div class="col${i === 2 ? ' gap' : ''}">${inner}</div>`;
+let html = `<div class="scroll"><div class="row">${COLS.map(([, t, n, d], i) => col(null, i, `<div class="tier">${t}</div><div class="key"><b>${n}</b>${d}</div>`)).join('')}</div>`;
+for (const [s, label] of SCREENS) {
+  html += `<h2>${label}</h2><div class="row">${COLS.map(([v], i) => col(null, i, `<img src="ashen-moonlit/${s}-${v}.png" alt="" loading="lazy">`)).join('')}</div>`;
+}
+document.getElementById('cmp').innerHTML = html + '</div>';
+</script>
+</body>
+</html>

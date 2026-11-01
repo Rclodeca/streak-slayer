@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Moonlit brass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), level-14 sample save. Each column
+   is a CSS layer from moonlit-brass/ over Ashen as it is now (9c2c391); r1-r6 are q3 (Moonlit + brass ranks) + the x-* layers. */
+:root { --text: #b0a796; --text-h: #ece3cd; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 2300px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 20px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 30px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.scroll { overflow-x: auto; padding-bottom: 6px; }
+.row { display: flex; gap: 14px; width: max-content; margin: 0 auto; }
+.col { width: 300px; flex: none; }
+.col.gap { margin-left: 26px; }
+.tier { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8d8475; margin-bottom: 6px; min-height: 14px; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 88px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Moonlit brass</h1>
+  <p class="lede">Moonlit with brass ranks, and brass tried on one more accent per column. Scroll sideways on a narrow screen.</p>
+  <div id="cmp"></div>
+</div>
+<script>
+const COLS = [
+  ['q3', '', 'Brass ranks', 'The pick: Moonlit with rank plates in old, dim gold.'],
+  ['r1', 'Checks', '1 · Brass done checks', 'Waiting checks stay silver; a landed check settles to dim brass, like something earned.'],
+  ['r2', 'Checks', '2 · Brass checks', 'Every check is brass, waiting or done. Bad habits stay red.'],
+  ['r3', 'Panels', '3 · Brass crest & seam', 'The section crest and the line along each panel\'s top go brass.'],
+  ['r4', 'Progress', '4 · Brass level', 'The hero\'s level (stage and top-bar badge) and the quest dots go brass.'],
+  ['r5', 'Buttons', '5 · Brass buttons', 'The "+ New" and popup buttons in dim brass.'],
+  ['r6', 'Mix', '1 + 3 + 4', 'Brass for everything earned: done checks, crest and seam, level, quest dots. Buttons and waiting checks stay silver.'],
+  ['r7', 'Mix', '3 + 4', 'Crest and seam, level and quest dots in brass. All checks stay silver.'],
+];
+const SCREENS = [['list', 'Skills · quests · log'], ['top', 'Fight'], ['hero', 'Hero popup'], ['skill', 'Skill popup']];
+const col = (c, i, inner) => `<div class="col${i === 1 || i === 6 ? ' gap' : ''}">${inner}</div>`;
+let html = `<div class="scroll"><div class="row">${COLS.map(([, t, n, d], i) => col(null, i, `<div class="tier">${t}</div><div class="key"><b>${n}</b>${d}</div>`)).join('')}</div>`;
+for (const [s, label] of SCREENS) {
+  html += `<h2>${label}</h2><div class="row">${COLS.map(([v], i) => col(null, i, `<img src="moonlit-brass/${s}-${v}.png" alt="" loading="lazy">`)).join('')}</div>`;
+}
+document.getElementById('cmp').innerHTML = html + '</div>';
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+/* A third of the way to 1: full strength, a slightly lighter 1.25px line. */
+:root[data-theme='ashen'] .habit-item .name.done { opacity: 1 !important; color: #747882 !important; text-decoration-color: rgba(170,180,196,.5) !important; text-decoration-thickness: 1.25px !important; }

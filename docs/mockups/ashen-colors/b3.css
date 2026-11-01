@@ -1,0 +1,15 @@
+/* 6 · Oxblood & bone */
+:root[data-theme='ashen'] { --bg: #0b0707 !important; --code-bg: #0b0707 !important; }
+:root[data-theme='ashen'] body { background: #0b0707 !important; }
+:root[data-theme='ashen'] body::before { background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(170,50,40,.12), transparent 70%) !important; }
+:root[data-theme='ashen'] .boss-bar { background: linear-gradient(180deg, rgba(30,19,18,.97), rgba(11,7,7,.97)) !important; }
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(220,120,100,.35) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(200,80,60,.07), transparent), #1e1413 !important; }
+:root[data-theme='ashen'] .menu-panel { background: #1e1413 !important; }
+:root[data-theme='ashen'] { --accent: #ece2cc !important; --accent-solid: #c2b597 !important; --accent-border: rgba(220,205,175,.4) !important; --portrait-border: rgba(220,205,175,.4) !important; --side-quest-color: #c2b597 !important; }
+:root[data-theme='ashen'] :is(.nav-button, .menu-button, .add-button, .replace-button, .back, .cancel-button) { background: rgba(220,205,175,.12) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #4d443a !important; border-color: #6a5e4f !important; }
+:root[data-theme='ashen'] .rank-numeral { border-color: rgba(220,205,175,.4) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] :is(.primary-button, .submit, .restart-button, .ok-button.boon, .ok-button.redeemed) { background: linear-gradient(180deg, rgba(226,212,184,.3), rgba(150,136,112,.22)) !important; border-color: rgba(226,212,184,.42) !important; }
+:root[data-theme='ashen'] { --stage-fog: #1e1413 !important; --border: #3a2624 !important; }

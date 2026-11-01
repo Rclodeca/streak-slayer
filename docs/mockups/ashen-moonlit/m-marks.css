@@ -1,0 +1,5 @@
+/* Ember marks: the streak flame, the rank numeral and a done check burn ember. */
+:root[data-theme='ashen'] { --icon-streak: #e0783a !important; }
+:root[data-theme='ashen'] .habit-item .streak .stat-icon { color: #e0783a !important; }
+:root[data-theme='ashen'] .rank-numeral { color: #f2a467 !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #5a321d !important; border-color: #7a4426 !important; }

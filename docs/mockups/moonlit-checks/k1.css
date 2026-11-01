@@ -1,0 +1,2 @@
+/* Moonlight: a solid pale silver diamond. */
+:root[data-theme='ashen'] :is(.habit-item:not(.bad), .quest-item) .check:checked { background: #cdd5e2 !important; border-color: #e6ebf3 !important; box-shadow: none !important; }

@@ -1,0 +1,4 @@
+/* Brass level: the hero's level, on the stage and in the top bar. */
+:root[data-theme='ashen'] :is(.fight-stage .level-number, .fight-stage .name-tail::after, .fight-stage .name-line::after) { color: #c9b07c !important; }
+:root[data-theme='ashen'] .boss-bar .level { color: #d2bb85 !important; border-color: #b39a66 !important; }
+:root[data-theme='ashen'] .pip.lit { background: #b39a66 !important; border-color: #b39a66 !important; }

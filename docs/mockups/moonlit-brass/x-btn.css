@@ -1,0 +1,3 @@
+/* Brass buttons: the "+ New" and popup buttons in dim brass. */
+:root[data-theme='ashen'] :is(.nav-button, .menu-button, .add-button, .replace-button, .back, .cancel-button) { background: rgba(190,160,100,.13) !important; color: #d2bb85 !important; }
+:root[data-theme='ashen'] :is(.primary-button, .submit, .restart-button, .ok-button.boon, .ok-button.redeemed) { background: linear-gradient(180deg, rgba(200,172,112,.3), rgba(120,98,58,.26)) !important; border-color: rgba(200,172,112,.42) !important; }

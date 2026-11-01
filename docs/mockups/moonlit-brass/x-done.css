@@ -1,0 +1,2 @@
+/* Brass done checks: a check you've landed settles to dim brass. */
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #5c4d31 !important; border-color: #7d6a45 !important; }

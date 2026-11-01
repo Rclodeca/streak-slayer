@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Rank pop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Alegreya:wght@500;600&family=Alegreya+Sans:wght@500&display=swap" />
+<style>
+/* Ashen only. Rows are a stand-in for the skill list (name, streak, rank
+   plate, damage); each column restyles just the rank plate. */
+:root { --text: #b0a796; --text-h: #ece3cd; --accent: #e6cf9a; --accent-solid: #c8a96e; --heading: 'Cinzel', Georgia, serif; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 1500px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 24px; }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+.col { width: 340px; max-width: 100%; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 66px; margin-bottom: 8px; }
+.list { background: #14110f; border: 1px solid rgba(150,141,126,.18); border-radius: 10px; padding: 6px 0; }
+.item { display: flex; align-items: center; gap: .6rem; padding: 12px 12px; min-height: 52px; }
+.item + .item { border-top: 1px solid rgba(150,141,126,.1); }
+.name { flex: 1; font: 600 17px 'Alegreya', serif; color: var(--text-h); }
+.meta { display: flex; align-items: center; gap: .6rem; }
+.streak { min-width: 2.6rem; text-align: right; font: 600 .82rem 'Alegreya Sans', sans-serif; color: var(--accent-solid); }
+.dmg { min-width: 2.4rem; text-align: right; font: 500 .85rem 'Alegreya Sans', sans-serif; color: var(--text); }
+.slot { width: 30px; }
+
+/* the plate: as it is now */
+.plate { display: block; box-sizing: border-box; width: 30px; padding: 3px 0 2px .08em; text-align: center; font-family: var(--heading); font-size: .62rem; font-weight: 600; letter-spacing: .08em; line-height: 1; color: var(--accent); background: rgba(0,0,0,.4); border: 1px solid rgba(200,169,110,.5); border-radius: 3px; }
+
+/* A: edge to full gold, same 1px */
+.a .plate { border-color: var(--accent-solid); }
+
+/* B: heavier, brighter numeral, same edge */
+.b .plate { font-weight: 700; color: #f6e8bf; font-size: .66rem; }
+
+/* C: faint gold tint inside the plate */
+.c .plate { background: rgba(200,169,110,.14); border-color: rgba(200,169,110,.7); font-weight: 700; }
+
+/* D: 1.5px edge, slightly roomier, heavier numeral */
+.d .plate { border: 1.5px solid var(--accent-solid); font-weight: 700; padding: 3px 0 2px .08em; }
+
+/* E: full-gold edge, a top highlight and a soft glow */
+.e .plate { border-color: var(--accent-solid); font-weight: 700; box-shadow: inset 0 1px 0 rgba(246,232,191,.35), 0 0 6px rgba(200,169,110,.25); }
+
+/* F: A + B + C together, still 1px */
+.f .plate { border-color: var(--accent-solid); background: rgba(200,169,110,.12); font-weight: 700; color: #f6e8bf; font-size: .66rem; box-shadow: 0 0 5px rgba(200,169,110,.2); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Rank pop</h1>
+  <p class="lede">Ashen skill rows, rank plate only. Ranks I, II, IV and VIII, and one unranked skill.</p>
+  <div class="row" id="cols"></div>
+</div>
+<script>
+const COLS = [
+  ['n', 'Now', 'Dark plate, 1px half-gold edge.'],
+  ['a', 'A · Full-gold edge', 'Same plate, the edge at full gold.'],
+  ['b', 'B · Brighter numeral', 'Heavier, brighter numeral a hair bigger.'],
+  ['c', 'C · Gold tint', 'A faint gold wash inside the plate.'],
+  ['d', 'D · 1.5px edge', 'Slightly thicker edge, heavier numeral.'],
+  ['e', 'E · Soft glow', 'Gold edge, top highlight, faint glow.'],
+  ['f', 'F · A + B + C', 'Full-gold edge, tint, brighter numeral, faint glow.'],
+];
+const ROWS = [['Morning run', 12, 'I', '+34'], ['Read ten pages', 7, 'II', '+61'], ['Cold shower', 21, 'IV', '+118'], ['Deep work block', 40, 'VIII', '+302'], ['Stretch', 3, '', '']];
+document.getElementById('cols').innerHTML = COLS.map(([k, t, d]) => `
+  <div class="col ${k}"><div class="key"><b>${t}</b>${d}</div>
+  <div class="list">${ROWS.map(([n, s, r, dm]) => `<div class="item"><span class="name">${n}</span><span class="meta"><span class="streak">${s}</span>${r ? `<span class="plate">${r}</span>` : '<span class="slot"></span>'}<span class="dmg">${dm}</span></span></div>`).join('')}</div></div>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+/* 3 · Gold where it counts */
+:root[data-theme='ashen'] :is(.nav-button, .menu-button, .add-button, .replace-button, .back, .cancel-button) { background: rgba(150,141,126,.13) !important; color: var(--text-h) !important; }
+:root[data-theme='ashen'] .rank-numeral { color: #d8cdb5 !important; border-color: rgba(150,141,126,.38) !important; background: rgba(0,0,0,.3) !important; }
+:root[data-theme='ashen'] .layout section.panel::after { border-color: #6b6458 !important; }
+:root[data-theme='ashen'] body::before { background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(150,141,126,.08), transparent 70%) !important; }
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(220,210,190,.2) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(220,210,190,.04), transparent), #1b1a18 !important; }
+:root[data-theme='ashen'] .menu-panel { background: #1b1a18 !important; }

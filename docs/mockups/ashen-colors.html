@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Ashen colours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), level-14 sample save. Each column
+   is a CSS layer from ashen-colors/ over Ashen as it is now (9c2c391). */
+:root { --text: #b0a796; --text-h: #ece3cd; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 2300px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 20px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 30px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.scroll { overflow-x: auto; padding-bottom: 6px; }
+.row { display: flex; gap: 14px; width: max-content; margin: 0 auto; }
+.col { width: 300px; flex: none; }
+.col.gap { margin-left: 26px; }
+.tier { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8d8475; margin-bottom: 6px; min-height: 14px; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 88px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Ashen colours</h1>
+  <p class="lede">Other ways to colour the panels and the gold. Three subtle, three bigger. Scroll sideways on a narrow screen.</p>
+  <div id="cmp"></div>
+</div>
+<script>
+const COLS = [
+  ['now', '', 'Now', 'Warm brown panels; gold on checks, buttons, plates, crest, seam and glow.'],
+  ['s1', 'Subtle', '1 · Cool stone', 'Panels go neutral charcoal. Gold unchanged, so it is the only warm thing and stands off the stone.'],
+  ['s2', 'Subtle', '2 · Burnished', 'Same colours, but the gold is worked metal: lit top edge, dark foot, bevelled plates, a gilt crest.'],
+  ['s3', 'Subtle', '3 · Gold where it counts', 'Gold only on checks and the main buttons. Plates, "+ New" buttons, crest and seam go bone and ash.'],
+  ['b1', 'Bigger', '4 · Ember & iron', 'Cold iron panels; everything you touch burns ember orange. Close to the relic colour.'],
+  ['b2', 'Bigger', '5 · Moonlit', 'Blue-black stone with pale silver for touch. Gold stays only on what you earn (EXP, rewards).'],
+  ['b3', 'Bigger', '6 · Oxblood & bone', 'Wine-dark panels, bone white for touch, a faint red seam. Gold only for what you earn.'],
+];
+const SCREENS = [['list', 'Skills · quests · log'], ['top', 'Fight'], ['hero', 'Hero popup'], ['skill', 'Skill popup']];
+const col = (c, i, inner) => `<div class="col${i === 4 || i === 1 ? ' gap' : ''}">${inner}</div>`;
+let html = `<div class="scroll"><div class="row">${COLS.map(([, t, n, d], i) => col(null, i, `<div class="tier">${t}</div><div class="key"><b>${n}</b>${d}</div>`)).join('')}</div>`;
+for (const [s, label] of SCREENS) {
+  html += `<h2>${label}</h2><div class="row">${COLS.map(([v], i) => col(null, i, `<img src="ashen-colors/${s}-${v}.png" alt="" loading="lazy">`)).join('')}</div>`;
+}
+document.getElementById('cmp').innerHTML = html + '</div>';
+</script>
+</body>
+</html>

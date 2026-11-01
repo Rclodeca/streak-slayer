@@ -1,0 +1,4 @@
+/* Brass checks: every check is brass, waiting or done; bad habits stay red. */
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:not(:checked) { border-color: #c9b07c !important; }
+:root[data-theme='ashen'] .habit-item.bad .check:not(:checked) { border-color: var(--damage-color) !important; }
+:root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked { background: #5c4d31 !important; border-color: #7d6a45 !important; }
