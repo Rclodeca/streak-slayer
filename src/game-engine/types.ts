@@ -107,6 +107,9 @@ export interface Character {
   // The day key each once-a-day item effect last fired on (Dawnguard's halved
   // hit, Starfall's crit, Ember Heart's heal) — see itemEffects.ts.
   effectDayKeys?: { dawnguard?: string; starfall?: string; emberHeart?: string };
+  // The day key the menu's Undo was last used on — once a day, so undoing
+  // and re-checking can't be used to reroll crits (see useUndoCheck).
+  undoDayKey?: string;
   // Magic skills used today while Spellweave is equipped (see spellweaveStacks).
   spellweave?: { dayKey: string; count: number };
   // Crits landed today while Void Arbalest is equipped (see critStreakStacks).

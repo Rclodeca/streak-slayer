@@ -77,6 +77,7 @@ import { useBossSkillCard } from './useBossSkillCard';
 import { playHit } from './useHitFeed';
 import { useItemDropQueue } from './useItemDropQueue';
 import { useReviveNotice } from './useReviveNotice';
+import { useUndoCheck } from './useUndoCheck';
 
 /** What a reward resolved to: any boss-kill drops, and the name of the boss that dropped them. */
 /** A pick on the new-hero screen: one of the heroes, or Fate for a random one. */
@@ -106,6 +107,7 @@ export function useCombatActions() {
   const { enqueueDrops, clear: clearItemDrops } = useItemDropQueue();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
   const { showBossSkill, clear: clearBossSkills } = useBossSkillCard();
+  const undoCheck = useUndoCheck();
 
   /**
    * Writes a `level-up` log entry and queues the hero panel's level-up beat
@@ -299,10 +301,12 @@ export function useCombatActions() {
    * Phoenix Feather: if present, it's consumed and the character revives
    * immediately (no death screen); otherwise the death screen is flagged
    * and the actual reset waits for `restart()`.
+   *
+   * Returns whether the hero fell (died, or the Feather revived them).
    */
-  function applyPenalty(habitId: string, stampPeriodKey?: string): void {
+  function applyPenalty(habitId: string, stampPeriodKey?: string): boolean {
     const habit = habitStore.habits.find((h) => h.id === habitId);
-    if (!habit) return;
+    if (!habit) return false;
 
     const healthBefore = characterStore.character.currentHealth;
     const bossBefore = bossStore.boss;
@@ -349,7 +353,9 @@ export function useCombatActions() {
       } else {
         triggerDeath();
       }
+      return true;
     }
+    return false;
   }
 
   /**
@@ -364,6 +370,10 @@ export function useCombatActions() {
    * UI-layer `:disabled` binding. Mirrors the `isCompletedThisPeriod`
    * predicate used in `HabitListItem.vue`. A set-day habit can't be
    * checked off on a rest day either (`isDueOn`).
+   *
+   * A plain blow is offered to the menu's Undo (see useUndoCheck); a
+   * level-up, a boss kill, or a fall sets off too much to wind back, so it
+   * takes away any earlier offer instead.
    */
   function checkOffHabit(habitId: string): RewardResult {
     const habit = habitStore.habits.find((h) => h.id === habitId);
@@ -373,11 +383,16 @@ export function useCombatActions() {
     const currentPeriodKey = periodKeyFor(habit.period, debugClockStore.now());
     if (habit.lastCompletedPeriodKey === currentPeriodKey) return { itemsDropped: [] };
 
-    if (habit.isBad) {
-      applyPenalty(habitId, currentPeriodKey);
-      return { itemsDropped: [] };
-    }
-    return applyReward(habitId, currentPeriodKey);
+    const before = undoCheck.snapshot();
+    let result: RewardResult = { itemsDropped: [] };
+    let fell = false;
+    if (habit.isBad) fell = applyPenalty(habitId, currentPeriodKey);
+    else result = applyReward(habitId, currentPeriodKey);
+
+    const plain = !fell && characterStore.character.level === before.character.level && bossStore.boss.index === before.boss.index;
+    if (plain) undoCheck.offer(before);
+    else undoCheck.forget();
+    return result;
   }
 
   /**

@@ -79,5 +79,10 @@ export const useActivityLogStore = defineStore('activityLog', {
       const withId = { ...entry, id: crypto.randomUUID() } as ActivityLogEntry;
       this.entries = [withId, ...this.entries].slice(0, MAX_ENTRIES);
     },
+
+    /** Replaces the whole log, e.g. when an undo puts back the log from before a check. */
+    setEntries(entries: ActivityLogEntry[]) {
+      this.entries = entries;
+    },
   },
 });

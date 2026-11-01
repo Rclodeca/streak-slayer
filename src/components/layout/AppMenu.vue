@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Check, Download, Menu, Trophy, Upload } from 'lucide-vue-next';
+import { Check, Download, Menu, Trophy, Undo2, Upload } from 'lucide-vue-next';
 import { exportSaveFile } from '../../composables/useSaveFileTransfer';
+import { useUndoCheck } from '../../composables/useUndoCheck';
 import { applySaveFile, readSaveFile } from '../../store/saveFile';
 import type { SaveFile, SaveFileSummary } from '../../store/saveFile';
 import { THEMES, useThemeStore } from '../../store/themeStore';
 import type { Theme } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
-// Top-right menu: High Scores, save export/import, and the theme picker.
+// Top-right menu: Undo, High Scores, save export/import, and the theme picker.
 // Picking a theme keeps the menu open so themes can be flipped back and
 // forth; anything else, a tap outside, or Escape closes it.
 const emit = defineEmits<{ 'high-scores': [] }>();
@@ -16,6 +17,14 @@ const emit = defineEmits<{ 'high-scores': [] }>();
 const themeStore = useThemeStore();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
+
+// Greyed out when there's nothing to undo (see useUndoCheck for when that is).
+const { canUndo, undo } = useUndoCheck();
+
+function undoCheck() {
+  open.value = false;
+  undo();
+}
 
 function openHighScores() {
   open.value = false;
@@ -107,6 +116,7 @@ onBeforeUnmount(() => {
       <Menu :size="18" />
     </button>
     <div v-if="open" class="menu-panel" role="menu">
+      <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
       <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
       <div class="menu-divider" role="separator" />
       <span class="menu-label">Save</span>
@@ -182,8 +192,13 @@ onBeforeUnmount(() => {
   text-align: left;
 }
 
-.menu-item:hover {
+.menu-item:hover:not(:disabled) {
   background: var(--accent-bg);
+}
+
+.menu-item:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .menu-divider {
