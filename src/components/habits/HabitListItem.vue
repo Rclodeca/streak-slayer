@@ -110,7 +110,7 @@ function onZoneClick(event: MouseEvent) {
 </script>
 
 <template>
-  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, flare: flareRank > 0 }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
+  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, spent: isCompletedThisPeriod, flare: flareRank > 0 }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
     <label class="check-zone" @click="onZoneClick">
       <input
         type="checkbox"
@@ -133,6 +133,7 @@ function onZoneClick(event: MouseEvent) {
       <RankDiamonds :rank="habit.rank ?? 0" />
     </span>
     <span class="damage">{{ formatCompact(effectiveDamage) }}</span>
+    <span class="veil" aria-hidden="true" />
     <span v-if="flareRank > 0" class="rank-ghost" aria-hidden="true">Rank {{ rankNumeral(flareRank) }}</span>
   </li>
 </template>
@@ -344,6 +345,11 @@ function onZoneClick(event: MouseEvent) {
   color: var(--c);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* A spent skill's shadow, for themes that draw one (Ashen); none here. */
+.veil {
+  display: none;
 }
 
 /* The rank-up flare: one sweep across the row, and the new rank rising off

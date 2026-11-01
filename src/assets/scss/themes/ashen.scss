@@ -770,6 +770,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     }
   }
 
+  // A spent row takes no hover, its own or the base one, so the skill just
+  // used (a phone keeps :hover on what was last tapped) dims like the rest.
+  .habit-item.spent:hover {
+    background: none;
+    box-shadow: none;
+  }
+
   .habit-item.bad::before {
     width: 2px;
     background: var(--damage-color);
@@ -817,12 +824,80 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include name-serif;
   }
 
-  // Full strength, so the strike reads clearly over the faded name.
+  // A spent skill is an ability waiting for dawn, not a task crossed off
+  // (docs/mockups/skill-attack.html, option E). Landing it sweeps a flash of
+  // its colour across the row; a shadow follows and stays. Under it the name
+  // dims, the number keeps a trace of its colour, and neighbouring spent rows
+  // join into one block. A done Overdrive skill dims too; its halo still
+  // shows under the shadow while it has charges.
   .habit-item .name.done {
     opacity: 1;
-    color: #787c87;
-    text-decoration-color: rgba(180, 190, 205, 0.62);
-    text-decoration-thickness: 1.25px;
+    text-decoration: none;
+  }
+
+  .habit-item.spent .name {
+    color: #6a6f7a;
+  }
+
+  .habit-item.spent .damage {
+    color: color-mix(in srgb, var(--c) 50%, #6a6f7a);
+  }
+
+  .habit-item.spent :is(.streak, .rank-numeral) {
+    opacity: 0.45;
+  }
+
+  .habit-item .veil {
+    display: block;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    // Rounded ends, as in the mock; the row itself is squared like all of Ashen.
+    border-radius: 10px;
+    pointer-events: none;
+  }
+
+  .habit-item.spent:has(+ .habit-item.spent) .veil {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .habit-item.spent + .habit-item.spent .veil {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .habit-item .veil::before,
+  .habit-item .veil::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  // The shadow. transform only, so it stays cheap.
+  .habit-item .veil::before {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.18));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.7s cubic-bezier(0.6, 0, 0.4, 1) 0.25s;
+  }
+
+  .habit-item.spent .veil::before {
+    transform: scaleX(1);
+  }
+
+  // The flash, once, as the check lights. A bad habit's is red, like its check.
+  .habit-item .veil::after {
+    background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--c) 38%, transparent) 50%, transparent 80%);
+    transform: translateX(-100%);
+  }
+
+  .habit-item.bad .veil::after {
+    --c: var(--damage-color);
+  }
+
+  .habit-item:has(.check.lit) .veil::after {
+    animation: ashen-spent-flash 0.52s ease-out;
   }
 
   .sigil.special {
@@ -2217,6 +2292,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 }
 
+@keyframes ashen-spent-flash {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes ashen-embers {
   to {
     transform: translateY(-50%);
@@ -2262,6 +2343,14 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   :root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked.lit {
+    animation: none;
+  }
+
+  :root[data-theme='ashen'] .habit-item .veil::before {
+    transition: none;
+  }
+
+  :root[data-theme='ashen'] .habit-item:has(.check.lit) .veil::after {
     animation: none;
   }
 }

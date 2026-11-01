@@ -91,6 +91,31 @@ describe('HabitListItem', () => {
     expect(check.attributes('disabled')).toBeDefined();
   });
 
+  describe('spent', () => {
+    it('marks the row spent once the skill lands', async () => {
+      const wrapper = mountSkill();
+      const row = wrapper.find('.habit-item');
+      expect(row.classes()).not.toContain('spent');
+
+      await wrapper.find('input.check').trigger('click');
+
+      expect(row.classes()).toContain('spent');
+    });
+
+    it('a done Overdrive skill is spent at once, with charges left or not', async () => {
+      const wrapper = mountSkill({ isOverdrive: true });
+      const check = wrapper.find('input.check');
+      const row = wrapper.find('.habit-item');
+
+      await check.trigger('click');
+      expect(check.classes()).toContain('overdrive-ready');
+      expect(row.classes()).toContain('spent');
+
+      for (let i = 0; i < TUNING.OVERDRIVE_MAX_EXTRA_USES; i++) await check.trigger('click');
+      expect(row.classes()).toContain('spent');
+    });
+  });
+
   describe('check light', () => {
     afterEach(() => {
       vi.useRealTimers();

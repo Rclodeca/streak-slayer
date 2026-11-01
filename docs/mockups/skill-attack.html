@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Skills as attacks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500;600&family=Alegreya+Sans:wght@500;600;700&display=swap" />
+<style>
+/* Interactive mock, Ashen (Moonlit, 280a11f). Each phone is the pinned boss
+   bar over the skills panel. Tap a diamond to check a skill; F also takes a
+   drag across the row, G takes a tap anywhere on a card. */
+:root {
+  --bg: #07080c; --text: #a9adb6; --text-h: #e8ebf0;
+  --moon: #dbe2ee; --moon-solid: #a9b4c8; --moon-glow: 200, 214, 240;
+  --brass: #d2bb85; --frame: #141720; --line: rgba(150,141,126,.2); --line-mid: rgba(150,141,126,.32);
+  --phys: #d0604f; --magic: #ab8dd8; --heal: #92bf88; --true: #f1e9d6;
+  --hp: #a82a20; --health: #c33a2e; --dmg-red: #c8402f;
+  --serif: 'Alegreya', Georgia, serif; --sans: 'Alegreya Sans', system-ui, sans-serif; --heading: 'Cinzel', Georgia, serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #040508; color: var(--text-h); font: 500 16px/1.4 var(--sans); font-size-adjust: .52; }
+.page { max-width: 1720px; margin: 0 auto; padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px var(--heading); font-size-adjust: none; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 auto 10px; max-width: 640px; }
+.top-ctl { display: flex; justify-content: center; gap: 8px; margin-bottom: 22px; }
+button.soft { font: 600 14px var(--sans); color: var(--moon); background: rgba(170,185,215,.14); border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; min-height: 36px; }
+button.soft:hover { box-shadow: 0 0 12px -2px rgba(var(--moon-glow), .5); }
+.grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 34px 22px; }
+.opt { width: 390px; max-width: 100%; }
+.opt .tier { font: 600 10px var(--heading); font-size-adjust: none; letter-spacing: .2em; color: #8d8475; min-height: 14px; }
+.opt .tier.creative { color: var(--brass); }
+.opt h2 { margin: 4px 0 4px; font: 600 12px var(--heading); font-size-adjust: none; letter-spacing: .16em; color: var(--text-h); }
+.opt p { margin: 0 0 10px; color: var(--text); font-size: 15px; min-height: 64px; }
+.opt .ctl { display: flex; gap: 6px; margin-bottom: 10px; }
+.opt .ctl button { font-size: 13px; padding: 5px 12px; min-height: 30px; }
+
+/* ---------- Phone ---------- */
+.phone { position: relative; width: 100%; overflow: hidden; background: var(--bg); border: 1px solid rgba(150,141,126,.18); border-radius: 18px; padding-bottom: 18px; user-select: none; -webkit-user-select: none; }
+.fx { position: absolute; inset: 0; pointer-events: none; z-index: 20; overflow: hidden; }
+
+/* Pinned boss bar */
+.bar { position: relative; z-index: 5; display: flex; align-items: center; gap: 12px; padding: 14px 18px 11px; background: linear-gradient(180deg, rgba(19,22,30,.97), rgba(7,8,12,.97)); border-bottom: 1px solid var(--line-mid); box-shadow: 0 14px 24px -14px #000; }
+.ring { position: relative; width: 44px; height: 44px; flex: none; }
+.ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ring .track { fill: none; stroke: rgba(0,0,0,.7); stroke-width: 3; }
+.ring .arc { fill: none; stroke: var(--health); stroke-width: 3; filter: drop-shadow(0 0 3px rgba(195,58,46,.6)); transition: stroke-dashoffset .5s ease-out, stroke .2s; }
+.ring-face { position: absolute; inset: 4px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 60%, rgba(215,205,185,.16), #0b0c11 70%); }
+.ring-face img { position: absolute; width: 74px; left: -18px; top: -6px; image-rendering: pixelated; transform: scaleX(-1); }
+.ring .level { position: absolute; right: -6px; bottom: -6px; width: 20px; height: 20px; display: grid; place-items: center; }
+.ring .level::before { content: ''; position: absolute; inset: 3px; transform: rotate(45deg); background: #15130f; border: 1px solid #b39a66; }
+.ring .level span { position: relative; font: 600 9px var(--heading); font-size-adjust: none; color: var(--brass); }
+.who { flex: 1; min-width: 0; }
+.who .label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.who .numbers { font: 600 13px var(--sans); color: var(--text-h); font-variant-numeric: tabular-nums; }
+.who .bname { font: 600 12px var(--heading); font-size-adjust: none; letter-spacing: .2em; color: var(--text-h); }
+.hpbar { position: relative; display: block; height: 7px; background: rgba(0,0,0,.65); border-radius: 2px; overflow: hidden; }
+.hpbar .trail, .hpbar .fill { position: absolute; top: 0; bottom: 0; right: 0; border-radius: 2px; }
+.hpbar .trail { background: rgba(240,222,190,.75); transition: width .6s ease-in .35s; }
+.hpbar .fill { background: linear-gradient(180deg, #d0453a, var(--hp)); box-shadow: 0 0 8px rgba(195,58,46,.5); transition: width .18s ease-out; }
+.portrait { position: relative; width: 46px; height: 46px; flex: none; border: 1px solid var(--line); border-radius: 4px; background: radial-gradient(ellipse 60% 60% at 50% 62%, rgba(215,205,185,.14), transparent 72%), radial-gradient(ellipse 90% 34% at 50% 100%, rgba(224,120,58,.18), transparent 70%); overflow: hidden; }
+.portrait img { position: absolute; width: 60px; left: -7px; top: -4px; image-rendering: pixelated; filter: drop-shadow(0 0 8px rgba(0,0,0,.9)); }
+.shake { animation: shake .32s ease-out; }
+@keyframes shake { 20% { transform: translateX(-3px); } 45% { transform: translateX(3px); } 70% { transform: translateX(-2px); } }
+.flash-white img { animation: flashw .3s ease-out; }
+@keyframes flashw { from { filter: brightness(3) drop-shadow(0 0 8px #fff); } }
+.popup { position: absolute; font: 700 15px var(--sans); font-variant-numeric: tabular-nums; text-shadow: 0 0 6px #000, 0 1px 0 #000; white-space: nowrap; transform: translate(-50%, -50%); }
+
+/* Skills panel */
+.panel { position: relative; margin: 16px 14px 0; padding: 14px 8px 10px; border-radius: 6px;
+  background: linear-gradient(90deg, transparent 8%, rgba(var(--moon-glow), .4) 50%, transparent 92%) top / 100% 1px no-repeat, radial-gradient(ellipse 55% 46px at 50% 0, rgba(var(--moon-glow), .06), transparent), var(--frame); }
+.panel::before { content: ''; position: absolute; top: -4px; left: 50%; width: 7px; height: 7px; transform: translateX(-50%) rotate(45deg); background: var(--bg); border: 1px solid var(--moon-solid); }
+.group { margin: 4px 0 4px 10px; font: 600 11px var(--heading); font-size-adjust: none; letter-spacing: .26em; color: var(--text); text-transform: uppercase; }
+.group + ul { margin-bottom: 10px; }
+ul { list-style: none; margin: 0; padding: 0; }
+.row { position: relative; display: flex; align-items: center; gap: .6rem; min-height: 44px; padding: .62rem .6rem .62rem .7rem; border-radius: 10px; cursor: pointer; touch-action: pan-y; }
+.row.bad::before { content: ''; position: absolute; left: 0; top: .45rem; bottom: .45rem; width: 2px; border-radius: 3px; background: var(--dmg-red); box-shadow: 0 0 8px var(--dmg-red); }
+.chk { flex: none; position: relative; width: 13px; height: 13px; margin: 0 4px; transform: rotate(45deg); background: rgba(0,0,0,.45); border: 1px solid var(--moon); transition: background .3s, box-shadow .3s; --glow: rgba(var(--moon-glow), .7); }
+.chk::after { content: ''; position: absolute; inset: -16px; transform: rotate(-45deg); } /* tap zone */
+.bad .chk { border-color: var(--dmg-red); --glow: rgba(200,64,47,.7); }
+.row.done .chk { background: #3c4352; border-color: #566074; }
+.row.bad.done .chk { background: #4f241d; border-color: #74352b; }
+.chk.lit { animation: settle .9s ease-out; transition: none; }
+@keyframes settle { from { filter: brightness(2.3); box-shadow: 0 0 14px 2px var(--glow); } }
+.name { position: relative; flex: 1; min-width: 0; font: 600 17px var(--serif); color: var(--text-h); }
+.row.done .name { color: #787c87; text-decoration: line-through; text-decoration-color: rgba(180,190,205,.62); text-decoration-thickness: 1.25px; }
+.meta { display: flex; align-items: center; gap: .5rem; flex: none; font-size: 12px; font-variant-numeric: tabular-nums; }
+.streak { display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; min-width: 2.6rem; font-weight: 700; color: var(--text-h); }
+.streak svg { width: 12px; height: 12px; color: #8d8475; }
+.plate { display: block; width: 30px; padding: 3px 0 2px .08em; text-align: center; font: 600 .62rem/1 var(--heading); font-size-adjust: none; letter-spacing: .08em; color: var(--brass); background: rgba(0,0,0,.4); border: 1px solid rgba(190,160,100,.45); border-radius: 3px; }
+.dmg { position: relative; flex: none; width: 2.9rem; display: flex; align-items: center; justify-content: flex-end; gap: 3px; color: var(--c); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.dmg .num { display: inline-block; }
+.glyph { display: none; width: 11px; height: 11px; flex: none; filter: drop-shadow(0 0 3px currentColor); }
+.glyph svg { display: block; width: 100%; height: 100%; }
+.moon { display: none; }
+
+/* ---------- A · Type marks ---------- */
+.v-a .glyph, .v-g .glyph { display: block; }
+.v-a .dmg { width: 3.7rem; }
+.v-a .glyph.flare { animation: gflare .6s ease-out; }
+@keyframes gflare { 0% { transform: scale(1); } 25% { transform: scale(1.9); filter: drop-shadow(0 0 6px currentColor) brightness(1.8); } }
+.num.pulse { animation: npulse .5s ease-out; }
+@keyframes npulse { 25% { transform: scale(1.18); filter: brightness(1.6); text-shadow: 0 0 10px currentColor; } }
+
+/* ---------- B · The cut / F tap ---------- */
+.cut { position: absolute; left: -4px; right: -6px; top: 54%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--c) 30%, #fff 96%, transparent); box-shadow: 0 0 8px var(--c), 0 0 2px #fff; transform-origin: left center; pointer-events: none; opacity: 0; }
+
+/* ---------- C · Number strikes ---------- */
+.v-c .row.done .num { color: #5d626d; transition: color .4s .25s; }
+.fly-num { position: absolute; font: 700 16px var(--sans); font-variant-numeric: tabular-nums; transform: translate(-50%, -50%); text-shadow: 0 0 10px currentColor, 0 0 2px #000; }
+
+/* ---------- D / G · Type hits ---------- */
+.orb { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 4px var(--magic), 0 0 22px 8px rgba(171,141,216,.5); }
+.streak-line { position: absolute; height: 2px; margin-top: -1px; border-radius: 2px; transform-origin: left center; background: linear-gradient(90deg, transparent, var(--phys) 40%, #fff); box-shadow: 0 0 8px var(--phys); }
+.slash { position: absolute; width: 54px; height: 2px; margin: -1px 0 0 -27px; border-radius: 2px; background: linear-gradient(90deg, transparent, #fff 50%, transparent); box-shadow: 0 0 8px var(--phys), 0 0 14px var(--phys); }
+.spark { position: absolute; width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; background: #ffd2a6; box-shadow: 0 0 4px #ff9a5a; }
+.rune { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 1.5px solid var(--magic); box-shadow: 0 0 10px var(--magic), inset 0 0 6px var(--magic); }
+.beam { position: absolute; top: 0; width: 6px; margin-left: -3px; background: linear-gradient(180deg, transparent, rgba(241,233,214,.9) 30%, #fff); box-shadow: 0 0 14px 4px rgba(241,233,214,.55); transform-origin: top center; }
+.mote { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #dff5d6; box-shadow: 0 0 6px 2px var(--heal); }
+.ring.healed .arc { stroke: var(--heal); filter: drop-shadow(0 0 5px var(--heal)); }
+.ring.hurt { animation: shake .32s ease-out; }
+
+/* ---------- E · Spent until dawn ---------- */
+.v-e .row.done .name { text-decoration: none; color: #6a6f7a; }
+.v-e .row.done .streak, .v-e .row.done .plate { opacity: .45; }
+.v-e .row.done .dmg { color: color-mix(in srgb, var(--c) 50%, #6a6f7a); }
+.v-e .row::after { content: ''; position: absolute; inset: 0; border-radius: 10px; pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,.34), rgba(0,0,0,.18)); transform: scaleX(0); transform-origin: left; }
+.v-e .row.done::after { transform: scaleX(1); }
+/* Neighbouring spent rows join into one block: flat where they touch. */
+.v-e .row.done:has(+ .row.done)::after { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.v-e .row.done + .row.done::after { border-top-left-radius: 0; border-top-right-radius: 0; }
+.v-e .row.cooling::after { transition: transform .7s cubic-bezier(.6,0,.4,1) .25s; }
+.wipe { position: absolute; inset: 0; border-radius: 10px; pointer-events: none; background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--c) 38%, transparent) 50%, transparent 80%); }
+
+/* ---------- F · Swipe to strike ---------- */
+.v-f .row { cursor: grab; }
+.trail { position: absolute; height: 2px; margin-top: -1px; border-radius: 2px; pointer-events: none; background: linear-gradient(90deg, transparent, var(--c) 35%, #fff); box-shadow: 0 0 10px var(--c); z-index: 3; }
+.half { position: absolute; inset: 0; pointer-events: none; display: flex; align-items: center; gap: .6rem; padding: .62rem .6rem .62rem .7rem; background: var(--frame); }
+
+/* ---------- G · Attack cards ---------- */
+.v-g .panel ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 2px; }
+.v-g .row { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 12px 10px; min-height: 92px; border-radius: 4px; background: rgba(0,0,0,.22); transition: box-shadow .25s, background .25s; }
+.v-g .row .head { display: flex; align-items: flex-start; gap: 10px; }
+.v-g .row .chk { margin-top: 6px; }
+.v-g .row .name { font-size: 16px; line-height: 1.25; }
+.v-g .row .foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+.v-g .meta { gap: 6px; }
+.v-g .streak { min-width: 0; }
+.v-g .dmg { width: auto; font-size: 19px; gap: 4px; }
+.v-g .glyph { width: 13px; height: 13px; }
+.v-g .row.bad::before { top: 12px; bottom: 12px; }
+.v-g .row.done { background: rgba(0,0,0,.34); }
+.v-g .row.done .dmg { opacity: .55; }
+.v-g .row.struck { animation: cardpop .45s ease-out; }
+@keyframes cardpop { 30% { transform: translateY(-4px); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent), 0 0 22px -4px var(--c); } }
+
+.lunge { animation: lunge .3s ease-out; }
+@keyframes lunge { 35% { transform: translateX(10px); } }
+
+@media (prefers-reduced-motion: reduce) { .fx { display: none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Skills as attacks</h1>
+  <p class="lede">Tap a diamond to use a skill. Each phone has its own Play and Reset. F also takes a drag across a row.</p>
+  <div class="top-ctl"><button class="soft" id="play-all">Play all</button><button class="soft" id="reset-all">Reset all</button></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const SKILLS = [
+  { g: 'Daily', name: 'Doomscrolling', bad: true, type: 'heal', dmg: 1090, streak: 12, rank: 2 },
+  { g: 'Daily', name: 'Morning run', type: 'phys', dmg: 5960, streak: 23, rank: 3 },
+  { g: 'Daily', name: 'Read 20 pages', type: 'magic', dmg: 1410, streak: 9, rank: 4 },
+  { g: 'Daily', name: 'Journal', type: 'true', dmg: 2240, streak: 6, rank: 2 },
+  { g: 'Daily', name: 'Drink water', type: 'heal', dmg: 412, streak: 14, rank: 1 },
+  { g: 'Daily', name: 'Meditate', type: 'magic', dmg: 566, streak: 4, rank: 1 },
+  { g: 'Weekly', name: 'Gym', type: 'phys', dmg: 34300, streak: 5, rank: 8 },
+];
+const DEMO = [1, 2, 3, 4, 6];
+const COLOR = { phys: 'var(--phys)', magic: 'var(--magic)', heal: 'var(--heal)', true: 'var(--true)' };
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const GLYPH = {
+  phys: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3.5 12.5 13 3M9.5 2.5l4 4M3 9.5l3.5 3.5"/></svg>',
+  magic: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 .5 9.6 6.4 15.5 8 9.6 9.6 8 15.5 6.4 9.6.5 8 6.4 6.4Z"/></svg>',
+  true: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 0h2v9H7z"/><path d="M8 8.5l4 3.5-4 4-4-4z"/></svg>',
+  heal: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5S3 7.6 3 10.6a5 5 0 0 0 10 0C13 7.6 8 1.5 8 1.5Z"/></svg>',
+};
+const FLAME = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 1.5c.4 2.6 3.8 4 3.8 7.7A3.8 3.8 0 0 1 4.2 9.2c0-1.6.8-2.6 1.6-3.4.1 1.3.7 2 1.4 2.3C7.4 6 6.9 3.7 8 1.5Z"/></svg>';
+const MOON = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.6 1.4a6.6 6.6 0 1 0 4 10.6A5.6 5.6 0 0 1 10.6 1.4Z"/></svg>';
+
+const OPTIONS = [
+  { v: 'now', tier: '', title: 'Now', desc: 'The diamond lights and settles, the name is struck through, the bar takes the hit.' },
+  { v: 'a', tier: 'Subtle', title: 'A · Type marks', desc: 'A small mark of the attack’s kind beside each number: blade, rune, ray, drop. It flares when used.' },
+  { v: 'b', tier: 'Subtle', title: 'B · The cut', desc: 'The strike-through is drawn as a blow: a bright line in the attack’s colour cuts across the name, then cools to the usual strike.' },
+  { v: 'c', tier: 'Subtle', title: 'C · Number strikes', desc: 'The damage number leaps off the row and flies into the boss (heals fly to your ring). A used skill’s number goes cold.' },
+  { v: 'd', tier: 'Creative', title: 'D · Lunge and hit', desc: 'The row lunges and the stage’s hit types play on the bar: a slash with sparks, a bolt into a rune ring, a beam from above, rising motes.' },
+  { v: 'e', tier: 'Creative', title: 'E · Spent until dawn', desc: 'Used skills read as abilities on cooldown, not crossed-off tasks: a flash, then a shadow sweeps over the row and the name and number dim together.' },
+  { v: 'f', tier: 'Creative', title: 'F · Swipe to strike', desc: 'Drag across a row to cut it. The blade follows your finger and the row splits along the cut. A tap on the diamond still works.' },
+  { v: 'g', tier: 'Creative', title: 'G · Attack cards', desc: 'Skills become a grid of attack cards with the number up front. Tap anywhere on a card to strike, with D’s hits.' },
+];
+
+const fmt = n => n >= 10000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : n >= 1000 ? (n / 1000).toFixed(2) + 'K' : String(n);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const BOSS_MAX = 120000, BOSS_START = 92400, HERO_MAX = 3200, HERO_START = 1840;
+const RING_LEN = 2 * Math.PI * 19;
+
+function rowHTML(s, i, v) {
+  const streak = `<span class="streak">${FLAME}${s.streak}</span>`;
+  const plate = `<b class="plate">${ROMAN[s.rank]}</b>`;
+  const dmg = `<span class="dmg"><i class="glyph">${GLYPH[s.type]}</i><span class="num">${fmt(s.dmg)}</span><i class="moon">${MOON}</i></span>`;
+  const chk = `<span class="chk" role="checkbox" aria-checked="false" aria-label="Complete ${s.name}"></span>`;
+  const name = `<span class="name">${s.name}<span class="cut"></span></span>`;
+  const cls = `row${s.bad ? ' bad' : ''}`;
+  if (v === 'g') return `<li class="${cls}" data-i="${i}" style="--c:${COLOR[s.type]}"><div class="head">${chk}${name}</div><div class="foot"><span class="meta">${streak}${plate}</span>${dmg}</div></li>`;
+  return `<li class="${cls}" data-i="${i}" style="--c:${COLOR[s.type]}">${chk}${name}<span class="meta">${streak}${plate}</span>${dmg}</li>`;
+}
+
+function phoneHTML(v) {
+  let list = '', group = '';
+  SKILLS.forEach((s, i) => {
+    if (s.g !== group) { list += (group ? '</ul>' : '') + `<div class="group">${s.g}</div><ul>`; group = s.g; }
+    list += rowHTML(s, i, v);
+  });
+  return `<div class="phone v-${v}">
+    <div class="bar">
+      <span class="ring"><svg viewBox="0 0 44 44"><circle class="track" cx="22" cy="22" r="19"/><circle class="arc" cx="22" cy="22" r="19" stroke-dasharray="${RING_LEN}"/></svg>
+        <span class="ring-face"><img src="../../public/sprites/player/warrior.png" alt=""></span><span class="level"><span>14</span></span></span>
+      <span class="who"><span class="label"><span class="numbers"></span><span class="bname">Drifter</span></span>
+        <span class="hpbar"><span class="trail"></span><span class="fill"></span></span></span>
+      <span class="portrait"><img src="../../public/sprites/bosses/arcane.png" alt=""></span>
+    </div>
+    <div class="panel">${list}</ul></div>
+    <div class="fx"></div>
+  </div>`;
+}
+
+// ---------- Frame state ----------
+class Frame {
+  constructor(opt, el) {
+    this.v = opt.v; this.el = el; this.phone = el.querySelector('.phone'); this.fx = el.querySelector('.fx');
+    this.reset();
+    this.phone.addEventListener('click', e => {
+      const row = e.target.closest('.row'); if (!row) return;
+      if (this.v === 'g' || e.target.closest('.chk')) this.use(+row.dataset.i);
+    });
+    if (this.v === 'f') this.bindSwipe();
+    el.querySelector('[data-act=reset]').onclick = () => this.reset();
+    el.querySelector('[data-act=demo]').onclick = () => this.demo();
+  }
+  q(sel) { return this.phone.querySelector(sel); }
+  rowEl(i) { return this.phone.querySelector(`.row[data-i="${i}"]`); }
+  reset() {
+    this.done = new Set(); this.boss = BOSS_START; this.hero = HERO_START; this.run = (this.run || 0) + 1;
+    this.phone.querySelectorAll('.row').forEach(r => { r.classList.remove('done', 'cooling'); r.querySelector('.chk').setAttribute('aria-checked', 'false'); });
+    this.fx.innerHTML = '';
+    this.renderBoss(true); this.renderHero();
+  }
+  async demo() {
+    this.reset(); const run = this.run;
+    for (const i of DEMO) { await sleep(i === DEMO[0] ? 250 : 1150); if (run !== this.run) return; this.use(i); }
+  }
+  renderBoss(instant) {
+    const pct = (this.boss / BOSS_MAX * 100) + '%';
+    const fill = this.q('.hpbar .fill'), trail = this.q('.hpbar .trail');
+    if (instant) { fill.style.transition = trail.style.transition = 'none'; requestAnimationFrame(() => fill.style.transition = trail.style.transition = ''); }
+    fill.style.width = pct; trail.style.width = pct;
+    this.q('.numbers').textContent = `${fmt(this.boss)} / ${fmt(BOSS_MAX)}`;
+  }
+  renderHero() { this.q('.ring .arc').style.strokeDashoffset = RING_LEN * (1 - this.hero / HERO_MAX); }
+  pos(el, ax = .5, ay = .5) {
+    const p = this.phone.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left - p.left + r.width * ax, y: r.top - p.top + r.height * ay };
+  }
+  spawn(cls, x, y, html = '') {
+    const d = document.createElement('div'); d.className = cls; d.style.left = x + 'px'; d.style.top = y + 'px'; d.innerHTML = html;
+    this.fx.appendChild(d); return d;
+  }
+  restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+  // The blow lands on the bar (or the hero, for heals and bad habits).
+  land(s, { shake = true, color } = {}) {
+    if (s.bad) {
+      this.hero = Math.max(0, this.hero - s.dmg); this.renderHero();
+      const ring = this.q('.ring'); this.restart(ring, 'hurt');
+      this.popup(ring, `-${fmt(s.dmg)}`, 'var(--dmg-red)');
+      return;
+    }
+    if (s.type === 'heal') {
+      this.hero = Math.min(HERO_MAX, this.hero + s.dmg); this.renderHero();
+      const ring = this.q('.ring'); ring.classList.add('healed'); setTimeout(() => ring.classList.remove('healed'), 600);
+      this.popup(ring, `+${fmt(s.dmg)}`, 'var(--heal)');
+      return;
+    }
+    this.boss = Math.max(0, this.boss - s.dmg); this.renderBoss();
+    const portrait = this.q('.portrait');
+    if (shake) this.restart(portrait, 'shake');
+    this.restart(portrait, 'flash-white');
+    this.popup(portrait, `-${fmt(s.dmg)}`, color || COLOR[s.type], -36);
+  }
+  popup(target, text, color, dx = 0) {
+    const p = this.pos(target); const el = this.spawn('popup', p.x + dx, p.y + 26, text); el.style.color = color;
+    el.animate([{ opacity: 0, transform: 'translate(-50%,-30%) scale(.8)' }, { opacity: 1, transform: 'translate(-50%,-80%) scale(1.1)', offset: .15 }, { opacity: 1, transform: 'translate(-50%,-110%)', offset: .7 }, { opacity: 0, transform: 'translate(-50%,-140%)' }], { duration: 1100, easing: 'ease-out' }).finished.then(() => el.remove());
+  }
+  fly(el, from, to, dur, arc = -40, easing = 'cubic-bezier(.5,0,.75,.4)') {
+    const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2 + arc;
+    return el.animate([
+      { transform: `translate(${from.x}px,${from.y}px)` },
+      { transform: `translate(${mx}px,${my}px)`, offset: .5 },
+      { transform: `translate(${to.x}px,${to.y}px)` },
+    ], { duration: dur, easing, fill: 'forwards' }).finished;
+  }
+
+  use(i) {
+    if (this.done.has(i)) return;
+    const s = SKILLS[i], row = this.rowEl(i);
+    this.done.add(i);
+    row.classList.add('done'); row.querySelector('.chk').setAttribute('aria-checked', 'true');
+    this.restart(row.querySelector('.chk'), 'lit');
+    (FX[this.v] || FX.now).call(this, s, row);
+  }
+
+  // ---------- F: drag across a row ----------
+  bindSwipe() {
+    let drag = null;
+    this.phone.addEventListener('pointerdown', e => {
+      const row = e.target.closest('.row'); if (!row || e.target.closest('.chk') || this.done.has(+row.dataset.i)) return;
+      const p = this.pos(row, 0, .5), pr = this.phone.getBoundingClientRect();
+      const trail = this.spawn('trail', e.clientX - pr.left, p.y); trail.style.setProperty('--c', row.style.getPropertyValue('--c')); trail.style.width = '0px';
+      drag = { row, x0: e.clientX, w: row.getBoundingClientRect().width, trail };
+      row.setPointerCapture(e.pointerId);
+    });
+    this.phone.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const dx = Math.max(0, e.clientX - drag.x0); drag.trail.style.width = dx + 'px';
+      if (dx > drag.w * .5) { const d = drag; drag = null; this.swipeCommit(d); }
+    });
+    const cancel = () => { if (!drag) return; const t = drag.trail; t.animate([{ opacity: 1 }, { opacity: 0 }], 200).finished.then(() => t.remove()); drag = null; };
+    this.phone.addEventListener('pointerup', cancel); this.phone.addEventListener('pointercancel', cancel);
+  }
+  swipeCommit({ row, trail }) {
+    const i = +row.dataset.i, s = SKILLS[i];
+    const end = this.pos(row, 1, .5);
+    trail.animate([{ width: trail.style.width }, { width: (end.x - parseFloat(trail.style.left) + 8) + 'px' }], { duration: 90, fill: 'forwards' })
+      .finished.then(() => trail.animate([{ opacity: 1, filter: 'brightness(2)' }, { opacity: 0 }], { duration: 380, fill: 'forwards' }).finished.then(() => trail.remove()));
+    this.split(row, s);
+    this.sparks(end.x - 6, end.y, 6, COLOR[s.type] === 'var(--phys)' ? '#ffd2a6' : '#fff');
+    this.done.add(i); row.classList.add('done'); row.querySelector('.chk').setAttribute('aria-checked', 'true');
+    this.restart(row.querySelector('.chk'), 'lit');
+    setTimeout(() => this.land(s), 160);
+  }
+  // The row parts along the cut for a moment, then closes.
+  split(row) {
+    const r = row.getBoundingClientRect(), p = this.phone.getBoundingClientRect();
+    const halves = [['inset(0 0 50% 0)', -2, -3], ['inset(50% 0 0 0)', 3, 3]].map(([clip, dx, dy]) => {
+      const h = document.createElement('div'); h.className = 'row ' + row.className.replace('row', '');
+      h.innerHTML = row.innerHTML; h.style.cssText = `position:absolute;left:${r.left - p.left}px;top:${r.top - p.top}px;width:${r.width}px;height:${r.height}px;clip-path:${clip};background:var(--frame);margin:0;--c:${row.style.getPropertyValue('--c')}`;
+      h.classList.remove('done');
+      this.fx.appendChild(h);
+      h.animate([{ transform: 'none' }, { transform: `translate(${dx}px,${dy}px) rotate(${dy > 0 ? .4 : -.4}deg)`, offset: .3 }, { transform: 'none' }], { duration: 520, easing: 'ease-out' }).finished.then(() => h.remove());
+      return h;
+    });
+    return halves;
+  }
+  sparks(x, y, n, color) {
+    for (let k = 0; k < n; k++) {
+      const sp = this.spawn('spark', x, y); sp.style.background = color;
+      const a = (Math.random() * 1.6 - .8) + (k % 2 ? 0 : Math.PI), d = 14 + Math.random() * 18;
+      sp.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px)`, opacity: 0 }], { duration: 420 + Math.random() * 200, easing: 'ease-out' }).finished.then(() => sp.remove());
+    }
+  }
+
+  // ---------- D/G: the stage's hit types, on the bar ----------
+  async typeHit(s, origin) {
+    if (s.bad) { setTimeout(() => this.land(s), 150); return; }
+    const from = this.pos(origin);
+    const portrait = this.q('.portrait'), to = this.pos(portrait);
+    if (s.type === 'phys') {
+      const ang = Math.atan2(to.y - from.y, to.x - from.x), len = Math.hypot(to.x - from.x, to.y - from.y);
+      const ln = this.spawn('streak-line', from.x, from.y); ln.style.width = len + 'px'; ln.style.transform = `rotate(${ang}rad) scaleX(0)`;
+      await ln.animate([{ transform: `rotate(${ang}rad) scaleX(0)`, opacity: 1 }, { transform: `rotate(${ang}rad) scaleX(1)`, opacity: 1 }], { duration: 170, easing: 'ease-in', fill: 'forwards' }).finished;
+      ln.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' }).finished.then(() => ln.remove());
+      [-38, 38].forEach((deg, k) => {
+        const sl = this.spawn('slash', to.x, to.y);
+        sl.animate([{ transform: `rotate(${deg}deg) scaleX(0)`, opacity: 1 }, { transform: `rotate(${deg}deg) scaleX(1)`, opacity: 1, offset: .35 }, { transform: `rotate(${deg}deg) scaleX(1.1)`, opacity: 0 }], { duration: 380, delay: k * 70, fill: 'both' }).finished.then(() => sl.remove());
+      });
+      this.sparks(to.x, to.y, 8, '#ffd2a6');
+      this.land(s);
+    } else if (s.type === 'magic') {
+      const orb = this.spawn('orb', 0, 0); orb.style.left = orb.style.top = '0';
+      await this.fly(orb, from, to, 460, -60, 'cubic-bezier(.4,0,.8,.6)');
+      orb.remove();
+      [0, 120].forEach(delay => {
+        const rn = this.spawn('rune', to.x, to.y);
+        rn.animate([{ transform: 'scale(.4)', opacity: 1 }, { transform: 'scale(2.4)', opacity: 0 }], { duration: 520, delay, easing: 'ease-out', fill: 'both' }).finished.then(() => rn.remove());
+      });
+      this.land(s);
+    } else if (s.type === 'true') {
+      const bm = this.spawn('beam', to.x, 0); bm.style.height = (to.y + 18) + 'px';
+      await bm.animate([{ transform: 'scaleY(0)', opacity: 1 }, { transform: 'scaleY(1)', opacity: 1 }], { duration: 150, easing: 'ease-in', fill: 'forwards' }).finished;
+      bm.animate([{ opacity: 1, width: '6px' }, { opacity: 0, width: '1px', marginLeft: '-.5px' }], { duration: 420, fill: 'forwards' }).finished.then(() => bm.remove());
+      this.land(s, { shake: false });
+    } else {
+      const ring = this.pos(this.q('.ring'));
+      for (let k = 0; k < 6; k++) {
+        const m = this.spawn('mote', 0, 0); m.style.left = m.style.top = '0';
+        const start = { x: from.x - 30 + Math.random() * 60, y: from.y + Math.random() * 6 };
+        this.fly(m, start, { x: ring.x - 8 + Math.random() * 16, y: ring.y + 4 }, 620 + k * 60, 30 - Math.random() * 60, 'ease-in').then(() => m.remove());
+      }
+      setTimeout(() => this.land(s), 640);
+    }
+  }
+}
+
+const FX = {
+  now(s) { setTimeout(() => this.land(s), 220); },
+  a(s, row) {
+    this.restart(row.querySelector('.glyph'), 'flare');
+    this.restart(row.querySelector('.num'), 'pulse');
+    setTimeout(() => this.land(s), 220);
+  },
+  b(s, row) {
+    const cut = row.querySelector('.cut');
+    cut.animate([
+      { transform: 'scaleX(0)', opacity: 1 },
+      { transform: 'scaleX(1)', opacity: 1, offset: .25 },
+      { transform: 'scaleX(1)', opacity: .9, offset: .45 },
+      { transform: 'scaleX(1)', opacity: 0 },
+    ], { duration: 820, easing: 'ease-out' });
+    const end = this.pos(cut, 1, .5); setTimeout(() => this.sparks(end.x, end.y, 5, '#fff'), 190);
+    setTimeout(() => this.land(s), 230);
+  },
+  async c(s, row) {
+    const num = row.querySelector('.num'); this.restart(num, 'pulse');
+    const from = this.pos(num), target = s.bad || s.type === 'heal' ? this.q('.ring') : this.q('.portrait'), to = this.pos(target);
+    await sleep(120);
+    const f = this.spawn('fly-num', 0, 0, s.bad ? '' : (s.type === 'heal' ? '+' : '') + fmt(s.dmg)); f.style.left = f.style.top = '0'; f.style.color = COLOR[s.type];
+    if (s.bad) { f.remove(); this.land(s); return; }
+    f.animate([{ scale: 1 }, { scale: 1.25, offset: .2 }, { scale: .55 }], { duration: 480, fill: 'forwards' });
+    await this.fly(f, from, to, 480, -50);
+    f.remove(); this.land(s);
+  },
+  d(s, row) { this.restart(row, 'lunge'); setTimeout(() => this.typeHit(s, row.querySelector('.dmg')), 110); },
+  e(s, row) {
+    const w = document.createElement('div'); w.className = 'wipe'; row.appendChild(w);
+    w.animate([{ transform: 'translateX(-100%)' }, { transform: 'translateX(100%)' }], { duration: 520, easing: 'ease-out' }).finished.then(() => w.remove());
+    row.classList.add('cooling');
+    setTimeout(() => this.land(s), 220);
+  },
+  f(s, row) { FX.b.call(this, s, row); },
+  g(s, row) { this.restart(row, 'struck'); setTimeout(() => this.typeHit(s, row.querySelector('.dmg')), 120); },
+};
+
+// ---------- Build ----------
+const grid = document.getElementById('grid');
+const frames = OPTIONS.map(opt => {
+  const sec = document.createElement('section'); sec.className = 'opt';
+  sec.innerHTML = `<div class="tier ${opt.tier === 'Creative' ? 'creative' : ''}">${opt.tier}</div><h2>${opt.title}</h2><p>${opt.desc}</p>
+    <div class="ctl"><button class="soft" data-act="demo">Play</button><button class="soft" data-act="reset">Reset</button></div>${phoneHTML(opt.v)}`;
+  grid.appendChild(sec);
+  return new Frame(opt, sec);
+});
+document.getElementById('play-all').onclick = () => frames.forEach(f => f.demo());
+document.getElementById('reset-all').onclick = () => frames.forEach(f => f.reset());
+</script>
+</body>
+</html>
