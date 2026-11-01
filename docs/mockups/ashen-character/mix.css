@@ -1,0 +1,20 @@
+/* 1 · Crest: the small diamond set into the top edge of each section and popup. */
+:root[data-theme='ashen'] .layout section.panel { position: relative; }
+:root[data-theme='ashen'] .layout section.panel::after,
+:root[data-theme='ashen'] .modal-content::before {
+  content: ''; position: absolute; top: -4px; left: 50%; width: 7px; height: 7px; z-index: 2;
+  transform: translateX(-50%) rotate(45deg); background: #0b0a09; border: 1px solid var(--accent-solid);
+}
+/* 2 · Firmer corners: worked stone, not soft plastic. Panels 6px, wells 4px, buttons 6px. */
+:root[data-theme='ashen'] .panel { border-radius: 6px !important; }
+:root[data-theme='ashen'] .modal-content { border-radius: 8px !important; }
+:root[data-theme='ashen'] .menu-panel { border-radius: 6px !important; }
+:root[data-theme='ashen'] :is(.quest-item, .gear-row, .stat-tile, .hero:has(> .hero-sprite), .hero:has(> .seal), .hero:has(> .icon-frame), .hero-sprite, .gear-icon, .rank-block, .intro, li.card, .miss-card, .list > button.row, label.card, .cards > button.card) { border-radius: 4px !important; }
+:root[data-theme='ashen'] :is(.add-button, .menu-button, .ok-button, .primary-button, .submit, .restart-button, .cancel-button, .replace-button, .back, .drop-button, .confirm-remove-button, .overdrive-button) { border-radius: 6px !important; }
+:root[data-theme='ashen'] .boss-bar .portrait { border-radius: 4px !important; }
+/* 4 · Firelit edge: a warm gold seam along the top of each panel and popup, as if lit from above. */
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content {
+  background: linear-gradient(90deg, transparent 8%, rgba(230, 199, 127, 0.45) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(230, 199, 127, 0.07), transparent),
+    #1d1a16 !important;
+}

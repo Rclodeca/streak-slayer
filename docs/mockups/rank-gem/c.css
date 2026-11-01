@@ -1,0 +1,2 @@
+/* C · Ember rectangle, no border. */
+:root[data-theme='ashen'] .rank-numeral::before { inset: 7px 0 !important; transform: none !important; border-radius: 3px !important; border-color: transparent !important; background: radial-gradient(ellipse at center, rgba(230, 150, 80, 0.55), rgba(60, 30, 15, 0.7) 80%) !important; }

@@ -1,0 +1,9 @@
+/* D · Rank on the left: the plate sits between the check and the name, so
+   names, streaks and damage all start in line. */
+:root[data-theme='ashen'] .habit-item .meta { display: contents; }
+:root[data-theme='ashen'] .habit-item .check-zone { order: 1; }
+:root[data-theme='ashen'] .habit-item .rank-diamonds { order: 2; margin-left: -0.3rem; }
+:root[data-theme='ashen'] .habit-item .name { order: 3; }
+:root[data-theme='ashen'] .habit-item .next-day { order: 4; }
+:root[data-theme='ashen'] .habit-item .streak { order: 5; min-width: 2.6rem; }
+:root[data-theme='ashen'] .habit-item .damage { order: 6; }

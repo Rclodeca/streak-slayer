@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Ashen alternatives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), level-14 sample save. A–C are the
+   CSS layers in ashen-alternatives/ stacked over Ashen; D is one layer over
+   Minimalist. */
+:root { --text: #b0a796; --text-h: #ece3cd; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 2040px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 30px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 34px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.col { width: 316px; max-width: 100%; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 84px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Ashen alternatives</h1>
+  <p class="lede">From Ashen (left) to Minimalist (right). Each letter adds to the one before it, except D.</p>
+  <div id="cols"></div>
+</div>
+<script>
+const SCREENS = [['top', 'Fight'], ['list', 'Skills · quests · log'], ['hero', 'Hero popup'], ['skill', 'Skill popup']];
+const COLS = [
+  ['before', 'Ashen', 'As it ships.'],
+  ['a', 'A · Sturdy serif', 'Only the body font changes: Alegreya instead of Cormorant. Thicker strokes, bigger letters, no italics.'],
+  ['b', 'B · Quiet Ashen', 'A, minus the ornament: rounded lit panels, no corner brackets or rule lines, soft gold pill buttons.'],
+  ['c', 'C · Serif names', 'B, with a matching sans for buttons, labels, the log and small text. Serif only for names.'],
+  ['d', 'D · Ember', 'Minimalist’s shapes, sans and square checks, in Ashen’s warm black and gold. Cinzel on titles only.'],
+  ['min', 'Minimalist', 'As it ships.'],
+];
+const el = document.getElementById('cols');
+el.insertAdjacentHTML('beforeend', `<div class="row">${COLS.map(([, t, d]) => `<div class="col key"><b>${t}</b>${d}</div>`).join('')}</div>`);
+for (const [s, label] of SCREENS) {
+  el.insertAdjacentHTML('beforeend', `<h2>${label}</h2><div class="row">${COLS.map(([v]) => `<div class="col"><img src="ashen-alternatives/${s}-${v}.png" alt=""></div>`).join('')}</div>`);
+}
+</script>
+</body>
+</html>

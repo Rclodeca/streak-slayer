@@ -1,0 +1,2 @@
+/* D · Dark plate: the earlier plate, gold edge, no fire. */
+:root[data-theme='ashen'] .rank-numeral::before { inset: 7px 0 !important; transform: none !important; border-radius: 3px !important; background: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(200, 169, 110, 0.5) !important; box-shadow: none !important; }

@@ -7,10 +7,11 @@ import itemIconGrid from './assets/item-icon-grid.json';
 // Ashen's typefaces, bundled so the installed PWA doesn't depend on a font CDN.
 import '@fontsource/cinzel/500.css';
 import '@fontsource/cinzel/600.css';
-import '@fontsource/cormorant-garamond/500.css';
-import '@fontsource/cormorant-garamond/500-italic.css';
-import '@fontsource/cormorant-garamond/600.css';
-import '@fontsource/cormorant-garamond/700.css';
+import '@fontsource/alegreya/500.css';
+import '@fontsource/alegreya/600.css';
+import '@fontsource/alegreya/700.css';
+import '@fontsource/alegreya-sans/500.css';
+import '@fontsource/alegreya-sans/700.css';
 import './style.css';
 import './assets/scss/main.scss';
 import './assets/scss/themes/ashen.scss';

@@ -1,0 +1,4 @@
+/* B · Rank first: plate, streak, damage. */
+:root[data-theme='ashen'] .habit-item .meta { gap: 0.6rem; }
+:root[data-theme='ashen'] .habit-item .streak { min-width: 2.6rem; }
+:root[data-theme='ashen'] .habit-item .meta .rank-diamonds { order: -1; }

@@ -1,0 +1,12 @@
+/* Ranks · Numerals: the rank in engraved gold Roman numerals. */
+:root[data-theme='ashen'] .rank-diamonds i { display: none !important; }
+:root[data-theme='ashen'] .rank-diamonds::after { font-family: var(--heading); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; line-height: 1; color: var(--accent); text-shadow: 0 0 8px rgba(230, 199, 127, 0.35); }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(1))::after { content: 'I'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(2))::after { content: 'II'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(3))::after { content: 'III'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(4))::after { content: 'IV'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(5))::after { content: 'V'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(6))::after { content: 'VI'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(7))::after { content: 'VII'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(8))::after { content: 'VIII'; }
+

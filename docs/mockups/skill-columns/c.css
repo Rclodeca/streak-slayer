@@ -1,0 +1,5 @@
+/* B · Columns: streak, rank and damage each hold a fixed place. Ranks fill a
+   slot four diamonds wide; five to eight stack in two lines. */
+:root[data-theme='ashen'] .habit-item .rank-diamonds { width: 30px; flex-wrap: wrap; justify-content: flex-start; align-content: center; row-gap: 3px; }
+/* C · Columns, damage left-aligned. */
+:root[data-theme='ashen'] .habit-item .damage { width: 2.9rem !important; text-align: left !important; }

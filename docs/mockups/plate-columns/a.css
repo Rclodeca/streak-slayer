@@ -1,0 +1,3 @@
+/* A · Three columns: streak, rank, damage, each in a fixed slot. */
+:root[data-theme='ashen'] .habit-item .meta { gap: 0.6rem; }
+:root[data-theme='ashen'] .habit-item .streak { min-width: 2.6rem; }

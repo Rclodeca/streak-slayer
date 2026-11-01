@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Ashen character</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), level-14 sample save with two
+   skills pushed to ranks IV and VIII. Each column is a CSS layer from
+   ashen-character/ over Ashen as it is now (option C). */
+:root { --text: #b0a796; --text-h: #ece3cd; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 2040px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 20px; }
+.part { margin-top: 50px; }
+.part > h3 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .28em; margin: 0 0 18px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 30px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.col { width: 316px; max-width: 100%; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 66px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Ashen character</h1>
+  <p class="lede">Small touches over Ashen as it is now. Pick any mix of the panel ideas, and one rank style.</p>
+  <div class="part" id="panels"><h3>Panels</h3></div>
+  <div class="part" id="ranks"><h3>Ranks</h3></div>
+</div>
+<script>
+const PANELS = [
+  ['now', 'Now', 'Ashen as built: option C.'],
+  ['crest', '1 · Crest', 'The small gold diamond back on the top edge of each section and popup.'],
+  ['firm', '2 · Firmer corners', 'Worked stone, not soft plastic: barely rounded panels, wells and buttons.'],
+  ['cut', '3 · Cut corners', 'Square panels and wells with their corners struck off; buttons cut to a point at each end.'],
+  ['lit', '4 · Firelit edge', 'A warm gold seam along the top of each panel and popup, as if lit from above.'],
+  ['mix', '1 + 2 + 4', 'Crest, firmer corners and the firelit edge together.'],
+];
+const RANKS = [
+  ['now', 'Now', 'Gold bars.'],
+  ['rdiamond', 'A · Diamonds', 'The old lit gold diamonds, one per rank.'],
+  ['rnumeral', 'B · Numerals', 'The rank in engraved gold Roman numerals.'],
+  ['rplate', 'C · Numeral plate', 'The numeral on a small dark plate edged in gold.'],
+  ['rstar', 'D · Stars', 'A small four-point star per rank, so it never reads as a check.'],
+];
+function build(el, cols, screens) {
+  el.insertAdjacentHTML('beforeend', `<div class="row">${cols.map(([, t, d]) => `<div class="col key"><b>${t}</b>${d}</div>`).join('')}</div>`);
+  for (const [s, label] of screens) {
+    el.insertAdjacentHTML('beforeend', `<h2>${label}</h2><div class="row">${cols.map(([v]) => `<div class="col"><img src="ashen-character/${s}-${v}.png" alt=""></div>`).join('')}</div>`);
+  }
+}
+build(document.getElementById('panels'), PANELS, [['list', 'Skills · quests · log'], ['hero', 'Hero popup'], ['top', 'Fight']]);
+build(document.getElementById('ranks'), RANKS, [['list', 'Skills'], ['skill', 'Skill popup']]);
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+/* D · Rank first: the diamonds move to the left of the streak, so the streak
+   and damage hold fixed places and only the diamonds' start moves. */
+:root[data-theme='ashen'] .habit-item .meta .rank-diamonds { order: -1; }

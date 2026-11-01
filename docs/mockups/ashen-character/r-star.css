@@ -1,0 +1,3 @@
+/* Ranks · Stars: a small four-point gold star per rank, so it never reads as a check. */
+:root[data-theme='ashen'] .rank-diamonds { gap: 0 !important; }
+:root[data-theme='ashen'] .rank-diamonds i { width: 9px !important; height: 9px !important; transform: none !important; background: radial-gradient(circle, #f3e2b6, var(--accent-solid) 70%) !important; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }

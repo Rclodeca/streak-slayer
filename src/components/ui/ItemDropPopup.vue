@@ -221,13 +221,17 @@ const isCurrentEquipped = computed(
   gap: 0.2rem;
 }
 
+/* The rarity (and Enchanted) follow the name, and wrap flush left under it. */
 .gear-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.4rem;
   color: var(--text-h);
   font-weight: 600;
 }
 
 .gear-rarity {
-  margin-left: 0.4rem;
   color: var(--rarity);
   font-size: 0.7rem;
   font-weight: 400;

@@ -1,0 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@500;700&display=swap');
+/* A · Sturdy serif: Ashen as is, Cormorant swapped for Alegreya (bigger
+   letters, thicker strokes), no italics, secondary text a step brighter. */
+:root[data-theme='ashen'] { --sans: 'Alegreya', Georgia, serif; --text: #b4ab9c; font-weight: 500; font-size-adjust: 0.54; }
+:root[data-theme='ashen'] * { font-style: normal !important; }

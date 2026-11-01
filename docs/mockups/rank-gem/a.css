@@ -1,0 +1,2 @@
+/* A · Diamond, no border: just the glowing ember. */
+:root[data-theme='ashen'] .rank-numeral::before { border-color: transparent !important; background: radial-gradient(circle, rgba(230, 150, 80, 0.55), rgba(60, 30, 15, 0.7) 75%) !important; }

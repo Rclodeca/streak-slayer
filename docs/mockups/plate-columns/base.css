@@ -1,0 +1,14 @@
+/* Shared: the numeral plate, every plate the same width, and one streak size
+   (the streak still gets bolder and brighter as it grows). */
+:root[data-theme='ashen'] .rank-diamonds i { display: none !important; }
+:root[data-theme='ashen'] .rank-diamonds::after { display: block; box-sizing: border-box; width: 30px; padding: 3px 0 2px 0.08em; text-align: center; font-family: var(--heading); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; line-height: 1; color: var(--accent); border: 1px solid rgba(200, 169, 110, 0.5); border-radius: 3px; background: rgba(0, 0, 0, 0.4); }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(1))::after { content: 'I'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(2))::after { content: 'II'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(3))::after { content: 'III'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(4))::after { content: 'IV'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(5))::after { content: 'V'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(6))::after { content: 'VI'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(7))::after { content: 'VII'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(8))::after { content: 'VIII'; }
+
+:root[data-theme='ashen'] .habit-item .streak { font-size: 0.82rem !important; }

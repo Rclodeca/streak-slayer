@@ -13,18 +13,21 @@ export function sortByDamageType(habits: Habit[]): Habit[] {
 export const MIN_STREAK_SHOWN = 3;
 
 const STREAK_TIERS = [
-  { weight: 500, size: 0.75, bright: 0 },
-  { weight: 600, size: 0.82, bright: 35 },
-  { weight: 700, size: 0.92, bright: 70 },
-  { weight: 800, size: 1.05, bright: 100 },
+  { weight: 500, bright: 0 },
+  { weight: 600, bright: 35 },
+  { weight: 700, bright: 70 },
+  { weight: 800, bright: 100 },
 ];
 
-/** The streak number's weight, size and brightness, which grow with the streak. */
+/**
+ * The streak number's weight and brightness, which grow with the streak. Its
+ * size stays put, so the streak holds its column on the skill row.
+ */
 export function streakStyleFor(streakCount: number) {
   const tier = STREAK_TIERS[streakCount >= 20 ? 3 : streakCount >= 10 ? 2 : streakCount >= 5 ? 1 : 0];
   return {
     fontWeight: tier.weight,
-    fontSize: `${tier.size}rem`,
+    fontSize: '0.82rem',
     color: `color-mix(in srgb, var(--text-h) ${tier.bright}%, var(--text))`,
   };
 }

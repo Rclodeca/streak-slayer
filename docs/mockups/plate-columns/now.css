@@ -1,0 +1,12 @@
+/* Now: the plate hugging its numeral, streak sizes as they are. */
+:root[data-theme='ashen'] .rank-diamonds i { display: none !important; }
+:root[data-theme='ashen'] .rank-diamonds::after { display: block; padding: 3px 4px 2px 5px; font-family: var(--heading); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; line-height: 1; color: var(--accent); border: 1px solid rgba(200, 169, 110, 0.5); border-radius: 3px; background: rgba(0, 0, 0, 0.4); }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(1))::after { content: 'I'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(2))::after { content: 'II'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(3))::after { content: 'III'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(4))::after { content: 'IV'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(5))::after { content: 'V'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(6))::after { content: 'VI'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(7))::after { content: 'VII'; }
+:root[data-theme='ashen'] .rank-diamonds:has(> i:nth-child(8))::after { content: 'VIII'; }
+

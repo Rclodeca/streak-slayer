@@ -1,0 +1,7 @@
+/* 2 · Firmer corners: worked stone, not soft plastic. Panels 6px, wells 4px, buttons 6px. */
+:root[data-theme='ashen'] .panel { border-radius: 6px !important; }
+:root[data-theme='ashen'] .modal-content { border-radius: 8px !important; }
+:root[data-theme='ashen'] .menu-panel { border-radius: 6px !important; }
+:root[data-theme='ashen'] :is(.quest-item, .gear-row, .stat-tile, .hero:has(> .hero-sprite), .hero:has(> .seal), .hero:has(> .icon-frame), .hero-sprite, .gear-icon, .rank-block, .intro, li.card, .miss-card, .list > button.row, label.card, .cards > button.card) { border-radius: 4px !important; }
+:root[data-theme='ashen'] :is(.add-button, .menu-button, .ok-button, .primary-button, .submit, .restart-button, .cancel-button, .replace-button, .back, .drop-button, .confirm-remove-button, .overdrive-button) { border-radius: 6px !important; }
+:root[data-theme='ashen'] .boss-bar .portrait { border-radius: 4px !important; }

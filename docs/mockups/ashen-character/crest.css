@@ -1,0 +1,7 @@
+/* 1 · Crest: the small diamond set into the top edge of each section and popup. */
+:root[data-theme='ashen'] .layout section.panel { position: relative; }
+:root[data-theme='ashen'] .layout section.panel::after,
+:root[data-theme='ashen'] .modal-content::before {
+  content: ''; position: absolute; top: -4px; left: 50%; width: 7px; height: 7px; z-index: 2;
+  transform: translateX(-50%) rotate(45deg); background: #0b0a09; border: 1px solid var(--accent-solid);
+}

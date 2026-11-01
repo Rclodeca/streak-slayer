@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Skill columns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&display=swap" />
+<style>
+/* Real app screenshots (iPhone width, 2x), cropped to the skill rows. Each column is a CSS layer from skill-columns/
+   Ashen as it is now. */
+:root { --text: #b0a796; --text-h: #ece3cd; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text-h); background: #070606; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 1760px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; margin: 0 0 6px; }
+.lede { text-align: center; color: var(--text); margin: 0 0 24px; }
+h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 30px 0 12px; display: flex; align-items: center; gap: 12px; }
+h2::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(150,141,126,.3), transparent); }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.col { width: 330px; max-width: 100%; }
+.key b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; color: var(--text-h); margin-bottom: 4px; }
+.key { color: var(--text); font-size: 15px; min-height: 90px; }
+.col img { width: 100%; display: block; border: 1px solid rgba(150,141,126,.18); border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Skill columns</h1>
+  <p class="lede">Lining up the streak, rank and damage on the skill rows. Ranks II, III, IV, I and VIII.</p>
+  <div id="cols"></div>
+</div>
+<script>
+const COLS = [
+  ['now', 'Now', 'Damage lines up on its right edge; the streak moves with the number of rank diamonds.'],
+  ['a', 'A · Left-aligned damage', 'Every damage number starts at the same point. The rest as now.'],
+  ['b', 'B · Columns', 'Streak, rank and damage each hold a fixed place. Ranks fill a slot four diamonds wide; five to eight stack in two lines.'],
+  ['c', 'C · Columns, damage left', 'B, with the damage numbers starting at the same point.'],
+  ['d', 'D · Rank first', 'The diamonds move left of the streak, so streak and damage hold fixed places.'],
+];
+const el = document.getElementById('cols');
+el.insertAdjacentHTML('beforeend', `<div class="row">${COLS.map(([, t, d]) => `<div class="col key"><b>${t}</b>${d}</div>`).join('')}</div>`);
+el.insertAdjacentHTML('beforeend', `<h2>Skill rows</h2><div class="row">${COLS.map(([v]) => `<div class="col"><img src="skill-columns/rows-${v}.png" alt=""></div>`).join('')}</div>`);
+</script>
+</body>
+</html>

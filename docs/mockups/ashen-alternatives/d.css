@@ -1,0 +1,22 @@
+/* D · Ember: Minimalist's shapes, sans and square checks, in Ashen's warm
+   black, bone and gold, with Cinzel caps only on titles. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap');
+:root[data-theme='minimalist'] {
+  --bg: #0d0b09; --text: #b0a796; --text-h: #efe6d2; --border: #3a332a;
+  --accent: #e6cf9a; --accent-solid: #c8a96e; --accent-bg: rgba(200,169,110,.1); --accent-border: rgba(200,169,110,.4);
+  --rarity-uncommon: #86b08b; --rarity-rare: #7f9fd1; --rarity-epic: #ae8bd6; --rarity-relic: #ec8338;
+  --dmg-physical: #d0604f; --dmg-magic: #ab8dd8; --dmg-healing: #92bf88; --hp-color: #a82a20; --exp-color: #c8a96e;
+  --damage-color: #c8402f; --heal-color: #92bf88; --soon-color: #d49a46; --side-quest-color: #c8a96e;
+  background: var(--bg) !important;
+}
+:root[data-theme='minimalist'] body { background: var(--bg) !important; }
+:root[data-theme='minimalist'] .panel, :root[data-theme='minimalist'] .modal-content { background: #1c1915 !important; border-color: rgba(150,141,126,.12) !important; }
+:root[data-theme='minimalist'] .quest-item, :root[data-theme='minimalist'] .gear-row, :root[data-theme='minimalist'] .hero:has(> .hero-sprite) { background: rgba(0,0,0,.22) !important; border-color: rgba(150,141,126,.1) !important; }
+:root[data-theme='minimalist'] .gear-row { border-left-color: var(--rarity) !important; }
+:root[data-theme='minimalist'] .panel h2, :root[data-theme='minimalist'] .modal-header h3,
+:root[data-theme='minimalist'] .fight-stage .boss-name { font-family: 'Cinzel', serif !important; text-transform: uppercase; letter-spacing: .18em; font-size: .85rem !important; font-weight: 600 !important; color: var(--text-h) !important; }
+:root[data-theme='minimalist'] .add-button, :root[data-theme='minimalist'] .menu-button { background: rgba(200,169,110,.13) !important; border-color: transparent !important; color: var(--accent) !important; }
+:root[data-theme='minimalist'] .check:checked { background: var(--accent-solid) !important; border-color: var(--accent-solid) !important; }
+:root[data-theme='minimalist'] .check { border-color: rgba(200,169,110,.6) !important; }
+:root[data-theme='minimalist'] .bad .check:not(:checked) { border-color: var(--damage-color) !important; }
+:root[data-theme='minimalist'] .exp-bar-fill { background: var(--exp-color) !important; }

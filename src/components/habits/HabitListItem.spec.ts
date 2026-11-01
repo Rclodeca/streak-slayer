@@ -131,6 +131,29 @@ describe('HabitListItem', () => {
       expect(ranked.find('.rank-diamonds').attributes('aria-label')).toBe('Rank III');
     });
 
+    it('carries the rank as a numeral too, for themes that show it instead', () => {
+      const ranked = mountSkill({ rank: 8 });
+      expect(ranked.find('.rank-diamonds .rank-numeral').text()).toBe('VIII');
+    });
+
+    it('keeps an empty rank slot on an unranked skill, so a theme can hold its column', () => {
+      const unranked = mountSkill({ rank: 0 });
+      expect(unranked.find('.rank-slot').exists()).toBe(true);
+      expect(unranked.find('.rank-slot').attributes('aria-hidden')).toBe('true');
+      unranked.unmount();
+      setActivePinia((pinia = createPinia()));
+      expect(mountSkill({ rank: 2 }).find('.rank-slot').exists()).toBe(false);
+    });
+
+    it('keeps the streak one size however long it runs', () => {
+      const short = mountSkill({ streakCount: 3 });
+      const shortSize = (short.find('.streak').element as HTMLElement).style.fontSize;
+      short.unmount();
+      setActivePinia((pinia = createPinia()));
+      const long = mountSkill({ streakCount: 40 });
+      expect((long.find('.streak').element as HTMLElement).style.fontSize).toBe(shortSize);
+    });
+
     it('flares the row once on a rank-up, then clears', async () => {
       vi.useFakeTimers();
       const wrapper = mountSkill({ rank: 2 });

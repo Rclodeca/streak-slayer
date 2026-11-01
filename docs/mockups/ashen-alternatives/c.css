@@ -1,0 +1,9 @@
+/* C · Serif names, sans for the rest: B, with Alegreya Sans for numbers,
+   buttons, labels, log and small text. Serif only where you read a name. */
+:root[data-theme='ashen'] { --sans: 'Alegreya Sans', system-ui, sans-serif; font-size-adjust: 0.52; }
+:root[data-theme='ashen'] .habit-item .name,
+:root[data-theme='ashen'] .quest-item .description,
+:root[data-theme='ashen'] .gear-name,
+:root[data-theme='ashen'] .hero-level,
+:root[data-theme='ashen'] .fight-stage .name-line,
+:root[data-theme='ashen'] .fight-stage .boss-name { font-family: 'Alegreya', Georgia, serif !important; font-weight: 600 !important; }

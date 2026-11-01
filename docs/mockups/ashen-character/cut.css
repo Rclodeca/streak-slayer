@@ -1,0 +1,5 @@
+/* 3 · Cut corners: panels and buttons with their corners struck off, like cut stone. */
+:root[data-theme='ashen'] .panel, :root[data-theme='ashen'] .modal-content, :root[data-theme='ashen'] .menu-panel { border-radius: 0 !important; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+:root[data-theme='ashen'] :is(.quest-item, .gear-row, .stat-tile, .hero:has(> .hero-sprite), .hero:has(> .seal), .hero:has(> .icon-frame), .hero-sprite, .rank-block, li.card, .miss-card) { border-radius: 0 !important; clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px); }
+:root[data-theme='ashen'] :is(.add-button, .menu-button, .ok-button, .primary-button, .submit, .restart-button, .cancel-button, .replace-button, .back, .drop-button) { border-radius: 0 !important; clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 7px 100%, 0 50%); }
+:root[data-theme='ashen'] .gear-icon, :root[data-theme='ashen'] .boss-bar .portrait { border-radius: 0 !important; }

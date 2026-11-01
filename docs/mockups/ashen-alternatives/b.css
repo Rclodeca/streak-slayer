@@ -1,0 +1,29 @@
+/* B · Quiet Ashen: A + no ornament. Rounded lit panels, no corner brackets
+   or rule lines, soft gold pill buttons, panels stand off the page. */
+:root[data-theme='ashen'] .panel::before,
+:root[data-theme='ashen'] .modal-content::before,
+:root[data-theme='ashen'] .menu-panel::before,
+:root[data-theme='ashen'] .habit-group-title::after,
+:root[data-theme='ashen'] .group-label::after,
+:root[data-theme='ashen'] .modal-header h3::before,
+:root[data-theme='ashen'] .modal-header h3::after { display: none !important; }
+:root[data-theme='ashen'] .panel { border-radius: 16px !important; background: #1d1a16 !important; border: 1px solid rgba(150,141,126,.1) !important; }
+:root[data-theme='ashen'] .modal-content { border-radius: 18px !important; background: #1d1a16 !important; border-color: rgba(150,141,126,.16) !important; }
+:root[data-theme='ashen'] .menu-panel { border-radius: 14px !important; }
+:root[data-theme='ashen'] .quest-item,
+:root[data-theme='ashen'] .gear-row,
+:root[data-theme='ashen'] .stat-tile,
+:root[data-theme='ashen'] .hero:has(> .hero-sprite),
+:root[data-theme='ashen'] .hero-sprite,
+:root[data-theme='ashen'] .gear-icon { border-radius: 12px !important; }
+:root[data-theme='ashen'] .quest-item, :root[data-theme='ashen'] .gear-row { background: rgba(0,0,0,.22) !important; }
+:root[data-theme='ashen'] .add-button,
+:root[data-theme='ashen'] .menu-button,
+:root[data-theme='ashen'] .ok-button,
+:root[data-theme='ashen'] .cancel-button,
+:root[data-theme='ashen'] .drop-button { border-radius: 999px !important; border-color: transparent !important; background: rgba(200,169,110,.13) !important; color: var(--accent) !important; }
+:root[data-theme='ashen'] .menu-button { border-radius: 12px !important; }
+:root[data-theme='ashen'] .health-bar, :root[data-theme='ashen'] .exp-bar,
+:root[data-theme='ashen'] .health-bar-fill, :root[data-theme='ashen'] .exp-bar-fill { border-radius: 999px !important; }
+:root[data-theme='ashen'] .modal-header h3 { justify-content: flex-start !important; text-align: left !important; }
+:root[data-theme='ashen'] .layout section.panel::after { display: none !important; }

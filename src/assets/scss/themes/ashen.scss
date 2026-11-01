@@ -1,21 +1,25 @@
-// Ashen — Souls-like dark fantasy: near-black, lit frames edged in ash,
-// engraved Roman caps (Cinzel) for titles over Cormorant body text, and a
-// boss that rises out of fog. Imported once from main.ts.
+// Ashen — Souls-like dark fantasy: near-black, firelit stone panels,
+// engraved Roman caps (Cinzel) for titles, and a boss that rises out of fog.
+// Imported once from main.ts.
 //
-// Three rules keep it scannable (docs/mockups/ashen-hierarchy.html):
-// - Gold means touch: buttons, checks and what the hero has earned. Frames,
-//   rules and titles are ash and bone.
-// - The diamond marks what you tick. Ranks are bars, difficulty is dots.
-// - Engraved caps are for titles and the tiny group labels; buttons, tags
-//   and small text are plain serif.
+// Four rules keep it scannable (docs/mockups/ashen-hierarchy.html,
+// docs/mockups/ashen-alternatives.html option C, ashen-character.html):
+// - Gold means touch: buttons, checks and what the hero has earned. Frames
+//   and titles are ash and bone.
+// - The diamond marks what you tick, and crowns each section. Ranks are
+//   numerals on a plate, difficulty is dots.
+// - Engraved caps are for titles and the tiny group labels. Names you read
+//   (skills, quests, items) are the Alegreya serif; buttons, numbers, tags
+//   and small text are Alegreya Sans. Nothing is italic.
+// - Few ornaments: a crest diamond on each main section's top edge and a
+//   firelit seam along panels and popups; no corner brackets or rules beside titles. Corners are
+//   only just softened, buttons are soft gold fills.
 //
 // Every rule lives under :root[data-theme='ashen'] (see store/themeStore.ts).
 // That prefix also outranks the components' scoped styles — it adds a
 // pseudo-class and an attribute on top of their class + data-v attribute —
 // so this file can restyle component internals while Minimalist (the
 // unthemed base styles) stays exactly as it was.
-
-@use 'sass:list';
 
 // Structure: frames, rules and dividers, in ash.
 $line: rgba(150, 141, 126, 0.2);
@@ -27,10 +31,18 @@ $gold-line: rgba(200, 169, 110, 0.55);
 $ash-deep: #5c554a;
 $ember: #e0783a;
 // A panel is a lit surface, a little above the page.
-$frame-top: rgb(33, 29, 24);
-$frame-bottom: rgb(23, 20, 15);
+$frame: #1d1a16;
 // A dark well set into a panel or popup: an inner box with no frame.
-$well: rgba(0, 0, 0, 0.28);
+$well: rgba(0, 0, 0, 0.22);
+
+// Corners: worked stone, only just softened — panels, popups, the wells
+// inside them, buttons and bars; pills for tags.
+$radius-panel: 6px;
+$radius-popup: 8px;
+$radius-well: 4px;
+$radius-button: 6px;
+$radius-bar: 2px;
+$radius-pill: 999px;
 
 // The boss sprite's dark rim and ember glow, on the stage and in its details.
 $boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
@@ -56,56 +68,71 @@ $caps-lg: 0.85rem; // panel and popup titles
   text-transform: uppercase;
 }
 
-// Plain serif — buttons, tags and small text, in the case they're written.
-// Keeps the root's font-size-adjust, so sizes match the body text.
-$serif-sm: 0.8rem; // tags, captions, small notes
-$serif-md: 0.85rem; // buttons, menu items
-$serif-lg: 0.95rem; // primary buttons, choice titles
+// Plain label — buttons, tags, numbers and small text, in Alegreya Sans, in
+// the case they're written. Keeps the root's font-size-adjust, so sizes match
+// the body text.
+$label-sm: 0.8rem; // tags, captions, small notes
+$label-md: 0.85rem; // buttons, menu items
+$label-lg: 0.95rem; // primary buttons, choice titles
 
-@mixin serif-label($size: $serif-md, $weight: 600) {
+@mixin plain-label($size: $label-md, $weight: 600) {
   font-family: var(--sans);
   font-size: $size;
-  font-size-adjust: 0.5;
+  font-size-adjust: 0.52;
   font-weight: $weight;
   letter-spacing: 0.01em;
   text-transform: none;
 }
 
-// Hairline gold frame button.
-@mixin ghost-button($size: $serif-md, $color: var(--accent), $border: $gold-line) {
-  @include serif-label($size);
+// A name you read: a skill, quest or item, in the Alegreya serif.
+@mixin name-serif($weight: 600) {
+  font-family: var(--serif);
+  font-weight: $weight;
+}
+
+// A panel's face, lit from above: a warm gold seam along its top edge and a
+// faint glow under it, over `$fill`.
+@mixin firelit($fill) {
+  background:
+    linear-gradient(90deg, transparent 8%, rgba(230, 199, 127, 0.45) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(230, 199, 127, 0.07), transparent),
+    $fill;
+}
+
+// The crest: a small diamond set into the top edge of a frame, for a ::before
+// or ::after on something positioned.
+@mixin crest {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  z-index: 2;
+  width: 7px;
+  height: 7px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--bg);
+  border: 1px solid var(--accent-solid);
+}
+
+// A soft fill of gold (or `$fill`) with no frame.
+@mixin soft-button($size: $label-md, $color: var(--accent), $fill: rgba(200, 169, 110, 0.13)) {
+  @include plain-label($size);
   color: $color;
-  background: transparent;
-  border: 1px solid $border;
+  background: $fill;
+  border: 1px solid transparent;
+  border-radius: $radius-button;
   transition:
-    border-color 0.2s,
     box-shadow 0.2s,
     background 0.2s;
 
-  &:hover:not(:disabled) {
-    border-color: var(--accent-solid);
-    background: rgba(200, 169, 110, 0.07);
-    box-shadow: 0 0 16px -4px rgba(230, 199, 127, 0.45);
-  }
-}
-
-// Ash L-brackets on the corners of an outer frame — all four, or just those
-// along one edge (`$edges: top` or `bottom`).
-@mixin corner-brackets($inset: -1px, $edges: top bottom, $length: 12px) {
-  $layers: ();
-  @each $edge in $edges {
-    @each $side in left, right {
-      $layers: list.append($layers, linear-gradient($ash-mark, $ash-mark) $edge $side / $length 1px no-repeat, $separator: comma);
-      $layers: list.append($layers, linear-gradient($ash-mark, $ash-mark) $edge $side / 1px $length no-repeat, $separator: comma);
+  // Only with a real pointer: a phone keeps :hover on whatever was last
+  // tapped, which would leave the next button under that spot glowing.
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: rgba(200, 169, 110, 0.2);
+      box-shadow: 0 0 16px -4px rgba(230, 199, 127, 0.45);
     }
   }
-
-  content: '';
-  position: absolute;
-  inset: $inset;
-  pointer-events: none;
-  opacity: 0.75;
-  background: $layers;
 }
 
 // Embers drifting upward, for a ::before inside an overflow-hidden stage.
@@ -159,14 +186,14 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 }
 
 :root[data-theme='ashen'] {
-  --text: #a1988a;
+  --text: #b4ab9c;
   --text-h: #ece3cd;
   --bg: #0b0a09;
   --border: #3a332a;
   --code-bg: #161411;
   // The frame's shade at the foot of the boss's stage, where BossPanel's fog
   // band meets it (the panel here; the details box below).
-  --stage-fog: rgb(25, 22, 17);
+  --stage-fog: #{$frame};
   --accent: #e6cf9a;
   --accent-solid: #c8a96e;
   --accent-bg: rgba(200, 169, 110, 0.08);
@@ -177,7 +204,8 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   --true-damage-color: #f1e9d6;
   --exp-skill-color: #e6cf9a;
   --shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.95);
-  --sans: 'Cormorant Garamond', Garamond, Georgia, serif;
+  --sans: 'Alegreya Sans', system-ui, sans-serif;
+  --serif: 'Alegreya', Georgia, serif;
   --heading: 'Cinzel', 'Trajan Pro', Georgia, serif;
   --dmg-physical: #d0604f;
   --dmg-magic: #ab8dd8;
@@ -211,12 +239,11 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   --overdrive-color: #{$ember};
   --portrait-border: rgba(200, 169, 110, 0.22);
 
-  // Cormorant has a small x-height and reads a size smaller than system-ui;
-  // this evens it out so every component's existing font-size still fits.
-  font-size-adjust: 0.5;
-  // Cormorant's hairlines thin out on near-black: body text a weight up, and
-  // lining figures so numbers in running text sit on the line.
-  font-weight: 600;
+  // Alegreya's letters run a little smaller than system-ui's; this evens it
+  // out so every component's existing font-size still fits.
+  font-size-adjust: 0.52;
+  // Lining figures, so numbers in running text sit on the line.
+  font-weight: 500;
   font-variant-numeric: lining-nums;
   background: var(--bg);
 
@@ -231,10 +258,16 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(200, 169, 110, 0.12), transparent 70%);
   }
 
-  // Nothing is rounded, apart from the few things that are round by nature
-  // (the hit effects' rings, bolts, motes and pulses among them).
+  // Square by default, so diamonds stay sharp, apart from the few things that
+  // are round by nature (the hit effects' rings, bolts, motes and pulses among
+  // them). Panels, wells, buttons and bars set their own $radius-* below.
   *:not(.ring, .seal, .stone, .level-ring, .fx-ring, .fx-orb, .fx-mote, .fx-pulse) {
     border-radius: 0;
+  }
+
+  // Nothing is italic, whatever the base styles say.
+  :is(.tagline, .due-summary, .log-effect, .gear-effect, .effect, .fell, .pledge) {
+    font-style: normal;
   }
 
   .stat-icon svg {
@@ -244,15 +277,16 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Frames ----------
 
   .panel {
-    background: linear-gradient(180deg, $frame-top, $frame-bottom);
-    border-color: $line-faint;
+    @include firelit($frame);
+    border-color: rgba(150, 141, 126, 0.1);
+    border-radius: $radius-panel;
     box-shadow:
       0 24px 50px -24px rgba(0, 0, 0, 0.95),
       inset 0 1px 0 rgba(255, 236, 200, 0.04);
   }
 
-  .panel::before {
-    @include corner-brackets;
+  .layout section.panel::after {
+    @include crest;
   }
 
   .panel h2 {
@@ -271,32 +305,35 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .menu-button,
   .add-button {
     padding: 0.55rem 0.8rem;
-    @include ghost-button;
+    @include soft-button;
   }
 
   .menu-button {
     padding: 0.45rem 0.55rem;
+    border-radius: $radius-button;
   }
 
   .menu-panel {
-    background: linear-gradient(180deg, rgba($frame-top, 0.985), rgba($frame-bottom, 0.985));
+    background: rgba($frame, 0.985);
     border-color: $line-mid;
+    border-radius: $radius-panel;
     box-shadow:
       0 24px 50px -20px #000,
       0 0 0 4px rgba(0, 0, 0, 0.55);
   }
 
-  .menu-panel::before {
-    @include corner-brackets(0);
-  }
-
   .menu-item {
-    @include serif-label;
+    @include plain-label;
+    border-radius: $radius-well;
   }
 
-  .menu-item:hover {
-    background: linear-gradient(90deg, rgba(200, 169, 110, 0.12), transparent);
-    box-shadow: inset 1px 0 0 var(--accent-solid);
+  // Row and menu highlights only with a real pointer, so a tapped row
+  // doesn't stay lit on a phone.
+  @media (hover: hover) {
+    .menu-item:hover {
+      background: linear-gradient(90deg, rgba(200, 169, 110, 0.12), transparent);
+      box-shadow: inset 1px 0 0 var(--accent-solid);
+    }
   }
 
   .menu-label {
@@ -396,7 +433,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     height: 15px;
   }
 
-  // Square, unclipped: the bar's black ring and the fill's glow show.
+  // Unclipped: the bar's black ring and the fill's glow show.
   .fight-stage .bars {
     overflow: visible;
   }
@@ -410,11 +447,9 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
       0 0 2px #000;
   }
 
-  // Centred on the bar above its EXP seam. Cinzel's digits sit high in their
-  // line box, so the box is nudged down to bring the ink to the middle.
+  // Centred on the bar above its EXP seam.
   .fight-stage .hero-block .health-bar-label {
-    top: 0.75px;
-    bottom: 1.25px;
+    bottom: 2px;
   }
 
   // The hero's EXP, as a gold seam inside the HP bar's border.
@@ -537,7 +572,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .slain-name {
-    font-style: italic;
+    @include name-serif;
     font-size: 1rem;
     color: var(--text-h);
   }
@@ -573,18 +608,27 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     overflow: visible;
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid $line-mid;
+    border-radius: $radius-bar;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  }
+
+  // The fill and the damage trail behind it, softened like the bar so
+  // neither shows a sharp corner past its ends.
+  .health-bar-fill,
+  .health-bar-trail,
+  .exp-bar-fill {
+    border-radius: $radius-bar;
   }
 
   // Each margin is exactly the room its numbers take: the text plus 4px.
   .health-bar {
     height: 8px;
-    margin-top: calc(0.7rem + 4px);
+    margin-top: calc(0.75rem + 4px);
   }
 
   .exp-bar {
     height: 5px;
-    margin-bottom: calc(0.7rem + 4px);
+    margin-bottom: calc(0.75rem + 4px);
     border-color: $line;
   }
 
@@ -604,7 +648,10 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .health-bar-label,
   .exp-bar-label {
     justify-content: flex-end;
-    @include engraved($caps-xs, 0.12em);
+    @include plain-label(0.75rem, 700);
+    font-size-adjust: none;
+    font-variant-numeric: lining-nums tabular-nums;
+    letter-spacing: 0.03em;
     line-height: 1;
     color: var(--text);
     text-shadow: none;
@@ -672,10 +719,8 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .summary b {
-    font-family: var(--heading);
-    font-size-adjust: none;
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 
   .summary .stat div > span {
@@ -691,22 +736,8 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Skills ----------
 
   .habit-group-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
     @include engraved($caps-xs, 0.26em);
     color: var(--text);
-
-    &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, $line-mid, transparent);
-    }
-  }
-
-  .habit-group-empty {
-    font-style: italic;
   }
 
   .habit-item {
@@ -714,9 +745,11 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     transition: background 0.25s;
   }
 
-  .habit-item:hover {
-    background: linear-gradient(90deg, rgba(200, 169, 110, 0.12), rgba(200, 169, 110, 0.02) 60%, transparent);
-    box-shadow: inset 1px 0 0 var(--accent-solid);
+  @media (hover: hover) {
+    .habit-item:hover {
+      background: linear-gradient(90deg, rgba(200, 169, 110, 0.12), rgba(200, 169, 110, 0.02) 60%, transparent);
+      box-shadow: inset 1px 0 0 var(--accent-solid);
+    }
   }
 
   .habit-item.bad::before {
@@ -762,7 +795,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .habit-item .name {
-    font-weight: 600;
+    @include name-serif;
   }
 
   .habit-item .name.done {
@@ -782,13 +815,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .habit-item .streak,
   .habit-item .damage {
-    font-family: var(--heading);
-    font-size-adjust: none;
-  }
-
-  .habit-item .damage {
-    font-size: 0.92rem;
-    letter-spacing: 0.02em;
+    font-weight: 700;
   }
 
   // Resting today: a hollow, dashed ash diamond that can't be checked.
@@ -799,10 +826,10 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .habit-item .next-day {
-    @include serif-label($serif-sm, 600);
-    padding: 3px 5px;
+    @include plain-label($label-sm, 600);
+    padding: 3px 7px;
     border: 1px solid $line-mid;
-    border-radius: 0;
+    border-radius: $radius-pill;
     color: var(--text);
   }
 
@@ -889,17 +916,45 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: none;
   }
 
-  // Skill ranks: a gold bar per rank, not a diamond, so they never read
-  // as checks.
-  .rank-diamonds {
-    gap: 2px;
+  // Skill ranks: the Roman numeral on a small dark plate edged in gold, not
+  // a diamond per rank, so they never read as checks. Every plate is the same
+  // width.
+  .rank-diamonds i {
+    display: none;
   }
 
-  .rank-diamonds i {
-    width: 3px;
-    height: 11px;
-    transform: none;
-    background: var(--accent-solid);
+  .rank-numeral {
+    display: block;
+    box-sizing: border-box;
+    width: 30px;
+    // The extra left padding balances the tracking after the last letter.
+    padding: 3px 0 2px 0.08em;
+    text-align: center;
+    font-family: var(--heading);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: var(--accent);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(200, 169, 110, 0.5);
+    border-radius: 3px;
+  }
+
+  // On a skill row, streak, rank and damage each hold a fixed place, so they
+  // line up down the list; an unranked skill keeps an empty plate's width
+  // (docs/mockups/plate-columns.html, option A).
+  .habit-item .meta {
+    gap: 0.6rem;
+  }
+
+  .habit-item .streak {
+    min-width: 2.6rem;
+  }
+
+  .habit-item .rank-slot {
+    display: block;
+    width: 30px;
   }
 
   // A rank-up: a gold sweep across the row and the new rank rising off it.
@@ -920,6 +975,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 12%, transparent), $well 55%);
     border-color: transparent;
     border-left: 2px solid var(--tone);
+    border-radius: $radius-well;
     box-shadow: none;
   }
 
@@ -934,12 +990,11 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .quest-item .description {
-    font-weight: 600;
+    @include name-serif;
   }
 
   .quest-item .meta {
-    @include serif-label($serif-sm, 600);
-    font-style: italic;
+    @include plain-label($label-sm, 600);
   }
 
   .reward-exp {
@@ -949,7 +1004,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   // The glow sits behind the icon itself, not the icon + label block.
   .reward-exp {
     isolation: isolate;
-    @include serif-label(0.72rem);
+    @include plain-label(0.72rem);
     color: var(--accent);
   }
 
@@ -1004,28 +1059,32 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .submit,
   .restart-button,
   .ok-button {
-    @include serif-label($serif-lg, 700);
+    @include plain-label($label-lg, 700);
     padding: 0.85rem 1rem;
     color: var(--text-h);
-    background: linear-gradient(180deg, rgba(146, 124, 80, 0.25), rgba(60, 48, 28, 0.25));
-    border: 1px solid $gold-line;
+    // Warm and lifted, so the gold reads as gold rather than olive.
+    background: linear-gradient(180deg, rgba(214, 180, 112, 0.34), rgba(150, 118, 64, 0.26));
+    border: 1px solid rgba(200, 169, 110, 0.45);
+    border-radius: $radius-button;
     box-shadow: none;
     filter: none;
     transition:
-      border-color 0.25s,
+      background 0.25s,
       box-shadow 0.25s;
 
-    &:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 22px -6px rgba(230, 199, 127, 0.5);
-      filter: none;
+    @media (hover: hover) {
+      &:hover {
+        background: linear-gradient(180deg, rgba(224, 190, 120, 0.44), rgba(160, 128, 72, 0.34));
+        box-shadow: 0 0 22px -6px rgba(230, 199, 127, 0.5);
+        filter: none;
+      }
     }
   }
 
   // Taking a blow gets a crimson button; claiming a reward keeps the gold one.
   .ok-button:not(.boon, .redeemed) {
-    background: linear-gradient(180deg, rgba(160, 34, 30, 0.38), rgba(90, 16, 13, 0.38));
-    border-color: rgba(200, 64, 47, 0.65);
+    background: rgba(160, 34, 30, 0.45);
+    border-color: rgba(200, 64, 47, 0.55);
     box-shadow: 0 0 26px -10px rgba(200, 64, 47, 0.9);
   }
 
@@ -1033,7 +1092,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .back,
   .cancel-button {
     padding: 0.6rem 0.8rem;
-    @include ghost-button;
+    @include soft-button;
   }
 
   // Tighter, so the replace list keeps room for item names on a phone.
@@ -1041,14 +1100,16 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     padding-inline: 0.6rem;
   }
 
+  // Dropping is the quiet choice: an ash outline, not a gold fill.
   .drop-button {
     padding: 0.6rem 0.8rem;
-    @include ghost-button($serif-md, var(--text), $line-mid);
+    @include soft-button($label-md, var(--text-h), transparent);
+    border-color: $line-mid;
   }
 
   // Quiet: a line of red, not a framed button.
   .remove-button {
-    @include serif-label($serif-md);
+    @include plain-label($label-md);
     color: rgba(200, 64, 47, 0.8);
     transition: color 0.2s;
 
@@ -1056,7 +1117,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
       color: var(--dmg-physical);
     }
 
-    // Added today: ash, and an italic "Tomorrow" under it.
+    // Added today: ash, and a quiet "Tomorrow" under it.
     &.locked,
     &.locked:hover {
       color: $ash-deep;
@@ -1065,7 +1126,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     small {
       display: block;
       margin-top: 5px;
-      font: italic 500 0.85rem/1 var(--sans);
+      font: 500 0.85rem/1 var(--sans);
       letter-spacing: 0;
       text-transform: none;
       color: var(--text);
@@ -1073,20 +1134,22 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .confirm-remove-button {
-    @include serif-label($serif-lg);
+    @include plain-label($label-lg);
     padding: 0.7rem;
     color: var(--text-h);
-    background: linear-gradient(180deg, rgba(160, 34, 30, 0.38), rgba(90, 16, 13, 0.38));
-    border: 1px solid rgba(200, 64, 47, 0.65);
+    background: rgba(160, 34, 30, 0.45);
+    border: 1px solid transparent;
+    border-radius: $radius-button;
   }
 
   // Overdrive burns ember, the same fire as the check's halo.
   .overdrive-button {
-    @include serif-label($serif-lg);
+    @include plain-label($label-lg);
     padding: 0.7rem;
     color: var(--text-h);
-    background: linear-gradient(180deg, rgba(160, 60, 20, 0.35), rgba(90, 30, 10, 0.35));
+    background: rgba(160, 60, 20, 0.4);
     border: 1px solid rgba(224, 120, 58, 0.7);
+    border-radius: $radius-button;
   }
 
   .overdrive-button:disabled {
@@ -1128,54 +1191,31 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .modal-content {
     position: relative;
-    background: linear-gradient(180deg, rgba($frame-top, 0.985), rgba($frame-bottom, 0.985));
-    border-color: $line-mid;
+    @include firelit(rgba($frame, 0.985));
+    border-color: rgba(150, 141, 126, 0.16);
+    border-radius: $radius-popup;
     box-shadow: 0 40px 80px -30px #000;
-  }
-
-  .modal-content::before {
-    @include corner-brackets(0);
   }
 
   .modal-footer {
     border-top-color: $line;
   }
 
-  // Title centred between two fading rules — centred across the whole
-  // popup: the close button is taken out of the flow (with matching padding
-  // on both sides of the title) so it can't push the title off-centre.
+  // Title on the left; the close button is taken out of the flow, at the
+  // right, so a long title can't push it about.
   .modal-header {
     position: relative;
   }
 
   .modal-header h3 {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
     @include engraved($caps-lg, 0.24em);
     color: var(--text-h);
-    text-align: center;
-
-    &::before,
-    &::after {
-      content: '';
-      flex: 1;
-      min-width: 12px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, $line-mid);
-    }
-
-    // Cancels the letter-spacing trailing the last letter, so both gaps match.
-    &::after {
-      margin-left: -0.24em;
-      background: linear-gradient(270deg, transparent, $line-mid);
-    }
+    text-align: left;
   }
 
   .modal-header:has(.modal-close) h3 {
-    padding-inline: 2.25rem;
+    padding-right: 2.25rem;
   }
 
   .modal-close {
@@ -1191,36 +1231,17 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .subtitle {
     text-align: center;
-    font-style: italic;
-  }
-
-  .stat-note,
-  .tile-note,
-  .card-desc,
-  .card-hint,
-  .due-summary {
-    font-style: italic;
   }
 
   .group-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
     @include engraved($caps-xs, 0.24em);
     color: var(--text);
-
-    &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, $line-mid, transparent);
-    }
   }
 
   .intro {
     background: $well;
     border-color: transparent;
-    font-style: italic;
+    border-radius: $radius-well;
   }
 
   // Level-up event cards.
@@ -1229,6 +1250,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     background: rgba(0, 0, 0, 0.35);
     border: 1px solid $line;
     border-left: 2px solid $gold-line;
+    border-radius: $radius-well;
     transition:
       border-color 0.3s,
       box-shadow 0.3s;
@@ -1257,7 +1279,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   button.card .card-title {
-    @include serif-label($serif-lg, 700);
+    @include plain-label($label-lg, 700);
   }
 
   button.card .card-desc {
@@ -1302,18 +1324,14 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     border-color: $line-faint;
   }
 
-  .dropped-by {
-    font-style: italic;
-  }
-
   .dropped-by-name {
     @include engraved($caps-xs, 0.16em);
-    font-style: normal;
   }
 
   .list > button.row {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid $line;
+    border-radius: $radius-well;
   }
 
   .list > button.row:hover {
@@ -1326,6 +1344,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
       radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--rarity) 10%, transparent), transparent 70%),
       rgba(0, 0, 0, 0.25);
     border: 1px solid color-mix(in srgb, var(--rarity) 45%, transparent);
+    border-radius: $radius-well;
     box-shadow: 0 0 24px -10px var(--rarity);
   }
 
@@ -1354,18 +1373,17 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .hero .rarity {
-    @include serif-label($serif-lg, 600);
-    font-style: italic;
+    @include plain-label($label-lg, 600);
     text-transform: capitalize;
   }
 
   .hero:has(> .icon-frame) .name {
+    @include name-serif;
     font-size: 1.45rem;
-    font-weight: 600;
   }
 
   .equipped-note {
-    @include serif-label($serif-md);
+    @include plain-label($label-md);
   }
 
   .replace-label {
@@ -1374,7 +1392,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .replace-label::before,
   .replace-label::after {
-    background: $line;
+    content: none;
   }
 
   // Daily update + missed deadlines.
@@ -1383,7 +1401,13 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 13%, transparent), $well 60%);
     border: 1px solid transparent;
     border-left: 2px solid var(--tone);
+    border-radius: $radius-well;
     box-shadow: none;
+  }
+
+  li.card .name,
+  .miss-name {
+    @include name-serif;
   }
 
   .miss-card .pip.lit {
@@ -1392,13 +1416,14 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .outcome {
-    @include serif-label($serif-sm, 600);
+    @include plain-label($label-sm, 600);
   }
 
+  // "I did this" / "I gave in": buttons, so a button's corners.
   .pill,
   .redeem {
     border-color: $gold-line;
-    font-style: italic;
+    border-radius: $radius-button;
   }
 
   .pill input,
@@ -1428,6 +1453,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .date-input {
     background: rgba(0, 0, 0, 0.35);
     border-color: $gold-line;
+    border-radius: $radius-well;
   }
 
   .name-input:focus,
@@ -1439,15 +1465,17 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   label.card {
     background: rgba(0, 0, 0, 0.25);
     border-color: $line;
+    border-radius: $radius-well;
   }
 
   label.card .card-title {
-    @include serif-label($serif-lg, 700);
+    @include plain-label($label-lg, 700);
   }
 
   .quest-form .chip {
     background: rgba(0, 0, 0, 0.25);
     border-color: $line;
+    border-radius: $radius-button;
     font-weight: 600;
   }
 
@@ -1459,8 +1487,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   // Habit details: the hit worked out like a sum.
   .skill-meta {
-    @include serif-label($serif-md, 600);
-    font-style: italic;
+    @include plain-label($label-md, 600);
     gap: 10px;
   }
 
@@ -1468,15 +1495,12 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     @include engraved($caps-xs, 0.24em);
   }
 
-  .skill-days-label span:last-child {
-    font-style: italic;
-  }
-
   // Rank block: the rank beside its bars, a gold bar to the next.
   .rank-block {
     margin: 0 0 14px;
     padding: 10px 10px 9px;
     border: 1px solid transparent;
+    border-radius: $radius-well;
     background: $well;
   }
 
@@ -1485,16 +1509,17 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .rank-label {
-    @include serif-label($serif-lg, 700);
+    @include plain-label($label-lg, 700);
     color: var(--text-h);
   }
 
   .rank-bar {
     background: rgba(0, 0, 0, 0.55);
     border: 1px solid $line;
-    border-radius: 0;
+    border-radius: $radius-bar;
 
     i {
+      border-radius: $radius-bar;
       background: linear-gradient(90deg, #8a6a2c, var(--accent));
       box-shadow: 0 0 6px rgba(230, 207, 154, 0.4);
     }
@@ -1502,10 +1527,8 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .rank-caption {
     margin-top: 4px;
-    font-style: italic;
 
     b {
-      font-style: normal;
       color: var(--accent-solid);
       font-weight: 600;
     }
@@ -1523,13 +1546,11 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .skill-sum dt small {
     font-size: 0.95em;
-    font-style: italic;
   }
 
   .skill-sum dd {
-    font-family: var(--heading);
     font-size: 0.92rem;
-    font-size-adjust: none;
+    font-weight: 700;
     font-variant-numeric: lining-nums;
   }
 
@@ -1543,7 +1564,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .sum-total dd {
     font-size: 1.9rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.02em;
     text-shadow: 0 0 22px color-mix(in srgb, var(--c) 35%, transparent);
   }
@@ -1552,11 +1573,16 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .hero:has(> .hero-sprite) {
     background: $well;
     border-color: transparent;
+    border-radius: $radius-well;
+  }
+
+  .hero-sprite,
+  .gear-icon {
+    border-radius: $radius-well;
   }
 
   .hero-tag {
-    @include serif-label($serif-md, 600);
-    font-style: italic;
+    @include plain-label($label-md, 600);
   }
 
   .hero-name,
@@ -1567,12 +1593,11 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .stat-tile {
     background: $well;
     border-color: transparent;
+    border-radius: $radius-well;
   }
 
   .tile-value {
-    font-family: var(--heading);
-    font-size-adjust: none;
-    font-weight: 500;
+    font-weight: 700;
   }
 
   .tile-gain {
@@ -1583,26 +1608,28 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     background: $well;
     border-color: transparent;
     border-left: 2px solid var(--rarity);
+    border-radius: $radius-well;
   }
 
   .gear-row.empty {
     border-left: 1px dashed $line-mid;
   }
 
-  .gear-name {
-    font-weight: 700;
+  .gear-name,
+  .run-gear-name {
+    @include name-serif;
   }
 
   .gear-rarity {
-    @include serif-label($serif-md, 600);
-    font-style: italic;
+    @include plain-label($label-md, 600);
     text-transform: capitalize;
   }
 
   .gear-enchanted {
-    @include serif-label($serif-sm);
+    @include plain-label($label-sm);
     background: rgba(200, 169, 110, 0.1);
     border-color: rgba(200, 169, 110, 0.5);
+    border-radius: $radius-pill;
   }
 
   // Quest complete.
@@ -1611,6 +1638,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
       radial-gradient(circle at 50% 30%, rgba(230, 199, 127, 0.12), transparent 60%),
       $well;
     border-color: transparent;
+    border-radius: $radius-well;
   }
 
   .seal {
@@ -1618,7 +1646,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .deed {
-    font-weight: 600;
+    @include name-serif;
   }
 
   .hero:has(> .seal) .reward {
@@ -1640,25 +1668,8 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     font-weight: 700;
   }
 
-  .skill-line {
-    font-style: italic;
-  }
-
-  .skill-line.damage,
-  .skill-line.heal {
-    font-style: normal;
-  }
-
   // ---------- High scores: a wall of the fallen ----------
   // (docs/mockups/high-scores-d.html, option D2)
-
-  .high-score-page .page-note,
-  .epitaph-line,
-  .run-epitaph,
-  .run-gear-stats,
-  .run-skill-period {
-    font-style: italic;
-  }
 
   .epitaphs li + li {
     border-top-color: $line;
@@ -1688,14 +1699,12 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .epitaph-line b,
   .run-epitaph b {
-    font-style: normal;
     font-weight: 600;
   }
 
   .epitaph-days,
   .run-dates {
-    @include serif-label($serif-sm, 600);
-    font-style: italic;
+    @include plain-label($label-sm, 600);
     color: $ash-deep;
     opacity: 1;
   }
@@ -1740,7 +1749,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .run-section::after {
-    background: $line;
+    content: none;
   }
 
   .run-skill-period {
@@ -1757,7 +1766,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .save-toast {
     background: #0e0d0b;
     border-color: $line-mid;
-    font-style: italic;
+    border-radius: $radius-well;
   }
 
   .save-toast.bad {
@@ -1765,11 +1774,6 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // ---------- New-hero screen: the hero by a fire ----------
-
-  .new-hero .eyebrow,
-  .new-hero .fell {
-    font-style: italic;
-  }
 
   .new-hero .game-title {
     @include engraved(clamp(1.7rem, 6vw, 3.1rem), 0.14em);
@@ -1817,28 +1821,10 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     }
   }
 
-  // Title between two fading rules, like the popup headers.
   .new-hero .oath-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
     @include engraved($caps-lg, 0.26em);
     color: var(--text-h);
-
-    &::before,
-    &::after {
-      content: '';
-      flex: 1;
-      min-width: 16px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, $line-mid);
-    }
-
-    &::after {
-      margin-left: -0.26em;
-      background: linear-gradient(270deg, transparent, $line-mid);
-    }
+    text-align: center;
   }
 
   // One-line rules (new-hero screen, quests unlock).
@@ -1856,7 +1842,6 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .rule-list span {
-    font-style: italic;
     color: var(--stat-color);
   }
 
@@ -1866,6 +1851,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
     background: linear-gradient(90deg, rgba(150, 141, 126, 0.1), $well 60%);
     border-color: transparent;
     border-left: 2px solid $line-mid;
+    border-radius: $radius-well;
   }
 
   .lock-seal {
@@ -1888,8 +1874,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .lock-text {
-    @include serif-label($serif-lg, 600);
-    font-style: italic;
+    @include plain-label($label-lg, 600);
   }
 
   .emblem {
@@ -1920,7 +1905,7 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .boss-bar .portrait {
     border-color: $line;
-    border-radius: 0;
+    border-radius: $radius-well;
     background:
       radial-gradient(ellipse 60% 60% at 50% 62%, rgba(215, 205, 185, 0.14), transparent 72%),
       radial-gradient(ellipse 90% 34% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
@@ -1980,7 +1965,10 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .boss-bar .numbers {
-    @include engraved($caps-xs, 0.08em);
+    @include plain-label(0.75rem, 700);
+    font-size-adjust: none;
+    font-variant-numeric: lining-nums tabular-nums;
+    letter-spacing: 0.03em;
     line-height: 1;
     color: var(--text);
   }
@@ -2013,16 +2001,13 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .modal-content:has(.death) {
     border: 0;
+    border-radius: 0;
     background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.96) 8%, rgba(0, 0, 0, 0.96) 92%, transparent);
     box-shadow: none;
   }
 
   .modal-content:has(.death) .modal-scroll {
     padding-block: 2.2rem 2rem;
-  }
-
-  .modal-content:has(.death)::before {
-    content: none;
   }
 
   .death .title {
@@ -2043,10 +2028,6 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   .death h2 {
     @include engraved($caps-lg, 0.16em);
     color: var(--text-h);
-  }
-
-  .death .meta {
-    font-style: italic;
   }
 
   // The kept skills' header, between two fading rules.
@@ -2106,7 +2087,6 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Spotlight hints ----------
 
   .hint-hole {
-    border-radius: 0;
     box-shadow:
       0 0 0 9999px rgba(0, 0, 0, 0.78),
       0 0 0 4px rgba(230, 207, 154, 0.25),
@@ -2119,19 +2099,15 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .hint-callout {
     padding: 1.1rem 1.1rem 0.4rem;
-    background: linear-gradient(180deg, $frame-top, $frame-bottom);
+    background: $frame;
     border-color: $line-mid;
-    border-radius: 0;
+    border-radius: $radius-panel;
     box-shadow: 0 20px 50px -10px #000;
   }
 
   .hint-arrow {
-    background: $frame-top;
+    background: $frame;
     border-color: $line-mid;
-  }
-
-  .hint-callout.above .hint-arrow {
-    background: $frame-bottom;
   }
 
   .hint-title {
@@ -2145,18 +2121,16 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
 
   .hint-rules {
     font-size: 1rem;
-    font-style: italic;
   }
 
   .hint-action {
-    @include serif-label;
+    @include plain-label;
     color: var(--accent);
   }
 
   .hint-action.quiet {
     font-family: var(--sans);
     font-size: 1rem;
-    font-style: italic;
     font-weight: 500;
     letter-spacing: normal;
     text-transform: none;
@@ -2204,8 +2178,8 @@ $serif-lg: 0.95rem; // primary buttons, choice titles
   }
 }
 
-// Zero specificity on purpose: panels need a positioning context for their
-// corner brackets, but components must still be able to position their own.
+// Zero specificity on purpose: sections need a positioning context for their
+// crest, but components must still be able to position their own.
 :where(:root[data-theme='ashen'] .panel) {
   position: relative;
 }
