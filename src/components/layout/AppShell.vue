@@ -23,9 +23,11 @@ import BossSkillPopup from '../boss/BossSkillPopup.vue';
 import { useCelebration } from '../../composables/useCelebration';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useLogVisibleStore } from '../../store/logVisibleStore';
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
+const logVisible = useLogVisibleStore();
 
 const isDev = import.meta.env.DEV;
 
@@ -85,7 +87,7 @@ const showHighScores = ref(false);
           </main>
           <aside class="side">
             <ProgressSummary class="progress" />
-            <ActivityLog />
+            <ActivityLog v-if="logVisible.on" />
           </aside>
         </div>
       </div>

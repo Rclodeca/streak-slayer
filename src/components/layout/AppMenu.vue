@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Check, Download, Focus, Menu, Trophy, Undo2, Upload } from 'lucide-vue-next';
+import { Check, Download, Focus, Menu, ScrollText, Trophy, Undo2, Upload } from 'lucide-vue-next';
 import { exportSaveFile } from '../../composables/useSaveFileTransfer';
 import { useUndoCheck } from '../../composables/useUndoCheck';
 import { useFocusModeStore } from '../../store/focusModeStore';
+import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { applySaveFile, readSaveFile } from '../../store/saveFile';
 import type { SaveFile, SaveFileSummary } from '../../store/saveFile';
 import { THEMES, useThemeStore } from '../../store/themeStore';
 import type { Theme } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
-// Top-right menu: Undo, High Scores, Focus mode, save export/import, and the
-// theme picker (hidden while there's only one theme).
-// Picking a theme or flipping Focus mode keeps the menu open so the change can
-// be seen and flipped back; anything else, a tap outside (which does nothing
-// else), or Escape closes it.
+// Top-right menu: Undo, High Scores, Focus mode, Show log, save export/import,
+// and the theme picker (hidden while there's only one theme).
+// Picking a theme or flipping Focus mode / Show log keeps the menu open so the
+// change can be seen and flipped back; anything else, a tap outside (which does
+// nothing else), or Escape closes it.
 // The panel is teleported to <body> and placed under the button: the button
 // rides inside the pinned stage, and on a phone the panel was being cut off
 // where the stage's layer ends, so it lives above the whole page instead.
@@ -22,6 +23,7 @@ const emit = defineEmits<{ 'high-scores': [] }>();
 
 const themeStore = useThemeStore();
 const focusMode = useFocusModeStore();
+const logVisible = useLogVisibleStore();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
@@ -158,6 +160,9 @@ onBeforeUnmount(() => {
         <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
         <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="focusMode.setOn(!focusMode.on)">
           <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />
+        </button>
+        <button type="button" class="menu-item" role="menuitemcheckbox" :aria-checked="logVisible.on" @click="logVisible.setOn(!logVisible.on)">
+          <ScrollText :size="15" />Show log<Check :size="15" class="tick focus-tick" :class="{ on: logVisible.on }" />
         </button>
         <div class="menu-divider" role="separator" />
         <span class="menu-label">Save</span>
