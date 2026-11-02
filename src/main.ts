@@ -14,7 +14,7 @@ import '@fontsource/alegreya-sans/500.css';
 import '@fontsource/alegreya-sans/700.css';
 import './style.css';
 import './assets/scss/main.scss';
-import './assets/scss/themes/ashen.scss';
+import './assets/scss/themes/index.scss';
 
 migrateLegacyStorageKeys();
 // The grid the item icons were built at picks their sizes (see main.scss).

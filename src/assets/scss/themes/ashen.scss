@@ -17,36 +17,48 @@
 //   moonlit seam along panels and popups; no corner brackets or rules beside titles. Corners are
 //   only just softened, buttons are soft gold fills.
 //
-// Every rule lives under :root[data-theme='ashen'] (see store/themeStore.ts).
+// Every rule lives under $ashen, the family selector (see store/themeStore.ts).
 // That prefix also outranks the components' scoped styles — it adds a
 // pseudo-class and an attribute on top of their class + data-v attribute —
 // so this file can restyle component internals while Minimalist (the
 // unthemed base styles) stays exactly as it was.
 
+@use 'sass:math';
+@use 'sass:string';
+
+// The palette lives in custom properties, set per theme in the sibling files
+// (moonlit.scss, ...). An alpha tone of one reads its `--<name>-rgb` triplet.
+// The alpha is rounded to the nearest 1/255, as rgba() does, so a tone paints
+// exactly what the literal it replaced did.
+@function tone($name, $alpha) {
+  @return string.unquote('rgb(var(--#{$name}-rgb) / #{math.div(math.round($alpha * 255), 255)})');
+}
+
+$ashen: ":root[data-theme='ashen']";
+
 // Structure: frames, rules and dividers, in ash.
-$line: rgba(150, 141, 126, 0.2);
-$line-mid: rgba(150, 141, 126, 0.32);
-$line-faint: rgba(150, 141, 126, 0.08);
-$ash-mark: #6b6458;
-// What you touch, in moonlit silver: the light and solid tones (--accent,
-// --accent-solid), the tint for fills and frames, and the glow.
-$moon: #dbe2ee;
-$moon-solid: #a9b4c8;
-$moon-tint: #aab9d7;
-$moon-glow: #c8d6f0;
+$line: tone(ash, 0.2);
+$line-mid: tone(ash, 0.32);
+$line-faint: tone(ash, 0.08);
+$ash-mark: var(--ash-mark);
+// What you touch, in silver (or whatever the theme's touch colour is): the
+// light and solid tones (--accent, --accent-solid); the tint for fills and
+// frames and the glow are the --moon-tint-rgb and --moon-glow-rgb triplets.
+$moon: var(--moon);
+$moon-solid: var(--moon-solid);
 // The frame of something you can touch.
-$touch-line: rgba($moon-tint, 0.5);
+$touch-line: tone(moon-tint, 0.5);
 // What the hero has earned (ranks, level, victory), in old, dim brass.
-$brass: #d2bb85;
-$brass-solid: #b39a66;
-$ash-deep: #5c554a;
+$brass: var(--brass);
+$brass-solid: var(--brass-solid);
+$ash-deep: var(--ash-deep);
 $ember: #e0783a;
 // An enchanted item's opal (teal to violet to rose), and the light that runs
 // through it.
 $opal: linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc);
 $opal-shine: linear-gradient(90deg, transparent 30%, #8ff5ea 40%, #fff 50%, #f0b0ff 60%, transparent 70%);
 // A panel is a lit surface, a little above the page.
-$frame: #141720;
+$frame: var(--frame);
 // A dark well set into a panel or popup: an inner box with no frame.
 $well: rgba(0, 0, 0, 0.22);
 
@@ -59,11 +71,10 @@ $radius-button: 6px;
 $radius-bar: 2px;
 $radius-pill: 999px;
 
-// The boss sprite's dark rim and ember glow, on the stage and in its details.
-$boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
-  drop-shadow(0 -2px 0 #2a120c) drop-shadow(0 0 12px rgba(224, 120, 58, 0.35)) brightness(1.06);
-// The hero, backlit against the fog.
-$hero-sprite-filter: drop-shadow(0 0 18px rgba(0, 0, 0, 0.95)) brightness(0.8) contrast(1.05);
+// The boss sprite's dark rim and glow, and the hero backlit against the fog,
+// on the stage and in the details.
+$boss-sprite-filter: var(--boss-sprite-filter);
+$hero-sprite-filter: var(--hero-sprite-filter);
 
 // Engraved caps sizes. Cinzel's capitals stand about 0.72em tall, so nothing
 // goes below $caps-xs — an 11px font, 8px capitals on a phone — under which
@@ -109,8 +120,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 // a faint glow under it, over `$fill`.
 @mixin moonlit($fill) {
   background:
-    linear-gradient(90deg, transparent 8%, rgba($moon-glow, 0.4) 50%, transparent 92%) top / 100% 1px no-repeat,
-    radial-gradient(ellipse 55% 46px at 50% 0, rgba($moon-glow, 0.06), transparent),
+    linear-gradient(90deg, transparent 8%, tone(moon-glow, 0.4) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, tone(moon-glow, 0.06), transparent),
     $fill;
 }
 
@@ -130,11 +141,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 }
 
 // A soft fill of silver (or `$fill`) with no frame.
-@mixin soft-button($size: $label-md, $color: var(--accent), $fill: rgba($moon-tint, 0.14)) {
+@mixin soft-button($size: $label-md, $color: var(--soft-text), $fill: var(--soft-fill)) {
   @include plain-label($size);
   color: $color;
   background: $fill;
-  border: 1px solid transparent;
+  border: 1px solid var(--soft-line);
   border-radius: $radius-button;
   transition:
     box-shadow 0.2s,
@@ -144,8 +155,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // tapped, which would leave the next button under that spot glowing.
   @media (hover: hover) {
     &:hover:not(:disabled) {
-      background: rgba($moon-tint, 0.22);
-      box-shadow: 0 0 16px -4px rgba($moon-glow, 0.4);
+      background: var(--soft-fill-hover);
+      box-shadow: 0 0 16px -4px tone(moon-glow, 0.4);
     }
   }
 }
@@ -172,7 +183,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 // done, so what's left draws the eye. Landing it (`.lit`, HabitListItem)
 // burns it bright for a moment, then it settles.
 @mixin diamond-check {
-  --check-glow: rgba($moon-glow, 0.7);
+  --check-glow: tone(moon-glow, 0.7);
   width: 13px;
   height: 13px;
   margin: 0 4px;
@@ -184,8 +195,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow 0.3s;
 
   &:checked {
-    background: #3c4352;
-    border-color: #566074;
+    background: var(--check-done);
+    border-color: var(--check-done-line);
     box-shadow: none;
   }
 
@@ -200,19 +211,21 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 }
 
-:root[data-theme='ashen'] {
-  --text: #a9adb6;
-  --text-h: #e8ebf0;
-  --bg: #07080c;
-  --border: #2a2f3b;
-  --code-bg: #12141b;
+#{$ashen} {
+  // The palette tokens (--bg, --text, --moon, ...) come from the theme files.
+  // The soft buttons (menu, back, cancel, replace) are silver tints unless a
+  // theme says otherwise.
+  --soft-fill: #{tone(moon-tint, 0.14)};
+  --soft-fill-hover: #{tone(moon-tint, 0.22)};
+  --soft-text: var(--accent);
+  --soft-line: transparent;
   // The frame's shade at the foot of the boss's stage, where BossPanel's fog
   // band meets it (the panel here; the details box below).
-  --stage-fog: #{$frame};
-  --accent: #{$moon};
-  --accent-solid: #{$moon-solid};
-  --accent-bg: #{rgba($moon-tint, 0.08)};
-  --accent-border: #{rgba($moon-tint, 0.45)};
+  --stage-fog: var(--frame);
+  --accent: var(--moon);
+  --accent-solid: var(--moon-solid);
+  --accent-bg: #{tone(moon-tint, 0.08)};
+  --accent-border: #{tone(moon-tint, 0.45)};
   --damage-color: #c8402f;
   --heal-color: #92bf88;
   --stat-color: #d8cdb5;
@@ -250,9 +263,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // Ember, not gold: gold is Ashen's own chrome and blended into common.
   --rarity-relic: #ec8338;
   --soon-color: #d49a46;
-  --side-quest-color: #{$moon-solid};
+  --side-quest-color: var(--moon-solid);
   --overdrive-color: #{$ember};
-  --portrait-border: #{rgba($moon-tint, 0.22)};
+  --portrait-border: #{tone(moon-tint, 0.22)};
 
   // Alegreya's letters run a little smaller than system-ui's; this evens it
   // out so every component's existing font-size still fits.
@@ -270,7 +283,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(150, 170, 210, 0.1), transparent 70%);
+    background: radial-gradient(ellipse 80% 40% at 50% -6%, var(--page-glow), transparent 70%);
   }
 
   // Square by default, so diamonds stay sharp, apart from the few things that
@@ -292,12 +305,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Frames ----------
 
   .panel {
-    @include moonlit($frame);
-    border-color: rgba(150, 141, 126, 0.1);
+    @include moonlit(var(--panel-fill));
+    border-color: tone(ash, 0.1);
     border-radius: $radius-panel;
     box-shadow:
       0 24px 50px -24px rgba(0, 0, 0, 0.95),
-      inset 0 1px 0 rgba($moon-glow, 0.04);
+      inset 0 1px 0 tone(moon-glow, 0.04);
   }
 
   .layout section.panel::after {
@@ -329,7 +342,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .menu-panel {
-    background: rgba($frame, 0.985);
+    background: tone(frame, 0.985);
     border-color: $line-mid;
     border-radius: $radius-panel;
     box-shadow:
@@ -346,7 +359,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // doesn't stay lit on a phone.
   @media (hover: hover) {
     .menu-item:hover:not(:disabled) {
-      background: linear-gradient(90deg, rgba($moon-tint, 0.12), transparent);
+      background: linear-gradient(90deg, tone(moon-tint, 0.12), transparent);
       box-shadow: inset 1px 0 0 var(--accent-solid);
     }
   }
@@ -366,9 +379,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .fight-stage .stage-bg {
     overflow: hidden;
-    background:
-      radial-gradient(ellipse 45% 55% at 68% 55%, rgba(215, 205, 185, 0.15), transparent 72%),
-      radial-gradient(ellipse 90% 30% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
+    background: var(--stage-light);
     -webkit-mask-image: linear-gradient(180deg, transparent, #000 14%, #000 78%, transparent);
     mask-image: linear-gradient(180deg, transparent, #000 14%, #000 78%, transparent);
 
@@ -404,7 +415,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .hero-plat {
     border-radius: 50%;
     background: radial-gradient(ellipse at center, rgba(205, 195, 175, 0.16), rgba(205, 195, 175, 0.04) 60%, transparent 72%);
-    border-top: 1px solid rgba($moon-tint, 0.14);
+    border-top: 1px solid tone(moon-tint, 0.14);
     transition:
       background 0.3s ease-out,
       border-color 0.3s ease-out;
@@ -514,8 +525,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .boss-panel:has(.tap:focus-visible) .boss-plat,
   .character-panel.pressed .hero-plat,
   .character-panel:has(.tap:focus-visible) .hero-plat {
-    background: radial-gradient(ellipse at center, rgba($moon-glow, 0.42), rgba($moon-tint, 0.12) 60%, transparent 72%);
-    border-top-color: rgba($moon-glow, 0.75);
+    background: radial-gradient(ellipse at center, tone(moon-glow, 0.42), tone(moon-tint, 0.12) 60%, transparent 72%);
+    border-top-color: tone(moon-glow, 0.75);
   }
 
   .boss-panel.pressed .boss-name,
@@ -731,7 +742,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Progress summary ----------
 
   .summary .ring {
-    background: conic-gradient(var(--accent-solid) calc(var(--p) * 1%), rgba($moon-tint, 0.14) 0);
+    background: conic-gradient(var(--accent-solid) calc(var(--p) * 1%), tone(moon-tint, 0.14) 0);
     -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
     mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
   }
@@ -765,7 +776,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   @media (hover: hover) {
     .habit-item:hover {
-      background: linear-gradient(90deg, rgba($moon-tint, 0.12), rgba($moon-tint, 0.02) 60%, transparent);
+      background: linear-gradient(90deg, tone(moon-tint, 0.12), tone(moon-tint, 0.02) 60%, transparent);
       box-shadow: inset 1px 0 0 var(--accent-solid);
     }
   }
@@ -790,7 +801,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .habit-item .check:hover:not(:disabled),
   .quest-item .check:hover {
-    box-shadow: 0 0 10px -1px rgba($moon-glow, 0.6);
+    box-shadow: 0 0 10px -1px tone(moon-glow, 0.6);
   }
 
   // A bad habit's diamond is red, and lights red once checked: giving in
@@ -836,11 +847,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .habit-item.spent .name {
-    color: #6a6f7a;
+    color: var(--spent-text);
   }
 
   .habit-item.spent .damage {
-    color: color-mix(in srgb, var(--c) 50%, #6a6f7a);
+    color: color-mix(in srgb, var(--c) 50%, var(--spent-text));
   }
 
   .habit-item.spent :is(.streak, .rank-numeral) {
@@ -902,7 +913,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .sigil.special {
     color: var(--accent);
-    filter: drop-shadow(0 0 4px rgba($moon-glow, 0.45));
+    filter: drop-shadow(0 0 4px tone(moon-glow, 0.45));
   }
 
   .sigil.ult {
@@ -993,8 +1004,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
     &::before {
       border-color: var(--accent-solid);
-      background: radial-gradient(circle, rgba($moon-glow, 0.3), rgba(70, 82, 108, 0.25) 70%);
-      box-shadow: 0 0 10px -2px rgba($moon-glow, 0.45);
+      background: radial-gradient(circle, tone(moon-glow, 0.3), tone(day-on, 0.25) 70%);
+      box-shadow: 0 0 10px -2px tone(moon-glow, 0.45);
     }
   }
 
@@ -1056,13 +1067,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // A rank-up: a brass sweep across the row and the new rank rising off it.
   .habit-item.flare::after {
-    background: linear-gradient(100deg, transparent 20%, rgba($brass, 0.28) 50%, transparent 80%);
+    background: linear-gradient(100deg, transparent 20%, tone(brass, 0.28) 50%, transparent 80%);
   }
 
   .rank-ghost {
     @include engraved($caps-xs, 0.22em);
     color: $brass;
-    text-shadow: 0 0 10px rgba($brass, 0.7);
+    text-shadow: 0 0 10px tone(brass, 0.7);
   }
 
   // ---------- Quests ----------
@@ -1158,10 +1169,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .ok-button {
     @include plain-label($label-lg, 700);
     padding: 0.85rem 1rem;
-    color: var(--text-h);
+    color: var(--button-text);
     // Lifted, so the silver reads as metal rather than grey.
-    background: linear-gradient(180deg, rgba(190, 204, 230, 0.32), rgba(110, 124, 152, 0.26));
-    border: 1px solid rgba(190, 204, 230, 0.45);
+    background: var(--button-fill);
+    border: 1px solid var(--button-line);
     border-radius: $radius-button;
     box-shadow: none;
     filter: none;
@@ -1171,8 +1182,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
     @media (hover: hover) {
       &:hover {
-        background: linear-gradient(180deg, rgba(200, 214, 238, 0.42), rgba(120, 134, 162, 0.34));
-        box-shadow: 0 0 22px -6px rgba($moon-glow, 0.45);
+        background: var(--button-fill-hover);
+        box-shadow: 0 0 22px -6px tone(moon-glow, 0.45);
         filter: none;
       }
     }
@@ -1288,8 +1299,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .modal-content {
     position: relative;
-    @include moonlit(rgba($frame, 0.985));
-    border-color: rgba(150, 141, 126, 0.16);
+    @include moonlit(tone(frame, 0.985));
+    border-color: tone(ash, 0.16);
     border-radius: $radius-popup;
     box-shadow: 0 40px 80px -30px #000;
   }
@@ -1355,8 +1366,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     &:hover,
     &:focus-visible {
       border-color: var(--accent-solid);
-      background: linear-gradient(90deg, rgba($moon-tint, 0.07), rgba(0, 0, 0, 0.35));
-      box-shadow: 0 0 26px -8px rgba($moon-glow, 0.45);
+      background: linear-gradient(90deg, tone(moon-tint, 0.07), rgba(0, 0, 0, 0.35));
+      box-shadow: 0 0 26px -8px tone(moon-glow, 0.45);
     }
   }
 
@@ -1365,10 +1376,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     height: 44px;
     border-radius: 50%;
     border: 1px solid $touch-line;
-    background: radial-gradient(circle, rgba($moon-glow, 0.16), transparent 70%);
+    background: radial-gradient(circle, tone(moon-glow, 0.16), transparent 70%);
     box-shadow:
       inset 0 0 0 3px rgba(0, 0, 0, 0.5),
-      inset 0 0 0 4px rgba($moon-tint, 0.18);
+      inset 0 0 0 4px tone(moon-tint, 0.18);
   }
 
   button.card .icon svg {
@@ -1538,7 +1549,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .pill input:checked,
   .redeem input:checked {
     background: var(--accent);
-    box-shadow: 0 0 8px rgba($moon-glow, 0.6);
+    box-shadow: 0 0 8px tone(moon-glow, 0.6);
   }
 
   // Forms (new habit, new quest).
@@ -1556,7 +1567,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .name-input:focus,
   .date-input:focus {
     border-color: var(--accent-solid);
-    box-shadow: 0 0 14px -4px rgba($moon-glow, 0.45);
+    box-shadow: 0 0 14px -4px tone(moon-glow, 0.45);
   }
 
   label.card {
@@ -1578,7 +1589,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .quest-form .chip.selected {
     border-color: var(--accent-solid);
-    background: rgba($moon-tint, 0.08);
+    background: tone(moon-tint, 0.08);
     color: var(--accent);
   }
 
@@ -1618,7 +1629,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     i {
       border-radius: $radius-bar;
       background: linear-gradient(90deg, #7a6440, $brass);
-      box-shadow: 0 0 6px rgba($brass, 0.4);
+      box-shadow: 0 0 6px tone(brass, 0.4);
     }
   }
 
@@ -1993,14 +2004,14 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Quests: sealed until level 3, then the unlock popup ----------
 
   .lock-ghost i {
-    background: linear-gradient(90deg, rgba(150, 141, 126, 0.1), $well 60%);
+    background: linear-gradient(90deg, tone(ash, 0.1), $well 60%);
     border-color: transparent;
     border-left: 2px solid $line-mid;
     border-radius: $radius-well;
   }
 
   .lock-seal {
-    background: radial-gradient(ellipse 55% 70% at 50% 50%, rgba(7, 8, 12, 0.85), transparent 75%);
+    background: radial-gradient(ellipse 55% 70% at 50% 50%, tone(bg, 0.85), transparent 75%);
   }
 
   .lock-mark {
@@ -2043,7 +2054,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .boss-bar {
     padding: calc(14px + env(safe-area-inset-top, 0px)) 18px 11px;
-    background: linear-gradient(180deg, rgba(19, 22, 30, 0.97), rgba(7, 8, 12, 0.97));
+    background: linear-gradient(180deg, tone(bar, 0.97), tone(bg, 0.97));
     border-bottom-color: $line-mid;
     box-shadow: 0 14px 24px -14px #000;
   }
@@ -2089,7 +2100,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include engraved($caps-xs, 0);
     line-height: 1;
     color: $brass;
-    background: #0a0b10;
+    background: var(--plate);
     border-color: $brass-solid;
     border-radius: 0;
     transform: rotate(45deg);
@@ -2234,8 +2245,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .hint-hole {
     box-shadow:
       0 0 0 9999px rgba(0, 0, 0, 0.78),
-      0 0 0 4px rgba($moon-glow, 0.25),
-      0 0 26px rgba($moon-glow, 0.5);
+      0 0 0 4px tone(moon-glow, 0.25),
+      0 0 26px tone(moon-glow, 0.5);
   }
 
   .hint-hole::after {
@@ -2321,42 +2332,42 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-theme='ashen'] .fight-stage .stage-bg::before,
-  :root[data-theme='ashen'] .fight-stage .stage-bg::after,
-  :root[data-theme='ashen'] .hero-sprite:has(> .sprite)::before,
-  :root[data-theme='ashen'] .new-hero .bonfire::before {
+  #{$ashen} .fight-stage .stage-bg::before,
+  #{$ashen} .fight-stage .stage-bg::after,
+  #{$ashen} .hero-sprite:has(> .sprite)::before,
+  #{$ashen} .new-hero .bonfire::before {
     animation: none;
   }
 
-  :root[data-theme='ashen'] .boss-plat,
-  :root[data-theme='ashen'] .hero-plat {
+  #{$ashen} .boss-plat,
+  #{$ashen} .hero-plat {
     transition: none;
   }
 
   // Still opal, without the light.
-  :root[data-theme='ashen'] .enchanted :is(.gear-enchanted, .gear-bonus-value, .bonus-value),
-  :root[data-theme='ashen'] .modal-content:has(.hero.enchanted) .modal-header h3 {
+  #{$ashen} .enchanted :is(.gear-enchanted, .gear-bonus-value, .bonus-value),
+  #{$ashen} .modal-content:has(.hero.enchanted) .modal-header h3 {
     background: $opal;
     -webkit-background-clip: text;
     background-clip: text;
     animation: none;
   }
 
-  :root[data-theme='ashen'] :is(.habit-item, .quest-item) .check:checked.lit {
+  #{$ashen} :is(.habit-item, .quest-item) .check:checked.lit {
     animation: none;
   }
 
-  :root[data-theme='ashen'] .habit-item .veil::before {
+  #{$ashen} .habit-item .veil::before {
     transition: none;
   }
 
-  :root[data-theme='ashen'] .habit-item:has(.check.lit) .veil::after {
+  #{$ashen} .habit-item:has(.check.lit) .veil::after {
     animation: none;
   }
 }
 
 // Zero specificity on purpose: sections need a positioning context for their
 // crest, but components must still be able to position their own.
-:where(:root[data-theme='ashen'] .panel) {
+:where(#{$ashen} .panel) {
   position: relative;
 }
