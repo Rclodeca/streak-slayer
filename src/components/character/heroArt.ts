@@ -29,6 +29,22 @@ export const HERO_PLACEMENT: Record<HeroClass, HeroPlacement> = {
   ranger: { width: HERO_CANVAS.ranger, left: 12, bottom: 10 },
 };
 
+// The base build's file size (the canvas at one CSS px per art pixel, 2/3
+// of HERO_CANVAS), as the phone stage draws each hero.
+export const HERO_BASE: Record<HeroClass, number> = {
+  warrior: 112,
+  cleric: 120,
+  ranger: 112,
+};
+
+// HERO_PLACEMENT for the phone stage's smaller heroes: the same spots,
+// scaled to their base size.
+export const HERO_PHONE_PLACEMENT: Record<HeroClass, HeroPlacement> = {
+  warrior: { width: HERO_BASE.warrior, left: 15, bottom: 5 },
+  cleric: { width: HERO_BASE.cleric, left: 4, bottom: 4 },
+  ranger: { width: HERO_BASE.ranger, left: 8, bottom: 7 },
+};
+
 // The hero on the new-hero screen's fire, in its 150px box: drawn width (its
 // canvas), then left and bottom offsets, with its feet on the box floor and
 // its center of mass in the middle.

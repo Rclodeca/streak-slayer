@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, shorter stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Shorter fight stage in option A's look (pixel-stage.html). Target: top bar + stage
+   from 356px to about 250px. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 84px; font-size: 15px; }
+.col h3 { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: #8f8b80; margin: 18px 0 6px; text-transform: uppercase; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #f0f3f7; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --streak-i: #8d8475;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --card-lip: #05060a;
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding-bottom: 22px; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+.topbar { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 0; }
+.menu { width: 40px; height: 40px; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+
+.stage { position: relative; height: 300px; }
+.boss { position: absolute; right: 8px; top: 6px; width: 172px; image-rendering: pixelated; z-index: 1;
+  filter: drop-shadow(2px 0 0 #2a1a10) drop-shadow(-2px 0 0 #2a1a10) drop-shadow(0 2px 0 #2a1a10) drop-shadow(0 -2px 0 #2a1a10); }
+.hero { position: absolute; left: 8px; top: 128px; width: 140px; image-rendering: pixelated; transform: scaleX(-1); z-index: 1;
+  filter: drop-shadow(2px 0 0 #0b0d12) drop-shadow(-2px 0 0 #0b0d12) drop-shadow(0 2px 0 #0b0d12); }
+.unit { position: absolute; z-index: 2; }
+.unit.b { left: 16px; top: 22px; width: 188px; }
+.unit.h { left: 172px; top: 196px; width: 202px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 5px; text-transform: uppercase; }
+.uname small { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); }
+.stats { display: flex; gap: 8px; margin-top: 6px; font: 700 11.5px 'Alegreya Sans', sans-serif; color: #8a8e98; white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.stats svg { width: 12px; height: 12px; }
+
+/* Pixel-cut bar: a sunk well, flat fill with a lit top row, square marks. */
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26;
+  box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar b.trail { background: #e9d9c8; box-shadow: none; opacity: .5; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: var(--exp); z-index: 1; }
+.bar span { position: absolute; right: 6px; top: 0; z-index: 2; font: 700 11px/16px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.8); }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: var(--brass); z-index: 1; }
+.bar .mk.fired { background: #4a4f5c; }
+.markrow { position: relative; height: 0; }
+.markrow em { position: absolute; top: -3px; width: 4px; height: 4px; margin-left: -2px; background: var(--brass); }
+.markrow em.fired { background: #4a4f5c; }
+
+/* Skills, for context under the stage */
+.sec { margin: 14px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; height: 44px; padding: 0 2px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.gh { width: 44px; height: 44px; display: grid; place-items: center; color: var(--touch); }
+.gh i { width: 30px; height: 30px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.1); box-shadow: inset 0 0 0 1.5px rgba(219,226,238,.55); }
+.gh svg { width: 16px; height: 16px; stroke-width: 2.6; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.row { --face: color-mix(in srgb, var(--c) 88%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] .press { color: #1e1c18; text-shadow: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25); }
+.press svg, .press b { position: relative; z-index: 1; }
+.press svg { width: 13px; height: 13px; }
+
+/* ================= A · Plinths ================= */
+/* Same open stage. Fog and embers become a pixel night: square stars, a
+   dithered horizon, and stepped stone plinths for both fighters. */
+.o-a .stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent, #0c0f17 55%, #0f131d 100%); }
+.stars { position: absolute; left: 0; top: -40px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 60px #3a4358, 120px 30px #2c3446, 230px 52px #3a4358, 300px 18px #4a5470, 352px 96px #2c3446, 200px 120px #2c3446, 90px 150px #232a39, 260px 170px #232a39, 330px 140px #3a4358, 20px 110px #2c3446; }
+.horizon { position: absolute; left: 0; right: 0; top: 196px; height: 104px;
+  background:
+    conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px,
+    #0f131d; }
+.horizon::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 8px;
+  background: conic-gradient(#0b0e15 25%, transparent 0 50%, #0b0e15 0 75%, transparent 0) 0 0 / 4px 4px; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--bg)); }
+.plinth { position: absolute; height: 22px; z-index: 0; }
+.plinth::before { content: ''; position: absolute; inset: 0;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: #1f2534; box-shadow: inset 0 3px 0 #3a4358, inset 0 6px 0 #283041, inset 0 -3px 0 #10141d; }
+.plinth::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: -6px; height: 6px; background: rgba(0,0,0,.45); }
+.o-a .plinth.b { right: 18px; top: 164px; width: 168px; }
+.o-a .plinth.h { left: 10px; top: 254px; width: 146px; }
+
+
+/* ================= Shorter stages ================= */
+.head { position: relative; }
+.size { display: inline-block; margin: 0 0 10px; padding: 3px 8px; font: 700 12px 'Alegreya Sans', sans-serif; color: #1e1c18; background: #d2bb85; }
+.size.full { background: #3a3f4b; color: #dbe2ee; }
+
+/* 1 · Low diagonal: the same diagonal with the art at its base build
+   (1 CSS px per art px: boss 128, hero 112). */
+.s1 .stage { height: 196px; }
+.s1 .horizon { top: 120px; height: 76px; }
+.s1 .boss { right: 22px; top: 0; width: 128px; }
+.s1 .hero { left: 18px; top: 80px; width: 112px; }
+.s1 .plinth.b { right: 18px; top: 116px; width: 136px; height: 18px; }
+.s1 .plinth.h { left: 14px; top: 178px; width: 120px; height: 18px; }
+.s1 .unit.b { left: 16px; top: 8px; width: 196px; }
+.s1 .unit.h { left: 150px; top: 138px; width: 226px; }
+
+/* 2 · Face-off: both on one ground line, names and bars across the top. */
+.s2 .stage { height: 198px; }
+.s2 .horizon { top: 150px; height: 48px; }
+.s2 .unit.h { left: 12px; top: 4px; width: 176px; }
+.s2 .unit.b { left: 202px; top: 4px; width: 176px; }
+.s2 .stats { gap: 6px; overflow: hidden; }
+.s2 .hero { left: 34px; top: 64px; width: 126px; }
+.s2 .boss { right: 26px; top: 46px; width: 144px; }
+.s2 .plinth.h { left: 26px; top: 178px; width: 142px; height: 18px; }
+.s2 .plinth.b { right: 18px; top: 178px; width: 160px; height: 18px; }
+
+/* 3 · Info column: numbers stacked on the left, boss over hero; the fighters
+   share one plinth on the right, the hero in front. */
+.s3 .stage { height: 198px; }
+.s3 .horizon { top: 140px; height: 58px; }
+.s3 .unit.b { left: 14px; top: 10px; width: 168px; }
+.s3 .unit.h { left: 14px; top: 106px; width: 168px; }
+.s3 .stats { gap: 6px; overflow: hidden; }
+.s3 .boss { right: 6px; top: 6px; width: 144px; z-index: 1; }
+.s3 .hero { left: 178px; top: 66px; width: 126px; z-index: 2; }
+.s3 .plinth.b { right: 12px; top: 178px; width: 210px; height: 18px; }
+.s3 .uname { justify-content: space-between; }
+
+/* 4 · Merged top: no top bar. The menu floats on the stage, the boss number
+   joins the boss's name, and the art stays full size. */
+.s4 .topbar { display: none; }
+.s4 .stage { height: 254px; }
+.s4 .menu { position: absolute; right: 14px; top: 14px; z-index: 3; }
+.s4 .horizon { top: 176px; height: 78px; }
+.s4 .boss { right: 10px; top: 20px; }
+.s4 .hero { left: 8px; top: 108px; }
+.s4 .plinth.b { right: 18px; top: 176px; }
+.s4 .plinth.h { left: 10px; top: 234px; }
+.s4 .unit.b { left: 16px; top: 16px; }
+.s4 .unit.h { top: 200px; }
+/* 5 · Merged top + low diagonal: no top bar, art at its base build. */
+.s5 .topbar { display: none; }
+.s5 .stage { height: 228px; }
+.s5 .menu { position: absolute; right: 14px; top: 14px; z-index: 3; }
+.s5 .horizon { top: 150px; height: 78px; }
+.s5 .boss { right: 26px; top: 30px; width: 128px; }
+.s5 .hero { left: 18px; top: 110px; width: 112px; }
+.s5 .plinth.b { right: 22px; top: 146px; width: 136px; height: 18px; }
+.s5 .plinth.h { left: 14px; top: 208px; width: 120px; height: 18px; }
+.s5 .unit.b { left: 16px; top: 16px; width: 196px; }
+.s5 .unit.h { left: 150px; top: 170px; width: 226px; }
+.bnum { font: 700 11.5px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · shorter stage</h1>
+  <p class="lede">Option A's look, with the top of the screen (top bar + stage) cut from 356px to about 250px. Each takes the space from somewhere different. The gold tag is measured from the mock.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: 'var(--streak-i)' };
+const icon = (name, color = COLOR[name] || 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+const BOSS = '../../public/sprites/bosses/balanced@3x.png';
+const HERO = '../../public/sprites/player/warrior@3x.png';
+
+// Boss skills fire at 66% and 33%; the first has fired (boss at 41%).
+const bossBar = (now) => now
+  ? `<div class="barwrap"><span class="dia" style="left:66%"></span><span class="dia" style="left:33%"></span><div class="bar"><b style="width:41%"></b><span>266 / 648</span></div></div>`
+  : `<div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>`;
+const heroBar = `<div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>`;
+const bossStats = `<div class="stats"><span>${icon('physical')}61</span><span>${icon('magic')}58</span><span>${icon('armor')}213</span><span>${icon('magicResist')}221</span><span>${icon('crit')}1%</span></div>`;
+const heroStats = `<div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div>`;
+const bossUnit = (now) => `<div class="unit b"><div class="uname"><span>Drifter</span><span class="cue"></span></div>${bossBar(now)}${bossStats}</div>`;
+const heroUnit = `<div class="unit h"><div class="uname"><span>Ryn <small>14</small></span><span class="cue"></span></div>${heroBar}${heroStats}</div>`;
+
+const skills = [
+  { n: 'Stretch', t: 'heal', d: '141', s: 12, r: 2 },
+  { n: 'Morning run', t: 'phys', d: '1.1K', s: 23, r: 8 },
+];
+const row = (h) => `<li class="row" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="streak">${icon('streak')}${h.s}</span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor')}<b>${h.d}</b></button></li>`;
+
+
+const bossUnitN = `<div class="unit b"><div class="uname"><span><span class="bnum">#9</span> Drifter</span><span class="cue"></span></div>${bossBar()}${bossStats}</div>`;
+const plinthStage = (art) => `<span class="stars"></span><span class="horizon"></span>${art}`;
+const STAGE = {
+  a: () => plinthStage(`<span class="plinth b"></span><img class="boss" src="${BOSS}"><span class="plinth h"></span><img class="hero" src="${HERO}">${bossUnit()}${heroUnit}`),
+  s1: () => plinthStage(`<span class="plinth b"></span><img class="boss" src="../../public/sprites/bosses/balanced.png"><span class="plinth h"></span><img class="hero" src="../../public/sprites/player/warrior.png">${bossUnit()}${heroUnit}`),
+  s2: () => plinthStage(`<span class="plinth h"></span><span class="plinth b"></span><img class="hero" src="${HERO}"><img class="boss" src="${BOSS}">${heroUnit}${bossUnit()}`),
+  s3: () => plinthStage(`<span class="plinth b"></span><img class="boss" src="${BOSS}"><img class="hero" src="${HERO}">${bossUnit()}${heroUnit}`),
+  s4: () => plinthStage(`<span class="menu">${icon('menu', 'currentColor')}</span><span class="plinth b"></span><img class="boss" src="${BOSS}"><span class="plinth h"></span><img class="hero" src="${HERO}">${bossUnitN}${heroUnit}`),
+  s5: () => plinthStage(`<span class="menu">${icon('menu', 'currentColor')}</span><span class="plinth b"></span><img class="boss" src="../../public/sprites/bosses/balanced.png"><span class="plinth h"></span><img class="hero" src="../../public/sprites/player/warrior.png">${bossUnitN}${heroUnit}`),
+};
+
+const OPTIONS = [
+  { k: 'a', cls: 'o-a', tag: 'Picked', h: 'A · Plinths, full height', p: 'For reference: the stage you liked, at today\'s height.' },
+  { k: 's1', cls: 'o-a s1', tag: 'Option 1', h: 'Low diagonal', p: 'Same diagonal and blocks, with both fighters drawn at their base build (boss 128px, hero 112px, still exact pixels). The art is smaller; nothing else moves.' },
+  { k: 's2', cls: 'o-a s2', tag: 'Option 2', h: 'Face-off', p: 'Hero and boss stand on one ground line, facing each other. Their names, bars and stats sit side by side across the top, each over its own fighter. Some stats drop off to fit the narrower blocks.' },
+  { k: 's3', cls: 'o-a s3', tag: 'Option 3', h: 'Info column', p: 'All the numbers stacked on the left, boss over hero. The fighters share one plinth on the right, the hero stepping in front of the boss.' },
+  { k: 's4', cls: 'o-a s4', tag: 'Option 4', h: 'Merged top', p: 'The top bar goes. The menu button floats on the stage\'s corner and the boss number joins the boss\'s name. The art and diagonal stay full size; the gap between them closes.' },
+  { k: 's5', cls: 'o-a s5', tag: 'Option 4 + 1', h: 'Merged top, low diagonal', p: 'No top bar (menu on the stage\'s corner, #9 before the boss\'s name) and both fighters at their base build (boss 128px, hero 112px).' },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.h}</h2><p>${o.p}</p>
+  <span class="size${o.k === 'a' ? ' full' : ''}" data-k="${o.k}"></span>
+  <div class="phone ${o.cls}"><div class="head">
+    <div class="topbar"><span class="cap">Boss #9</span><span class="menu">${icon('menu', 'currentColor')}</span></div>
+    <div class="stage">${STAGE[o.k]()}</div></div>
+    <section class="sec"><div class="shead"><h2>Skills</h2><span class="gh"><i>${icon('plus', 'currentColor')}</i></span></div>
+      <ul>${skills.map(row).join('')}</ul></section>
+  </div>
+</div>`).join('');
+
+const full = document.querySelector('.phone.o-a:not(.s1):not(.s2):not(.s3):not(.s4) .head').offsetHeight;
+document.querySelectorAll('.size').forEach((t) => {
+  const h = t.nextElementSibling.querySelector('.head').offsetHeight;
+  t.textContent = t.dataset.k === 'a' ? `Top: ${h}px` : `Top: ${h}px · ${Math.round((1 - h / full) * 100)}% shorter`;
+});
+</script>
+</body>
+</html>

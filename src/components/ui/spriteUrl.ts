@@ -13,3 +13,13 @@ const dense =
 export function spriteUrl(name: string): string {
   return `${import.meta.env.BASE_URL}sprites/${name}${dense ? '@3x' : ''}.png`;
 }
+
+// The phone stage draws its fighters smaller, at the base build's file size:
+// one CSS px per art pixel, which lands on whole device pixels on every
+// screen (2 per art pixel on 2x, 3 on 3x).
+export const PHONE_STAGE_MEDIA = '(max-width: 820px)';
+
+/** The URL of a sprite's base build, for drawing at its file size. */
+export function baseSpriteUrl(name: string): string {
+  return `${import.meta.env.BASE_URL}sprites/${name}.png`;
+}

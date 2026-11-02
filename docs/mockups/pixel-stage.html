@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, fight stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The fight stage in Pixel-cut. Now = today's Ashen stage (fog, embers, round
+   platforms, thin glowing bars, diamond marks). A-D are the options. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 84px; font-size: 15px; }
+.col h3 { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: #8f8b80; margin: 18px 0 6px; text-transform: uppercase; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #f0f3f7; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --streak-i: #8d8475;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --card-lip: #05060a;
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding-bottom: 22px; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+.topbar { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 0; }
+.menu { width: 40px; height: 40px; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+
+.stage { position: relative; height: 300px; }
+.boss { position: absolute; right: 8px; top: 6px; width: 172px; image-rendering: pixelated; z-index: 1;
+  filter: drop-shadow(2px 0 0 #2a1a10) drop-shadow(-2px 0 0 #2a1a10) drop-shadow(0 2px 0 #2a1a10) drop-shadow(0 -2px 0 #2a1a10); }
+.hero { position: absolute; left: 8px; top: 128px; width: 140px; image-rendering: pixelated; transform: scaleX(-1); z-index: 1;
+  filter: drop-shadow(2px 0 0 #0b0d12) drop-shadow(-2px 0 0 #0b0d12) drop-shadow(0 2px 0 #0b0d12); }
+.unit { position: absolute; z-index: 2; }
+.unit.b { left: 16px; top: 22px; width: 188px; }
+.unit.h { left: 172px; top: 196px; width: 202px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 5px; text-transform: uppercase; }
+.uname small { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); }
+.stats { display: flex; gap: 8px; margin-top: 6px; font: 700 11.5px 'Alegreya Sans', sans-serif; color: #8a8e98; white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.stats svg { width: 12px; height: 12px; }
+
+/* Pixel-cut bar: a sunk well, flat fill with a lit top row, square marks. */
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26;
+  box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar b.trail { background: #e9d9c8; box-shadow: none; opacity: .5; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: var(--exp); z-index: 1; }
+.bar span { position: absolute; right: 6px; top: 0; z-index: 2; font: 700 11px/16px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.8); }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: var(--brass); z-index: 1; }
+.bar .mk.fired { background: #4a4f5c; }
+.markrow { position: relative; height: 0; }
+.markrow em { position: absolute; top: -3px; width: 4px; height: 4px; margin-left: -2px; background: var(--brass); }
+.markrow em.fired { background: #4a4f5c; }
+
+/* Skills, for context under the stage */
+.sec { margin: 14px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; height: 44px; padding: 0 2px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.gh { width: 44px; height: 44px; display: grid; place-items: center; color: var(--touch); }
+.gh i { width: 30px; height: 30px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.1); box-shadow: inset 0 0 0 1.5px rgba(219,226,238,.55); }
+.gh svg { width: 16px; height: 16px; stroke-width: 2.6; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.row { --face: color-mix(in srgb, var(--c) 88%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] .press { color: #1e1c18; text-shadow: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25); }
+.press svg, .press b { position: relative; z-index: 1; }
+.press svg { width: 13px; height: 13px; }
+
+/* ================= Now: the Ashen stage ================= */
+.o-now .stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none;
+  background: radial-gradient(70% 55% at 70% 45%, rgba(150,165,200,.12), transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 14%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 14%, #000 78%, transparent); }
+.o-now .stage::after { content: ''; position: absolute; left: -10%; right: -10%; bottom: 0; height: 60px;
+  background: radial-gradient(ellipse 54% 80% at 50% 100%, rgba(205,195,175,.18), rgba(205,195,175,.06) 45%, transparent 76%); }
+.o-now .plat { position: absolute; border-radius: 50%; border-top: 1px solid rgba(150,165,200,.16);
+  background: radial-gradient(ellipse at center, rgba(205,195,175,.16), rgba(205,195,175,.04) 60%, transparent 72%); }
+.o-now .plat.b { right: 16px; top: 168px; width: 186px; height: 26px; }
+.o-now .plat.h { left: 6px; top: 258px; width: 150px; height: 26px; }
+.o-now .ember { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #e0783a; box-shadow: 0 0 4px #e0783a; opacity: .7; }
+.o-now .bar { clip-path: none; height: 15px; background: rgba(0,0,0,.7); border: 1px solid #39404f; box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
+.o-now .bar b { inset: 0 auto 0 0; background: linear-gradient(180deg, #cf4a32, #901d19 60%, #6c1411); box-shadow: 0 0 10px rgba(195,58,46,.35); }
+.o-now .bar i { left: 1px; bottom: 1px; background: linear-gradient(90deg, #8a6a2c, #e6c77f); }
+.o-now .bar span { line-height: 13px; }
+.o-now .bar .mk { display: none; }
+.o-now .dia { position: absolute; top: -6px; width: 9px; height: 9px; margin-left: -4.5px; transform: rotate(45deg); background: #0b0908; border: 1px solid #e6cf9a; box-shadow: 0 0 6px rgba(230,207,154,.55); z-index: 3; }
+.o-now .dia::after { content: ''; position: absolute; inset: 2px; background: #d6a24f; }
+.o-now .barwrap { position: relative; }
+.o-now .cue { border-color: #d2bb85; }
+
+/* ================= A · Plinths ================= */
+/* Same open stage. Fog and embers become a pixel night: square stars, a
+   dithered horizon, and stepped stone plinths for both fighters. */
+.o-a .stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent, #0c0f17 55%, #0f131d 100%); }
+.stars { position: absolute; left: 0; top: -40px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 60px #3a4358, 120px 30px #2c3446, 230px 52px #3a4358, 300px 18px #4a5470, 352px 96px #2c3446, 200px 120px #2c3446, 90px 150px #232a39, 260px 170px #232a39, 330px 140px #3a4358, 20px 110px #2c3446; }
+.horizon { position: absolute; left: 0; right: 0; top: 196px; height: 104px;
+  background:
+    conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px,
+    #0f131d; }
+.horizon::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 8px;
+  background: conic-gradient(#0b0e15 25%, transparent 0 50%, #0b0e15 0 75%, transparent 0) 0 0 / 4px 4px; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--bg)); }
+.plinth { position: absolute; height: 22px; z-index: 0; }
+.plinth::before { content: ''; position: absolute; inset: 0;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: #1f2534; box-shadow: inset 0 3px 0 #3a4358, inset 0 6px 0 #283041, inset 0 -3px 0 #10141d; }
+.plinth::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: -6px; height: 6px; background: rgba(0,0,0,.45); }
+.o-a .plinth.b { right: 18px; top: 164px; width: 168px; }
+.o-a .plinth.h { left: 10px; top: 254px; width: 146px; }
+
+/* ================= B · Plates ================= */
+/* The same night, but each fighter's name, bar and stats sit on a lifted
+   card, like a skill. The card is the tap target and presses down. */
+.o-b .stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none;
+  background: radial-gradient(70% 55% at 70% 45%, #161b27, transparent 70%); }
+.o-b .horizon { top: 210px; height: 90px; opacity: .7; }
+.o-b .plinth.b { right: 18px; top: 164px; width: 168px; }
+.o-b .plinth.h { left: 10px; top: 254px; width: 146px; }
+.o-b .unit { padding: 8px 10px 9px; clip-path: var(--px); background: rgba(27,32,48,.94); border-bottom: 3px solid var(--card-lip);
+  box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.o-b .unit.b { left: 12px; top: 18px; width: 200px; }
+.o-b .unit.h { left: 164px; top: 184px; width: 214px; }
+.o-b .stats { margin-top: 7px; }
+.o-b .uname { justify-content: space-between; }
+.o-b .uname .cue { margin-right: 3px; }
+
+/* ================= C · Window ================= */
+/* The stage is a big sunk socket, like the gear sockets: shadow top-left,
+   moonlight bottom-right. A tiled floor inside; names on small brass-edged
+   tabs that hang on the window's rim. */
+.o-c .stage { height: 304px; margin: 8px 10px 0; clip-path: var(--px);
+  background: linear-gradient(180deg, #0a0d14, #111521 70%);
+  box-shadow: inset 3px 3px 0 var(--well-lo), inset -3px -3px 0 #232a3a; }
+.o-c .stars { top: 0; }
+.o-c .floor { position: absolute; left: 3px; right: 3px; bottom: 3px; height: 70px;
+  background:
+    linear-gradient(180deg, #2a3142 0 2px, transparent 2px),
+    repeating-linear-gradient(90deg, #171c28 0 30px, #0d1018 30px 32px),
+    #171c28; }
+.o-c .floor::before { content: ''; position: absolute; left: 0; right: 0; top: 24px; height: 2px; background: #0d1018; }
+.o-c .floor::after { content: ''; position: absolute; inset: 26px 0 0;
+  background: repeating-linear-gradient(90deg, transparent 0 14px, #0d1018 14px 16px, transparent 16px 30px), linear-gradient(180deg, transparent, rgba(0,0,0,.45)); }
+.o-c .boss { right: 4px; top: 4px; }
+.o-c .hero { left: 2px; top: 120px; }
+.o-c .unit.b { left: 12px; top: 14px; width: 186px; }
+.o-c .unit.h { left: 164px; top: 182px; width: 200px; }
+.o-c .uname { display: inline-flex; padding: 4px 8px 5px; margin-bottom: 6px; clip-path: var(--px2); background: #1b2030;
+  box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo), inset 0 -2px 0 var(--brass); }
+.o-c .stats { padding: 3px 6px; margin-top: 5px; background: rgba(7,8,12,.6); clip-path: var(--px2); display: inline-flex; }
+
+/* ================= D · Ledger ================= */
+/* The art gets the stage to itself, in a window; the numbers move to two
+   lifted cards under it, boss on the left, hero on the right. */
+.o-d .stage { height: 222px; margin: 8px 10px 0; clip-path: var(--px);
+  background: linear-gradient(180deg, #0a0d14, #111521 70%);
+  box-shadow: inset 3px 3px 0 var(--well-lo), inset -3px -3px 0 #232a3a; }
+.o-d .stars { top: 0; }
+.o-d .floor { position: absolute; left: 3px; right: 3px; bottom: 3px; height: 46px;
+  background: linear-gradient(180deg, #2a3142 0 2px, transparent 2px), repeating-linear-gradient(90deg, #171c28 0 30px, #0d1018 30px 32px), #171c28; }
+.o-d .floor::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,.45)); }
+.o-d .boss { right: 14px; top: 20px; width: 160px; }
+.o-d .hero { left: 22px; top: 76px; width: 128px; }
+.o-d .ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 8px 10px 0; }
+.o-d .unit { position: relative; left: auto; top: auto; width: auto; padding: 8px 9px 9px; clip-path: var(--px); background: var(--card);
+  border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.o-d .uname { justify-content: space-between; font-size: 11.5px; letter-spacing: .16em; }
+.o-d .stats { flex-wrap: wrap; gap: 3px 8px; }
+.o-d .unit.b { order: 2; } .o-d .unit.h { order: 1; }
+
+/* ================= Drop-down bar ================= */
+.dock { position: relative; display: flex; align-items: center; gap: 10px; height: 60px; padding: 0 12px; background: var(--bg); }
+.dock .portrait { position: relative; flex: none; width: 44px; height: 44px; clip-path: var(--px2); background: var(--well);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 #283041; overflow: hidden; }
+.dock .portrait img { position: absolute; image-rendering: pixelated; }
+.dock .portrait.h img { width: 88px; left: -26px; top: -12px; transform: scaleX(-1); }
+.dock .portrait.b img { width: 96px; left: -26px; top: -8px; }
+.dock .lvl { position: absolute; right: 0; bottom: 0; z-index: 2; min-width: 18px; padding: 1px 3px; text-align: center; background: #07080c; font: 800 11px/13px 'Alegreya Sans', sans-serif; color: var(--brass); }
+.dock .mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.dock .top { display: flex; justify-content: space-between; align-items: baseline; }
+.dock .nm2 { font: 600 11.5px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--ink); }
+.dock .num { font: 700 11px 'Alegreya Sans', sans-serif; color: var(--text); }
+.dock .bar { height: 16px; background: #10131b; }
+.dock .hbar { flex: none; width: 8px; height: 44px; position: relative; clip-path: var(--px2); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.dock .hbar b { position: absolute; left: 2px; right: 2px; bottom: 2px; background: #b83a26; box-shadow: inset 2px 0 0 #e06447; }
+.dock.lifted { margin: 0 6px; clip-path: var(--px); background: #141822; border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 #283041, inset -2px -2px 0 var(--lo); }
+.dock-wrap { background: #0d0f15; padding: 8px 0 10px; }
+.dock-wrap .lbl { font: 600 9px 'Cinzel', serif; letter-spacing: .24em; color: #6a6f7a; text-transform: uppercase; padding: 0 16px 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · fight stage</h1>
+  <p class="lede">The stage is the last place still in Ashen: fog, embers, round platforms, thin glowing bars and diamond marks. Four ways to bring it into Pixel-cut, each with the top of Skills under it and its drop-down bar (what shows once the stage scrolls away).</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: 'var(--streak-i)' };
+const icon = (name, color = COLOR[name] || 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+const BOSS = '../../public/sprites/bosses/balanced@3x.png';
+const HERO = '../../public/sprites/player/warrior@3x.png';
+
+// Boss skills fire at 66% and 33%; the first has fired (boss at 41%).
+const bossBar = (now) => now
+  ? `<div class="barwrap"><span class="dia" style="left:66%"></span><span class="dia" style="left:33%"></span><div class="bar"><b style="width:41%"></b><span>266 / 648</span></div></div>`
+  : `<div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>`;
+const heroBar = `<div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>`;
+const bossStats = `<div class="stats"><span>${icon('physical')}61</span><span>${icon('magic')}58</span><span>${icon('armor')}213</span><span>${icon('magicResist')}221</span><span>${icon('crit')}1%</span></div>`;
+const heroStats = `<div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div>`;
+const bossUnit = (now) => `<div class="unit b"><div class="uname"><span>Drifter</span><span class="cue"></span></div>${bossBar(now)}${bossStats}</div>`;
+const heroUnit = `<div class="unit h"><div class="uname"><span>Ryn <small>14</small></span><span class="cue"></span></div>${heroBar}${heroStats}</div>`;
+
+const embers = [[60, 80], [140, 40], [250, 110], [320, 60], [200, 190], [90, 210], [350, 230]]
+  .map(([x, y]) => `<span class="ember" style="left:${x}px;top:${y}px"></span>`).join('');
+
+const STAGE = {
+  now: () => `<div class="stage"><span class="plat b"></span>${embers}<img class="boss" src="${BOSS}"><span class="plat h"></span><img class="hero" src="${HERO}">${bossUnit(true)}${heroUnit}</div>`,
+  a: () => `<div class="stage"><span class="stars"></span><span class="horizon"></span><span class="plinth b"></span><img class="boss" src="${BOSS}"><span class="plinth h"></span><img class="hero" src="${HERO}">${bossUnit()}${heroUnit}</div>`,
+  b: () => `<div class="stage"><span class="stars"></span><span class="horizon"></span><span class="plinth b"></span><img class="boss" src="${BOSS}"><span class="plinth h"></span><img class="hero" src="${HERO}">${bossUnit()}${heroUnit}</div>`,
+  c: () => `<div class="stage"><span class="stars"></span><span class="floor"></span><img class="boss" src="${BOSS}"><img class="hero" src="${HERO}">${bossUnit()}${heroUnit}</div>`,
+  d: () => `<div class="stage"><span class="stars"></span><span class="floor"></span><img class="boss" src="${BOSS}"><img class="hero" src="${HERO}"></div><div class="ledger">${bossUnit()}${heroUnit}</div>`,
+};
+
+const dock = (lifted) => `<div class="dock-wrap"><div class="dock${lifted ? ' lifted' : ''}">
+    <span class="portrait h"><img src="${HERO}"><span class="lvl">14</span></span>
+    <span class="hbar"><b style="height:62%"></b></span>
+    <span class="mid"><span class="nm2">Drifter</span>${bossBar()}</span>
+    <span class="portrait b"><img src="${BOSS}"></span>
+  </div></div>`;
+
+const skills = [
+  { n: 'Stretch', t: 'heal', d: '141', s: 12, r: 2 },
+  { n: 'Morning run', t: 'phys', d: '1.1K', s: 23, r: 8 },
+];
+const row = (h) => `<li class="row" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="streak">${icon('streak')}${h.s}</span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor')}<b>${h.d}</b></button></li>`;
+
+const OPTIONS = [
+  { k: 'now', tag: 'Now', h: 'Ashen stage', p: 'Soft fog fading into the page, drifting embers, round glowing platforms, thin bars with a glow, gold diamonds for boss skills. Everything below it is already Pixel-cut.' },
+  { k: 'a', tag: 'Option A', h: 'Plinths', p: 'Keeps the open diagonal stage. Fog becomes a pixel night: square stars, a dithered horizon. Both fighters stand on stepped stone plinths. Bars become sunk wells with a lit top row; boss-skill marks are brass notches.' },
+  { k: 'b', tag: 'Option B', h: 'Plates', p: 'A, plus each fighter\'s name, bar and stats on a lifted card like a skill. The card is the tap target and presses down when held, so it reads as a button the same way the rest of the screen does.' },
+  { k: 'c', tag: 'Option C', h: 'Window', p: 'The stage is a big sunk socket, like the gear sockets, with a tiled stone floor inside. Names sit on small raised tabs with a brass edge; stats in a dark strip so they read over the art.' },
+  { k: 'd', tag: 'Option D', h: 'Ledger', p: 'The art gets the window to itself, nothing over it. Hero and boss numbers move to two lifted cards beneath (hero left, boss right, matching where they stand). Tallest, but the cleanest art.' },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.h}</h2><p>${o.p}</p>
+  <div class="phone o-${o.k}">
+    <div class="topbar"><span class="cap">Boss #9</span><span class="menu">${icon('menu', 'currentColor')}</span></div>
+    ${STAGE[o.k]()}
+    <section class="sec"><div class="shead"><h2>Skills</h2><span class="gh"><i>${icon('plus', 'currentColor')}</i></span></div>
+      <ul>${skills.map(row).join('')}</ul></section>
+  </div>
+  ${o.k === 'now' ? '' : `<h3>Its drop-down bar</h3>${dock(o.k === 'b' || o.k === 'd')}`}
+</div>`).join('');
+</script>
+</body>
+</html>

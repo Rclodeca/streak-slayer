@@ -40,7 +40,7 @@ import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON } from '../ui/statIcons';
 import type { StatIconName } from '../ui/statIcons';
-import { HERO_PLACEMENT } from './heroArt';
+import { HERO_PHONE_PLACEMENT, HERO_PLACEMENT } from './heroArt';
 import PlayerSprite from './PlayerSprite.vue';
 
 // A condensed, always-visible emoji stat line (Buffed numbers) sits under
@@ -58,12 +58,20 @@ const character = computed(() => characterStore.character);
 const heroName = computed(() => character.value.name ?? 'Character');
 const maxHealth = computed(() => effectiveStat(character.value, 'health'));
 
-// Turned to face the boss across the stage, and stood on its platform by the
-// art's visual center (see heroArt.ts).
+// Turned to face the boss across the stage, and stood on its plinth by the
+// art's visual center (see heroArt.ts); phones draw it smaller.
 const heroClass = computed(() => heroClassFor(character.value));
 const placement = computed(() => {
   const { width, left, bottom } = HERO_PLACEMENT[heroClass.value];
-  return { '--hero-w': width, '--hero-x': left, '--hero-y': bottom };
+  const phone = HERO_PHONE_PLACEMENT[heroClass.value];
+  return {
+    '--hero-w': width,
+    '--hero-x': left,
+    '--hero-y': bottom,
+    '--hero-pw': phone.width,
+    '--hero-px': phone.left,
+    '--hero-py': phone.bottom,
+  };
 });
 
 // Until a level-up's beat plays (useCelebration — after any kill it came
@@ -243,7 +251,7 @@ onBeforeUnmount(() => {
   <div class="character-panel" :class="{ leveling, pressed }">
     <div class="hero-plat" aria-hidden="true" />
     <div class="hero-figure" :style="placement">
-      <PlayerSprite :character="character" />
+      <PlayerSprite :character="character" stage />
       <span v-if="leveling" class="level-ring" aria-hidden="true" />
     </div>
     <div class="hero-block">
@@ -358,23 +366,23 @@ onBeforeUnmount(() => {
 
 .hero-plat {
   position: absolute;
-  left: calc(4 * var(--u));
-  bottom: 4px;
-  width: calc(152 * var(--u));
-  height: 26px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--text) 12%, transparent), transparent 72%);
+  left: calc(11 * var(--u));
+  bottom: 2px;
+  width: calc(120 * var(--u));
+  height: 18px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
   transition: background 0.3s ease;
 }
 
-/* The whole hero, smaller than the boss and standing on its platform; the
-   per-class --hero-* numbers come from HERO_PLACEMENT. No z-index, so its
-   level ring stacks with the blocks. */
+/* The whole hero, smaller than the boss and standing on its plinth; the
+   per-class --hero-p* numbers come from HERO_PHONE_PLACEMENT (the banner's
+   --hero-* from HERO_PLACEMENT). No z-index, so its level ring stacks with
+   the blocks. */
 .hero-figure {
   position: absolute;
-  left: calc(var(--hero-x) * var(--u));
-  bottom: calc(var(--hero-y) * 1px);
-  width: calc(var(--hero-w) * var(--u));
+  left: calc(var(--hero-px) * var(--u));
+  bottom: calc(var(--hero-py) * 1px);
+  width: calc(var(--hero-pw) * var(--u));
 }
 
 .hero-figure :deep(.player-sprite),
@@ -388,14 +396,14 @@ onBeforeUnmount(() => {
 }
 
 /* Floats on the stage to the hero's right. Its left edge sits at the same
-   share of the stage (172px of 390) at every phone width, just clear of the
-   warrior's sword tip (202px wide at 390). */
+   share of the stage (150px of 390) at every phone width, clear of the
+   warrior's sword tip (224px wide at 390). */
 .hero-block {
   position: absolute;
   z-index: 4;
-  bottom: 14px;
+  bottom: 6px;
   right: 16px;
-  width: calc(100% * 218 / 390 - 16px);
+  width: calc(100% * 240 / 390 - 16px);
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -492,12 +500,15 @@ onBeforeUnmount(() => {
    warrior's spot as on phone. */
 @media (min-width: 821px) {
   .hero-plat {
-    left: calc(7% - 19px);
-    width: 152px;
+    left: calc(7% - 12px);
+    bottom: 2px;
+    width: 140px;
   }
 
   .hero-figure {
     left: calc(7% + (var(--hero-x) - 23) * 1px);
+    bottom: calc(var(--hero-y) * 1px);
+    width: calc(var(--hero-w) * 1px);
   }
 
   .hero-block {
@@ -549,7 +560,7 @@ onBeforeUnmount(() => {
 
 .pressed .hero-plat,
 .character-panel:has(.tap:focus-visible) .hero-plat {
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 30%, transparent), transparent 72%);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .pressed .name-line,

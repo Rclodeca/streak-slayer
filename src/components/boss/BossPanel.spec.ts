@@ -60,7 +60,7 @@ describe('BossPanel', () => {
     const store = useBossStore();
     store.boss = { ...store.boss, personality: 'warded5x' };
     const wrapper = mount(BossPanel);
-    expect(wrapper.find('.boss-name').text()).toBe('Ethereal Sovereign');
+    expect(wrapper.find('.boss-name').text()).toBe(`#${store.boss.index} Ethereal Sovereign`);
     expect(wrapper.find('.boss-name > .name-tail').text()).toBe('Sovereign');
   });
 

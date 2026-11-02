@@ -27,7 +27,7 @@ import HealthBar from '../ui/HealthBar.vue';
 import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import type { StatIconName } from '../ui/statIcons';
-import Sprite from '../ui/Sprite.vue';
+import { baseSpriteUrl, PHONE_STAGE_MEDIA, spriteUrl } from '../ui/spriteUrl';
 
 const baseUrl = import.meta.env.BASE_URL;
 const bossStore = useBossStore();
@@ -118,14 +118,18 @@ const skillTiles = computed<StatTile[]>(() => [
   <div class="boss-panel" :class="{ pressed }">
     <div class="boss-plat" aria-hidden="true" />
     <div class="boss-figure" :class="{ dying: phase === 'dying', arriving: phase === 'arriving' }">
-      <Sprite :image-name="PERSONALITY_SPRITE[boss.personality]" alt="Boss" />
+      <!-- Phones draw the base build, smaller (see PHONE_STAGE_MEDIA). -->
+      <picture>
+        <source :media="PHONE_STAGE_MEDIA" :srcset="baseSpriteUrl(PERSONALITY_SPRITE[boss.personality])" />
+        <img class="sprite" :src="spriteUrl(PERSONALITY_SPRITE[boss.personality])" alt="Boss" />
+      </picture>
       <template v-if="phase === 'dying'">
         <span class="death-flash" aria-hidden="true" />
         <span class="death-sparks" aria-hidden="true" />
       </template>
     </div>
     <div class="boss-block">
-      <h2 class="boss-name">{{ nameHead }}<span class="name-tail">{{ nameTail }}</span></h2>
+      <h2 class="boss-name"><span class="boss-number">#{{ boss.index }}</span> {{ nameHead }}<span class="name-tail">{{ nameTail }}</span></h2>
       <HealthBar :current="shownHealth" :max="boss.maxHealth" variant="boss" :marks="skillMarks" />
       <p class="stat-summary">
         <span><StatIcon name="physical" /> {{ formatCompact(physicalAttack) }}</span>
@@ -195,36 +199,41 @@ const skillTiles = computed<StatTile[]>(() => [
    on its phone geometry (--u scales the art on narrow phones). */
 .boss-panel {
   display: contents;
-  /* The sprite's canvas, so whole device pixels per art pixel (see spriteUrl). */
-  --boss-w: calc(192 * var(--u));
+  /* The base build's canvas, so whole device pixels per art pixel (see
+     PHONE_STAGE_MEDIA); the banner draws the larger build (spriteUrl). */
+  --boss-w: calc(128 * var(--u));
 }
 
 .boss-plat {
   position: absolute;
-  right: calc(16 * var(--u));
-  top: calc(168 * var(--u));
-  width: calc(186 * var(--u));
-  height: 26px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--text) 12%, transparent), transparent 72%);
+  right: calc(22 * var(--u));
+  top: calc(14px + 116 * var(--u));
+  width: calc(136 * var(--u));
+  height: 18px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
   transition: background 0.3s ease;
 }
 
-/* No z-index, so its kill effects and the plain sprite stack with the blocks. */
+/* No z-index, so its kill effects and the plain sprite stack with the blocks.
+   Below the menu button, which sits in the stage's top-right corner. */
 .boss-figure {
   position: absolute;
-  top: 0;
-  right: calc(10 * var(--u));
+  top: 14px;
+  right: calc(26 * var(--u));
   width: var(--boss-w);
 }
 
-/* Floats on the stage to the boss's left, over its own block of fog. Its
-   right edge sits at the mock's share of the stage (212px of 390, just past
-   the middle) at every phone width (196px wide at 390). */
+.boss-figure picture {
+  display: contents;
+}
+
+/* Floats on the stage to the boss's left, in the corner the top bar left.
+   Its right edge sits at the mock's share of the stage (212px of 390, just
+   past the middle) at every phone width (196px wide at 390). */
 .boss-block {
   position: absolute;
   z-index: 4;
-  top: 10px;
+  top: 0;
   left: 16px;
   width: calc(100% * 212 / 390 - 16px);
   display: flex;
@@ -248,6 +257,12 @@ const skillTiles = computed<StatTile[]>(() => [
 
 .name-tail {
   white-space: nowrap;
+}
+
+/* The boss's place in the run, where the top bar used to show it. */
+.boss-number {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 }
 
 /* The tap cue: a small chevron after the name. */
@@ -297,11 +312,12 @@ const skillTiles = computed<StatTile[]>(() => [
 
   .boss-plat {
     right: calc(7% + 4px);
-    top: 168px;
+    top: 174px;
     width: 186px;
   }
 
   .boss-figure {
+    top: 0;
     right: 7%;
   }
 
@@ -557,7 +573,7 @@ const skillTiles = computed<StatTile[]>(() => [
 
 .pressed .boss-plat,
 .boss-panel:has(.tap:focus-visible) .boss-plat {
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 30%, transparent), transparent 72%);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .pressed .boss-name,

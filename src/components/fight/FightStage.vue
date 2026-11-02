@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Frameless: on phones the stage runs edge to edge (its fog, in Ashen), with
+/* Frameless: on phones the stage runs edge to edge (its night sky), with
    the fighters held to a centred box no wider than a large phone. Clipped
    at the sides only, so a crit's jolt or a spark never scrolls the page
    sideways and the numbers can still rise off the top. */
@@ -138,21 +138,24 @@ onBeforeUnmount(() => {
 
 /* Drawn at 390px wide; on narrower phones --u shrinks the art in proportion
    while text and the blocks' insets keep their px (the blocks keep their
-   share of the width, so they never cover the art). The split is where the boss's and hero's tap
-   areas meet, in a step that follows the diagonal; its left step rides the
-   top of the hero, so a boss block that wraps deeper on a narrow phone stays
-   on the boss's side. Each step also gives way, 4px clear, to a block that
-   reaches past it (--boss-bottom, --hero-top: measured, larger text). */
+   share of the width, so they never cover the art). The stage starts at the
+   top of the screen: the top bar's menu sits in its top-right corner
+   (AppShell). The split is where the boss's and hero's tap areas meet, in a
+   step that follows the diagonal; its left step rides the top of the hero,
+   so a boss block that wraps deeper on a narrow phone stays on the boss's
+   side, and its right step runs under the boss's plinth. Each step also
+   gives way, 4px clear, to a block that reaches past it (--boss-bottom,
+   --hero-top: measured, larger text). */
 .stage-inner {
   position: relative;
   width: min(100%, 430px);
-  height: 300px;
+  height: 212px;
   margin-inline: auto;
   container-type: inline-size;
   --u: min(1px, calc(100cqw / 390));
   --split-x: 50%;
-  --split-yl: max(calc(300px - 178 * var(--u)), calc(var(--boss-bottom, 0px) + 4px));
-  --split-yr: min(212px, calc(var(--hero-top, 999px) - 4px));
+  --split-yl: max(calc(212px - 118 * var(--u)), calc(var(--boss-bottom, 0px) + 4px));
+  --split-yr: min(calc(32px + 116 * var(--u)), calc(var(--hero-top, 999px) - 4px));
   /* A second step, for the banner; on phones it folds into the first. */
   --split-x2: var(--split-x);
   --split-ym: var(--split-yr);

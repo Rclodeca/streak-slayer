@@ -43,14 +43,17 @@ const needsName = computed(() => characterStore.character.name === undefined);
 // button. The popup overlays below stay mounted regardless (they're
 // independently gated Teleports, see useModalPriority), so a queued
 // death/item/quest popup isn't hidden by this toggle.
+// With the fight showing there's no top bar: the menu floats in the stage's
+// top-right corner and the boss's number joins its name (BossPanel). High
+// Scores keeps the bar, with its Back button.
 const showHighScores = ref(false);
 </script>
 
 <template>
   <NewHeroScreen v-if="needsName" />
   <div v-else class="app-shell">
-    <div class="progress-bar">
-      <span>Boss #{{ bossIndex }}</span>
+    <div class="progress-bar" :class="{ 'over-stage': !showHighScores }">
+      <span v-if="showHighScores">Boss #{{ bossIndex }}</span>
       <div class="top-actions">
         <button v-if="showHighScores" type="button" class="nav-button" @click="showHighScores = false"><ArrowLeft :size="14" />Back</button>
         <AppMenu @high-scores="showHighScores = true" />
@@ -87,6 +90,7 @@ const showHighScores = ref(false);
 
 <style scoped>
 .app-shell {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -105,8 +109,17 @@ const showHighScores = ref(false);
 
 .top-actions {
   display: flex;
+  margin-left: auto;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Out of the flow, over the stage's corner and its tap areas. */
+.progress-bar.over-stage {
+  position: absolute;
+  z-index: 7;
+  top: env(safe-area-inset-top, 0px);
+  right: 0;
 }
 
 .nav-button {

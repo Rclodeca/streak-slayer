@@ -509,53 +509,66 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: $line;
   }
 
-  // ---------- The fight stage: fog and embers, no frame ----------
-  // FightStage's backdrop fades into the page at the top and bottom. The boss
-  // and hero stand on platforms on it, their names, bars and stats engraved
-  // straight on the fog.
+  // ---------- The fight stage: a pixel night, no frame ----------
+  // (docs/mockups/pixel-stage.html, option A.) FightStage's backdrop is a
+  // night sky of square stars over a dithered horizon, fading into the page
+  // at the bottom. The boss and hero stand on stepped stone plinths, their
+  // names, bars and stats engraved straight on the night.
 
   .fight-stage .stage-bg {
     overflow: hidden;
-    background: var(--stage-light);
-    -webkit-mask-image: linear-gradient(180deg, transparent, #000 14%, #000 78%, transparent);
-    mask-image: linear-gradient(180deg, transparent, #000 14%, #000 78%, transparent);
+    background: linear-gradient(180deg, transparent, #0c0f17 55%, #0f131d);
+    -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent);
+    mask-image: linear-gradient(180deg, #000 80%, transparent);
 
+    // Stars: 2px squares, placed by share of the width so a wide banner
+    // spreads them out.
     &::before {
       content: '';
       position: absolute;
+      inset: 0;
       pointer-events: none;
-      @include embers;
+      $stars: (10% 22%, 31% 8%, 59% 18%, 77% 5%, 90% 38%, 51% 46%, 23% 58%, 67% 62%, 85% 52%, 5% 44%);
+      $layers: ();
+      @each $x, $y in $stars {
+        $layers: append($layers, linear-gradient(#3a4358, #3a4358) $x $y / 2px 2px no-repeat, comma);
+      }
+      background: $layers;
     }
 
-    // Ground fog, softened by its long falloff rather than a blur filter.
+    // The horizon: a 4px dither of two stones, darker along its top edge,
+    // from the plinths' line down.
     &::after {
       content: '';
       position: absolute;
-      left: -10%;
-      right: -10%;
+      left: 0;
+      right: 0;
       bottom: 0;
-      height: 60px;
+      height: 37%;
       pointer-events: none;
-      background: radial-gradient(
-        ellipse 54% 80% at 50% 100%,
-        rgba(205, 195, 175, 0.2),
-        rgba(205, 195, 175, 0.09) 40%,
-        rgba(205, 195, 175, 0.03) 60%,
-        transparent 76%
-      );
-      animation: ashen-fog 9s ease-in-out infinite alternate;
+      background:
+        conic-gradient(#0b0e15 25%, transparent 0 50%, #0b0e15 0 75%, transparent 0) 0 0 / 4px 4px repeat-x,
+        conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px;
+      background-size:
+        4px 8px,
+        4px 4px;
+      background-clip: content-box, border-box;
     }
   }
 
-  // Round by nature, so it keeps its ellipse.
+  // A stepped stone block: its top tier cut in 6px at each end, a lit top
+  // edge and a dark foot.
   .boss-plat,
   .hero-plat {
-    border-radius: 50%;
-    background: radial-gradient(ellipse at center, rgba(205, 195, 175, 0.16), rgba(205, 195, 175, 0.04) 60%, transparent 72%);
-    border-top: 1px solid tone(moon-tint, 0.14);
+    background: #1f2534;
+    clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+    box-shadow:
+      inset 0 3px 0 #3a4358,
+      inset 0 6px 0 #283041,
+      inset 0 -3px 0 #10141d;
     transition:
       background 0.3s ease-out,
-      border-color 0.3s ease-out;
+      box-shadow 0.3s ease-out;
   }
 
   .hero-figure .hero {
@@ -631,6 +644,46 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: none;
   }
 
+  // On the stage each HP bar is a sunk well, pixel-cut, its fill flat with
+  // a lit top row and a dark foot, 2px in from the rim.
+  .fight-stage .health-bar {
+    padding: 2px;
+    background: #0a0c12;
+    border: 0;
+    @include pixel-corners(2px);
+    @include bevel(var(--sunk-hi), var(--sunk-lo));
+  }
+
+  .fight-stage .health-bar-fill {
+    background: #b83a26;
+    box-shadow:
+      inset 0 2px 0 #e06447,
+      inset 0 -2px 0 #7c2214;
+  }
+
+  .fight-stage .health-bar-trail {
+    inset: 2px auto 2px 2px;
+    max-width: calc(100% - 4px);
+  }
+
+  .fight-stage .bars {
+    @include pixel-corners(2px);
+  }
+
+  // The hero's EXP along the foot of the well's fill.
+  .fight-stage .hero-block .exp-bar {
+    inset: auto 2px 2px;
+    background: transparent;
+  }
+
+  .fight-stage .hero-block .exp-bar-fill {
+    background: var(--exp-color);
+  }
+
+  .boss-number {
+    color: $brass;
+  }
+
   // Small and dimmed, so the names and bars lead.
   .fight-stage .stat-summary {
     font-size: 0.75rem;
@@ -662,8 +715,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .boss-panel:has(.tap:focus-visible) .boss-plat,
   .character-panel.pressed .hero-plat,
   .character-panel:has(.tap:focus-visible) .hero-plat {
-    background: radial-gradient(ellipse at center, tone(moon-glow, 0.42), tone(moon-tint, 0.12) 60%, transparent 72%);
-    border-top-color: tone(moon-glow, 0.75);
+    background: #2a3245;
+    box-shadow:
+      inset 0 3px 0 var(--moon),
+      inset 0 6px 0 #3a4358,
+      inset 0 -3px 0 #10141d;
   }
 
   .boss-panel.pressed .boss-name,
@@ -861,6 +917,28 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .health-bar-label {
     z-index: 4;
+  }
+
+  // On the stage, a boss skill waits as a brass notch cut through the bar.
+  .fight-stage .health-bar-mark {
+    top: 2px;
+    bottom: 2px;
+    width: 2px;
+    height: auto;
+    margin: 0 0 0 -1px;
+    background: $brass;
+    border: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .fight-stage .health-bar-mark::after {
+    content: none;
+  }
+
+  .fight-stage .health-bar-mark.fired {
+    transform: scaleY(1.6);
+    box-shadow: 0 0 6px $brass;
   }
 
   .boss-bar .health-bar-mark {
@@ -2716,16 +2794,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 }
 
-@keyframes ashen-fog {
-  to {
-    transform: translateX(4%);
-    opacity: 0.75;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  #{$ashen} .fight-stage .stage-bg::before,
-  #{$ashen} .fight-stage .stage-bg::after,
   #{$ashen} .hero-sprite:has(> .sprite)::before,
   #{$ashen} .new-hero .bonfire::before {
     animation: none;

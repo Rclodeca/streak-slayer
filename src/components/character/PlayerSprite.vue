@@ -7,17 +7,22 @@
 import { computed } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import type { Character } from '../../game-engine';
-import { spriteUrl } from '../ui/spriteUrl';
+import { baseSpriteUrl, PHONE_STAGE_MEDIA, spriteUrl } from '../ui/spriteUrl';
 import { HERO_CANVAS } from './heroArt';
 
-const props = defineProps<{ character: Character }>();
+// `stage`: on the fight stage, where phones draw the base build (see
+// PHONE_STAGE_MEDIA).
+const props = defineProps<{ character: Character; stage?: boolean }>();
 
 const heroClass = computed(() => heroClassFor(props.character));
 </script>
 
 <template>
   <div class="player-sprite" :style="{ '--hero-canvas': `${HERO_CANVAS[heroClass]}px` }">
-    <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="Player" />
+    <picture>
+      <source v-if="stage" :media="PHONE_STAGE_MEDIA" :srcset="baseSpriteUrl(`player/${heroClass}`)" />
+      <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="Player" />
+    </picture>
   </div>
 </template>
 
@@ -26,6 +31,10 @@ const heroClass = computed(() => heroClassFor(props.character));
   position: relative;
   width: 96px;
   height: 96px;
+}
+
+picture {
+  display: contents;
 }
 
 .hero {

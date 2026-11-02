@@ -23,4 +23,11 @@ describe('AppShell', () => {
     expect(layout.find('.side progress-summary-stub').exists()).toBe(true);
     expect(layout.find('.side activity-log-stub').exists()).toBe(true);
   });
+
+  it('floats the menu over the stage, with no top bar label, while the fight shows', () => {
+    const wrapper = shallowMount(AppShell);
+    const bar = wrapper.find('.progress-bar');
+    expect(bar.classes()).toContain('over-stage');
+    expect(bar.text()).not.toContain('Boss #');
+  });
 });
