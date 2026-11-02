@@ -206,7 +206,7 @@ const skillTiles = computed<StatTile[]>(() => [
 
 .boss-plat {
   position: absolute;
-  right: calc(22 * var(--u));
+  right: calc(30 * var(--u));
   top: calc(14px + 116 * var(--u));
   width: calc(136 * var(--u));
   height: 18px;
@@ -219,7 +219,7 @@ const skillTiles = computed<StatTile[]>(() => [
 .boss-figure {
   position: absolute;
   top: 14px;
-  right: calc(26 * var(--u));
+  right: calc(34 * var(--u));
   width: var(--boss-w);
 }
 
