@@ -210,6 +210,27 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 }
 
+// A stone button: a dark face lifted on a black lip, silver text
+// (docs/mockups/pixel-gear.html, "Leave it"). For the choices that aren't
+// the main one.
+@mixin stone-button($size: $label-md) {
+  @include plain-label($size, 700);
+  min-height: 44px;
+  color: var(--accent);
+  background: var(--stone-face);
+  border: 0;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.1);
+  @include pixel-corners(2px);
+  @include lip-press(var(--stone-lip));
+  @include inset-focus;
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--stone-face) 88%, #fff);
+    }
+  }
+}
+
 // A pixel-cut panel: the frame's stone with a 2px bevel (the log, popups,
 // the menu).
 @mixin pixel-panel($fill: $frame) {
@@ -1184,23 +1205,23 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-bottom-color: color-mix(in srgb, var(--damage-color) 40%, #000);
   }
 
-  .replace-button,
   .back,
   .cancel-button {
     padding: 0.6rem 0.8rem;
     @include soft-button;
   }
 
-  // Tighter, so the replace list keeps room for item names on a phone.
+  // Stone buttons on the item popup. Replace is tighter, so the list keeps
+  // room for item names on a phone; it sits level with the item's name.
   .replace-button {
-    padding-inline: 0.6rem;
+    flex-shrink: 0;
+    padding: 0 0.75rem;
+    @include stone-button;
   }
 
-  // Dropping is the quiet choice: an ash outline, not a gold fill.
   .drop-button {
-    padding: 0.6rem 0.8rem;
-    @include soft-button($label-md, var(--text-h), transparent);
-    border-color: $line-mid;
+    padding: 0 0.8rem;
+    @include stone-button;
   }
 
   // Quiet: a line of red, not a framed button.
@@ -1433,8 +1454,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-color: var(--accent-solid);
   }
 
-  // Item reveal: the icon sits in a socket, straight on the popup's stone.
+  // Item reveal: the icon sits in a socket, straight on the popup's stone,
+  // its lines set close under it (docs/mockups/pixel-gear.html, option A).
   .hero:has(> .icon-frame) {
+    gap: 0;
+    padding: 0.25rem 0 0;
     background: none;
     border: 0;
     box-shadow: none;
@@ -1445,19 +1469,46 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .icon-frame {
     width: 150px;
     height: 150px;
-    margin: 0.25rem 0 0.6rem;
+    margin: 0 0 14px;
     overflow: hidden;
     @include socket(var(--rarity), 3px, 6px);
   }
 
   .hero .rarity {
-    @include plain-label($label-lg, 600);
+    @include true-sans(0.875rem, 600);
     text-transform: capitalize;
   }
 
   .hero:has(> .icon-frame) .name {
     @include name-serif;
-    font-size: 1.45rem;
+    margin-top: 2px;
+    font-size: 1.375rem;
+    font-size-adjust: none;
+    line-height: 1.2;
+  }
+
+  .hero:has(> .icon-frame) .bonuses {
+    gap: 2px 10px;
+    margin-top: 10px;
+  }
+
+  .hero:has(> .icon-frame) .bonus {
+    @include true-sans(0.875rem, 700);
+    gap: 3px;
+  }
+
+  .hero:has(> .icon-frame) .bonus-label {
+    font-weight: 500;
+  }
+
+  .hero:has(> .icon-frame) :is(.effect, .consumable) {
+    @include true-sans(0.84375rem, 600);
+    margin-top: 6px;
+  }
+
+  .dropped-by {
+    margin: -0.25rem 0 0.9rem;
+    line-height: normal;
   }
 
   .equipped-note {
@@ -1466,6 +1517,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .replace-label {
     @include engraved($caps-xs, 0.26em);
+    margin-top: 18px;
   }
 
   .replace-label::before,

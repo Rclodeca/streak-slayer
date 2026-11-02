@@ -64,6 +64,8 @@ export const PALETTE_TOKENS = [
   'sunk-hi',
   'sunk-lo',
   'button-lip',
+  'stone-face',
+  'stone-lip',
 ];
 
 function compileThemes(): string {
