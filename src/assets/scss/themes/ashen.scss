@@ -187,7 +187,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 // done, so what's left draws the eye. Landing it (`.lit`, HabitListItem)
 // burns it bright for a moment, then it settles.
 @mixin diamond-check {
-  --check-glow: tone(moon-glow, 0.7);
+  --check-glow: #{tone(moon-glow, 0.7)};
   width: 13px;
   height: 13px;
   margin: 0 4px;

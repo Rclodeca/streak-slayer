@@ -95,6 +95,12 @@ describe('Ashen themes', () => {
     expect([...used].filter((name) => !known.has(name))).toEqual([]);
   });
 
+  it('evaluates every tone() call', () => {
+    // Sass leaves functions in custom-property values as text unless they are
+    // interpolated, and the browser then drops the whole value.
+    expect(css).not.toMatch(/\btone\(/);
+  });
+
   it('never feeds a token to rgba()', () => {
     // Sass passes rgba($x, a) through unchanged once $x is a var(), and the
     // browser then drops the colour silently. Only tone() may make alpha
