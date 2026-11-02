@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Resist section</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;600;700&display=swap" />
+<style>
+/* Good Daily + Weekly together, bad habits in their own Resist section below.
+   Hellforge tokens from src/assets/scss/themes/hellforge.scss, rules from
+   ashen.scss. The section names the rows, so the red side bar is dropped;
+   only the red diamond stays. */
+:root {
+  --bg: #080504; --text: #a8937a; --text-h: #eadbb8; --moon: #eadbb8; --moon-solid: #b8a47a;
+  --brass: #d8b45e; --red: #c8402f; --spent: #6e5a48; --done: #3a2620; --done-line: #5e3c30;
+  --streak: #8d8475;
+  --phys: #d0604f; --magic: #ab8dd8; --heal: #92bf88; --true: #f1e9d6;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 80% 40% at 50% -6%, rgba(200, 60, 20, .07), transparent 70%); }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: var(--brass); margin: 0 0 26px; }
+.grid { display: flex; flex-wrap: wrap; gap: 34px 26px; justify-content: center; align-items: flex-start; }
+.col { width: min(360px, 100%); }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #6e5640; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: var(--text-h); margin: 0 0 4px; }
+.col p { margin: 0 0 14px; font-size: 15px; min-height: 60px; }
+.stack { display: flex; flex-direction: column; gap: 18px; }
+
+.panel { position: relative; padding: 16px 12px 12px; border: 2px solid #5c4630; border-radius: 6px;
+  background:
+    linear-gradient(90deg, transparent 8%, rgba(230, 190, 120, .4) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(ellipse 55% 46px at 50% 0, rgba(230, 190, 120, .06), transparent),
+    linear-gradient(#1f1612, #140d0a);
+  box-shadow: 0 0 0 1px #000, inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 18px rgba(0, 0, 0, .6), 0 24px 50px -24px rgba(0, 0, 0, .95); }
+.panel::after { content: ''; position: absolute; top: -6px; left: 50%; width: 9px; height: 9px; margin-left: -5px; transform: rotate(45deg); background: #1a120e; border: 1px solid #8a6a40; }
+.head { display: flex; align-items: center; justify-content: space-between; min-height: 36px; }
+.head h3 { margin: 0; font: 600 .85rem 'Cinzel', serif; letter-spacing: .2em; color: var(--brass); }
+.add { padding: .55rem .8rem; font: 600 .7rem 'Cinzel', serif; letter-spacing: .18em; color: #f2d8c0; background: linear-gradient(180deg, #6a1a12, #3e0c08); border: 1px solid #8a3020; border-radius: 6px; }
+
+.group-title { margin: 1rem 0 .3rem; font: 600 .7rem 'Cinzel', serif; letter-spacing: .26em; color: var(--text); }
+.head + .group-title.first { margin-top: .6rem; }
+.group-title.red { color: color-mix(in srgb, var(--red) 65%, var(--text)); }
+ul { list-style: none; margin: 0; padding: 0; }
+.row { position: relative; display: flex; align-items: center; gap: .8rem; min-height: 44px; padding: .62rem .6rem .62rem .7rem; }
+.check { flex: none; width: 13px; height: 13px; margin: 0 4px; transform: rotate(45deg); background: rgba(0, 0, 0, .45); border: 1px solid var(--moon); }
+.check.on { background: var(--done); border-color: var(--done-line); }
+.bad .check { border-color: var(--red); }
+.name { flex: 1; min-width: 0; font: 600 1rem 'Alegreya', Georgia, serif; color: var(--text-h); }
+.meta { display: flex; align-items: center; gap: .6rem; }
+.per { font-weight: 600; font-size: .8rem; color: #6e5640; }
+.streak { min-width: 2.6rem; display: flex; align-items: center; gap: 3px; font-weight: 700; font-size: .82rem; }
+.streak svg { color: var(--streak); }
+.rank { width: 30px; }
+.rank b { display: block; padding: 3px 0 2px .08em; text-align: center; font: 600 .62rem/1 'Cinzel', serif; letter-spacing: .08em; color: var(--brass); background: rgba(0, 0, 0, .4); border: 1px solid rgba(190, 160, 100, .45); border-radius: 3px; }
+.dmg { min-width: 2.2rem; text-align: right; font-weight: 700; color: var(--c); }
+.veil { position: absolute; inset: 0; border-radius: 8px; pointer-events: none; }
+.spent .veil { background: linear-gradient(90deg, rgba(0, 0, 0, .34), rgba(0, 0, 0, .18)); }
+.spent .name { color: var(--spent); }
+.spent .dmg { color: color-mix(in srgb, var(--c) 50%, var(--spent)); }
+.spent .streak, .spent .rank { opacity: .45; }
+
+/* C: the resist rows rest quiet — nothing to do unless you slip. */
+.quiet .name { color: var(--text); font-weight: 500; }
+.quiet .dmg { color: color-mix(in srgb, var(--c) 60%, var(--text)); }
+.quiet .check { border-color: color-mix(in srgb, var(--red) 70%, transparent); }
+
+.rest { display: flex; align-items: center; gap: 8px; margin: .5rem 0 0 .7rem; min-height: 32px; font: 600 .7rem 'Cinzel', serif; letter-spacing: .24em; color: var(--text); }
+.rest span { color: var(--moon-solid); }
+.rest::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Resist</h1>
+  <div class="grid">
+    <div class="col">
+      <div class="tag">A</div>
+      <h2>Third group</h2>
+      <p>Same panel. Daily, Weekly, then Resist. Weekly bad habits say so.</p>
+      <div id="a"></div>
+    </div>
+    <div class="col">
+      <div class="tag">B</div>
+      <h2>Own panel</h2>
+      <p>Resist gets its own panel below Skills, split Daily and Weekly like the one above.</p>
+      <div id="b"></div>
+    </div>
+    <div class="col">
+      <div class="tag">C</div>
+      <h2>Own panel, quiet</h2>
+      <p>As B, one flat list. The rows sit dim, since there is nothing to do unless you slip.</p>
+      <div id="c"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FLAME = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2 2.5 2 4 1-1 1-4 1-7z"/></svg>';
+const NUMERALS = ['', 'I', 'II', 'III'];
+
+// Good
+const stretch  = { n: 'Stretch',       t: 'heal',  d: 141, s: 0,  r: 0, done: true };
+const run      = { n: 'Run',           t: 'phys',  d: 120, s: 12, r: 2, done: true };
+const pushups  = { n: 'Pushups',       t: 'phys',  d: 96,  s: 4,  r: 0 };
+const read     = { n: 'Read',          t: 'magic', d: 88,  s: 5,  r: 1 };
+const meditate = { n: 'Meditate',      t: 'true',  d: 74,  s: 0,  r: 0 };
+const family   = { n: 'Call family',   t: 'heal',  d: 180, s: 0,  r: 0 };
+const hike     = { n: 'Long hike',     t: 'phys',  d: 300, s: 6,  r: 1 };
+// Bad
+const doom     = { n: 'Doomscroll',    t: 'phys',  d: 110, s: 9,  r: 1, bad: true };
+const snacking = { n: 'Late snacking', t: 'magic', d: 80,  s: 3,  r: 0, bad: true };
+const takeout  = { n: 'Takeout',       t: 'magic', d: 150, s: 3,  r: 0, bad: true, week: true };
+
+function row(h, tagWeek) {
+  const cls = ['row', h.bad && 'bad', h.done && 'spent'].filter(Boolean).join(' ');
+  return `<li class="${cls}" style="--c: var(--${h.t})">
+    <span class="check${h.done ? ' on' : ''}"></span>
+    <span class="name">${h.n}</span>
+    <span class="meta">
+      ${tagWeek && h.week ? '<span class="per">Week</span>' : ''}
+      <span class="streak">${h.s >= 3 ? FLAME + h.s : ''}</span>
+      <span class="rank">${h.r ? `<b>${NUMERALS[h.r]}</b>` : ''}</span>
+    </span>
+    <span class="dmg">${h.d}</span>
+    <span class="veil"></span>
+  </li>`;
+}
+
+const list = (rows, tagWeek, cls = '') => `<ul class="${cls}">${rows.map((h) => row(h, tagWeek)).join('')}</ul>`;
+const resting = '<div class="rest">Resting <span>2</span></div>';
+const panel = (title, body, add) => `<section class="panel">
+  <div class="head"><h3>${title}</h3>${add ? '<button class="add" type="button">+ New habit</button>' : ''}</div>
+  ${body}
+</section>`;
+
+const goodGroups = `
+  <div class="group-title first">Daily</div>
+  ${list([stretch, run, pushups, read, meditate])}
+  ${resting}
+  <div class="group-title">Weekly</div>
+  ${list([family, hike])}
+`;
+
+document.getElementById('a').innerHTML = panel('Skills', `
+  ${goodGroups}
+  <div class="group-title red">Resist</div>
+  ${list([doom, snacking, takeout], true)}
+`, true);
+
+document.getElementById('b').innerHTML = `<div class="stack">
+  ${panel('Skills', goodGroups, true)}
+  ${panel('Resist', `
+    <div class="group-title first">Daily</div>
+    ${list([doom, snacking])}
+    <div class="group-title">Weekly</div>
+    ${list([takeout])}
+  `)}
+</div>`;
+
+document.getElementById('c').innerHTML = `<div class="stack">
+  ${panel('Skills', goodGroups, true)}
+  ${panel('Resist', list([doom, snacking, takeout], true, 'quiet'))}
+</div>`;
+</script>
+</body>
+</html>

@@ -26,13 +26,26 @@ const addButton = ref<HTMLElement | null>(null);
 const hintDismissed = ref(false);
 const showHint = computed(() => !habitStore.habits.length && !hintDismissed.value && !showAddModal.value);
 
-const dailyHabits = computed(() => sortByDamageType(habitStore.habits.filter((habit) => habit.period === 'daily')));
+// Good habits are the skills, by period. Bad ones wait apart in Resist,
+// since there's nothing to tap there unless you give in.
+const goodHabits = computed(() => habitStore.habits.filter((habit) => !habit.isBad));
+const badHabits = computed(() => habitStore.habits.filter((habit) => habit.isBad));
+
+const dailyHabits = computed(() => sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'daily')));
 // Set-day skills resting today fold away at the bottom of Daily.
 const dueDailyHabits = computed(() => dailyHabits.value.filter((habit) => isDueOn(habit, debugClockStore.now())));
 const restingDailyHabits = computed(() => dailyHabits.value.filter((habit) => !isDueOn(habit, debugClockStore.now())));
 const weeklyHabits = computed(() =>
-  sortByDamageType(habitStore.habits.filter((habit) => habit.period === 'weekly')),
+  sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'weekly')),
 );
+
+// One flat list: daily, then weekly, then any resting today.
+const resistHabits = computed(() => {
+  const now = debugClockStore.now();
+  const daily = sortByDamageType(badHabits.value.filter((habit) => habit.period === 'daily'));
+  const weekly = sortByDamageType(badHabits.value.filter((habit) => habit.period === 'weekly'));
+  return [...daily.filter((habit) => isDueOn(habit, now)), ...weekly, ...daily.filter((habit) => !isDueOn(habit, now))];
+});
 
 // One popup for the whole list, by id, so it stays open when changing a
 // skill's days moves its row in or out of the Resting fold.
@@ -76,11 +89,13 @@ const checkHint = computed<{ id: HintId; habit: Habit } | null>(() => {
 });
 
 const listEl = ref<HTMLElement | null>(null);
+const resistEl = ref<HTMLElement | null>(null);
 const checkZone = ref<HTMLElement | null>(null);
 watch(
-  [() => checkHint.value?.habit.id, listEl],
-  ([id, list]) => {
-    checkZone.value = id ? (list?.querySelector<HTMLElement>(`[data-habit-id="${id}"] .check-zone`) ?? null) : null;
+  [() => checkHint.value?.habit, listEl, resistEl],
+  ([habit, list, resist]) => {
+    const panel = habit?.isBad ? resist : list;
+    checkZone.value = habit ? (panel?.querySelector<HTMLElement>(`[data-habit-id="${habit.id}"] .check-zone`) ?? null) : null;
   },
   { flush: 'post', immediate: true },
 );
@@ -102,7 +117,7 @@ function checkOffFromHint() {
 </script>
 
 <template>
-  <section ref="listEl" class="panel habit-list">
+  <section ref="listEl" class="panel habit-list skill-list">
     <div class="habit-list-header">
       <h2>Skills</h2>
       <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="showAddModal = true">+ New habit</button>
@@ -132,6 +147,15 @@ function checkOffFromHint() {
         <p v-else class="habit-group-empty">No weekly habits yet.</p>
       </div>
     </template>
+  </section>
+
+  <section v-if="resistHabits.length" ref="resistEl" class="panel habit-list resist-list">
+    <div class="habit-list-header">
+      <h2>Resist</h2>
+    </div>
+    <ul>
+      <HabitListItem v-for="habit in resistHabits" :key="habit.id" :habit="habit" period-tag @open="openHabitId = habit.id" />
+    </ul>
   </section>
 
   <AddHabitModal v-model="showAddModal" />
@@ -194,6 +218,10 @@ function checkOffFromHint() {
 
 .habit-group {
   margin-top: 1rem;
+}
+
+.resist-list ul {
+  margin-top: 0.6rem;
 }
 
 .habit-group-title {

@@ -36,6 +36,40 @@ describe('HabitList', () => {
     return mount(HabitList, { global: { plugins: [pinia] }, attachTo: document.body });
   }
 
+  function names(wrapper: ReturnType<typeof mountList>, selector: string) {
+    return wrapper.findAll(`${selector} .habit-item .name`).map((name) => name.text());
+  }
+
+  it('bad habits leave the skills for a Resist panel of their own', () => {
+    const habitStore = useHabitStore();
+    habitStore.addHabit('Run', 'daily', 'medium', false, createRng(1));
+    habitStore.addHabit('Doomscroll', 'daily', 'medium', true, createRng(2));
+    habitStore.addHabit('Hike', 'weekly', 'medium', false, createRng(3));
+    habitStore.addHabit('Takeout', 'weekly', 'medium', true, createRng(4));
+    const wrapper = mountList();
+    expect(names(wrapper, '.skill-list')).toEqual(['Run', 'Hike']);
+    expect(wrapper.find('.resist-list h2').text()).toBe('Resist');
+    expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Takeout']);
+  });
+
+  it('shows no Resist panel without a bad habit', () => {
+    addDaily();
+    const wrapper = mountList();
+    expect(wrapper.find('.resist-list').exists()).toBe(false);
+  });
+
+  it('marks only the weekly bad habits, and lists resting ones last', () => {
+    const habitStore = useHabitStore();
+    habitStore.addHabit('Snacking', 'daily', 'medium', true, createRng(1), [(today + 2) % 7]);
+    habitStore.addHabit('Takeout', 'weekly', 'medium', true, createRng(2));
+    habitStore.addHabit('Doomscroll', 'daily', 'medium', true, createRng(3));
+    const wrapper = mountList();
+    expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Takeout', 'Snacking']);
+    const tags = wrapper.findAll('.resist-list .habit-item').map((row) => row.find('.period-tag').exists());
+    expect(tags).toEqual([false, true, false]);
+    expect(wrapper.find('.skill-list .period-tag').exists()).toBe(false);
+  });
+
   it('a habit resting today sits in a closed Resting fold with its next due day', () => {
     addDaily([(today + 2) % 7]);
     const wrapper = mountList();

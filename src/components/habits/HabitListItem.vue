@@ -15,7 +15,8 @@ import RankDiamonds from './RankDiamonds.vue';
 import SkillSigil from './SkillSigil.vue';
 import { WEEKDAY_SHORT } from './weekdays';
 
-const props = defineProps<{ habit: Habit }>();
+// periodTag marks a weekly skill "Week", for lists that mix the periods (Resist).
+const props = defineProps<{ habit: Habit; periodTag?: boolean }>();
 // The skill popup lives in HabitList, so it stays open when this row moves
 // in or out of the Resting fold.
 defineEmits<{ open: [] }>();
@@ -127,6 +128,7 @@ function onZoneClick(event: MouseEvent) {
     <span v-else class="name" :class="{ done: isCompletedThisPeriod }">{{ habit.name }}</span>
     <span class="meta">
       <span v-if="isResting" class="next-day">{{ nextDayLabel }}</span>
+      <span v-if="periodTag && habit.period === 'weekly'" class="period-tag">Week</span>
       <span class="streak" :style="streakStyle" :title="showStreak ? `${habit.streakCount} streak` : undefined">
         <template v-if="showStreak"><StatIcon name="streak" :size="12" />{{ habit.streakCount }}</template>
       </span>
@@ -170,17 +172,6 @@ function onZoneClick(event: MouseEvent) {
   bottom: 0;
   left: 0;
   width: calc(var(--row-pad) + 22px + var(--row-gap) + 0.25rem);
-}
-
-.habit-item.bad::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.45rem;
-  bottom: 0.45rem;
-  width: 3px;
-  background: var(--damage-color);
-  border-radius: 3px;
 }
 
 .habit-item:hover {
@@ -299,6 +290,15 @@ function onZoneClick(event: MouseEvent) {
   opacity: 0.6;
 }
 
+/* A bad habit rests quiet: there's nothing to do unless you give in. */
+.bad .name {
+  color: var(--text);
+}
+
+.bad .damage {
+  color: color-mix(in srgb, var(--c) 60%, var(--text));
+}
+
 /* One unit, so the last word and its sigil wrap together. Text decoration
    doesn't reach into inline blocks, hence the explicit strike-through. */
 .name-end {
@@ -336,6 +336,11 @@ function onZoneClick(event: MouseEvent) {
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.7rem;
+}
+
+.period-tag {
+  font-size: 0.7rem;
+  color: var(--text);
 }
 
 .damage {

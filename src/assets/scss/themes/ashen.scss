@@ -792,12 +792,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: none;
   }
 
-  .habit-item.bad::before {
-    width: 2px;
-    background: var(--damage-color);
-    box-shadow: 0 0 8px var(--damage-color);
-  }
-
   .habit-item .check,
   .quest-item .check {
     @include diamond-check;
@@ -809,10 +803,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // A bad habit's diamond is red, and lights red once checked: giving in
-  // is a blow taken, not a skill landed.
+  // is a blow taken, not a skill landed. Waiting, it's a dimmer red, as the
+  // Resist rows rest quiet.
   .habit-item.bad .check {
     --check-glow: rgba(200, 64, 47, 0.7);
-    border-color: var(--damage-color);
+    border-color: color-mix(in srgb, var(--damage-color) 70%, transparent);
   }
 
   .habit-item.bad .check:checked {
@@ -837,6 +832,17 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .habit-item .name {
     @include name-serif;
+  }
+
+  // Resist rows rest quiet: there's nothing to do there unless you give in
+  // (docs/mockups/resist-section.html, option C).
+  .habit-item.bad .name {
+    font-weight: 500;
+  }
+
+  .habit-item .period-tag {
+    @include plain-label($label-sm, 600);
+    color: $ash-mark;
   }
 
   // A spent skill is an ability waiting for dawn, not a task crossed off
