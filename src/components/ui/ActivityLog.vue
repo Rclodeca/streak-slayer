@@ -175,13 +175,6 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
     </ul>
     <p v-else>No activity yet.</p>
   </section>
-  <div class="log-end" aria-hidden="true">
-    <span class="log-end-rule" />
-    <span class="log-end-gem small" />
-    <span class="log-end-gem" />
-    <span class="log-end-gem small" />
-    <span class="log-end-rule flip" />
-  </div>
 </template>
 
 <style scoped>
@@ -260,40 +253,5 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
 .log-exp {
   color: var(--exp-skill-color);
   font-weight: 700;
-}
-
-/* Closes off the bottom of the page, clear of the phone's home indicator. */
-.log-end {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom));
-}
-
-.log-end-rule {
-  width: 4.5rem;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-border));
-}
-
-.log-end-rule.flip {
-  transform: scaleX(-1);
-}
-
-.log-end-gem {
-  box-sizing: border-box;
-  width: 7px;
-  height: 7px;
-  transform: rotate(45deg);
-  border: 1px solid var(--accent-solid);
-  background: var(--bg);
-}
-
-.log-end-gem.small {
-  width: 4px;
-  height: 4px;
-  border-color: var(--accent-border);
-  background: var(--accent-border);
 }
 </style>

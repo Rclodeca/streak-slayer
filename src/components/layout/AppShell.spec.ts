@@ -30,6 +30,7 @@ describe('AppShell', () => {
   it('hides the log until it is switched on', () => {
     const wrapper = shallowMount(AppShell);
     expect(wrapper.find('activity-log-stub').exists()).toBe(false);
+    expect(wrapper.find('.side .log-end').exists()).toBe(true);
   });
 
   it('hangs the menu on the stage, with no top bar, while the fight shows', () => {
