@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weeklyPeriodKey } from './time';
+import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, msUntilRollover, periodKeyFor, weeklyPeriodKey } from './time';
 
 describe('dailyPeriodKey', () => {
   it('formats a date as YYYY-MM-DD using its Pacific business day', () => {
@@ -99,5 +99,23 @@ describe('addDaysToDayKey', () => {
   it('rolls over month and year ends', () => {
     expect(addDaysToDayKey('2026-02-27', 3)).toBe('2026-03-02');
     expect(addDaysToDayKey('2026-12-31', 1)).toBe('2027-01-01');
+  });
+});
+
+describe('msUntilRollover', () => {
+  const HOUR = 60 * 60 * 1000;
+
+  it('counts a daily down to 3am Pacific', () => {
+    // 2026-11-02 10:00 UTC is 02:00 PST, an hour before the rollover.
+    expect(msUntilRollover('daily', new Date('2026-11-02T10:00:00Z'))).toBe(HOUR);
+    // 3am PST sharp starts a new day, a full 24h to the next.
+    expect(msUntilRollover('daily', new Date('2026-11-02T11:00:00Z'))).toBe(24 * HOUR);
+  });
+
+  it('counts a weekly down to Monday 3am Pacific', () => {
+    // Monday 2026-11-02 03:00 PST starts the week: seven days left.
+    expect(msUntilRollover('weekly', new Date('2026-11-02T11:00:00Z'))).toBe(7 * 24 * HOUR);
+    // Monday 2026-11-09 02:00 PST still belongs to the old week: one hour left.
+    expect(msUntilRollover('weekly', new Date('2026-11-09T10:00:00Z'))).toBe(HOUR);
   });
 });

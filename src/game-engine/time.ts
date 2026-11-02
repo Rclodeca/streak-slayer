@@ -89,7 +89,23 @@ export function periodKeyFor(period: Period, date: Date): string {
   return period === 'daily' ? dailyPeriodKey(date) : weeklyPeriodKey(date);
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const MS_PER_HOUR = 60 * 60 * 1000;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+/**
+ * Milliseconds from `date` until its period rolls over (3am Pacific for a
+ * daily, Monday 3am Pacific for a weekly). Rollovers land on whole hours in
+ * every zone Pacific can be in, so this steps hour by hour to the first one
+ * whose key differs, which keeps DST handled by the key functions.
+ */
+export function msUntilRollover(period: Period, date: Date): number {
+  const key = periodKeyFor(period, date);
+  const hourStart = Math.floor(date.getTime() / MS_PER_HOUR) * MS_PER_HOUR;
+  let next = hourStart + MS_PER_HOUR;
+  // A week is 168 hours; the bound only guards against a bad key function.
+  for (let i = 0; i < 24 * 8 && periodKeyFor(period, new Date(next)) === key; i++) next += MS_PER_HOUR;
+  return next - date.getTime();
+}
 
 /**
  * Whole calendar days from day-key `a` to day-key `b` (both `YYYY-MM-DD`, as

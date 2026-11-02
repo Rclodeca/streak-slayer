@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Shield, Sword } from 'lucide-vue-next';
-import { isDueOn, periodKeyFor } from '../../game-engine';
+import { isDueOn, msUntilRollover, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
@@ -31,6 +31,20 @@ const showHint = computed(() => !habitStore.habits.length && !hintDismissed.valu
 // since there's nothing to tap there unless you give in.
 const goodHabits = computed(() => habitStore.habits.filter((habit) => !habit.isBad));
 const badHabits = computed(() => habitStore.habits.filter((habit) => habit.isBad));
+
+// When each period rolls over, kept fresh once a minute.
+const clock = ref(debugClockStore.now());
+let clockTimer: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  clockTimer = setInterval(() => (clock.value = debugClockStore.now()), 60_000);
+});
+onUnmounted(() => clearInterval(clockTimer));
+
+function resetLabel(period: 'daily' | 'weekly'): string {
+  const hours = Math.max(1, Math.ceil(msUntilRollover(period, clock.value) / 3_600_000));
+  const left = period === 'weekly' && hours > 24 ? `${Math.ceil(hours / 24)}d` : `${hours}h`;
+  return period === 'weekly' ? `resets Mon · ${left}` : `resets ${left}`;
+}
 
 const dailyHabits = computed(() => sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'daily')));
 // Set-day skills resting today stay at the bottom of Daily, greyed out.
@@ -130,7 +144,7 @@ function checkOffFromHint() {
     <p v-if="!habitStore.habits.length">No habits yet — tap + to add one.</p>
     <template v-else>
       <div class="habit-group">
-        <h3 class="habit-group-title">Daily</h3>
+        <h3 class="habit-group-title">Daily<span class="habit-group-reset">{{ resetLabel('daily') }}</span></h3>
         <ul v-if="orderedDailyHabits.length">
           <HabitListItem v-for="habit in orderedDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
@@ -138,7 +152,7 @@ function checkOffFromHint() {
       </div>
 
       <div class="habit-group">
-        <h3 class="habit-group-title">Weekly</h3>
+        <h3 class="habit-group-title">Weekly<span class="habit-group-reset">{{ resetLabel('weekly') }}</span></h3>
         <ul v-if="weeklyHabits.length">
           <HabitListItem v-for="habit in weeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
@@ -223,12 +237,22 @@ function checkOffFromHint() {
 }
 
 .habit-group-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   margin: 0 0 0.3rem;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text);
+}
+
+.habit-group-reset {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.75;
 }
 
 .habit-group-empty {

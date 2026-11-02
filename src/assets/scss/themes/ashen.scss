@@ -995,6 +995,23 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item.bad .name {
     font-weight: 500;
     color: var(--text);
+  .habit-group-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  // When the group rolls over: plain label, not engraved.
+  .habit-group-reset {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 1;
+    color: var(--spent-text);
+  }
+
   }
 
   .habit-item:is(.struck, .resting) .name {

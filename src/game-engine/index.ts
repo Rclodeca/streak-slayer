@@ -195,7 +195,7 @@ export {
 export type { Rng } from './rng';
 export { createRng, pickRandom, pickWeighted, shuffle } from './rng';
 
-export { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, daysBetweenDayKeys, periodKeyFor, weeklyPeriodKey } from './time';
+export { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weeklyPeriodKey } from './time';
 
 export {
   activeBlind,
