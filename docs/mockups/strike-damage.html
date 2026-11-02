@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Tap the damage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* "Tap the damage": no checkbox, the damage number is the button.
+   Moonlit tokens; each option only restyles .dmg (and a little of the row).
+   Spent rows keep today's shadow (option E of skill-attack.html). */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 38px 24px; justify-content: center; align-items: flex-start; }
+.col { width: 340px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --line: rgba(150,141,126,.22);
+  --brass: #d2bb85; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --done: #3c4352; --done-line: #566074;
+  width: 340px; padding: 4px 0 16px; background: var(--bg); border: 1px solid #000; border-radius: 26px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.sec { position: relative; margin: 14px 12px 0; padding: 12px 10px 8px 12px; background: var(--frame); border: 1px solid var(--line); border-radius: 10px; }
+.sec::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: linear-gradient(90deg, transparent, rgba(219,226,238,.45), transparent); }
+.sec::after { content: ''; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: var(--frame); border: 1px solid rgba(219,226,238,.45); }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 36px; }
+.shead h3 { margin: 0; font: 600 12px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); }
+.add { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); border-radius: 8px; padding: 8px 12px; min-height: 36px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 10px 0 2px; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+.row { --rim: var(--c); position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 5px 0 5px 4px; }
+.resist .row { --rim: var(--bad); }
+.nm { flex: 1; min-width: 0; font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 28px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; stroke: var(--text); fill: none; stroke-width: 1.8; }
+.plate { min-width: 28px; text-align: center; font: 600 9.5px/1 'Cinzel', serif; color: var(--brass); background: rgba(0,0,0,.4); border: 1px solid rgba(190,160,100,.45); border-radius: 3px; padding: 3px 5px 2px; }
+.plate:empty { visibility: hidden; }
+.week { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+
+.dmg { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 60px; height: 42px; padding: 0 8px;
+  font: 700 15px 'Alegreya Sans', sans-serif; color: var(--c); background: none; border: 0; cursor: pointer; transition: transform .08s, background .2s, color .2s, border-color .2s, box-shadow .2s; -webkit-tap-highlight-color: transparent; }
+.dmg:active { transform: scale(.94); }
+.dmg svg { display: none; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.dmg b { position: relative; font-weight: inherit; }
+
+.veil { position: absolute; inset: 0 -4px; border-radius: 10px; pointer-events: none; transform-origin: left; transform: scaleX(0); transition: transform .5s ease .12s;
+  background: linear-gradient(90deg, rgba(0,0,0,.34), rgba(0,0,0,.18)); }
+.row.on .veil { transform: scaleX(1); }
+.row.on .nm { color: var(--spent); }
+.row.on .dmg { color: color-mix(in srgb, var(--c) 50%, var(--spent)); }
+.row.on .streak, .row.on .plate { opacity: .45; }
+.resist .nm { color: var(--text); font-weight: 500; }
+
+/* A · Plate: a dark stone plate with a silver edge that sinks when struck */
+.t-plate .dmg { min-width: 62px; border-radius: 8px; background: linear-gradient(#1f2430, #12151c); border: 1px solid rgba(219,226,238,.26);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 2px 4px rgba(0,0,0,.55); }
+.t-plate .resist .dmg { border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
+.t-plate .row.on .dmg { background: #0c0e13; border-color: rgba(219,226,238,.08); box-shadow: inset 0 2px 5px rgba(0,0,0,.8); }
+
+/* B · Diamond: the old check grows and holds the number */
+.t-diamond .dmg { width: 54px; min-width: 0; height: 52px; padding: 0; font-size: 13px; }
+.t-diamond .dmg::before { content: ''; position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; transform: rotate(45deg); border-radius: 3px;
+  border: 1.5px solid var(--rim); background: rgba(0,0,0,.45); box-shadow: 0 0 10px color-mix(in srgb, var(--rim) 22%, transparent); transition: inherit; }
+.t-diamond .dmg b { color: var(--ink); }
+.t-diamond .resist .dmg::before { border-color: color-mix(in srgb, var(--bad) 70%, transparent); box-shadow: none; }
+.t-diamond .resist .dmg b { color: var(--text); }
+.t-diamond .row.on .dmg::before { background: color-mix(in srgb, var(--c) 18%, #1a1d26); border-color: var(--done-line); box-shadow: none; }
+.t-diamond .row.on .dmg b { color: color-mix(in srgb, var(--c) 50%, var(--spent)); }
+
+/* C · End cap: the row's right end is a block in the damage colour */
+.t-cap .sec { padding-right: 12px; }
+.t-cap ul { display: flex; flex-direction: column; gap: 6px; }
+.t-cap .row { padding: 0 0 0 12px; min-height: 50px; background: #1a1e29; border-radius: 10px; overflow: hidden; }
+.t-cap .veil { inset: 0; border-radius: 0; }
+.t-cap .dmg { align-self: stretch; height: auto; min-width: 64px; color: color-mix(in srgb, var(--c) 55%, #fff);
+  background: color-mix(in srgb, var(--c) 26%, #1a1e29); border-left: 1px solid color-mix(in srgb, var(--c) 45%, transparent); }
+.t-cap .resist .row { background: #161922; }
+.t-cap .resist .dmg { background: color-mix(in srgb, var(--bad) 12%, #161922); color: color-mix(in srgb, var(--c) 60%, var(--text)); border-left-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.t-cap .row.on .dmg { background: #20242f; border-left-color: rgba(255,255,255,.05); }
+
+/* D · Slash: a slanted blade-cut button */
+.t-slash .dmg { min-width: 64px; height: 38px; margin-right: 4px; }
+.t-slash .dmg::before { content: ''; position: absolute; inset: 0; transform: skewX(-16deg); border-radius: 3px; transition: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rim) 22%, #12151c), color-mix(in srgb, var(--rim) 8%, #12151c));
+  border: 1px solid color-mix(in srgb, var(--rim) 55%, transparent); }
+.t-slash .dmg svg { display: block; position: relative; }
+.t-slash .resist .dmg::before { background: #12151c; border-color: color-mix(in srgb, var(--bad) 45%, transparent); }
+.t-slash .row.on .dmg::before { background: #0e1016; border-color: var(--done); }
+
+/* E · Lead: the strike moves to where the check was, on the left */
+.t-lead .row { padding-left: 0; gap: 12px; }
+.t-lead .dmg { order: -1; min-width: 58px; height: 40px; border-radius: 8px;
+  background: color-mix(in srgb, var(--rim) 13%, #10131a); border: 1px solid color-mix(in srgb, var(--rim) 42%, transparent); }
+.t-lead .resist .dmg { background: #10131a; }
+.t-lead .row.on .dmg { background: #0f1117; border-color: var(--done); }
+.t-lead .meta { padding-right: 4px; }
+
+/* F · Coin: a round medallion rimmed in the damage colour */
+.t-coin .dmg { width: 48px; min-width: 0; height: 48px; padding: 0; border-radius: 50%; font-size: 13px;
+  background: radial-gradient(circle at 35% 28%, #2a2f3c, #0f1218 75%); border: 2px solid color-mix(in srgb, var(--rim) 72%, #3a3f4c);
+  box-shadow: 0 0 0 1px #000, inset 0 1px 0 rgba(255,255,255,.1), 0 3px 6px rgba(0,0,0,.5); }
+.t-coin .resist .dmg { border-color: color-mix(in srgb, var(--bad) 55%, #2a2f3c); }
+.t-coin .row.on .dmg { background: #0d0f14; border-color: var(--done); box-shadow: 0 0 0 1px #000, inset 0 2px 4px rgba(0,0,0,.7); }
+
+/* G · Bare: no box, a bigger number with a sword and an underline */
+.t-bare .dmg { min-width: 64px; justify-content: flex-end; padding: 0 6px; font-size: 18px; }
+.t-bare .dmg svg { display: block; width: 13px; height: 13px; opacity: .8; }
+.t-bare .dmg b::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1.5px; border-radius: 1px; background: color-mix(in srgb, var(--rim) 55%, transparent); transition: opacity .2s; }
+.t-bare .resist .dmg { font-size: 16px; }
+.t-bare .row.on .dmg b::after { opacity: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Tap the damage</h1>
+  <p class="lede">No checkbox: the damage number is the button. Same Moonlit panels as now. Tap any number to strike, tap again to undo.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const S = {
+  flame: '<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-10z"/></svg>',
+  sword: '<svg viewBox="0 0 24 24"><path d="M5 19 17 7M14 4h6v6M7 15l2 2"/></svg>',
+};
+const NUM = ['', 'I', 'II', 'III', 'IV'];
+
+const skills = {
+  Daily: [
+    { n: 'Morning run',   t: 'phys',  d: '412', s: 23, r: 3, on: true },
+    { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 2, on: true },
+    { n: 'Stretch',       t: 'heal',  d: '141', s: 0,  r: 0 },
+    { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+    { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+  ],
+  Weekly: [
+    { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 1 },
+  ],
+};
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0 },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+
+const row = (h) => `<li class="row${h.on ? ' on' : ''}" style="--c: var(--${h.t})">
+  <span class="nm">${h.n}</span>
+  <span class="meta">${h.week ? '<span class="week">Week</span>' : ''}<span class="streak">${h.s >= 3 ? S.flame + h.s : ''}</span><span class="plate">${NUM[h.r]}</span></span>
+  <button class="dmg" type="button">${S.sword}<b>${h.d}</b></button>
+  <span class="veil"></span>
+</li>`;
+
+const screen = (id) => `<div class="phone t-${id}">
+  <section class="sec">
+    <div class="shead"><h3>Skills</h3><button class="add" type="button">+ New habit</button></div>
+    ${Object.entries(skills).map(([g, rows]) => `<div class="group">${g}</div><ul>${rows.map(row).join('')}</ul>`).join('')}
+  </section>
+  <section class="sec resist">
+    <div class="shead"><h3>Resist</h3></div>
+    <ul>${resist.map(row).join('')}</ul>
+  </section>
+</div>`;
+
+const OPTIONS = [
+  { id: 'plate',   tag: 'A', n: 'Plate',   d: 'A dark stone plate with a silver edge, the number in its damage colour. Struck, it sinks into the panel.' },
+  { id: 'diamond', tag: 'B', n: 'Diamond', d: 'The check diamond grows and holds the number, rimmed in the damage colour. Keeps the diamond we already have.' },
+  { id: 'cap',     tag: 'C', n: 'End cap', d: 'Each skill is a soft card whose right end is a block of damage colour. Habitica’s side block, flipped and made useful.' },
+  { id: 'slash',   tag: 'D', n: 'Slash',   d: 'A slanted, blade-cut button with a small sword. Reads most like an attack.' },
+  { id: 'lead',    tag: 'E', n: 'Lead',    d: 'The strike sits on the left, where the check is now, so you hit before you read. Streak and rank move to the right.' },
+  { id: 'coin',    tag: 'F', n: 'Coin',    d: 'A round medallion rimmed in the damage colour. Struck, it goes dark.' },
+  { id: 'bare',    tag: 'G', n: 'Bare',    d: 'No box at all: a bigger number with a sword and a thin underline in its colour. The underline goes when struck.' },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>
+  ${screen(o.id)}
+</div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.dmg');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+</script>
+</body>
+</html>

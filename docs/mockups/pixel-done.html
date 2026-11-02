@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, struck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Pixel-cut (option E of trim-looks.html). The question here: how a struck
+   skill or quest reads against an open one. In every option the damage
+   button loses its colour when struck, and open cards are lifted. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --done: #3c4352; --done-line: #566074; --streak-i: #8d8475;
+  /* open card */
+  --card: #171b25; --hi: #283041; --lo: #0d1017; --card-lip: #05060a; --resist-card: #141720;
+  /* struck card (Now) */
+  --s-card: #12151d; --s-hi: #1c2230; --s-lo: #0a0c12; --s-face: #232836; --s-base: #1a1d26; --s-name: var(--spent);
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding-bottom: 28px; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+button { font: inherit; }
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+
+.top { background: radial-gradient(70% 55% at 72% 50%, #1c2230, transparent 70%), var(--bg); }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 0; }
+.menu { width: 40px; height: 40px; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+.stage { position: relative; height: 300px; }
+.boss { position: absolute; right: 8px; top: 6px; width: 172px; image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 #2a1a10) drop-shadow(-2px 0 0 #2a1a10) drop-shadow(0 2px 0 #2a1a10) drop-shadow(0 -2px 0 #2a1a10) drop-shadow(0 0 12px rgba(224,120,58,.4)); }
+.hero { position: absolute; left: 8px; top: 128px; width: 140px; image-rendering: pixelated; transform: scaleX(-1); filter: drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.9); }
+.platform { position: absolute; left: 6px; top: 262px; width: 150px; height: 22px; border-radius: 50%; background: radial-gradient(closest-side, rgba(150,165,200,.16), transparent); }
+.unit { position: absolute; }
+.unit.b { left: 16px; top: 22px; width: 188px; }
+.unit.h { left: 172px; top: 196px; width: 202px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 5px; text-transform: uppercase; }
+.uname small { font-size: 11px; color: var(--brass); letter-spacing: .1em; }
+.uname .cue { display: inline-block; width: 6px; height: 6px; margin-left: 3px; border-top: 1.5px solid var(--text); border-right: 1.5px solid var(--text); transform: rotate(45deg); }
+.bar { position: relative; height: 15px; background: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.6); overflow: hidden; }
+.bar b { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#c4402a, #8c2616); }
+.bar i { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--exp); }
+.bar span { position: absolute; right: 5px; top: 0; font: 700 10.5px/13px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.7); }
+.stats { display: flex; gap: 8px; margin-top: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: #868a93; white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.stats svg { width: 12px; height: 12px; }
+
+.sec { margin: 18px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 2px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 12px 2px 7px; text-transform: uppercase; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Card */
+.row { --face: color-mix(in srgb, var(--c) 82%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15);
+  --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] { --btn-c: #1e1c18; --btn-ts: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.tagw { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.next { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); opacity: .7; }
+
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--btn-c); text-shadow: var(--btn-ts); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--btn-sh); transition: top .07s, bottom .07s; }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.press svg { width: 13px; height: 13px; }
+.press .ic-done { display: none; }
+.press:active::after, .on .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .on .press > * { transform: translateY(var(--lip)); }
+
+/* Struck (Now) */
+.phone:not(.lift) .row { --s-num: color-mix(in srgb, var(--c) 45%, var(--spent)); }
+.phone .row.on { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt, .row.on .qn { color: var(--s-name); }
+.row.on .streak, .row.on .pp, .row.on .reward { opacity: .45; }
+
+/* Resting: flat, can't be pressed */
+.rest { margin-top: 8px; }
+.rest summary { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 2px; list-style: none; cursor: pointer;
+  font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); text-transform: uppercase; }
+.rest summary::-webkit-details-marker { display: none; }
+.rest summary span { color: var(--touch); }
+.rest summary::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+.rest[open] summary::after { transform: rotate(225deg) translateY(-1px); }
+.phone .row.resting { --face: #12151d; --base: transparent; --btn-sh: inset 0 0 0 2px rgba(255,255,255,.04); --btn-c: color-mix(in srgb, var(--c) 45%, var(--spent)); --btn-ts: none;
+  background: var(--resist-card); box-shadow: inset 2px 2px 0 #1c2230, inset -2px -2px 0 #0a0c12; }
+.row.resting .nt { color: var(--text); font-weight: 500; }
+.resting .press { pointer-events: none; }
+.resting .press::after { top: var(--lip); bottom: 0; }
+.resting .press > * { transform: translateY(var(--lip)); }
+
+/* Resist */
+.phone .resist .row:not(.on) { --face: #1d2230; --base: color-mix(in srgb, var(--bad) 55%, #000); --btn-c: color-mix(in srgb, var(--bad) 72%, #fff); --btn-ts: none;
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.08); background: var(--resist-card); }
+.resist .nt { color: var(--text); font-weight: 500; }
+
+/* Quests */
+.quest { padding-left: 4px; gap: 6px; }
+.quest .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.quest .qn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.qm em { font-style: normal; }
+.quest.soon .qm em { color: var(--exp); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+.quest.side .reward { color: #c8a96e; }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qchk input { position: absolute; opacity: 0; pointer-events: none; }
+.qchk i { width: 20px; height: 20px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); }
+.qchk svg { width: 14px; height: 14px; opacity: 0; color: var(--touch); }
+.quest.on .qchk i { background: var(--done); border-color: var(--done-line); }
+.quest.on .qchk svg { opacity: 1; }
+
+/* Log */
+.log { margin: 22px 12px 0; padding: 12px 14px 6px; background: var(--frame); clip-path: var(--px); box-shadow: inset 2px 2px 0 #232937, inset -2px -2px 0 #0b0d12; }
+.log h2 { margin: 0 0 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.log ul { gap: 0; }
+.log li { display: block; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.04); font-size: 14px; color: var(--text); }
+.log li:first-child { border-top: 0; }
+.log li > svg:first-child { width: 14px; height: 14px; margin-right: 3px; vertical-align: -2px; }
+.log .d { color: var(--phys); font-weight: 700; } .log .x { color: var(--exp); font-weight: 700; }
+.chip { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; padding: 1px 6px; background: rgba(255,255,255,.05); font-size: 12px; font-weight: 700; color: var(--ink); }
+.chip svg { width: 11px; height: 11px; }
+
+/* ================= Options ================= */
+/* Shared: open cards lifted, struck buttons lose all colour */
+.lift { --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --ink: #f0f3f7; --resist-card: #161a24; --s-num: #5b606b; }
+.lift .sec:not(.resist) .row:not(.on):not(.resting) { --face: color-mix(in srgb, var(--c) 88%, #000); }
+
+/* A · Grey: struck cards drop dark and flat */
+.o-grey { --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-face: #1b1f28; --s-base: #111319; --s-name: #5b606b; }
+
+/* B · Sunk: the whole card presses in, bevel flips, lip gone */
+.o-sunk { --s-card: #0c0e14; --s-hi: #040508; --s-lo: #1a1f2b; --s-face: #151922; --s-base: #0c0e14; --s-name: #5b606b; }
+.o-sunk .row.on { border-bottom-width: 0; margin-top: 3px; }
+.o-sunk .row.on .press::after { box-shadow: inset 2px 2px 0 rgba(0,0,0,.45); }
+
+/* C · Dither: a pixel checkerboard shadow falls over the card */
+.o-dither { --s-card: #141824; --s-hi: #1e2433; --s-lo: #0a0c12; --s-face: #232836; --s-base: #161a22; --s-name: #6a6f7a; }
+.o-dither .row::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s .1s;
+  background: repeating-conic-gradient(rgba(0,0,0,.7) 0 25%, transparent 0 50%) 0 0 / 4px 4px; }
+.o-dither .row.on::after { opacity: 1; }
+
+/* D · Ghost: struck cards lose their fill, a dim pixel outline stays */
+.o-ghost { --s-card: transparent; --s-hi: #2a3140; --s-lo: #2a3140; --s-face: transparent; --s-base: transparent; --s-name: #5b606b; }
+.o-ghost .row.on { border-bottom-color: transparent; }
+.o-ghost .row.on .press::after { box-shadow: inset 0 0 0 2px #2a3140; }
+.o-ghost .quest.on .qchk i { background: #232835; border-color: #232835; }
+
+/* E · Stamp: the button turns grey and its icon becomes a check */
+.o-stamp { --s-card: #10131a; --s-hi: #181c27; --s-lo: #080a0e; --s-face: #1e222c; --s-base: #13161d; --s-name: #5b606b; --s-num: #7c818c; }
+.o-stamp .on .press .ic-type { display: none; }
+.o-stamp .on .press .ic-done { display: block; color: #a9adb6; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · struck</h1>
+  <p class="lede">How a struck skill reads against an open one. In every option the damage button loses its colour when struck, and open cards are lifted for more contrast. Tap to strike and undo.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: 'var(--streak-i)', exp: '#d8b46a', quest: '#a8a092' };
+const icon = (name, color = COLOR[name] || 'currentColor', cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+// HabitList order: healing, physical, magic, true. Rank (0-8) is never lost.
+const daily = [
+  { n: 'Stretch',       t: 'heal',  d: '141', s: 12, r: 2, on: true },
+  { n: 'Morning run',   t: 'phys',  d: '1.1K', s: 23, r: 8, on: true },
+  { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+  { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 3, on: true },
+  { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+];
+const resting = [
+  { n: 'Swim',          t: 'phys',  d: '230', s: 5,  r: 1, next: 'Thu' },
+  { n: 'Guitar',        t: 'magic', d: '160', s: 3,  r: 0, next: 'Sat' },
+];
+const weekly = [
+  { n: 'Call family',   t: 'heal',  d: '180', s: 0,  r: 0 },
+  { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 5, on: true },
+];
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0, on: true },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+const quests = [
+  { n: 'Call the dentist',      p: 1, due: '2 days left', soon: true },
+  { n: 'Clear out the attic',   p: 2, due: '4 days left', side: true, on: true },
+  { n: 'Finish the tax return', p: 3, due: '6 days left' },
+];
+
+const row = (h, cls = '') => `<li class="row${h.on ? ' on' : ''}${cls}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.next ? `<span class="next">${h.next}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${h.s >= 3 ? icon('streak') + h.s : ''}</span></span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor', 'ic-type')}${icon('check', 'currentColor', 'ic-done')}<b>${h.d}</b></button>
+</li>`;
+
+const quest = (q) => `<li class="row quest${q.soon ? ' soon' : ''}${q.side ? ' side' : ''}${q.on ? ' on' : ''}">
+  <label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"${q.on ? ' checked' : ''}><i>${icon('check', 'currentColor')}</i></label>
+  <span class="body"><span class="qn">${q.n}</span>
+    <span class="qm"><span class="qpips">${[1, 2, 3].map((n) => `<i class="${n <= q.p ? 'lit' : ''}"></i>`).join('')}</span><em>${q.due}</em></span></span>
+  <span class="reward">${icon(q.side ? 'gift' : 'exp', 'currentColor')}${q.side ? '+Item' : '+EXP'}</span>
+</li>`;
+
+const screen = (cls) => `<div class="phone ${cls}">
+  <div class="top"><div class="topbar"><span class="cap">Boss #9</span><span class="menu">${icon('menu', 'currentColor')}</span></div>
+  <div class="stage">
+    <img class="boss" src="../../public/sprites/bosses/balanced@3x.png" alt="">
+    <span class="platform"></span>
+    <img class="hero" src="../../public/sprites/player/warrior@3x.png" alt="">
+    <div class="unit b"><div class="uname">Drifter <span class="cue"></span></div>
+      <div class="bar"><b style="width:41%"></b><span>266 / 648</span></div>
+      <div class="stats"><span>${icon('physical')}61</span><span>${icon('magic')}58</span><span>${icon('armor')}213</span><span>${icon('magicResist')}221</span><span>${icon('crit')}1%</span></div></div>
+    <div class="unit h"><div class="uname">Ryn <small>14</small> <span class="cue"></span></div>
+      <div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>
+      <div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div></div>
+  </div></div>
+
+  <section class="sec">
+    <div class="shead"><h2>Skills</h2><button class="add" type="button">+ New habit</button></div>
+    <div class="group">Daily</div>
+    <ul>${daily.map((h) => row(h)).join('')}</ul>
+    <details class="rest"><summary>Resting <span>${resting.length}</span></summary>
+      <ul>${resting.map((h) => row(h, ' resting')).join('')}</ul></details>
+    <div class="group">Weekly</div>
+    <ul>${weekly.map((h) => row(h)).join('')}</ul>
+  </section>
+
+  <section class="sec resist">
+    <div class="shead"><h2>Resist</h2></div>
+    <ul>${resist.map((h) => row(h)).join('')}</ul>
+  </section>
+
+  <section class="sec">
+    <div class="shead"><h2>Quests</h2><button class="add" type="button">+ New task</button></div>
+    <ul>${quests.map(quest).join('')}</ul>
+  </section>
+
+  <section class="log"><h2>Log</h2><ul>
+    <li>${icon('physical')}Used "Read 20 pages" — dealt <span class="d">288</span> damage</li>
+    <li>${icon('physical')}Used "Morning run" — dealt <span class="d">1.1K</span> damage <span class="chip">${icon('crit')}Crit</span></li>
+    <li>${icon('magic')}Missed "Pushups" — took <span class="d">58</span> damage</li>
+    <li>${icon('quest')}Completed quest "Book the car service" — gained <span class="x">+120</span> EXP</li>
+  </ul></section>
+</div>`;
+
+const OPTIONS = [
+  { cls: '',                tag: 'REFERENCE', n: 'Pixel-cut now', d: 'As picked. A struck button keeps a trace of its colour and the card only dims a little.' },
+  { cls: 'lift o-grey',     tag: 'A', n: 'Grey', d: 'Struck cards drop dark and flat; the button goes fully grey. Open cards are a step brighter.' },
+  { cls: 'lift o-sunk',     tag: 'B', n: 'Sunk', d: 'The whole card presses in: its bevel flips, its lip goes and it drops level with the page.' },
+  { cls: 'lift o-dither',   tag: 'C', n: 'Dither', d: 'A pixel checkerboard shadow falls over the struck card, the way pixel art shades.' },
+  { cls: 'lift o-ghost',    tag: 'D', n: 'Ghost', d: 'Struck cards lose their fill. Only a dim pixel outline and grey text stay, so open skills stand out the most.' },
+  { cls: 'lift o-stamp',    tag: 'E', n: 'Stamp', d: 'Like Grey, but the button’s icon turns into a check. The number stays.' },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>
+  ${screen(o.cls)}
+</div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.qchk input')) e.target.closest('.row').classList.toggle('on', e.target.checked);
+});
+</script>
+</body>
+</html>

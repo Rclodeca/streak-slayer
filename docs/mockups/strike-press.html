@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Press to strike</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* D from playful.html, smaller and more serious: a raised damage button
+   that presses down and stays down until dawn. The button is two layers,
+   ::before the base/lip and ::after the face; pressing drops the face. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 38px 24px; justify-content: center; align-items: flex-start; }
+.col { width: 340px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --line: rgba(150,141,126,.22);
+  --brass: #d2bb85; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a;
+  width: 340px; padding: 4px 0 16px; background: var(--bg); border: 1px solid #000; border-radius: 26px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.sec { position: relative; margin: 14px 12px 0; padding: 12px 10px 8px 12px; background: var(--frame); border: 1px solid var(--line); border-radius: 10px; }
+.sec::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: linear-gradient(90deg, transparent, rgba(219,226,238,.45), transparent); }
+.sec::after { content: ''; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: var(--frame); border: 1px solid rgba(219,226,238,.45); }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 36px; }
+.shead h3 { margin: 0; font: 600 12px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); }
+.add { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); border-radius: 8px; padding: 8px 12px; min-height: 36px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 10px 0 2px; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+.row { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 5px 0 5px 4px; }
+.body { display: contents; }
+.nm { flex: 1; min-width: 0; font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 28px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; stroke: var(--text); fill: none; stroke-width: 1.8; }
+.plate { min-width: 28px; text-align: center; font: 600 9.5px/1 'Cinzel', serif; color: var(--brass); background: rgba(0,0,0,.4); border: 1px solid rgba(190,160,100,.45); border-radius: 3px; padding: 3px 5px 2px; }
+.plate:empty { visibility: hidden; }
+.week { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+
+/* The button */
+.dmg { --lip: 3px; --r: 7px; --h: 34px;
+  position: relative; flex: none; min-width: 58px; height: calc(var(--h) + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--on, #fff); text-shadow: 0 1px 0 rgba(0,0,0,.35); -webkit-tap-highlight-color: transparent; }
+.dmg::before, .dmg::after { content: ''; position: absolute; left: 0; right: 0; border-radius: var(--r); clip-path: var(--clip, none); }
+.dmg::before { top: var(--lip); bottom: 0; background: var(--base); }
+.dmg::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--face-sh, none); transition: top .07s, bottom .07s; }
+.dmg svg, .dmg b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.dmg svg { display: none; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.dmg:active::after, .row.on .dmg::after { top: var(--lip); bottom: 0; }
+.dmg:active > *, .row.on .dmg > * { transform: translateY(var(--lip)); }
+.row[data-t='true'] { --on: #1e1c18; }
+.row[data-t='true'] .dmg { text-shadow: none; }
+
+/* Struck: pressed down, grey, a trace of its colour */
+.row.on .dmg { --face: #232836; --base: #1a1d26; --face-sh: none; color: color-mix(in srgb, var(--c) 45%, #6a6f7a); text-shadow: none; }
+.veil { position: absolute; inset: 0 -4px; border-radius: 10px; pointer-events: none; transform-origin: left; transform: scaleX(0); transition: transform .5s ease .12s;
+  background: linear-gradient(90deg, rgba(0,0,0,.34), rgba(0,0,0,.18)); }
+.row.on .veil { transform: scaleX(1); }
+.row.on .nm { color: var(--spent); }
+.row.on .streak, .row.on .plate { opacity: .45; }
+.resist .nm { color: var(--text); font-weight: 500; }
+
+/* Card layout (reference and A) */
+.cards .sec { background: none; border: 0; padding: 4px 0 0; }
+.cards .sec::before, .cards .sec::after { display: none; }
+.cards .shead { padding: 0 2px; }
+.cards .group { margin: 12px 2px 6px; }
+.cards ul { display: flex; flex-direction: column; }
+.cards .veil { display: none; }
+
+/* Reference: D as it was */
+.t-ref ul { gap: 10px; }
+.t-ref .row { min-height: 64px; padding: 10px 10px 10px 14px; gap: 12px; background: #171b25; border: 1.5px solid #262c3a; border-bottom-width: 4px; border-radius: 14px;
+  --face: linear-gradient(color-mix(in srgb, var(--c) 85%, #fff), var(--c)); --base: color-mix(in srgb, var(--c) 45%, #000); }
+.t-ref .body { display: flex; flex: 1; min-width: 0; flex-direction: column; align-items: flex-start; gap: 3px; }
+.t-ref .nm { width: 100%; font-size: 17px; }
+.t-ref .streak { min-width: 0; font-size: 12px; color: var(--text); }
+.t-ref .plate:empty { display: none; }
+.t-ref .dmg { --lip: 4px; --r: 12px; --h: 44px; min-width: 64px; font-size: 16px; }
+.t-ref .dmg svg { display: block; }
+.t-ref .row.on { border-color: #1c212c; background: #12151d; }
+
+/* A · Trim: D's cards, one line, smaller button, tighter corners */
+.t-trim ul { gap: 7px; }
+.t-trim .row { min-height: 52px; padding: 6px 8px 6px 12px; background: #171b25; border: 1px solid #232937; border-bottom: 3px solid #0b0d12; border-radius: 10px;
+  --face: linear-gradient(color-mix(in srgb, var(--c) 88%, #fff), color-mix(in srgb, var(--c) 82%, #000)); --base: color-mix(in srgb, var(--c) 40%, #000); }
+.t-trim .dmg svg { display: block; }
+.t-trim .row.on { background: #12151d; border-color: #1b1f29; }
+
+/* B · Iron: clipped corners, muted face, like a forged plate */
+.t-iron .row { --face: linear-gradient(color-mix(in srgb, var(--c) 74%, #2a2a2a), color-mix(in srgb, var(--c) 52%, #0a0a0a)); --base: color-mix(in srgb, var(--c) 24%, #000); }
+.t-iron .dmg { --r: 0; min-width: 60px; --face-sh: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -2px 0 rgba(0,0,0,.25);
+  --clip: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px); }
+
+/* C · Keycap: a smaller face set in a darker key; the face sinks into it */
+.t-key .row { --face: linear-gradient(color-mix(in srgb, var(--c) 82%, #222), color-mix(in srgb, var(--c) 66%, #111));
+  --base: linear-gradient(color-mix(in srgb, var(--c) 46%, #000), color-mix(in srgb, var(--c) 26%, #000)); }
+.t-key .dmg { --lip: 4px; --r: 8px; min-width: 62px; padding-bottom: 4px; --face-sh: inset 0 1px 0 rgba(255,255,255,.28); }
+.t-key .dmg::before { top: 0; }
+.t-key .dmg::after { top: 2px; left: 4px; right: 4px; bottom: 6px; border-radius: 5px; }
+.t-key .dmg:active::after, .t-key .row.on .dmg::after { top: 4px; bottom: 4px; }
+.t-key .dmg:active > *, .t-key .row.on .dmg > * { transform: translateY(2px); }
+
+/* D · Ember lip: a dark face over a lip that glows in the damage colour */
+.t-ember .row { --face: linear-gradient(#262b38, #1a1e28); --base: var(--c); }
+.t-ember .dmg { --r: 6px; color: color-mix(in srgb, var(--c) 85%, #fff); text-shadow: none; --face-sh: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 1px 0 rgba(255,255,255,.09); }
+.t-ember .dmg::before { box-shadow: 0 2px 9px color-mix(in srgb, var(--c) 45%, transparent); }
+.t-ember .row.on .dmg::before { box-shadow: none; }
+
+/* E · Enamel: coloured enamel set in a silver rim with a metal lip */
+.t-enamel .row { --face: linear-gradient(color-mix(in srgb, var(--c) 72%, #1b1b1b), color-mix(in srgb, var(--c) 48%, #000)); --base: linear-gradient(#9aa0ac, #4a505c); }
+.t-enamel .dmg { --r: 6px; --face-sh: inset 0 0 0 1.5px rgba(219,226,238,.78), inset 0 0 0 2.5px rgba(0,0,0,.45), inset 0 4px 5px rgba(255,255,255,.1); }
+.t-enamel .row.on .dmg { --face-sh: inset 0 0 0 1.5px rgba(219,226,238,.18); }
+
+/* F · Stone: a carved stone block, faintly tinted, number cut into it */
+.t-stone .row { --face: linear-gradient(color-mix(in srgb, var(--c) 26%, #353945), color-mix(in srgb, var(--c) 17%, #22252e)); --base: #090a0e; }
+.t-stone .dmg { --lip: 4px; --r: 4px; color: color-mix(in srgb, var(--c) 82%, #fff);
+  text-shadow: 0 -1px 0 rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.08); --face-sh: inset 1px 1px 0 rgba(255,255,255,.12), inset -1px -1px 0 rgba(0,0,0,.45); }
+
+/* Resist: a dark button on a red lip, whatever the style */
+.phone .resist .row { --face: linear-gradient(#1f2330, #171a23); --base: color-mix(in srgb, var(--bad) 55%, #000); --on: color-mix(in srgb, var(--bad) 70%, #fff); }
+.phone .resist .dmg { text-shadow: none; color: color-mix(in srgb, var(--bad) 70%, #fff); }
+.phone .resist .row.on .dmg { color: color-mix(in srgb, var(--bad) 40%, #6a6f7a); }
+.t-key .resist .row { --base: linear-gradient(color-mix(in srgb, var(--bad) 40%, #000), color-mix(in srgb, var(--bad) 22%, #000)); }
+.t-ember .resist .row { --base: var(--bad); }
+.t-ember .resist .dmg::before { box-shadow: 0 2px 9px color-mix(in srgb, var(--bad) 40%, transparent); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Press to strike</h1>
+  <p class="lede">D's raised button, smaller and more serious. Tap any button to press it; it stays down until dawn. Tap again to undo.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const S = {
+  flame: '<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-10z"/></svg>',
+  sword: '<svg viewBox="0 0 24 24"><path d="M5 19 17 7M14 4h6v6M7 15l2 2"/></svg>',
+};
+const NUM = ['', 'I', 'II', 'III', 'IV'];
+
+const skills = {
+  Daily: [
+    { n: 'Morning run',   t: 'phys',  d: '412', s: 23, r: 3, on: true },
+    { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 2, on: true },
+    { n: 'Stretch',       t: 'heal',  d: '141', s: 0,  r: 0 },
+    { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+    { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+  ],
+  Weekly: [
+    { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 1 },
+  ],
+};
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0 },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+
+const row = (h) => `<li class="row${h.on ? ' on' : ''}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="body">
+    <span class="nm">${h.n}</span>
+    <span class="meta">${h.week ? '<span class="week">Week</span>' : ''}<span class="streak">${h.s >= 3 ? S.flame + h.s : ''}</span><span class="plate">${NUM[h.r]}</span></span>
+  </span>
+  <button class="dmg" type="button">${S.sword}<b>${h.d}</b></button>
+  <span class="veil"></span>
+</li>`;
+
+const screen = (o) => `<div class="phone t-${o.id}${o.cards ? ' cards' : ''}">
+  <section class="sec">
+    <div class="shead"><h3>Skills</h3><button class="add" type="button">+ New habit</button></div>
+    ${Object.entries(skills).map(([g, rows]) => `<div class="group">${g}</div><ul>${rows.map(row).join('')}</ul>`).join('')}
+  </section>
+  <section class="sec resist">
+    <div class="shead"><h3>Resist</h3></div>
+    <ul>${resist.map(row).join('')}</ul>
+  </section>
+</div>`;
+
+const OPTIONS = [
+  { id: 'ref',    tag: 'REFERENCE', n: 'D as it was', cards: true, d: 'The original from playful.html: big two-line cards, a big bright button.' },
+  { id: 'trim',   tag: 'A', n: 'Trim',   cards: true, d: 'Same cards and bright button, but one line, a third smaller, tighter corners and a thinner lip.' },
+  { id: 'iron',   tag: 'B', n: 'Iron',   d: 'Back in the panel. A forged plate with clipped corners, its colour darkened, a hard top edge of light.' },
+  { id: 'key',    tag: 'C', n: 'Keycap', d: 'A smaller coloured face set in a darker key, like a keyboard key. The face sinks into it.' },
+  { id: 'ember',  tag: 'D', n: 'Ember lip', d: 'A dark face over a lip that glows in the damage colour. Pressed, the glow goes out.' },
+  { id: 'enamel', tag: 'E', n: 'Enamel', d: 'Coloured enamel in a silver rim on a metal lip, like a badge or a set stone.' },
+  { id: 'stone',  tag: 'F', n: 'Stone',  d: 'A carved stone block, faintly tinted, the number cut into it. The quietest of the set.' },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>
+  ${screen(o)}
+</div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.dmg');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+</script>
+</body>
+</html>

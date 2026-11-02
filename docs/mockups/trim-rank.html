@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Trim, rank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Trim (trim-full.html) without the rank plate: each option shows a skill's
+   rank (0-8, never lost) on the card or in the name instead. Streak stays by
+   the button. Quests get a right-side check instead of a press button. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 38px 24px; justify-content: center; align-items: flex-start; }
+.col { width: 366px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --line: rgba(150,141,126,.22);
+  --brass: #d2bb85; --brass-rgb: 210 187 133; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --card: #171b25; --card-line: #232937;
+  width: 366px; padding: 2px 0 18px; background: var(--bg); border: 1px solid #000; border-radius: 30px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+button { font: inherit; }
+.sec { margin: 14px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 2px; }
+.shead h3 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); border-radius: 8px; padding: 8px 13px; min-height: 38px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 12px 2px 7px; text-transform: uppercase; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Trim card */
+.row { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px; overflow: hidden;
+  background: var(--card); border: 1px solid var(--card-line); border-bottom: 3px solid #0b0d12; border-radius: 10px; }
+.nm { flex: 1; min-width: 0; display: flex; align-items: baseline; }
+.nt { min-width: 0; font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rk, .pp, .rail, .mark { display: none; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 28px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.tagw, .next { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.next { color: var(--touch); opacity: .7; }
+
+/* Press button (as trim-full.html) */
+.press { --lip: 3px; --r: 7px; --h: 34px;
+  --face: linear-gradient(color-mix(in srgb, var(--c) 88%, #fff), color-mix(in srgb, var(--c) 82%, #000)); --base: color-mix(in srgb, var(--c) 40%, #000);
+  position: relative; flex: none; min-width: 58px; height: calc(var(--h) + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--on, #fff); text-shadow: 0 1px 0 rgba(0,0,0,.35); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; border-radius: var(--r); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: inset 0 1px 0 rgba(255,255,255,.18); transition: top .07s, bottom .07s; }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.press svg { width: 13px; height: 13px; }
+.press:active::after, .on .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .on .press > * { transform: translateY(var(--lip)); }
+.row[data-t='true'] { --on: #1e1c18; }
+.row[data-t='true'] .press { text-shadow: none; }
+.row.on { background: #12151d; border-color: #1b1f29; }
+.row.on .nt { color: var(--spent); }
+.row.on .streak { opacity: .45; }
+.on .press { --face: #232836; --base: #1a1d26; color: color-mix(in srgb, var(--c) 45%, #6a6f7a); text-shadow: none; }
+.on .press::after { box-shadow: none; }
+.resist .row { background: #141720; }
+.resist .nt { color: var(--text); font-weight: 500; }
+.resist .press { --face: linear-gradient(#1f2330, #171a23); --base: color-mix(in srgb, var(--bad) 55%, #000); color: color-mix(in srgb, var(--bad) 70%, #fff); text-shadow: none; }
+.resist .on .press { --face: #1c1f29; --base: #1a1d26; color: color-mix(in srgb, var(--bad) 40%, #6a6f7a); }
+
+/* Ladder: every rank, I to VIII */
+.ladder { margin: 16px 12px 0; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,.08); }
+.ladder .group { margin-top: 0; }
+.ladder ul { gap: 5px; }
+
+/* ---------- A · Numeral after the name ---------- */
+.t-num .rk { display: inline; flex: none; margin-left: 8px; font: 600 11px 'Cinzel', serif; letter-spacing: .06em; color: var(--brass); }
+.t-num .on .rk, .t-num .resist .rk { opacity: .55; }
+
+/* ---------- B · Gilded name: the name warms toward brass ---------- */
+.t-gild .nt { color: color-mix(in srgb, var(--brass) var(--rp), var(--ink)); }
+.t-gild .row[data-r='8'] .nt { text-shadow: 0 0 10px rgb(var(--brass-rgb) / .35); }
+.t-gild .on .nt { color: color-mix(in srgb, var(--brass) var(--rp2), var(--spent)); text-shadow: none; }
+.t-gild .resist .nt { color: color-mix(in srgb, var(--brass) var(--rp2), var(--text)); }
+
+/* ---------- C · Notches on the card's left edge ---------- */
+.t-rail .row { padding-left: 18px; }
+.t-rail .rail { display: flex; flex-direction: column-reverse; gap: 2px; position: absolute; left: 6px; top: 50%; transform: translateY(-50%); }
+.t-rail .rail i { width: 6px; height: 2px; border-radius: 1px; background: var(--brass); }
+.t-rail .on .rail, .t-rail .resist .rail { opacity: .5; }
+
+/* ---------- D · Brass rim: the card's edge warms with rank ---------- */
+.t-rim .row { border-color: color-mix(in srgb, var(--brass) var(--rim), var(--card-line)); border-bottom-color: color-mix(in srgb, var(--brass) var(--lipc), #0b0d12); }
+.t-rim .row[data-r='5'], .t-rim .row[data-r='6'], .t-rim .row[data-r='7'] { box-shadow: inset 0 1px 0 rgb(var(--brass-rgb) / .18); }
+.t-rim .row[data-r='8'] { box-shadow: inset 0 1px 0 rgb(var(--brass-rgb) / .3), 0 0 14px rgb(var(--brass-rgb) / .14); }
+.t-rim .row.on { border-color: color-mix(in srgb, var(--brass) calc(var(--rimn) * .5%), #1b1f29); box-shadow: none; }
+
+/* ---------- E · Pips under the name ---------- */
+.t-pips .nm { flex-direction: column; align-items: stretch; gap: 3px; }
+.t-pips .pp { display: flex; gap: 4px; padding-left: 2px; }
+.t-pips .pp:empty { display: none; }
+.t-pips .pp i { width: 4px; height: 4px; transform: rotate(45deg); background: var(--brass); }
+.t-pips .pp i:nth-child(5) { margin-left: 4px; }
+.t-pips .on .pp, .t-pips .resist .pp { opacity: .5; }
+
+/* ---------- F · Brass wash: candlelight from the left ---------- */
+.t-wash .row { background: linear-gradient(90deg, rgb(var(--brass-rgb) / var(--wa)), transparent var(--ww)), var(--card);
+  box-shadow: inset 2px 0 0 rgb(var(--brass-rgb) / var(--wo)); }
+.t-wash .resist .row { background: linear-gradient(90deg, rgb(var(--brass-rgb) / var(--wa)), transparent var(--ww)), #141720; }
+.t-wash .row.on { background: linear-gradient(90deg, rgb(var(--brass-rgb) / calc(var(--wa) * .4)), transparent var(--ww)), #12151d; box-shadow: inset 2px 0 0 rgb(var(--brass-rgb) / calc(var(--wo) * .4)); }
+
+/* ---------- G · Engraved numeral behind the card ---------- */
+.t-mark .mark { display: block; position: absolute; right: 116px; top: 50%; transform: translateY(-52%); pointer-events: none;
+  font: 700 34px/1 'Cinzel', serif; letter-spacing: -.01em; color: rgb(var(--brass-rgb) / .14); }
+.t-mark .on .mark { color: rgb(var(--brass-rgb) / .07); }
+.t-mark .nm { position: relative; z-index: 1; }
+
+/* ---------- Quests: right-side check ---------- */
+.quest { padding-right: 2px; }
+.quest .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.quest .qn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.qm em { font-style: normal; }
+.quest.soon .qm em { color: var(--exp); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+.quest.side .reward { color: #c8a96e; }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qchk input { position: absolute; opacity: 0; pointer-events: none; }
+.qchk i { width: 15px; height: 15px; transform: rotate(45deg); background: rgba(0,0,0,.45); border: 1.5px solid var(--touch); transition: background .15s, border-color .15s; }
+.quest.on .qchk i { background: #3c4352; border-color: #566074; }
+.quest.on .qn { color: var(--spent); }
+.quest.on .reward { opacity: .4; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Trim · rank</h1>
+  <p class="lede">The rank plate is gone. Each option shows rank another way; the ladder under each goes I to VIII. Quests (first) get a check on the right instead of a button. Everything taps.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+};
+const icon = (name, color = 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const NUM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+// HabitList order: healing, physical, magic, true. Rank is never lost, so it can outrun the streak.
+const daily = [
+  { n: 'Stretch',       t: 'heal',  d: '141', s: 12, r: 2 },
+  { n: 'Morning run',   t: 'phys',  d: '1.1K', s: 23, r: 8, on: true },
+  { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+  { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 3, on: true },
+  { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+];
+const weekly = [
+  { n: 'Call family',   t: 'heal',  d: '180', s: 0,  r: 0 },
+  { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 5 },
+];
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0 },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+const ladder = [1, 2, 3, 4, 5, 6, 7, 8].map((r) => ({ n: 'Morning run', t: 'phys', d: String(120 * (1 + r)), s: 0, r }));
+const quests = [
+  { n: 'Call the dentist',      p: 1, due: '2 days left', soon: true },
+  { n: 'Clear out the attic',   p: 2, due: '4 days left', side: true },
+  { n: 'Finish the tax return', p: 3, due: '6 days left' },
+];
+
+// Per-rank values the options read: name gilding, rim, wash.
+function rankVars(r) {
+  const rp = r ? 25 + (r - 1) * 75 / 7 : 0;
+  return [
+    `--rp:${rp}%`, `--rp2:${rp / 2}%`,
+    `--rim:${r * 7}%`, `--rimn:${r * 7}`, `--lipc:${r * 4}%`,
+    `--wa:${r ? (0.04 + r * 0.012).toFixed(3) : 0}`, `--ww:${30 + r * 6}%`, `--wo:${r ? (0.2 + r * 0.08).toFixed(2) : 0}`,
+  ].join(';');
+}
+
+const row = (h) => `<li class="row${h.on ? ' on' : ''}" data-t="${h.t}" data-r="${h.r}" style="--c: var(--${h.t}); ${rankVars(h.r)}">
+  <span class="rail">${'<i></i>'.repeat(h.r)}</span>
+  <span class="mark">${NUM[h.r]}</span>
+  <span class="nm"><span class="nt">${h.n}</span>${h.r ? `<span class="rk">${NUM[h.r]}</span>` : ''}<span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.next ? `<span class="next">${h.next}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${h.s >= 3 ? icon('streak', '#8d8475') + h.s : ''}</span></span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t])}<b>${h.d}</b></button>
+</li>`;
+
+const quest = (q) => `<li class="row quest${q.soon ? ' soon' : ''}${q.side ? ' side' : ''}">
+  <span class="body"><span class="qn">${q.n}</span>
+    <span class="qm"><span class="qpips">${[1, 2, 3].map((n) => `<i class="${n <= q.p ? 'lit' : ''}"></i>`).join('')}</span><em>${q.due}</em></span></span>
+  <span class="reward">${icon(q.side ? 'gift' : 'exp')}${q.side ? '+Item' : '+EXP'}</span>
+  <label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"><i></i></label>
+</li>`;
+
+const skillsScreen = (id) => `<div class="phone t-${id}">
+  <section class="sec">
+    <div class="shead"><h3>Skills</h3><button class="add" type="button">+ New habit</button></div>
+    <div class="group">Daily</div><ul>${daily.map(row).join('')}</ul>
+    <div class="group">Weekly</div><ul>${weekly.map(row).join('')}</ul>
+  </section>
+  <section class="sec resist">
+    <div class="shead"><h3>Resist</h3></div>
+    <ul>${resist.map(row).join('')}</ul>
+  </section>
+  <div class="ladder"><div class="group">Ranks I – VIII</div><ul>${ladder.map(row).join('')}</ul></div>
+</div>`;
+
+const questScreen = `<div class="phone">
+  <section class="sec">
+    <div class="shead"><h3>Quests</h3><button class="add" type="button">+ New task</button></div>
+    <ul>${quests.map(quest).join('')}</ul>
+  </section>
+</div>`;
+
+const OPTIONS = [
+  { id: 'num',  tag: 'A · IN THE NAME', n: 'Numeral', d: 'A small brass numeral right after the name, like a title. The most direct swap for the plate.' },
+  { id: 'gild', tag: 'B · IN THE NAME', n: 'Gilded name', d: 'The name itself warms from white toward brass as the rank grows. Rank VIII glows faintly. No number at all.' },
+  { id: 'pips', tag: 'C · IN THE NAME', n: 'Pips', d: 'Tiny brass diamonds under the name, one per rank, in fours. Countable at a glance.' },
+  { id: 'rail', tag: 'D · ON THE CARD', n: 'Notches', d: 'Short brass notches stacked up the card’s left edge, one per rank, like marks cut into a hilt.' },
+  { id: 'rim',  tag: 'E · ON THE CARD', n: 'Brass rim', d: 'The card’s edge and lip warm toward brass with each rank. From V a light line along the top; VIII glows.' },
+  { id: 'wash', tag: 'F · ON THE CARD', n: 'Candlelight', d: 'A faint brass light spreads from the card’s left edge, wider and warmer each rank, with a thin brass edge.' },
+  { id: 'mark', tag: 'G · ON THE CARD', n: 'Engraved', d: 'The numeral is cut large and faint into the card behind the name, like an engraving.' },
+];
+
+document.getElementById('grid').innerHTML = `<div class="col">
+  <div class="tag">QUESTS</div><h2>RIGHT-SIDE CHECK</h2><p>No press button: the reward stays as a label, and a diamond check sits at the right edge.</p>
+  ${questScreen}
+</div>` + OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>
+  ${skillsScreen(o.id)}
+</div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.qchk input')) e.target.closest('.row').classList.toggle('on', e.target.checked);
+});
+</script>
+</body>
+</html>
