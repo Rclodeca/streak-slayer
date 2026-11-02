@@ -162,13 +162,13 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   --bevel: none;
 }
 
-/* Resting: flat, no lip, a dim number. */
+/* Resting: the same flat grey as struck, with the lip pressed down. */
 .strike.resting {
   --face: var(--resting-face);
-  --base: transparent;
-  --ink: color-mix(in srgb, var(--c) 45%, var(--spent-text));
+  --base: var(--struck-lip);
+  --ink: var(--struck-ink);
   --ink-shadow: none;
-  --bevel: inset 0 0 0 2px rgba(255, 255, 255, 0.04);
+  --bevel: none;
 }
 
 /* A spent or resting button lets the tap fall through to the card, which

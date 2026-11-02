@@ -19,7 +19,7 @@ import { WEEKDAY_SHORT } from './weekdays';
 // periodTag marks a weekly skill "Week", for lists that mix the periods (Resist).
 const props = defineProps<{ habit: Habit; periodTag?: boolean }>();
 // The skill popup lives in HabitList, so it stays open when this row moves
-// in or out of the Resting fold.
+// down to the resting skills.
 defineEmits<{ open: [] }>();
 
 const { checkOffHabit, activateOverdrive } = useCombatActions();

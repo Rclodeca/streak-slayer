@@ -79,22 +79,22 @@ describe('HabitList', () => {
     expect(wrapper.find('.skill-list .period-tag').exists()).toBe(false);
   });
 
-  it('a habit resting today sits in a closed Resting fold with its next due day', () => {
+  it('a habit resting today stays in Daily after the due ones, greyed, with its next due day', () => {
     addDaily([(today + 2) % 7]);
+    const habitStore = useHabitStore();
+    habitStore.addHabit('Due', 'daily', 'medium', false, createRng(2), [today]);
     const wrapper = mountList();
-    const fold = wrapper.find('details.rest-fold');
-    expect(fold.exists()).toBe(true);
-    expect((fold.element as HTMLDetailsElement).open).toBe(false);
-    expect(fold.find('summary').text()).toContain('Resting');
-    expect(fold.find('.rest-count').text()).toBe('1');
-    expect(fold.find('.next-day').text()).toBe(WEEKDAY_SHORT[(today + 2) % 7]);
-    expect(fold.find('button.strike').attributes('disabled')).toBeDefined();
+    expect(wrapper.find('details').exists()).toBe(false);
+    expect(wrapper.findAll('.skill-list .habit-item').map((row) => row.classes().includes('resting'))).toEqual([false, true]);
+    const resting = wrapper.find('.habit-item.resting');
+    expect(resting.find('.next-day').text()).toBe(WEEKDAY_SHORT[(today + 2) % 7]);
+    expect(resting.find('button.strike').attributes('disabled')).toBeDefined();
   });
 
-  it('shows no Resting fold when nothing rests today', () => {
+  it('nothing is marked resting when every habit is due today', () => {
     addDaily([today]);
     const wrapper = mountList();
-    expect(wrapper.find('details.rest-fold').exists()).toBe(false);
+    expect(wrapper.find('.habit-item.resting').exists()).toBe(false);
   });
 
   it('resting follows the debug clock', async () => {
@@ -102,7 +102,7 @@ describe('HabitList', () => {
     const wrapper = mountList();
     useDebugClockStore().offsetMs = 24 * 60 * 60 * 1000;
     await nextTick();
-    expect(wrapper.find('details.rest-fold').exists()).toBe(true);
+    expect(wrapper.find('.habit-item.resting').exists()).toBe(true);
   });
 
   it('the popup’s Overdrive button lights its charges once the skill lands, and greys one per use', async () => {
@@ -123,13 +123,13 @@ describe('HabitList', () => {
     expect(charges('ready')).toBe(TUNING.OVERDRIVE_MAX_EXTRA_USES - 1);
   });
 
-  it('the popup stays open when tapping today moves its row into Resting', async () => {
+  it('the popup stays open when tapping today moves its row down to the resting ones', async () => {
     addDaily();
     const wrapper = mountList();
     await wrapper.find('li').trigger('click'); // opens the popup
     document.body.querySelectorAll<HTMLButtonElement>('.skill-days button.day')[today].click();
     await nextTick();
-    expect(wrapper.find('details.rest-fold').exists()).toBe(true);
+    expect(wrapper.find('.habit-item.resting').exists()).toBe(true);
     expect(document.body.querySelector('.skill-days')).not.toBeNull();
   });
 

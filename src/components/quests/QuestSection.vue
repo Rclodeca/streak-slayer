@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Lock } from 'lucide-vue-next';
+import { Lock, ScrollText } from 'lucide-vue-next';
 import { dailyPeriodKey, questRewardTier, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
@@ -67,7 +67,7 @@ function onCheckOff(quest: Quest) {
 <template>
   <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
-      <h2><Lock v-if="!open" :size="14" class="lock-icon" />Quests</h2>
+      <h2><Lock v-if="!open" :size="16" class="section-icon lock-icon" /><ScrollText v-else :size="16" class="section-icon" />Quests</h2>
       <button v-if="open" type="button" class="add-button" aria-label="Add task" @click="showAdd = true">+ New task</button>
     </div>
     <div v-if="!open" class="lock-area">
