@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut forms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The new-habit and new-quest popups in Pixel-cut (Moonlit). Same fields and
+   order as AddHabitModal.vue and QuestForm.vue. Every choice is live. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+button, input { font: inherit; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --good: #7fc17a;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --sunk: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b;
+  --lifted: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  position: relative; width: 390px; padding: 54px 10px 28px; background: radial-gradient(70% 30% at 50% 6%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; }
+.phone > * { position: relative; }
+.phone + .phone { margin-top: 18px; }
+svg.i { width: 14px; height: 14px; flex: none; }
+
+/* Popup chrome, as in pixel-gear.html */
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 14px; }
+.mhead { display: flex; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; flex: 1; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.close { width: 40px; height: 40px; margin-right: -4px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.06); border: 1px solid rgba(219,226,238,.25); color: var(--touch); }
+.close svg { width: 16px; height: 16px; }
+.intro { margin: 0 2px 4px; font-size: 14.5px; color: var(--text); }
+.lbl { display: block; margin: 16px 2px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.pledge { margin: 8px 2px 0; font-size: 13.5px; }
+.pledge.good { color: #a9d6a5; } .pledge.bad { color: #e7a198; }
+.due { margin: 8px 2px 0; font-size: 13.5px; color: var(--text); }
+.due b { color: var(--ink); font-weight: 700; }
+
+/* Name: a sunk well, silver edge when focused */
+.name { width: 100%; height: 50px; padding: 0 14px; clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); border: 0; color: var(--ink);
+  font: 600 17px 'Alegreya', Georgia, serif; outline: none; }
+.name::placeholder { color: var(--dim); font-weight: 500; }
+.name:focus { box-shadow: var(--sunk), inset 0 0 0 2px rgba(219,226,238,.5); }
+
+/* Shared choice bones: a radio inside a label */
+.ch { position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ch input { position: absolute; opacity: 0; pointer-events: none; }
+.ct { display: block; font: 700 15px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.cs { display: block; font: 500 12.5px 'Alegreya Sans', sans-serif; color: var(--text); }
+.row2, .row3, .row4 { display: grid; gap: 7px; }
+.row2 { grid-template-columns: repeat(2, 1fr); }
+.row3 { grid-template-columns: repeat(3, 1fr); }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.tier { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--exp); }
+/* EXP icon beside the difficulty pips: more pips, more EXP */
+.rw { display: inline-flex; align-items: center; gap: 5px; margin-top: 2px; color: var(--exp); }
+.rw svg { width: 15px; height: 15px; }
+.o-a .key:has(input:checked) .rw { color: #6e5418; }
+
+/* Days: seven small keys */
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 8px; }
+.day { height: 44px; border: 0; padding: 0; cursor: pointer; font: 700 14px 'Alegreya Sans', sans-serif; }
+
+/* Date field */
+.date { height: 44px; padding: 0 10px; clip-path: var(--px2); background: var(--well); box-shadow: var(--sunk); border: 0; color: var(--touch); color-scheme: dark; font: 700 13.5px 'Alegreya Sans', sans-serif; }
+
+/* Submit: the silver raised key from pixel-gear.html */
+.btn { --lip: 3px; position: relative; display: block; width: 100%; margin-top: 20px; height: calc(46px + var(--lip)); padding-bottom: var(--lip); border: 0; background: none; cursor: pointer;
+  font: 700 16px 'Alegreya Sans', sans-serif; color: #12141a; letter-spacing: .02em; -webkit-tap-highlight-color: transparent; }
+.btn::before, .btn::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.btn::before { top: var(--lip); bottom: 0; background: #7d8595; }
+.btn::after { top: 0; bottom: var(--lip); background: #c8d0dd; box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); transition: top .07s, bottom .07s; }
+.btn span { position: relative; z-index: 1; display: inline-block; transition: transform .07s; }
+.btn:active::after { top: var(--lip); bottom: 0; }
+.btn:active span { transform: translateY(var(--lip)); }
+
+/* ====================== A · Keys ====================== */
+/* Every choice is a raised key with the strike button's 3px lip. Picking one
+   presses it down and lights it: silver, or green / red for the type. */
+.o-a .key { --lp: 3px; --face: #232a3a; --base: #0a0c11; --fg: var(--touch); --sh: inset 0 2px 0 rgba(255,255,255,.1), inset 2px 0 0 rgba(255,255,255,.05);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: calc(54px + var(--lp)); padding: 0 6px var(--lp); text-align: center; background: none; }
+.o-a .key::before, .o-a .key::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.o-a .key::before { top: var(--lp); bottom: 0; background: var(--base); }
+.o-a .key::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: var(--sh); transition: top .07s, bottom .07s; }
+.o-a .key > *:not(input) { position: relative; z-index: 1; transition: transform .07s; }
+.o-a .key .ct { color: var(--fg); }
+.o-a .key:has(input:checked) { --face: #c8d0dd; --fg: #12141a; --sh: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); }
+.o-a .key:has(input:checked)::after { top: var(--lp); bottom: 0; }
+.o-a .key:has(input:checked) > *:not(input) { transform: translateY(var(--lp)); }
+.o-a .key:has(input:checked) .cs { color: #3a404c; }
+.o-a .key:has(input:checked) .tier { color: #6e5418; }
+.o-a .key:has(input:checked) .qpips i { border-color: #6e5418; }
+.o-a .key:has(input:checked) .qpips i.lit { background: #6e5418; }
+.o-a .key.good:has(input:checked) { --face: #7fc17a; }
+.o-a .key.good:has(input:checked) .cs { color: #1f3b1d; }
+.o-a .key.bad:has(input:checked) { --face: #d4574a; --fg: #fff; }
+.o-a .key.bad:has(input:checked) .cs { color: #fde3df; }
+.o-a .key.sm { min-height: calc(44px + var(--lp)); }
+.o-a .day { --lp: 3px; position: relative; height: calc(41px + var(--lp)); padding-bottom: var(--lp); background: none; color: var(--touch); }
+.o-a .day::before, .o-a .day::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.o-a .day::before { top: var(--lp); bottom: 0; background: #0a0c11; }
+.o-a .day::after { top: 0; bottom: var(--lp); background: #232a3a; box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+.o-a .day span { position: relative; z-index: 1; display: inline-block; }
+.o-a .day.on { color: #12141a; }
+.o-a .day.on::after { top: var(--lp); bottom: 0; background: #c8d0dd; }
+.o-a .day.on span { transform: translateY(var(--lp)); }
+.o-a .dates { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.o-a .dates + .date { margin-top: 8px; width: 100%; }
+
+/* ====================== B · Ledger ====================== */
+/* One sunk ledger holds every field as a line: label left, choices right.
+   The picked choice is a lifted card in its well. Compact; no scrolling. */
+.o-b .ledger { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); padding: 2px 10px; margin-top: 12px; }
+.o-b .line { display: flex; align-items: center; gap: 10px; padding: 9px 0; }
+.o-b .line + .line, .o-b .sub + .line { border-top: 1px solid rgba(255,255,255,.04); }
+.o-b .line > .lbl { margin: 0; width: 76px; flex: none; }
+.o-b .seg { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; padding: 3px; clip-path: var(--px2); background: #07090d; }
+.o-b .seg .ch { min-height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 4px; text-align: center; clip-path: var(--px2); }
+.o-b .seg .ct { font-size: 14px; color: var(--text); }
+.o-b .seg .cs { display: none; }
+.o-b .seg .ch:has(input:checked) { background: var(--card); box-shadow: var(--lifted); }
+.o-b .seg .ch:has(input:checked) .ct { color: var(--ink); }
+.o-b .seg .ch.good:has(input:checked) { box-shadow: var(--lifted), inset 0 -2px 0 var(--good); }
+.o-b .seg .ch.good:has(input:checked) .ct { color: #a9d6a5; }
+.o-b .seg .ch.bad:has(input:checked) { box-shadow: var(--lifted), inset 0 -2px 0 var(--bad); }
+.o-b .seg .ch.bad:has(input:checked) .ct { color: #e7a198; }
+.o-b .seg .ch:not(:has(input:checked)) .qpips { opacity: .45; }
+.o-b .sub { padding: 0 0 10px 86px; }
+.o-b .sub .days { margin-top: 0; gap: 3px; }
+.o-b .day { height: 40px; clip-path: var(--px2); background: #07090d; color: var(--dim); }
+.o-b .day.on { background: var(--card); box-shadow: var(--lifted); color: var(--ink); }
+.o-b .sub .date { width: 100%; }
+.o-b .pledge, .o-b .due { margin: 10px 2px 0; }
+.o-b .intro { margin-bottom: 0; }
+.o-b .name { margin-top: 12px; }
+
+/* ====================== C · Socket ====================== */
+/* The item socket from pixel-gear A: each choice is a dark well, and the
+   picked one gets a 2px lit edge and a glow from inside. A preview of the
+   new card sits on top and changes as you choose. */
+.o-c .sock { min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px; text-align: center;
+  --r: #2a3140; clip-path: var(--px); background: #07090d; box-shadow: inset 0 0 0 2px var(--r), inset 4px 4px 0 #020305; }
+.o-c .sock .ct { color: var(--text); }
+.o-c .sock:has(input:checked) { --r: #aeb8c8; background: radial-gradient(circle, rgba(219,226,238,.14), #07090d 75%); }
+.o-c .sock:has(input:checked) .ct { color: var(--ink); }
+.o-c .sock.good:has(input:checked) { --r: var(--good); background: radial-gradient(circle, rgba(127,193,122,.2), #07090d 75%); }
+.o-c .sock.bad:has(input:checked) { --r: var(--bad); background: radial-gradient(circle, rgba(212,87,74,.2), #07090d 75%); }
+.o-c .sock.sm { min-height: 44px; }
+.o-c .sock:not(:has(input:checked)) .qpips { opacity: .45; }
+.o-c .day { clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px #2a3140; color: var(--dim); }
+.o-c .day.on { background: radial-gradient(circle, rgba(219,226,238,.14), #07090d 75%); box-shadow: inset 0 0 0 2px #aeb8c8; color: var(--ink); }
+.o-c .dates { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.o-c .dates + .date { margin-top: 8px; width: 100%; }
+
+/* Preview card: the skill / quest as it will sit on the main screen */
+.pv { margin-top: 4px; padding: 10px; clip-path: var(--px); background: #090b10; box-shadow: var(--sunk); }
+.pv .pvl { font: 600 9px 'Cinzel', serif; letter-spacing: .24em; color: var(--dim); text-transform: uppercase; margin: 0 2px 7px; }
+.card { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.card .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.card .nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .nt.ph { color: var(--dim); font-weight: 500; }
+.card .mt { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip); display: inline-flex; align-items: center; justify-content: center;
+  font: 700 15px 'Alegreya Sans', sans-serif; color: #fff; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: #2a3040; }
+.press::after { top: 0; bottom: var(--lip); background: #4a5266; box-shadow: inset 0 2px 0 rgba(255,255,255,.2); }
+.press b { position: relative; z-index: 1; }
+.card.resist { background: #141720; }
+.card.resist .nt { color: var(--text); font-weight: 500; }
+.card.resist .press { color: color-mix(in srgb, var(--bad) 72%, #fff); }
+.card.resist .press::before { background: color-mix(in srgb, var(--bad) 55%, #000); }
+.card.resist .press::after { background: #1d2230; box-shadow: inset 0 2px 0 rgba(255,255,255,.08); }
+.card.quest { padding-left: 4px; gap: 6px; }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; }
+.qchk i { width: 20px; height: 20px; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); }
+.card .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · new habit &amp; quest</h1>
+  <p class="lede">The two "add" popups in Pixel-cut. Same fields and order as now. Everything is tappable: type, cadence, days, difficulty, deadline.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const LU = {
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+};
+const icon = (n) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LU[n]}</svg>`;
+const LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const pips = (n) => `<span class="qpips">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'lit' : ''}"></i>`).join('')}</span>`;
+const head = (t) => `<div class="mhead"><h3>${t}</h3><span class="close">${icon('x')}</span></div>`;
+const PLEDGE = { good: 'Do it and the boss bleeds. Skip it and you do.', bad: 'Resist it and the boss bleeds. Give in and you do.' };
+
+// Fixed "today" for the mock: Mon 2 Nov.
+const DUE = [['Today', 'Mon, Nov 2'], ['Tomorrow', 'Tue, Nov 3'], ['3 days', 'Thu, Nov 5'], ['1 week', 'Mon, Nov 9']];
+let uid = 0;
+const radio = (cls, group, value, checked, inner) =>
+  `<label class="ch ${cls}"><input type="radio" name="${group}" value="${value}" ${checked ? 'checked' : ''}/>${inner}</label>`;
+
+// Option A and C share a stacked layout; only the choice class differs.
+function habitStacked(c, preview) {
+  const g = 'h' + uid++;
+  return `<div class="modal" data-form="habit">${head('Forge a habit')}
+    <p class="intro">Every habit is a weapon.</p>
+    ${preview ? `<div class="pv"><div class="pvl">Preview</div><div class="card" data-pv="habit"><div class="nm"><span class="nt ph">Unnamed</span><span class="mt" data-pv-meta>Every day · Easy</span></div><span class="press"><b>?</b></span></div></div>` : ''}
+    <label class="lbl">Name</label><input class="name" data-name placeholder="What will you keep?" />
+    <span class="lbl">Type</span>
+    <div class="row2">
+      ${radio(c + ' good', g + 't', 'good', true, '<span class="ct">Good</span><span class="cs">Do it</span>')}
+      ${radio(c + ' bad', g + 't', 'bad', false, '<span class="ct">Bad</span><span class="cs">Resist it</span>')}
+    </div>
+    <p class="pledge good" data-pledge>${PLEDGE.good}</p>
+    <span class="lbl">Cadence</span>
+    <div class="row2">
+      ${radio(c, g + 'p', 'daily', true, '<span class="ct">Daily</span><span class="cs" data-daycount>Every day</span>')}
+      ${radio(c, g + 'p', 'weekly', false, '<span class="ct">Weekly</span><span class="cs">Every week</span>')}
+    </div>
+    <div class="days" data-days>${LETTERS.map((l) => `<button class="day on" type="button"><span>${l}</span></button>`).join('')}</div>
+    <span class="lbl">Difficulty</span>
+    <div class="row3">
+      ${['Easy', 'Medium', 'Hard'].map((d, i) => radio(c + ' sm', g + 'd', d, i === 0, `<span class="ct">${d}</span>`)).join('')}
+    </div>
+    <button class="btn" type="button"><span>Forge</span></button>
+  </div>`;
+}
+
+function questStacked(c, preview) {
+  const g = 'q' + uid++;
+  return `<div class="modal" data-form="quest">${head('New quest')}
+    <p class="intro">A deed, sworn once.</p>
+    ${preview ? `<div class="pv"><div class="pvl">Preview</div><div class="card quest" data-pv="quest"><span class="qchk"><i></i></span><div class="nm"><span class="nt ph">Unnamed</span><span class="qm">${pips(1)}<em data-pv-due>Due tomorrow</em></span></div><span class="reward">${icon('exp')}+EXP</span></div></div>` : ''}
+    <label class="lbl">Deed</label><input class="name" data-name placeholder="What must be done?" />
+    <span class="lbl">Difficulty</span>
+    <div class="row3">
+      ${['Easy', 'Medium', 'Hard'].map((d, i) => radio(c, g + 'd', d, i === 0, `<span class="ct">${d}</span><span class="rw">${icon('exp')}${pips(i + 1)}</span>`)).join('')}
+    </div>
+    <span class="lbl">Deadline</span>
+    <div class="dates">
+      ${DUE.map(([l, d], i) => radio(c + ' sm', g + 'w', d, i === 1, `<span class="ct">${l}</span>`)).join('')}
+    </div>
+    <input class="date" type="date" value="2026-11-03" min="2026-11-02" />
+    <p class="due" data-due>Due <b>Tue, Nov 3</b></p>
+    <button class="btn" type="button"><span>Add quest</span></button>
+  </div>`;
+}
+
+function habitLedger() {
+  const g = 'h' + uid++;
+  return `<div class="modal" data-form="habit">${head('Forge a habit')}
+    <p class="intro">Every habit is a weapon.</p>
+    <input class="name" data-name placeholder="What will you keep?" />
+    <div class="ledger">
+      <div class="line"><span class="lbl">Type</span><div class="seg">
+        ${radio('good', g + 't', 'good', true, '<span class="ct">Good</span>')}${radio('bad', g + 't', 'bad', false, '<span class="ct">Bad</span>')}</div></div>
+      <div class="line"><span class="lbl">Cadence</span><div class="seg">
+        ${radio('', g + 'p', 'daily', true, '<span class="ct">Daily</span>')}${radio('', g + 'p', 'weekly', false, '<span class="ct">Weekly</span>')}</div></div>
+      <div class="sub" data-days-wrap><div class="days" data-days>${LETTERS.map((l) => `<button class="day on" type="button">${l}</button>`).join('')}</div></div>
+      <div class="line"><span class="lbl">Difficulty</span><div class="seg">
+        ${['Easy', 'Medium', 'Hard'].map((d, i) => radio('', g + 'd', d, i === 0, `<span class="ct">${d}</span>`)).join('')}</div></div>
+    </div>
+    <p class="pledge good" data-pledge>${PLEDGE.good}</p>
+    <button class="btn" type="button"><span>Forge</span></button>
+  </div>`;
+}
+
+function questLedger() {
+  const g = 'q' + uid++;
+  return `<div class="modal" data-form="quest">${head('New quest')}
+    <p class="intro">A deed, sworn once.</p>
+    <input class="name" data-name placeholder="What must be done?" />
+    <div class="ledger">
+      <div class="line"><span class="lbl">Difficulty</span><div class="seg">
+        ${['Easy', 'Medium', 'Hard'].map((d, i) => radio('', g + 'd', d, i === 0, `<span class="ct">${d}</span>${pips(i + 1)}`)).join('')}</div></div>
+      <div class="line"><span class="lbl">Deadline</span><div class="seg">
+        ${DUE.map(([l, d], i) => radio('', g + 'w', d, i === 1, `<span class="ct">${l === 'Tomorrow' ? 'Tmrw' : l}</span>`)).join('')}</div></div>
+      <div class="sub"><input class="date" type="date" value="2026-11-03" min="2026-11-02" /></div>
+    </div>
+    <p class="due" data-due>Due <b>Tue, Nov 3</b> · <span class="tier" data-tier>Small reward</span></p>
+    <button class="btn" type="button"><span>Add quest</span></button>
+  </div>`;
+}
+
+const OPTS = [
+  { k: 'a', tag: 'Option A', name: 'Keys', p: 'Every choice is a raised key with the strike button\'s lip. The one you pick is pressed down and lit silver; Good lights green, Bad red.',
+    habit: () => habitStacked('key'), quest: () => questStacked('key') },
+  { k: 'b', tag: 'Option B', name: 'Ledger', p: 'One sunk ledger, a line per field: label left, choices right. The picked choice lifts out of its well. Shortest of the three.',
+    habit: habitLedger, quest: questLedger },
+  { k: 'c', tag: 'Option C', name: 'Socket', p: 'Choices are dark sockets like the item frames; the picked one gets a lit edge. A preview of the new card sits on top and updates as you choose.',
+    habit: () => habitStacked('sock', true), quest: () => questStacked('sock', true) },
+];
+
+// Keys picked 2026-11-02; Ledger and Socket kept in the code, not shown.
+document.getElementById('grid').innerHTML = OPTS.filter((o) => o.k === 'a').map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.name}</h2><p>${o.p}</p>
+  <div class="phone o-${o.k}">${o.habit()}</div>
+  <div class="phone o-${o.k}">${o.quest()}</div></div>`).join('');
+
+// Live behaviour: days toggle, daily/weekly shows days, pledge, previews.
+document.querySelectorAll('.modal').forEach((m) => {
+  const sync = () => {
+    const val = (n) => m.querySelector(`input[name$="${n}"]:checked`)?.value;
+    const typed = m.querySelector('[data-name]').value.trim();
+    if (m.dataset.form === 'habit') {
+      const type = val('t'), period = val('p'), diff = val('d');
+      const lit = m.querySelectorAll('.day.on').length;
+      const count = lit === 7 ? 'Every day' : lit === 1 ? '1 day' : `${lit} days`;
+      const days = m.querySelector('[data-days]');
+      (m.querySelector('[data-days-wrap]') || days).style.display = period === 'daily' ? '' : 'none';
+      const dc = m.querySelector('[data-daycount]'); if (dc) dc.textContent = count;
+      const pl = m.querySelector('[data-pledge]'); pl.textContent = PLEDGE[type]; pl.className = `pledge ${type}`;
+      const pv = m.querySelector('[data-pv]');
+      if (pv) {
+        pv.classList.toggle('resist', type === 'bad');
+        pv.querySelector('.nt').textContent = typed || 'Unnamed'; pv.querySelector('.nt').classList.toggle('ph', !typed);
+        pv.querySelector('[data-pv-meta]').textContent = `${period === 'daily' ? count : 'Weekly'} · ${diff}`;
+      }
+    } else {
+      const diff = val('d'), due = val('w');
+      const n = { Easy: 1, Medium: 2, Hard: 3 }[diff];
+      const d = m.querySelector('[data-due]');
+      d.querySelector('b').textContent = due;
+      const t = m.querySelector('[data-tier]'); if (t) t.textContent = `${['Small', 'Medium', 'Large'][n - 1]} reward`;
+      const pv = m.querySelector('[data-pv]');
+      if (pv) {
+        pv.querySelector('.nt').textContent = typed || 'Unnamed'; pv.querySelector('.nt').classList.toggle('ph', !typed);
+        pv.querySelector('.qpips').outerHTML = pips(n);
+        const lbl = DUE.find((x) => x[1] === due)?.[0];
+        pv.querySelector('[data-pv-due]').textContent = lbl ? `Due ${lbl.toLowerCase()}` : `Due ${due}`;
+      }
+    }
+  };
+  m.addEventListener('change', sync);
+  m.addEventListener('input', sync);
+  m.querySelectorAll('.day').forEach((b) => b.addEventListener('click', () => {
+    if (b.classList.contains('on') && m.querySelectorAll('.day.on').length === 1) return;
+    b.classList.toggle('on'); sync();
+  }));
+  const date = m.querySelector('.date');
+  if (date) date.addEventListener('change', () => {
+    const lbl = new Date(`${date.value}T00:00:00Z`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    m.querySelectorAll('input[name$="w"]').forEach((r) => { r.checked = r.value === lbl; });
+    if (![...m.querySelectorAll('input[name$="w"]')].some((r) => r.checked)) {
+      m.querySelector('[data-due] b').textContent = lbl;
+      const pv = m.querySelector('[data-pv-due]'); if (pv) pv.textContent = `Due ${lbl}`;
+    } else sync();
+  });
+  m.querySelectorAll('input[name$="w"]').forEach((r) => r.addEventListener('change', () => {
+    const i = DUE.findIndex((x) => x[1] === r.value);
+    date.value = ['2026-11-02', '2026-11-03', '2026-11-05', '2026-11-09'][i];
+  }));
+  sync();
+});
+</script>
+</body>
+</html>

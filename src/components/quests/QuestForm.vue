@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { dailyPeriodKey, questRewardTier } from '../../game-engine';
+import { dailyPeriodKey } from '../../game-engine';
 import type { Difficulty, QuestKind } from '../../game-engine';
 import { useDebugClockStore } from '../../store/debugClockStore';
+import StatIcon from '../ui/StatIcon.vue';
 
 const props = withDefaults(defineProps<{ kind?: QuestKind }>(), { kind: 'regular' });
 const emit = defineEmits<{ submit: [description: string, difficulty: Difficulty, dueDateKey: string] }>();
@@ -67,10 +68,13 @@ function onSubmit() {
         <label v-for="opt in difficultyOptions" :key="opt.value" class="card" :class="{ selected: difficulty === opt.value }">
           <input v-model="difficulty" type="radio" name="quest-difficulty" :value="opt.value" />
           <span class="card-title">{{ opt.label }}</span>
-          <span class="pips" aria-hidden="true">
-            <span v-for="n in 3" :key="n" class="pip" :class="{ lit: n <= opt.pips }" />
+          <!-- The EXP icon beside the pips: more pips, more EXP. A side quest pays an item instead. -->
+          <span class="reward" aria-hidden="true">
+            <StatIcon v-if="props.kind === 'regular'" name="exp" :size="15" />
+            <span class="pips">
+              <span v-for="n in 3" :key="n" class="pip" :class="{ lit: n <= opt.pips }" />
+            </span>
           </span>
-          <span v-if="props.kind === 'regular'" class="reward">{{ questRewardTier(opt.value) }}</span>
         </label>
       </div>
     </fieldset>
@@ -86,7 +90,7 @@ function onSubmit() {
           :class="{ selected: dueDate === chip.key }"
           @click="dueDate = chip.key"
         >
-          {{ chip.label }}
+          <span>{{ chip.label }}</span>
         </button>
         <input v-model="dueDate" class="date-input" type="date" :min="todayKey" required aria-label="Deadline date" />
       </div>
@@ -223,18 +227,20 @@ function onSubmit() {
 }
 
 .reward {
-  color: var(--stat-color);
-  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
 }
 
 .chip {
-  padding: 0.4rem 0.9rem;
+  min-height: 44px;
+  padding: 0.4rem 0.3rem;
   background: var(--code-bg);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -253,6 +259,8 @@ function onSubmit() {
 }
 
 .date-input {
+  grid-column: 1 / -1;
+  min-height: 44px;
   padding: 0.35rem 0.7rem;
   background: var(--code-bg);
   border: 1px solid var(--border);

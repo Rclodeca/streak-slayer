@@ -9,7 +9,8 @@ import Modal from '../ui/Modal.vue';
 import DayPicker from './DayPicker.vue';
 import { ALL_DAYS, dayCountLabel } from './weekdays';
 
-const props = defineProps<{ modelValue: boolean }>();
+// `bad` opens the popup with Bad picked, as from Resist's own plus.
+const props = defineProps<{ modelValue: boolean; bad?: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 
 const { addHabit } = useCombatActions();
@@ -23,7 +24,9 @@ const days = ref<number[]>([...ALL_DAYS]);
 watch(
   () => props.modelValue,
   (open) => {
-    if (open) days.value = [...ALL_DAYS];
+    if (!open) return;
+    days.value = [...ALL_DAYS];
+    habitType.value = props.bad ? 'bad' : 'good';
   },
 );
 
@@ -66,7 +69,7 @@ function onSubmit() {
     @update:model-value="(value) => $emit('update:modelValue', value)"
   >
     <form class="add-habit-form" @submit.prevent="onSubmit">
-      <p class="intro">Every habit is a weapon. Keep it, and it strikes the boss. Fail it, and the boss strikes back.</p>
+      <p class="intro">Every habit is a weapon.</p>
 
       <label class="field">
         <span class="field-label">Name</span>

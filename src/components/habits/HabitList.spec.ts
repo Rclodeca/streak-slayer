@@ -61,10 +61,25 @@ describe('HabitList', () => {
     expect(wrapper.find('.resist-list').classes()).not.toContain('panel');
   });
 
-  it('shows no Resist panel without a bad habit', () => {
+  it('keeps Resist in view without a bad habit, saying what it is for', () => {
     addDaily();
     const wrapper = mountList();
-    expect(wrapper.find('.resist-list').exists()).toBe(false);
+    expect(wrapper.find('.resist-list').exists()).toBe(true);
+    expect(wrapper.find('.resist-list .section-caption').text()).toBe('Habits to break');
+    expect(wrapper.find('.resist-list .section-empty').text()).toContain('Nothing to resist yet');
+    expect(wrapper.find('.resist-list .habit-item').exists()).toBe(false);
+  });
+
+  it("Resist's own plus opens the habit popup set to Bad, and Skills' plus to Good", async () => {
+    addDaily();
+    const wrapper = mountList();
+    const pledge = () => document.body.querySelector('.add-habit-form .pledge')!;
+    await wrapper.find('.resist-list .add-button').trigger('click');
+    expect(pledge().classList.contains('type-bad')).toBe(true);
+    document.body.querySelector<HTMLButtonElement>('.modal-close')!.click();
+    await nextTick();
+    await wrapper.find('.skill-list .add-button').trigger('click');
+    expect(pledge().classList.contains('type-good')).toBe(true);
   });
 
   it('marks only the weekly bad habits, and lists resting ones last', () => {

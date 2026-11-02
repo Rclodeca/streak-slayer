@@ -87,12 +87,16 @@ function onPick(id: EventId) {
 
     <template v-else>
     <template v-if="step === 'choose'">
-      <div class="level-emblem"><span class="level-emblem-number">{{ level }}</span></div>
+      <div class="level-emblem">
+        <StatIcon name="levelUp" :size="16" class="level-emblem-up" />
+        <span class="level-emblem-number">{{ level }}</span>
+        <span class="level-emblem-label">Level</span>
+      </div>
       <p v-if="statGains.length" class="gains">
         <span v-for="gain in statGains" :key="gain.stat"><StatIcon :name="BOOST_STAT_ICON[gain.stat]" />+{{ formatCompact(gain.amount) }}</span>
       </p>
     </template>
-    <p class="subtitle">{{ subtitle }}</p>
+    <p class="subtitle" :class="{ count: step === 'choose' && !revealed }">{{ subtitle }}</p>
 
     <div v-if="step === 'choose'" class="cards">
       <button v-for="event in choices" :key="event.id" type="button" class="card" @click="onPick(event.id)">

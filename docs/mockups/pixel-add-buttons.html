@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, add buttons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Pixel-cut main screen. The question here: how the sections separate. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --done: #3c4352; --done-line: #566074; --streak-i: #8d8475;
+  /* open card */
+  --card: #171b25; --hi: #283041; --lo: #0d1017; --card-lip: #05060a; --resist-card: #141720;
+  /* struck card (Now) */
+  --s-card: #12151d; --s-hi: #1c2230; --s-lo: #0a0c12; --s-face: #232836; --s-base: #1a1d26; --s-name: var(--spent);
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding-bottom: 28px; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+button { font: inherit; }
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+
+.top { background: radial-gradient(70% 55% at 72% 50%, #1c2230, transparent 70%), var(--bg); }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 0; }
+.menu { width: 40px; height: 40px; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+.stage { position: relative; height: 300px; }
+.boss { position: absolute; right: 8px; top: 6px; width: 172px; image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 #2a1a10) drop-shadow(-2px 0 0 #2a1a10) drop-shadow(0 2px 0 #2a1a10) drop-shadow(0 -2px 0 #2a1a10) drop-shadow(0 0 12px rgba(224,120,58,.4)); }
+.hero { position: absolute; left: 8px; top: 128px; width: 140px; image-rendering: pixelated; transform: scaleX(-1); filter: drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.9); }
+.platform { position: absolute; left: 6px; top: 262px; width: 150px; height: 22px; border-radius: 50%; background: radial-gradient(closest-side, rgba(150,165,200,.16), transparent); }
+.unit { position: absolute; }
+.unit.b { left: 16px; top: 22px; width: 188px; }
+.unit.h { left: 172px; top: 196px; width: 202px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 5px; text-transform: uppercase; }
+.uname small { font-size: 11px; color: var(--brass); letter-spacing: .1em; }
+.uname .cue { display: inline-block; width: 6px; height: 6px; margin-left: 3px; border-top: 1.5px solid var(--text); border-right: 1.5px solid var(--text); transform: rotate(45deg); }
+.bar { position: relative; height: 15px; background: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.6); overflow: hidden; }
+.bar b { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#c4402a, #8c2616); }
+.bar i { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--exp); }
+.bar span { position: absolute; right: 5px; top: 0; font: 700 10.5px/13px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.7); }
+.stats { display: flex; gap: 8px; margin-top: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: #868a93; white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.stats svg { width: 12px; height: 12px; }
+
+.sec { margin: 18px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 2px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 12px 2px 7px; text-transform: uppercase; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Card */
+.row { --face: color-mix(in srgb, var(--c) 82%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15);
+  --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] { --btn-c: #1e1c18; --btn-ts: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.tagw { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.next { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); opacity: .7; }
+
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--btn-c); text-shadow: var(--btn-ts); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--btn-sh); transition: top .07s, bottom .07s; }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.press svg { width: 13px; height: 13px; }
+.press .ic-done { display: none; }
+.press:active::after, .on .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .on .press > * { transform: translateY(var(--lip)); }
+
+/* Struck (Now) */
+.phone:not(.lift) .row { --s-num: color-mix(in srgb, var(--c) 45%, var(--spent)); }
+.phone .row.on { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt, .row.on .qn { color: var(--s-name); }
+.row.on .streak, .row.on .pp, .row.on .reward { opacity: .45; }
+
+/* Resting: flat, can't be pressed */
+.rest { margin-top: 8px; }
+.rest summary { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 2px; list-style: none; cursor: pointer;
+  font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); text-transform: uppercase; }
+.rest summary::-webkit-details-marker { display: none; }
+.rest summary span { color: var(--touch); }
+.rest summary::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+.rest[open] summary::after { transform: rotate(225deg) translateY(-1px); }
+.phone .row.resting { --face: #12151d; --base: transparent; --btn-sh: inset 0 0 0 2px rgba(255,255,255,.04); --btn-c: color-mix(in srgb, var(--c) 45%, var(--spent)); --btn-ts: none;
+  background: var(--resist-card); box-shadow: inset 2px 2px 0 #1c2230, inset -2px -2px 0 #0a0c12; }
+.row.resting .nt { color: var(--text); font-weight: 500; }
+.resting .press { pointer-events: none; }
+.resting .press::after { top: var(--lip); bottom: 0; }
+.resting .press > * { transform: translateY(var(--lip)); }
+
+/* Resist */
+.phone .resist .row:not(.on) { --face: #1d2230; --base: color-mix(in srgb, var(--bad) 55%, #000); --btn-c: color-mix(in srgb, var(--bad) 72%, #fff); --btn-ts: none;
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.08); background: var(--resist-card); }
+.resist .nt { color: var(--text); font-weight: 500; }
+
+/* Quests */
+.quest { padding-left: 4px; gap: 6px; }
+.quest .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.quest .qn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.qm em { font-style: normal; }
+.quest.soon .qm em { color: var(--exp); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+.quest.side .reward { color: #c8a96e; }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qchk input { position: absolute; opacity: 0; pointer-events: none; }
+.qchk i { width: 20px; height: 20px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); }
+.qchk svg { width: 14px; height: 14px; opacity: 0; color: var(--touch); }
+.quest.on .qchk i { background: var(--done); border-color: var(--done-line); }
+.quest.on .qchk svg { opacity: 1; }
+
+/* Log */
+.log { margin: 22px 12px 0; padding: 12px 14px 6px; background: var(--frame); clip-path: var(--px); box-shadow: inset 2px 2px 0 #232937, inset -2px -2px 0 #0b0d12; }
+.log h2 { margin: 0 0 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.log ul { gap: 0; }
+.log li { display: block; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.04); font-size: 14px; color: var(--text); }
+.log li:first-child { border-top: 0; }
+.log li > svg:first-child { width: 14px; height: 14px; margin-right: 3px; vertical-align: -2px; }
+.log .d { color: var(--phys); font-weight: 700; } .log .x { color: var(--exp); font-weight: 700; }
+.chip { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; padding: 1px 6px; background: rgba(255,255,255,.05); font-size: 12px; font-weight: 700; color: var(--ink); }
+.chip svg { width: 11px; height: 11px; }
+
+/* ================= Sections ================= */
+.phone { --dimc: #6a6f7a; }
+.lift { --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --ink: #f0f3f7; --resist-card: #161a24; --s-num: #5b606b;
+  --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-face: #1b1f28; --s-base: #111319; --s-name: #5b606b; }
+.lift .sec:not(.resist) .row:not(.on):not(.resting) { --face: color-mix(in srgb, var(--c) 88%, #000); }
+.sec { --sp: var(--touch); }
+.sec.resist { --sp: var(--bad); }
+.sec.quests { --sp: var(--brass); }
+.ht { display: flex; align-items: center; gap: 8px; }
+.hr { display: flex; align-items: center; gap: 10px; }
+.hi { display: none; color: var(--sp); }
+.hi svg { width: 16px; height: 16px; }
+.cnt { display: none; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.cnt b { color: var(--ink); font-weight: 700; }
+.group { display: flex; align-items: center; gap: 8px; }
+.group .cnt { margin-left: auto; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.o .cnt { display: inline; }
+
+/* A · Rules: more air, a rule under each title with a short lit segment */
+.o-rules .sec { margin-top: 34px; }
+.o-rules .shead { position: relative; min-height: 44px; padding: 0 2px 8px; margin-bottom: 4px; border-bottom: 2px solid #1a1f2b; }
+.o-rules .shead::after { content: ''; position: absolute; left: 0; bottom: -2px; width: 40px; height: 2px; background: var(--sp); }
+.o-rules .group { margin: 20px 2px 9px; }
+.o-rules .group::before { content: ''; width: 10px; height: 2px; background: #3a4256; }
+.o-rules .sec .group:first-of-type { margin-top: 12px; }
+.o-rules .rest { margin-top: 10px; }
+
+/* B · Trays: each section sits in its own sunk well, tinted by kind */
+.o-tray .sec { margin: 14px 8px 0; padding: 2px 10px 14px; clip-path: var(--px); background: #0a0d13;
+  box-shadow: inset 2px 2px 0 #040508, inset -2px -2px 0 #171c27; }
+.o-tray .sec.resist { background: #100c10; box-shadow: inset 2px 2px 0 #060406, inset -2px -2px 0 #2a1719; }
+.o-tray .sec.quests { background: #0e0d0a; box-shadow: inset 2px 2px 0 #060503, inset -2px -2px 0 #2a2415; }
+.o-tray .shead { min-height: 48px; padding: 0 0 0 2px; }
+.o-tray .sec.resist h2 { color: #e7a198; }
+.o-tray .sec.quests h2 { color: var(--brass); }
+.o-tray .group { margin: 10px 2px 8px; }
+.o-tray .group + ul { margin-bottom: 4px; }
+.o-tray .rest { margin-top: 6px; }
+
+/* C · Banners: every title is a raised stone band with a coloured edge */
+.o-band .sec { margin-top: 26px; }
+.o-band .shead { min-height: 46px; padding: 0 5px 0 16px; margin-bottom: 10px; clip-path: var(--px); background: #1a1f2d; border-bottom: 3px solid var(--card-lip);
+  box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11, inset 5px 0 0 var(--sp); }
+.o-band .hi { display: inline-flex; }
+.o-band .add { min-height: 34px; padding: 6px 11px; }
+.o-band .group { margin: 16px 2px 9px; gap: 10px; }
+.o-band .group::before, .o-band .group::after { content: ''; height: 1px; background: rgba(219,226,238,.1); }
+.o-band .group::before { width: 14px; }
+.o-band .group::after { flex: 1; order: 1; }
+.o-band .group .cnt { margin-left: 0; order: 2; }
+.o-band .sec .group:first-of-type { margin-top: 2px; }
+
+/* D · Spine: a coloured line runs down the left of each section, nodes at titles */
+.o-spine .sec { position: relative; margin: 30px 12px 0 18px; padding-left: 14px; }
+.o-spine .sec::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 6px; width: 3px; background: var(--sp); opacity: .5; }
+.o-spine .shead { position: relative; }
+.o-spine .shead::before { content: ''; position: absolute; left: -17px; top: 50%; width: 9px; height: 9px; margin-top: -5px; background: var(--sp); box-shadow: 0 0 0 3px var(--bg); }
+.o-spine .hi { display: inline-flex; }
+.o-spine .group { margin: 16px 2px 8px; }
+.o-spine .group::before { content: ''; position: absolute; left: -14px; width: 8px; height: 2px; background: var(--sp); opacity: .7; }
+.o-spine .group { position: relative; }
+.o-spine .cnt { display: none; }
+.o-spine .row.resting { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.o-spine .row.resting .nt { color: var(--s-name); font-weight: 600; }
+.o-spine .row.resting .pp { opacity: .45; }
+.o-spine .row.resting .next { color: var(--s-name); opacity: 1; }
+/* Same gap from every title to whatever comes first under it */
+.o-spine .shead { height: 44px; min-height: 0; margin-bottom: 4px; }
+.o-spine .shead + .group { margin-top: 0; }
+.o-spine .shead + ul { margin-top: 0; }
+
+/* ================= Add buttons ================= */
+/* Hit area is always 44px; the drawn button is smaller. */
+.shead { height: 44px; }
+.hr { gap: 6px; }
+.o-cap .shead { height: 54px; }
+.ht.col2 { align-items: center; }
+.ht .tt { display: flex; flex-direction: column; gap: 1px; }
+.ht small { font: 600 12.5px 'Alegreya Sans', sans-serif; letter-spacing: 0; text-transform: none; color: var(--text); }
+
+/* Now: wide pill */
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+
+/* Shared raised mini key */
+.mk { --lp: 2px; --face: #c8d0dd; --base: #7d8595; --fg: #12141a; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 0; background: none; cursor: pointer;
+  font: 700 13px 'Alegreya Sans', sans-serif; color: var(--fg); -webkit-tap-highlight-color: transparent; }
+.mk::before, .mk::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.mk::before { top: var(--lp); bottom: 0; background: var(--base); }
+.mk::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); transition: top .07s, bottom .07s; }
+.mk > * { position: relative; z-index: 1; transition: transform .07s; }
+.mk:active::after { top: var(--lp); bottom: 0; }
+.mk:active > * { transform: translateY(var(--lp)); }
+.mk svg { width: 14px; height: 14px; stroke-width: 2.6; }
+.sec.resist .mk { --face: #d4574a; --base: #7a2c25; --fg: #fff; }
+.sec.quests .mk { --face: #d2bb85; --base: #7a6a42; --fg: #1e1c18; }
+
+/* A · small labelled key: 30px tall, 8px of hit padding above and below */
+.o-a .mk { height: 30px; padding: 0 11px 2px; margin: 7px 0; }
+.o-a .mk::before, .o-a .mk::after { left: 0; right: 0; }
+
+/* B · plus only, 32px key in a 44px target */
+.o-b .mk { width: 32px; height: 32px; padding-bottom: 2px; margin: 6px; }
+.o-b .mk svg { width: 16px; }
+
+/* C · plus only, ghost: outline in the section colour */
+.o-c .gh { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; cursor: pointer; color: var(--sp); -webkit-tap-highlight-color: transparent; }
+.o-c .gh i { width: 30px; height: 30px; display: grid; place-items: center; clip-path: var(--px2); background: color-mix(in srgb, var(--sp) 10%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sp) 55%, transparent); }
+.o-c .gh:active i { background: color-mix(in srgb, var(--sp) 28%, transparent); }
+.o-c .gh svg { width: 16px; height: 16px; stroke-width: 2.6; }
+
+/* D · add row: a dashed ghost card closes each list */
+.addrow { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin-top: 0; clip-path: var(--px2); cursor: pointer; border: 2px dashed color-mix(in srgb, var(--sp) 40%, transparent);
+  background: transparent; color: color-mix(in srgb, var(--sp) 85%, #fff); font: 700 14px 'Alegreya Sans', sans-serif; width: 100%; -webkit-tap-highlight-color: transparent; }
+.addrow svg { width: 15px; height: 15px; stroke-width: 2.6; }
+.addrow:active { background: color-mix(in srgb, var(--sp) 14%, transparent); }
+
+/* Teaching: empty states and popup presets */
+.empty { margin: 4px 0 0; padding: 14px 12px; text-align: center; font: 500 14px 'Alegreya Sans', sans-serif; color: var(--text); background: #0d1017; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+.empty b { color: var(--sp); font-weight: 700; }
+.pre { width: 390px; margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.pre .pt { display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 14px; background: #141720; clip-path: var(--px); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; }
+.pre .pt span { font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: #f0f3f7; }
+.pre .pt em { font: 700 12.5px 'Alegreya Sans', sans-serif; font-style: normal; padding: 4px 9px; clip-path: var(--px2); }
+.pre .good { background: #7fc17a; color: #1f3b1d; } .pre .bad { background: #d4574a; color: #fff; } .pre .once { background: #d2bb85; color: #1e1c18; }
+.note { margin: 0 0 10px; text-align: center; font-size: 15px; max-width: 760px; margin-inline: auto; }
+h3.row-t { text-align: center; font: 600 12px 'Cinzel', serif; letter-spacing: .3em; color: #ece8de; margin: 46px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · add buttons</h1>
+  <p class="lede">Row one: five looks for the add button. Row two: three ways to teach that Skills are good habits, Resist is bad habits, Quests are to-dos. Resist now has its own add button, and it opens the habit popup already set to Bad. Every button is tappable (it presses); drawn sizes are smaller than the 44px tap area.</p>
+  <h3 class="row-t">BUTTON LOOKS</h3>
+  <div class="grid" id="grid"></div>
+  <h3 class="row-t">TEACHING THE THREE NAMES</h3>
+  <p class="note">These three all use look B (plus only), so the teaching is what you compare. They stack: you can take more than one.</p>
+  <div class="grid" id="grid2"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: 'var(--streak-i)', exp: '#d8b46a', quest: '#a8a092' };
+const icon = (name, color = COLOR[name] || 'currentColor', cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+// HabitList order: healing, physical, magic, true. Rank (0-8) is never lost.
+const daily = [
+  { n: 'Stretch',       t: 'heal',  d: '141', s: 12, r: 2, on: true },
+  { n: 'Morning run',   t: 'phys',  d: '1.1K', s: 23, r: 8, on: true },
+  { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+  { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 3, on: true },
+  { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+];
+const resting = [
+  { n: 'Swim',          t: 'phys',  d: '230', s: 5,  r: 1, next: 'Thu' },
+  { n: 'Guitar',        t: 'magic', d: '160', s: 3,  r: 0, next: 'Sat' },
+];
+const weekly = [
+  { n: 'Call family',   t: 'heal',  d: '180', s: 0,  r: 0 },
+  { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 5, on: true },
+];
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0, on: true },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+const quests = [
+  { n: 'Call the dentist',      p: 1, due: '2 days left', soon: true },
+  { n: 'Clear out the attic',   p: 2, due: '4 days left', side: true, on: true },
+  { n: 'Finish the tax return', p: 3, due: '6 days left' },
+];
+
+const row = (h, cls = '') => `<li class="row${h.on ? ' on' : ''}${cls}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.next ? `<span class="next">${h.next}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${h.s >= 3 ? icon('streak') + h.s : ''}</span></span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor', 'ic-type')}${icon('check', 'currentColor', 'ic-done')}<b>${h.d}</b></button>
+</li>`;
+
+const quest = (q) => `<li class="row quest${q.soon ? ' soon' : ''}${q.side ? ' side' : ''}${q.on ? ' on' : ''}">
+  <label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"${q.on ? ' checked' : ''}><i>${icon('check', 'currentColor')}</i></label>
+  <span class="body"><span class="qn">${q.n}</span>
+    <span class="qm"><span class="qpips">${[1, 2, 3].map((n) => `<i class="${n <= q.p ? 'lit' : ''}"></i>`).join('')}</span><em>${q.due}</em></span></span>
+  <span class="reward">${icon(q.side ? 'gift' : 'exp', 'currentColor')}${q.side ? '+Item' : '+EXP'}</span>
+</li>`;
+
+const cnt = (list) => `<span class="cnt"><b>${list.filter((x) => x.on).length}</b>/${list.length}</span>`;
+const grp = (title, list) => `<div class="group"><span>${title}</span>${cnt(list)}</div>`;
+LU.plus = '<path d="M5 12h14"/><path d="M12 5v14"/>';
+const P = (c) => icon('plus', 'currentColor', c);
+
+const skillsRows = daily.slice(0, 2).concat(weekly.slice(0, 1));
+const resistRows = resist.slice(0, 2);
+const questRows = quests.slice(0, 2);
+
+// kind: skill | resist | quest
+const WORD = { skill: 'Skill', resist: 'Resist', quest: 'Quest' };
+const BIG = { skill: 'New habit', resist: null, quest: 'New task' };
+
+const addBtn = (kind, look) => {
+  const label = `Add ${WORD[kind].toLowerCase()}`;
+  if (look === 'now') return BIG[kind] ? `<button class="add" type="button" aria-label="${label}">+ ${BIG[kind]}</button>` : '';
+  if (look === 'a') return `<button class="mk" type="button" aria-label="${label}">${P()}${WORD[kind]}</button>`;
+  if (look === 'b') return `<button class="mk" type="button" aria-label="${label}">${P()}</button>`;
+  if (look === 'c') return `<button class="gh" type="button" aria-label="${label}"><i>${P()}</i></button>`;
+  return '';
+};
+const rowAdd = (kind) => `<ul><li><button class="addrow" type="button">${P()}New ${WORD[kind].toLowerCase()}</button></li></ul>`;
+
+const H = (title, ic, kind, look, caption) => `<div class="shead"><span class="ht"><span class="hi">${icon(ic, 'currentColor')}</span>
+  <span class="tt"><h2>${title}</h2>${caption ? `<small>${caption}</small>` : ''}</span></span><span class="hr">${addBtn(kind, look)}</span></div>`;
+
+const list = (rows, fn) => `<ul>${rows.map(fn).join('')}</ul>`;
+const emptyBox = (html) => `<div class="empty">${html}</div>`;
+
+const phone = ({ look, caption, empty }) => `<div class="phone lift o o-spine o-${look} ${caption ? 'o-cap' : ''}">
+  <div style="height:6px"></div>
+  <section class="sec skills">
+    ${H('Skills', 'physical', 'skill', look, caption && 'Habits to keep')}
+    ${empty ? emptyBox('No skills yet. Tap <b>+</b> to forge a habit.') : `${grp('Daily', daily)}${list(skillsRows, (h) => row(h))}`}
+    ${look === 'd' ? rowAdd('skill') : ''}
+  </section>
+  <section class="sec resist">
+    ${H('Resist', 'armor', 'resist', look, caption && 'Habits to break')}
+    ${empty ? emptyBox('Nothing to resist yet. Tap <b>+</b> to name a bad habit.') : list(resistRows, (h) => row(h))}
+    ${look === 'd' ? rowAdd('resist') : ''}
+  </section>
+  <section class="sec quests">
+    ${H('Quests', 'quest', 'quest', look, caption && 'One-off tasks')}
+    ${empty ? emptyBox('No quests yet. Tap <b>+</b> to add a to-do.') : list(questRows, quest)}
+    ${look === 'd' ? rowAdd('quest') : ''}
+  </section>
+</div>`;
+
+const OPTIONS = [
+  { look: 'now', tag: 'REFERENCE', n: 'Now', d: 'As built: two wide pills, and none on Resist.' },
+  { look: 'a', tag: 'A', n: 'Small key', d: 'The same silver key, half the width, with the section name on it: + Skill, + Resist, + Quest. The word teaches the name.' },
+  { look: 'b', tag: 'B', n: 'Plus key', d: 'A 32px raised plus, coloured to match its section (silver, red, brass). Smallest and quietest that still looks pressable.' },
+  { look: 'c', tag: 'C', n: 'Ghost plus', d: 'An outlined plus in the section colour with no fill. Quieter than B; reads as a hint, not a button.' },
+  { look: 'd', tag: 'D', n: 'Add row', d: 'No header button. A dashed row closes each list: + New skill / + New resist / + New quest. Biggest tap target; the header stays clean.' },
+];
+const TEACH = [
+  { look: 'b', caption: true, tag: 'T1', n: 'Captions', d: 'A small line under each title: Habits to keep, Habits to break, One-off tasks. Always there, costs one line of height per section.' },
+  { look: 'b', empty: true, tag: 'T2', n: 'Empty states', d: 'Each section says what it is when it has nothing in it, and Resist stays visible so there is always a place to add a bad habit. Teaches new players once, then gets out of the way.',
+    extra: '' },
+  { look: 'b', tag: 'T3', n: 'Popup names it', d: 'Tapping + opens the popup already titled and set for that section, so the first thing you read is the name and the type. Header stays unchanged.',
+    extra: `<div class="pre">
+      <div class="pt"><span>New skill</span><em class="good">Good</em></div>
+      <div class="pt"><span>New resist</span><em class="bad">Bad</em></div>
+      <div class="pt"><span>New quest</span><em class="once">Once</em></div></div>` },
+];
+
+const col = (o) => `<div class="col"><div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>${phone(o)}${o.extra || ''}</div>`;
+document.getElementById('grid').innerHTML = OPTIONS.map(col).join('');
+document.getElementById('grid2').innerHTML = TEACH.map(col).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.qchk input')) e.target.closest('.row').classList.toggle('on', e.target.checked);
+});
+</script>
+</body>
+</html>

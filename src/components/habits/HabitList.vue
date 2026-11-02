@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Shield, Sword } from 'lucide-vue-next';
+import { Plus, Shield, Sword } from 'lucide-vue-next';
 import { isDueOn, msUntilRollover, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
@@ -21,7 +21,14 @@ import { sortByDamageType } from './habitDisplay';
 const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
 const showAddModal = ref(false);
+// The popup opens set to Bad from Resist's own plus.
+const addBad = ref(false);
 const addButton = ref<HTMLElement | null>(null);
+
+function openAdd(bad: boolean) {
+  addBad.value = bad;
+  showAddModal.value = true;
+}
 
 // A player with no habits yet is shown where to add one, until "Later".
 const hintDismissed = ref(false);
@@ -138,10 +145,11 @@ function checkOffFromHint() {
   <section ref="listEl" class="habit-list skill-list">
     <div class="habit-list-header">
       <h2><Sword :size="16" class="section-icon" />Skills</h2>
-      <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="showAddModal = true">+ New habit</button>
+      <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="openAdd(false)"><Plus :size="16" /></button>
     </div>
+    <p class="section-caption">Habits to keep</p>
 
-    <p v-if="!habitStore.habits.length">No habits yet — tap + to add one.</p>
+    <p v-if="!goodHabits.length" class="section-empty">Nothing forged yet. Tap +.</p>
     <template v-else>
       <div class="habit-group">
         <h3 class="habit-group-title">Daily<span class="habit-group-reset">{{ resetLabel('daily') }}</span></h3>
@@ -161,16 +169,19 @@ function checkOffFromHint() {
     </template>
   </section>
 
-  <section v-if="resistHabits.length" ref="resistEl" class="habit-list resist-list">
+  <section ref="resistEl" class="habit-list resist-list">
     <div class="habit-list-header">
       <h2><Shield :size="16" class="section-icon" />Resist</h2>
+      <button type="button" class="add-button" aria-label="Add habit to resist" @click="openAdd(true)"><Plus :size="16" /></button>
     </div>
-    <ul>
+    <p class="section-caption">Habits to break</p>
+    <p v-if="!resistHabits.length" class="section-empty">Nothing to resist yet. Tap +.</p>
+    <ul v-else>
       <HabitListItem v-for="habit in resistHabits" :key="habit.id" :habit="habit" period-tag @open="openHabitId = habit.id" />
     </ul>
   </section>
 
-  <AddHabitModal v-model="showAddModal" />
+  <AddHabitModal v-model="showAddModal" :bad="addBad" />
   <SpotlightHint
     v-if="showHint && addButton"
     :target="addButton"
@@ -179,7 +190,7 @@ function checkOffFromHint() {
     text="Add a habit you want to keep."
     rules="Keep it, and you strike the boss. Miss it, and the boss strikes you."
     action="Later"
-    @tap="showAddModal = true"
+    @tap="openAdd(false)"
     @dismiss="hintDismissed = true"
   />
   <SpotlightHint
@@ -211,15 +222,6 @@ function checkOffFromHint() {
 
 .habit-list-header h2 {
   margin: 0;
-}
-
-.add-button {
-  padding: 0.35rem 0.9rem;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  border-radius: 999px;
-  font-size: 0.85rem;
-  flex-shrink: 0;
 }
 
 .habit-list ul {

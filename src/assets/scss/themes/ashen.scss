@@ -93,6 +93,65 @@ $well: rgba(0, 0, 0, 0.22);
   }
 }
 
+// A choice key (the form choices and weekdays, docs/mockups/pixel-forms.html):
+// a dark stone face over a black lip, each cut on its own, as on the strike
+// button. Picking it presses it down for good and lights it, silver unless
+// `$face` says otherwise. The key's children ride down with the face.
+@mixin choice-key {
+  --key-face: var(--stone-face);
+  --key-lip: var(--stone-lip);
+  --key-bevel: inset 0 2px 0 rgba(255, 255, 255, 0.1), inset 2px 0 0 rgba(255, 255, 255, 0.05);
+  --key-drop: 0px;
+  position: relative;
+  isolation: isolate;
+  padding-bottom: 3px;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  box-shadow: none;
+  clip-path: none;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    clip-path: var(--px2);
+  }
+
+  // The lip.
+  &::before {
+    top: 3px;
+    bottom: 0;
+    background: var(--key-lip);
+  }
+
+  // The face.
+  &::after {
+    top: var(--key-drop);
+    bottom: calc(3px - var(--key-drop));
+    background: var(--key-face);
+    box-shadow: var(--key-bevel);
+    transition:
+      top 0.07s,
+      bottom 0.07s;
+  }
+
+  > * {
+    transform: translateY(var(--key-drop));
+    transition: transform 0.07s;
+  }
+}
+
+@mixin choice-key-down($face: var(--button-fill), $ink: var(--button-text)) {
+  --key-face: #{$face};
+  --key-bevel: inset 0 2px 0 var(--button-line), inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+  --key-drop: 3px;
+  color: $ink;
+}
+
 // A focus ring drawn inside the box, since clip-path cuts anything outside it.
 @mixin inset-focus {
   &:focus-visible {
@@ -411,8 +470,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // Outlined silver: a faint fill and a thin silver line, pixel-cut.
   .nav-button,
-  .menu-button,
-  .add-button {
+  .menu-button {
     min-height: 44px;
     padding: 0.55rem 0.8rem;
     @include soft-button($label-md, var(--accent), var(--accent-bg));
@@ -913,6 +971,62 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--spine);
   }
 
+  // Add: a ghost plus in the section's colour. The tap area is 44px; the
+  // drawn square is 30px. (docs/mockups/pixel-add-together.html)
+  .add-button {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--spine);
+    -webkit-tap-highlight-color: transparent;
+
+    &::before {
+      content: '';
+      grid-area: 1 / 1;
+      width: 30px;
+      height: 30px;
+      background: color-mix(in srgb, var(--spine) 10%, transparent);
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--spine) 55%, transparent);
+      @include pixel-corners(2px);
+    }
+
+    > svg {
+      grid-area: 1 / 1;
+      stroke-width: 2.6;
+    }
+
+    &:active::before {
+      background: color-mix(in srgb, var(--spine) 28%, transparent);
+    }
+  }
+
+  // What the section is, in a line under its title.
+  .section-caption {
+    margin: -12px 2px 10px;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text);
+  }
+
+  // A section with nothing in it says so: a quiet sunk well.
+  .section-empty {
+    margin: 4px 0 0;
+    padding: 14px 12px;
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 0.875rem;
+    color: var(--text);
+    @include sunk-well;
+  }
+
   .habit-group {
     margin-top: 0;
   }
@@ -936,8 +1050,25 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     }
   }
 
-  .habit-list-header + .habit-group .habit-group-title {
-    margin-top: 0;
+  .habit-group-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  // When the group rolls over: plain label, not engraved.
+  .habit-group-reset {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 1;
+    color: var(--spent-text);
+  }
+
+  .section-caption + .habit-group .habit-group-title {
+    margin-top: 6px;
   }
 
   :is(.habit-list, .quest-section) ul {
@@ -995,23 +1126,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item.bad .name {
     font-weight: 500;
     color: var(--text);
-  .habit-group-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  // When the group rolls over: plain label, not engraved.
-  .habit-group-reset {
-    font-family: var(--sans);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0;
-    text-transform: none;
-    opacity: 1;
-    color: var(--spent-text);
-  }
-
   }
 
   .habit-item:is(.struck, .resting) .name {
@@ -1067,40 +1181,19 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-shadow: 0 0 10px tone(brass, 0.7);
   }
 
-  // Day picker: a pixel-cut chip behind each letter, lit silver when the day is due.
+  // Day picker: a key per letter, pressed down and lit silver when the day is due.
   .days {
-    gap: 2px;
+    gap: 5px;
   }
 
   .days .day {
-    background: none;
-    border: 0;
-    @include engraved($caps-xs, 0);
-    color: var(--text);
-
-    &::before {
-      content: '';
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      @include pixel-corners(2px);
-      border: 1px solid $ash-deep;
-      background: rgba(0, 0, 0, 0.35);
-      transition: background 0.25s;
-    }
-
-    span {
-      position: relative;
-    }
+    @include choice-key;
+    @include plain-label($label-md, 700);
+    @include inset-focus;
   }
 
   .days .day.on {
-    color: var(--accent);
-
-    &::before {
-      border-color: var(--accent-solid);
-      background: radial-gradient(circle, tone(moon-glow, 0.3), tone(day-on, 0.25) 70%);
-    }
+    @include choice-key-down;
   }
 
   // Difficulty: round dots.
@@ -1435,14 +1528,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-color: transparent;
   }
 
-  // Level-up event cards.
+  // Level-up event cards (docs/mockups/pixel-levelup.html): lifted cards
+  // that press flat on their lip, each icon in a small socket.
   .cards > button.card {
-    padding: 0.75rem 0.9rem;
-    background: var(--card);
-    border: 0;
-    border-bottom: 3px solid var(--card-lip);
-    @include bevel(var(--card-hi), var(--card-lo));
-    @include pixel-corners(3px);
+    padding: 0.75rem 0.9rem 0.75rem 0.65rem;
+    border-radius: 0;
+    @include lifted-card;
+    @include lip-press(var(--card-lip));
     @include inset-focus;
 
     @media (hover: hover) {
@@ -1453,22 +1545,21 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   button.card .icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 1px solid $touch-line;
-    background: radial-gradient(circle, tone(moon-glow, 0.16), transparent 70%);
-    box-shadow:
-      inset 0 0 0 3px rgba(0, 0, 0, 0.5),
-      inset 0 0 0 4px tone(moon-tint, 0.18);
+    width: 46px;
+    height: 46px;
+    border-radius: 0;
+    @include socket(var(--card-hi));
   }
 
   button.card .icon svg {
-    stroke-width: 1.3;
+    width: 22px;
+    height: 22px;
   }
 
   button.card .card-title {
-    @include plain-label($label-lg, 700);
+    @include name-serif;
+    font-size: 1.1rem;
+    color: var(--card-ink);
   }
 
   button.card .card-desc {
@@ -1476,7 +1567,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     line-height: 1.25;
   }
 
-  // The level-up pick's level, set in a lit diamond (EventChoiceModal).
+  // The level-up pick's level, cut into a square brass plate (EventChoiceModal).
   .level-emblem {
     position: relative;
     width: 92px;
@@ -1485,32 +1576,70 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-radius: 0;
     box-shadow: none;
 
-    &::before {
+    &::before,
+    &::after {
       content: '';
       position: absolute;
-      inset: 12px;
-      transform: rotate(45deg);
-      border: 1px solid $brass;
-      background: radial-gradient(circle, rgba(230, 199, 127, 0.22), rgba(0, 0, 0, 0.55) 75%);
-      box-shadow:
-        inset 0 0 0 4px rgba(0, 0, 0, 0.5),
-        inset 0 0 0 5px rgba(200, 169, 110, 0.18),
-        0 0 30px -8px rgba(230, 199, 127, 0.75);
+      @include pixel-corners(3px);
+    }
+
+    &::before {
+      inset: 0;
+      background: linear-gradient(var(--brass), var(--brass-solid));
+    }
+
+    &::after {
+      inset: 4px;
+      background: var(--code-bg);
+      @include bevel(var(--sunk-hi), var(--sunk-lo));
     }
   }
 
-  .level-emblem-number {
+  .level-emblem > * {
     position: relative;
+    z-index: 1;
+  }
+
+  .level-emblem-up {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    translate: -50% 0;
+    color: $brass;
+  }
+
+  .level-emblem-number {
+    margin-top: 12px;
     font-family: var(--heading);
     font-size-adjust: none;
     font-size: 2.1rem;
     font-weight: 700;
+    line-height: 1;
     color: $brass;
-    text-shadow: 0 0 14px rgba(230, 180, 90, 0.6);
+    text-shadow: 0 2px 0 #05060a;
   }
 
+  .level-emblem-label {
+    position: absolute;
+    bottom: 11px;
+    left: 50%;
+    translate: -50% 0;
+    @include engraved(0.5rem, 0.28em);
+    padding-left: 0.28em;
+    color: $brass-solid;
+  }
+
+  // What the level gave: one sunk well.
   .gains {
-    border-color: $line-faint;
+    @include sunk-well;
+    justify-content: center;
+    gap: 0.35rem 1.25rem;
+    padding: 0.7rem 0.75rem;
+  }
+
+  .subtitle.count {
+    @include engraved($caps-xs, 0.24em);
+    color: var(--text);
   }
 
   .dropped-by-name {
@@ -1639,40 +1768,104 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include engraved($caps-xs, 0.2em);
   }
 
+  // (docs/mockups/pixel-forms.html, Keys.) The intro is a plain line, the
+  // inputs are wells sunk into the popup, and every choice is a key.
+  :is(.add-habit-form, .quest-form) .intro {
+    padding: 0 2px;
+    background: none;
+    border: 0;
+    clip-path: none;
+  }
+
   .name-input,
   .date-input {
     @include pixel-corners(2px);
     background: rgba(0, 0, 0, 0.35);
-    border-color: $touch-line;
+    border-color: transparent;
+    @include bevel(var(--sunk-hi), var(--sunk-lo));
+  }
+
+  .name-input {
+    @include pixel-corners(3px);
+    @include name-serif;
+  }
+
+  .date-input {
+    color: var(--accent);
+    font-weight: 700;
   }
 
   .name-input:focus,
   .date-input:focus {
-    border-color: var(--accent-solid);
-    box-shadow: inset 0 0 0 1px var(--accent-solid);
+    border-color: transparent;
+    box-shadow:
+      inset 2px 2px 0 var(--sunk-hi),
+      inset -2px -2px 0 var(--sunk-lo),
+      inset 0 0 0 2px $touch-line;
   }
 
   label.card {
-    @include pixel-corners(3px);
-    background: rgba(0, 0, 0, 0.25);
-    border-color: $line;
+    @include choice-key;
+    min-height: 57px;
+    padding: 0.45rem 0.4rem calc(0.45rem + 3px);
+    gap: 2px;
   }
 
   label.card .card-title {
     @include plain-label($label-lg, 700);
+    color: inherit;
+  }
+
+  label.card .card-hint {
+    @include plain-label($label-sm, 500);
+    color: var(--text);
+  }
+
+  label.card.selected {
+    @include choice-key-down;
+  }
+
+  label.card.selected .card-hint {
+    color: #3a404c;
+  }
+
+  // Picked Good lights green, picked Bad red.
+  label.card.type-good.selected {
+    @include choice-key-down(var(--heal-color));
+  }
+
+  label.card.type-good.selected .card-hint {
+    color: #1f3b1d;
+  }
+
+  label.card.type-bad.selected {
+    // The mock's red, a step brighter than the damage red.
+    @include choice-key-down(#d4574a, #fff);
+  }
+
+  label.card.type-bad.selected .card-hint {
+    color: #fde3df;
+  }
+
+  // A quest's EXP icon and pips go dark brass on the pale face.
+  label.card.selected :is(.stat-icon, .pip) {
+    color: #6e5418;
+    border-color: #6e5418;
+  }
+
+  label.card.selected .pip.lit {
+    background: #6e5418;
   }
 
   .quest-form .chip {
-    @include pixel-corners(2px);
-    background: rgba(0, 0, 0, 0.25);
-    border-color: $line;
-    font-weight: 600;
+    @include choice-key;
+    padding: 0 0.3rem 3px;
+    @include plain-label($label-md, 700);
+    @include inset-focus;
   }
 
   .quest-form .chip.selected {
-    border-color: var(--accent-solid);
-    background: tone(moon-tint, 0.08);
-    color: var(--accent);
+    @include choice-key-down;
   }
 
   // Habit details: the hit worked out like a sum.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Lock, ScrollText } from 'lucide-vue-next';
+import { Lock, Plus, ScrollText } from 'lucide-vue-next';
 import { dailyPeriodKey, questRewardTier, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
@@ -68,8 +68,9 @@ function onCheckOff(quest: Quest) {
   <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
       <h2><Lock v-if="!open" :size="16" class="section-icon lock-icon" /><ScrollText v-else :size="16" class="section-icon" />Quests</h2>
-      <button v-if="open" type="button" class="add-button" aria-label="Add task" @click="showAdd = true">+ New task</button>
+      <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
     </div>
+    <p class="section-caption">One-off tasks</p>
     <div v-if="!open" class="lock-area">
       <div class="lock-ghost" aria-hidden="true"><i /><i /></div>
       <div class="lock-seal">
@@ -99,7 +100,7 @@ function onCheckOff(quest: Quest) {
         </span>
       </li>
     </ul>
-    <p v-else>No active quests.</p>
+    <p v-else class="section-empty">No quests yet. Tap +.</p>
   </section>
 
   <Modal v-model="showAdd" title="New quest" max-width="480px">
@@ -244,15 +245,6 @@ function onCheckOff(quest: Quest) {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.add-button {
-  padding: 0.35rem 0.9rem;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  border-radius: 999px;
-  font-size: 0.85rem;
-  flex-shrink: 0;
 }
 
 .quest-section ul {

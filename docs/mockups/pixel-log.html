@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The Log in Pixel-cut (Moonlit). Same entry kinds and wording as
+   ActivityLog.vue. Newest first, as in the app. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 560px; }
+.grid { display: flex; justify-content: center; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6; --crit: #d6a24f; --steel: #a8a092; --blood: #d0475a;
+  --card: #171b25; --hi: #283041; --lo: #0d1017;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding: 22px 12px 28px; background: radial-gradient(70% 12% at 50% 0, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+
+/* Panel: the same frame as the popups and the main-screen log */
+.log { padding: 12px 10px 8px; background: var(--frame); clip-path: var(--px); box-shadow: inset 2px 2px 0 #232937, inset -2px -2px 0 #0b0d12; }
+.log h2 { margin: 0 4px 10px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+
+/* One entry: a flat record, not a card you can press. Icon in a sunk tile. */
+.e { display: flex; gap: 8px; align-items: flex-start; padding: 9px 10px 9px 10px; clip-path: var(--px2); background: var(--card);
+  box-shadow: inset 2px 2px 0 #1e2432, inset -2px -2px 0 #0d1017; font-size: 14.5px; line-height: 1.35; color: var(--text); }
+.ic { flex: none; display: flex; margin-top: 3px; }
+.ic svg { width: 14px; height: 14px; flex: none; }
+.tx { flex: 1; min-width: 0; }
+.tx q { quotes: '“' '”'; color: var(--ink); font: 600 15.5px 'Alegreya', Georgia, serif; }
+.d { color: var(--phys); font-weight: 800; } .m { color: var(--magic); font-weight: 800; } .t { color: var(--true); font-weight: 800; }
+.h { color: var(--heal); font-weight: 800; } .x { color: var(--exp); font-weight: 800; } .s { color: var(--touch); font-weight: 800; }
+.fx { display: block; margin-top: 2px; font-size: 13px; font-style: italic; color: var(--text); }
+
+/* Crit, lifesteal, reflect, EXP: small square-cut chips on a row under the blow */
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; clip-path: var(--px2); background: rgba(255,255,255,.06);
+  font: 700 12px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.chip svg { width: 11px; height: 11px; }
+.chip.crit { background: rgba(214,162,79,.16); color: var(--crit); }
+
+/* Entries that matter get a brass edge on the left: level up, boss down, rank */
+.e.big { box-shadow: inset 2px 2px 0 #1e2432, inset -2px -2px 0 #0d1017, inset 3px 0 0 var(--brass); }
+.e.bad { box-shadow: inset 2px 2px 0 #1e2432, inset -2px -2px 0 #0d1017, inset 3px 0 0 #8c3a30; }
+
+/* Level up: the stat gains in a small grid */
+.gains { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px 10px; margin-top: 6px; padding: 6px 8px; clip-path: var(--px2); background: var(--well);
+  box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; font-size: 12.5px; }
+.gains span { display: flex; justify-content: space-between; gap: 6px; color: var(--text); }
+
+/* Rank pips, as under a skill's name */
+.pp { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: 1px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+
+/* End of the log: a rule and three square pips, clear of the home indicator */
+.end { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 0 6px; }
+.end .rule { width: 64px; height: 2px; background: linear-gradient(90deg, transparent, #3a4256); }
+.end .rule.flip { transform: scaleX(-1); }
+.end i { width: 5px; height: 5px; background: var(--brass); }
+.end i.sm { width: 3px; height: 3px; background: #566074; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · Log</h1>
+  <p class="lede">The Log panel in the Pixel-cut look: each entry is a flat record with its icon in a sunk tile, chips under a blow, and a brass edge on the moments that matter. Newest first.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M12 21v2"/><path d="M19 3v2"/><path d="M22 4h-2"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  lifesteal: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  reflect: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>',
+  skull: '<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+  levelUp: '<path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/>',
+  hit: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  blind: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  doom: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+};
+const C = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: 'var(--crit)', streak: '#8d8475', exp: '#d8b46a',
+  quest: 'var(--steel)', lifesteal: 'var(--blood)', reflect: 'var(--steel)', skull: 'var(--phys)', levelUp: '#d8b46a', hit: 'var(--phys)', blind: '#d6a24f', doom: 'var(--magic)', star: '#d8b46a' };
+const svg = (n, c = C[n] || 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${c}">${LU[n]}</svg>`;
+const chip = (n, html, cls = '') => `<span class="chip ${cls}">${svg(n)}${html}</span>`;
+const pips = (n) => `<span class="pp">${'<i></i>'.repeat(n)}</span>`;
+
+const entry = (icon, body, { cls = '', chips = '', extra = '' } = {}) =>
+  `<li class="e ${cls}"><span class="ic">${svg(icon)}</span><div class="tx">${body}${extra}${chips ? `<div class="chips">${chips}</div>` : ''}</div></li>`;
+
+const entries = [
+  entry('physical', 'Used <q>Morning run</q> — dealt <span class="d">1.1K</span> damage', {
+    chips: chip('crit', 'Crit', 'crit') + chip('lifesteal', '<span class="h">+86</span>&nbsp;HP') + chip('exp', '<span class="x">+40</span>&nbsp;EXP') }),
+  entry('magic', 'Used <q>Read 20 pages</q> — dealt <span class="m">288</span> damage'),
+  entry('healing', 'Healed <span class="h">+141</span> HP using <q>Stretch</q>'),
+  entry('hit', 'Missed <q>Pushups</q> — took <span class="d">58</span> damage', { cls: 'bad',
+    chips: chip('crit', 'Crit', 'crit') + chip('lifesteal', 'Boss&nbsp;<span class="h">+31</span>&nbsp;HP') }),
+  entry('reflect', 'Boss reflected <span class="d">212</span> damage back at you'),
+  entry('blind', 'Blinded · 2 days', { extra: '<span class="fx">Your next strikes may miss.</span>' }),
+  entry('doom', 'Doom · 3 days', { extra: '<span class="fx">At the end, take 40% of your health in damage.</span>' }),
+  entry('true', 'Used <q>Meditate</q> — dealt <span class="t">74</span> damage'),
+  entry('streak', '<q>Morning run</q> · Rank VIII' + pips(8), { cls: 'big' }),
+  entry('quest', 'Completed quest <q>Clear out the attic</q> — found Ember Pauldrons'),
+  entry('quest', 'Missed quest <q>Call the dentist</q> — took <span class="d">96</span> damage', { cls: 'bad' }),
+  entry('levelUp', 'Leveled up to Lv. 14! Healed <span class="h">+612</span> HP', { cls: 'big',
+    extra: `<div class="gains"><span>Physical Dmg <b class="s">+9</b></span><span>Magic Dmg <b class="s">+8</b></span><span>Healing <b class="s">+10</b></span><span>Health <b class="s">+53</b></span><span>True Dmg <b class="t">+4</b></span></div>` }),
+  entry('skull', 'Boss #8 defeated! <span class="x">+1.2K</span> EXP', { cls: 'big' }),
+  entry('star', '<q>Stretch</q> is now your Special skill!'),
+];
+
+document.getElementById('grid').innerHTML = `<div class="phone">
+  <section class="log"><h2>Log</h2><ul>${entries.join('')}</ul></section>
+  <div class="end" aria-hidden="true"><span class="rule"></span><i class="sm"></i><i></i><i class="sm"></i><span class="rule flip"></span></div>
+</div>`;
+</script>
+</body>
+</html>
