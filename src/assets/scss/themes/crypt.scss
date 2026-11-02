@@ -1,0 +1,44 @@
+// Crypt — warm stone lit by a candle low on the stage and the moon high on
+// it. Silver is neutral here (touch), brass is earned. Palette only; the
+// rules are in ashen.scss.
+
+:root[data-theme='crypt'] {
+  --bg: #0a0908;
+  --bg-rgb: 10 9 8;
+  --text: #a9a196;
+  --text-h: #ece6dc;
+  --border: #2e2a25;
+  --code-bg: #14120f;
+  --frame: #181512;
+  --frame-rgb: 24 21 18;
+  --panel-fill: linear-gradient(#1c1916, #13110f);
+  --ash-rgb: 170 150 120;
+  --ash-mark: #6e665a;
+  --ash-deep: #5e574c;
+  --moon: #e2e0d8;
+  --moon-solid: #b5b2a8;
+  --moon-tint-rgb: 215 215 205;
+  --moon-glow-rgb: 232 228 218;
+  --brass: #d2bb85;
+  --brass-rgb: 210 187 133;
+  --brass-solid: #b39a66;
+  --check-done: #3d3934;
+  --check-done-line: #5a544c;
+  --page-glow: rgba(235, 170, 110, 0.06);
+  --button-fill: linear-gradient(180deg, rgba(225, 222, 212, 0.3), rgba(140, 135, 125, 0.24));
+  --button-fill-hover: linear-gradient(180deg, rgba(235, 232, 222, 0.4), rgba(150, 145, 135, 0.32));
+  --button-line: rgba(225, 222, 212, 0.45);
+  --button-text: var(--text-h);
+  --stage-light:
+    radial-gradient(ellipse 40% 38% at 20% 80%, rgba(235, 150, 70, 0.24), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 78% 28%, rgba(190, 200, 225, 0.11), transparent 70%);
+  --boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
+    drop-shadow(0 -2px 0 #2a120c) drop-shadow(0 0 12px rgba(235, 150, 70, 0.3)) brightness(1.06);
+  --hero-sprite-filter: drop-shadow(0 0 18px rgba(0, 0, 0, 0.95)) brightness(0.9) contrast(1.05) sepia(0.12);
+
+  // Warm stand-ins for Moonlit's cast-blue odds and ends.
+  --spent-text: #6e6a62;
+  --day-on-rgb: 82 78 70;
+  --bar-rgb: 24 21 18;
+  --plate: #0b0a09;
+}

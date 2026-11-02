@@ -44,8 +44,8 @@ export const PALETTE_TOKENS = [
   'plate',
 ];
 
-// Crypt and Hellforge have no palette until Tasks 3 and 4 land theirs.
-const PENDING_THEMES: string[] = ['crypt', 'hellforge'];
+// Hellforge has no palette until Task 4 lands it.
+const PENDING_THEMES: string[] = ['hellforge'];
 
 function compileThemes(): string {
   return compile('src/assets/scss/themes/index.scss').css;
