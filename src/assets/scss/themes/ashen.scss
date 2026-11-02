@@ -173,6 +173,18 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   text-transform: none;
 }
 
+// Small print set at its true size (docs/mockups/pixel-gear.html): no
+// font-size-adjust, and a line only as tall as the font, not the root's
+// fixed line-height, so stacked lines sit close.
+@mixin true-sans($size, $weight: 500) {
+  font-family: var(--sans);
+  font-size: $size;
+  font-size-adjust: none;
+  font-weight: $weight;
+  line-height: normal;
+  letter-spacing: 0;
+}
+
 // A name you read: a skill, quest or item, in the Alegreya serif.
 @mixin name-serif($weight: 600) {
   font-family: var(--serif);
@@ -1674,8 +1686,27 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     clip-path: none;
   }
 
-  .tile-value {
-    font-weight: 700;
+  // The hero's stats: two columns of sunk wells, a plain icon by each label
+  // (docs/mockups/pixel-gear.html, option A).
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .tiles .stat-tile {
+    gap: 2px;
+    padding: 8px 10px;
+  }
+
+  .tiles .tile-label {
+    @include true-sans(0.78125rem, 600);
+    gap: 5px;
+  }
+
+  .tiles .tile-value {
+    @include true-sans(1.125rem, 700);
+    gap: 4px;
+    color: var(--card-ink);
   }
 
   // What the gear adds: plain green, no pill.
@@ -1687,8 +1718,17 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-shadow: none;
   }
 
+  .tiles .tile-gain {
+    @include true-sans(0.78125rem, 700);
+  }
+
   .tile-note {
     color: var(--spent-text);
+  }
+
+  .tiles .tile-note {
+    @include true-sans(0.75rem);
+    line-height: 1.35;
   }
 
   // A running boss skill: a lifted card, its icon in a small red socket.
@@ -1726,6 +1766,36 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .gear-row {
     @include lifted-card;
     align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px 8px 8px;
+  }
+
+  .gear-text {
+    gap: 3px;
+    padding-top: 3px;
+  }
+
+  .gear-row .gear-name {
+    font-size: 1rem;
+    font-size-adjust: none;
+    line-height: 1.2;
+  }
+
+  .gear-bonuses {
+    gap: 2px 10px;
+  }
+
+  .gear-bonus {
+    @include true-sans(0.8125rem, 700);
+    gap: 3px;
+  }
+
+  .gear-bonus-label {
+    font-weight: 500;
+  }
+
+  .gear-effect {
+    @include true-sans(0.84375rem, 700);
   }
 
   .gear-row.empty {
@@ -1748,7 +1818,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .gear-rarity {
-    @include plain-label($label-md, 600);
+    @include true-sans(0.78125rem, 600);
     color: var(--rarity);
     text-transform: capitalize;
   }
@@ -1761,7 +1831,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .gear-enchanted {
-    @include plain-label($label-md, 600);
+    @include true-sans(0.78125rem, 700);
     margin-left: 0;
     padding: 0;
     background: none;

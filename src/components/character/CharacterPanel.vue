@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
         <h4 class="group-label">Stats</h4>
         <div class="tiles">
           <div v-for="stat in statTiles" :key="stat.label" class="stat-tile">
-            <span class="tile-label"><StatIcon :name="stat.icon" badge />{{ stat.label }}</span>
+            <span class="tile-label"><StatIcon :name="stat.icon" />{{ stat.label }}</span>
             <span class="tile-value">
               {{ stat.value }}
               <span v-if="stat.gain" class="tile-gain">{{ stat.gain }}</span>
