@@ -181,15 +181,22 @@ onBeforeUnmount(() => {
 /* Phones: pinned to the top, the lists scrolling under it (its backdrop is
    opaque, see the theme). Above the lists and their buttons, below the popups. */
 @media (max-width: 820px) {
+  /* The air above the names is the stage's own padding (plus the status bar's
+     inset), so it travels with the pin; the page's top padding is pulled back
+     to match, so the stage at rest sits where it did. */
   .fight-stage {
+    --stage-top: calc(10px + env(safe-area-inset-top, 0px));
     position: sticky;
     top: 0;
     z-index: 8;
     width: 100vw;
     margin-inline: calc(50% - 50vw);
+    margin-top: -1rem;
+    padding-top: var(--stage-top);
   }
 
   .stage-menu {
+    top: var(--stage-top);
     right: 1rem;
   }
 
@@ -198,6 +205,10 @@ onBeforeUnmount(() => {
      between: the boss's name over its bar at the top, the hero's bar below.
      The tap areas split across the middle. Art stays on the 2x grid: the base
      build at half size is one device pixel per art pixel. */
+  .fight-stage.focus {
+    --stage-top: calc(4px + env(safe-area-inset-top, 0px));
+  }
+
   .fight-stage.focus .stage-inner {
     height: 76px;
     --split-yl: 38px;
