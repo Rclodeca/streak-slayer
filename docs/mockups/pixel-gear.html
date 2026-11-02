@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut gear</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Item frames + the character popup in Pixel-cut (Moonlit). Each option is
+   the whole popup plus the item reveal card. Item art at the 2x sizes:
+   63px item in a 76px slot, 105px on the reveal card. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --good: #7fc17a;
+  --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6; --crit: #d6a24f; --steel: #a8a092; --arcane: #8d9bd1; --blood: #d0475a; --health: #e0604f;
+  --common: #8d8475; --uncommon: #86b08b; --rare: #7f9fd1; --epic: #ae8bd6; --relic: #ec8338;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  /* two-step staircase corners, an RPG inventory slot */
+  --px6: polygon(0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px));
+  position: relative; width: 390px; padding: 54px 10px 28px; background: radial-gradient(70% 30% at 50% 6%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; }
+.phone > * { position: relative; }
+.phone + .phone { margin-top: 18px; }
+svg.i { width: 14px; height: 14px; flex: none; }
+
+/* Popup chrome: a lifted Pixel-cut panel */
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 14px; }
+.mhead { position: relative; display: flex; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; flex: 1; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.close { width: 40px; height: 40px; margin-right: -4px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.06); border: 1px solid rgba(219,226,238,.25); color: var(--touch); }
+.close svg { width: 16px; height: 16px; }
+.lbl { margin: 16px 2px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+
+/* Hero well */
+.herow { display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 4px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+.herow img { width: 112px; height: 112px; image-rendering: pixelated; flex: none; filter: drop-shadow(0 0 14px rgba(0,0,0,.9)); }
+.herow .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.lvl { font: 600 12px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+.bar { position: relative; height: 15px; background: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.6); overflow: hidden; }
+.bar b { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#c4402a, #8c2616); }
+.bar span { position: absolute; right: 5px; top: 0; font: 700 10.5px/13px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.7); }
+.xbar { height: 4px; background: rgba(0,0,0,.5); }
+.xbar b { display: block; height: 100%; background: var(--exp); }
+
+/* Effects */
+.fx { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ef { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; clip-path: var(--px2); font: 700 12.5px 'Alegreya Sans', sans-serif; background: rgba(255,255,255,.05); color: var(--text); }
+.ef.bane { background: rgba(212,87,74,.12); color: #e7a198; }
+.ef.boon { background: rgba(127,193,122,.1); color: #a9d6a5; }
+
+/* Gear rows (shared bones; each option dresses the slot and the row) */
+.gear { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.gr { --r: var(--common); display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px 8px 8px; }
+.slot { position: relative; flex: none; width: 76px; height: 76px; }
+.slot .art { position: absolute; inset: 0; overflow: hidden; }
+.slot img, .card-art img { --rim: color-mix(in srgb, var(--r) 55%, #000); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)) drop-shadow(0 0 6px color-mix(in srgb, var(--r) 45%, transparent)); }
+.slot img { width: 180px; height: 180px; }
+.gt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 3px; }
+.gn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); line-height: 1.2; }
+.rar { font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--r); text-transform: capitalize; }
+.ench { font: 700 12.5px 'Alegreya Sans', sans-serif; }
+.bons { display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.bons span { display: inline-flex; align-items: center; gap: 3px; }
+.bons small { font-weight: 500; font-size: 13px; color: var(--text); }
+.gfx { font-size: 13.5px; color: var(--text); }
+.gr.empty { align-items: center; color: var(--dim); font-size: 14px; }
+.gr.empty .slot { opacity: .9; }
+
+/* Opal, as in the app */
+.opal { background: linear-gradient(90deg, transparent 30%, #8ff5ea 40%, #fff 50%, #f0b0ff 60%, transparent 70%) 0 0 / 300% 100% no-repeat, linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc);
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: opal 5.5s linear infinite; }
+@keyframes opal { from { background-position: 100% 0, 0 0; } to { background-position: -200% 0, 0 0; } }
+
+/* Stat tiles (shared bones) */
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; }
+.tl { display: flex; align-items: center; gap: 5px; font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--text); }
+.tv { font: 700 18px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.tv em { font-style: normal; font-size: 12.5px; color: var(--good); margin-left: 4px; }
+.tn { font-size: 12px; color: var(--dim); }
+
+/* Reveal card (shared bones) */
+.reveal .modal { padding-bottom: 18px; }
+.rv { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 12px 16px; }
+.card-art { position: relative; width: 150px; height: 150px; margin-bottom: 14px; }
+.card-art .art { position: absolute; inset: 0; overflow: hidden; }
+.card-art img { width: 300px; height: 300px; }
+.rv .gn { font-size: 22px; }
+.rv .rar { font-size: 14px; margin-top: 2px; }
+.rv .bons { justify-content: center; margin-top: 10px; font-size: 14px; }
+.rv .gfx { margin-top: 6px; max-width: 280px; }
+.btns { display: flex; gap: 8px; margin-top: 16px; width: 100%; }
+.btn { --lip: 3px; flex: 1; position: relative; height: calc(42px + var(--lip)); padding-bottom: var(--lip); border: 0; background: none; font: 700 15px 'Alegreya Sans', sans-serif; color: #12141a; }
+.btn::before, .btn::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.btn::before { top: var(--lip); bottom: 0; background: #7d8595; }
+.btn::after { top: 0; bottom: var(--lip); background: #c8d0dd; box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); }
+.btn span { position: relative; z-index: 1; }
+.btn.soft { color: var(--touch); }
+.btn.soft::before { background: #0a0c11; }
+.btn.soft::after { background: #232a3a; box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+
+/* ====================== A · Socket ====================== */
+/* The slot is cut into the stone: dark well, bevel flipped (shadow top-left,
+   rarity light bottom-right), a 2px rarity edge. Rows are lifted cards. */
+.o-a .slot { clip-path: var(--px); background: radial-gradient(circle, color-mix(in srgb, var(--r) 20%, #07090d), #05060a 72%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) 60%, #000), inset 4px 4px 0 #020305, inset -4px -4px 0 color-mix(in srgb, var(--r) 30%, #0b0d12); }
+.o-a .card-art { clip-path: var(--px); background: radial-gradient(circle, color-mix(in srgb, var(--r) 22%, #07090d), #05060a 72%);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--r) 65%, #000), inset 6px 6px 0 #020305, inset -6px -6px 0 color-mix(in srgb, var(--r) 32%, #0b0d12); }
+.o-a .gr:not(.empty) { clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.o-a .gr.empty { clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+.o-a .gr.empty .slot { --r: #2a3140; }
+.o-a .gr.ench .slot { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) 60%, #000), inset 4px 4px 0 #020305, inset -4px -4px 0 color-mix(in srgb, var(--r) 30%, #0b0d12), inset 0 0 18px rgba(170,220,240,.35); }
+.o-a .tile { clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+
+/* ====================== B · Plate ====================== */
+/* The item stands on a raised rarity plate with the strike button's 3px lip.
+   Rows are flat wells; the plate is the only lifted thing. */
+.o-b .slot { --lip: 3px; height: calc(76px + var(--lip)); }
+.o-b .slot::before, .o-b .slot::after, .o-b .card-art::before, .o-b .card-art::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.o-b .slot::before { top: var(--lip); bottom: 0; background: color-mix(in srgb, var(--r) 30%, #000); }
+.o-b .slot::after { top: 0; bottom: var(--lip); background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--r) 42%, #141821), color-mix(in srgb, var(--r) 16%, #0c0f15) 75%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--r) 55%, #fff0), inset 2px 0 0 rgba(255,255,255,.08), inset 0 -2px 0 rgba(0,0,0,.3), inset -2px 0 0 rgba(0,0,0,.2); }
+.o-b .slot .art { bottom: var(--lip); z-index: 1; }
+.o-b .card-art { --lip: 4px; height: calc(150px + var(--lip)); }
+.o-b .card-art::before { top: var(--lip); bottom: 0; background: color-mix(in srgb, var(--r) 30%, #000); }
+.o-b .card-art::after { top: 0; bottom: var(--lip); background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--r) 42%, #141821), color-mix(in srgb, var(--r) 14%, #0c0f15) 75%);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--r) 60%, #fff0), inset 0 -3px 0 rgba(0,0,0,.3); }
+.o-b .card-art .art { bottom: var(--lip); z-index: 1; }
+.o-b .gr { clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+.o-b .gr.empty .slot::after { background: #10131a; box-shadow: inset 0 0 0 2px #1d2230; }
+.o-b .gr.empty .slot::before { background: transparent; }
+.o-b .gr.empty .slot { height: 76px; margin-top: 3px; }
+.o-b .gr.empty .slot::after { bottom: 0; top: 0; }
+.o-b .gr.ench .slot::after { box-shadow: inset 0 2px 0 rgba(190,240,250,.7), inset 0 -2px 0 rgba(0,0,0,.3), inset 0 0 16px rgba(170,220,240,.4); }
+.o-b .tile { clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+
+/* ====================== C · Stepped ====================== */
+/* A classic inventory slot: two-step corners, black outer line, rarity inner
+   line, brighter rarity pixels in the corners. No card under the row; the
+   frame alone carries the colour. Stats are one ledger. */
+.o-c .slot, .o-c .card-art { clip-path: var(--px6); background: #000; }
+.o-c .slot::before, .o-c .card-art::before { content: ''; position: absolute; inset: 2px; clip-path: var(--px6); background: color-mix(in srgb, var(--r) 80%, #000); }
+.o-c .slot::after, .o-c .card-art::after { content: ''; position: absolute; inset: 4px; clip-path: var(--px6);
+  background: radial-gradient(circle, color-mix(in srgb, var(--r) 22%, #07090d), #06070b 72%); box-shadow: inset 2px 2px 0 rgba(0,0,0,.6); }
+.o-c .slot .art, .o-c .card-art .art { inset: 4px; z-index: 1; clip-path: var(--px6); }
+.o-c .card-art::before { inset: 3px; }
+.o-c .card-art::after { inset: 6px; }
+.o-c .card-art .art { inset: 6px; }
+.o-c .corner { position: absolute; width: 3px; height: 3px; background: color-mix(in srgb, var(--r) 60%, #fff); z-index: 2; }
+.o-c .corner:nth-of-type(1) { left: 5px; top: 5px; } .o-c .corner:nth-of-type(2) { right: 5px; top: 5px; }
+.o-c .corner:nth-of-type(3) { left: 5px; bottom: 5px; } .o-c .corner:nth-of-type(4) { right: 5px; bottom: 5px; }
+.o-c .card-art .corner { width: 4px; height: 4px; }
+.o-c .card-art .corner:nth-of-type(1) { left: 8px; top: 8px; } .o-c .card-art .corner:nth-of-type(2) { right: 8px; top: 8px; }
+.o-c .card-art .corner:nth-of-type(3) { left: 8px; bottom: 8px; } .o-c .card-art .corner:nth-of-type(4) { right: 8px; bottom: 8px; }
+.o-c .gr { padding: 8px 4px; }
+.o-c .gr + .gr { border-top: 2px dotted #1f2430; }
+.o-c .gear { gap: 0; }
+.o-c .gr.empty .slot { --r: #2a3140; }
+.o-c .gr.empty .corner { display: none; }
+.o-c .gr.ench .slot::before { background: linear-gradient(135deg, #8eeee4, #c8a8ff 55%, #ffaccc); }
+.o-c .tiles { display: block; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; padding: 4px 12px; }
+.o-c .tile { flex-direction: row; align-items: baseline; gap: 8px; padding: 8px 0; }
+.o-c .tile + .tile { border-top: 1px solid rgba(255,255,255,.04); }
+.o-c .tl { flex: 1; font-size: 14px; }
+.o-c .tv { font-size: 15px; }
+.o-c .tn { flex-basis: 100%; }
+.o-c .tile:has(.tn) { flex-wrap: wrap; row-gap: 0; }
+.o-c .tile:has(.tn) .tn { padding-left: 19px; }
+
+/* ====================== D · Banner ====================== */
+/* The rarity colours the whole card: a rarity bevel on top, a pixel floor
+   of light under the item, no box round it. Rarity is pips, one to five. */
+.o-d .gr { --hi-r: color-mix(in srgb, var(--r) 55%, #1b2030); clip-path: var(--px); border-bottom: 3px solid var(--lip);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--r) 16%, #151a26), #171c28 60%);
+  box-shadow: inset 0 2px 0 var(--hi-r), inset 2px 0 0 color-mix(in srgb, var(--r) 25%, #1b2030), inset -2px -2px 0 var(--lo); }
+.o-d .slot { width: 72px; height: 76px; }
+.o-d .slot::before, .o-d .card-art::before { content: ''; position: absolute; left: 8px; right: 8px; bottom: 6px; height: 8px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--r) 55%, transparent), transparent); }
+.o-d .card-art::before { left: 14px; right: 14px; bottom: 10px; height: 14px; }
+.o-d .slot img { top: 46%; }
+.o-d .card-art img { top: 46%; }
+.pips { display: none; }
+.o-d .rar { display: none; }
+.o-d .pips { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: 2px; }
+.o-d .pips i { width: 5px; height: 5px; background: var(--r); }
+.o-d .rv .pips { margin: 8px 0 0; }
+.o-d .rv .pips i { width: 6px; height: 6px; }
+.o-d .gr.empty { background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; border-bottom: 0; }
+.o-d .gr.empty .slot { height: 44px; display: grid; place-items: center; }
+.o-d .gr.empty .slot::before { display: none; }
+.o-d .gr.empty .slot::after { content: ''; width: 30px; height: 30px; clip-path: var(--px2); border: 2px dashed #2a3140; }
+.o-d .gr.ench { background: linear-gradient(90deg, rgba(150,220,235,.14), #171c28 60%); box-shadow: inset 0 2px 0 rgba(170,225,240,.6), inset 2px 0 0 rgba(170,225,240,.25), inset -2px -2px 0 var(--lo); }
+.o-d .tiles { grid-template-columns: repeat(3, 1fr); }
+.o-d .tile { clip-path: var(--px); background: var(--card); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); padding: 7px 8px; }
+.o-d .tl { font-size: 11.5px; }
+.o-d .tv { font-size: 16px; }
+.o-d .tv em { display: block; margin: 0; }
+.o-d .herow { flex-direction: column; text-align: center; gap: 4px; padding: 8px 14px 12px; }
+.o-d .herow .info { width: 100%; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · gear</h1>
+  <p class="lede">Item frames and the character popup in Pixel-cut. Each option shows the whole popup, then the card that reveals a new item. Items are at their 2x phone size.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  health: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  physical: '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  lifesteal: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  blind: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  critBoost: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+};
+const COLOR = { health: 'var(--health)', physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: 'var(--crit)', armor: 'var(--steel)', lifesteal: 'var(--blood)', blind: 'var(--crit)', critBoost: 'var(--crit)', x: 'currentColor' };
+const icon = (n, c = COLOR[n]) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${c}">${LU[n]}</svg>`;
+
+const SPR = '../../public/sprites/';
+const RANK = { common: 1, uncommon: 2, rare: 3, epic: 4, relic: 5 };
+// Real catalog items (itemCatalog.ts); Godslayer is enchanted, so doubled.
+const items = [
+  { n: 'Godslayer Greatblade', ic: 'godslayer-greatblade', r: 'epic', ench: true, b: [['physical', '+84%', 'physical'], ['health', '+40%', 'max health'], ['lifesteal', '+4%', 'lifesteal']], fx: '+30% damage to bosses above 75% HP.' },
+  { n: 'First Blood', ic: 'first-blood', r: 'relic', b: [['physical', '+25%', 'physical'], ['lifesteal', '+2%', 'lifesteal']], fx: 'First hit on each boss always crits.' },
+  { n: "Executioner's Axe", ic: 'executioners-axe', r: 'rare', b: [['physical', '+26%', 'physical'], ['armor', '+150', 'armor']] },
+  { n: 'Vampiric Fang', ic: 'vampiric-fang', r: 'uncommon', b: [['physical', '+6%', 'physical'], ['lifesteal', '+3%', 'lifesteal']] },
+  { n: 'Crusader Shield', ic: 'iron-buckler', r: 'common', b: [['armor', '+75', 'armor']] },
+];
+const stats = [
+  ['health', 'Max health', '4.2K', '+1.6K'], ['physical', 'Physical', '1.1K', '+640'], ['magic', 'Magic', '210'],
+  ['true', 'True', '96'], ['healing', 'Healing', '340'], ['crit', 'Crit chance', '18%'],
+  ['armor', 'Armor', '225', null, '18.4% less damage'], ['lifesteal', 'Lifesteal', '9%'],
+];
+
+const pips = (r) => `<span class="pips">${'<i></i>'.repeat(RANK[r])}</span>`;
+const corners = '<b class="corner"></b><b class="corner"></b><b class="corner"></b><b class="corner"></b>';
+const bons = (it, opal) => `<span class="bons">${it.b.map(([s, v, l]) => `<span>${icon(s)}<span class="${opal ? 'opal' : ''}">${v}</span> <small>${l}</small></span>`).join('')}</span>`;
+const gearRow = (it) => `<li class="gr${it.ench ? ' ench' : ''}" style="--r:var(--${it.r})">
+  <span class="slot">${corners}<span class="art"><img src="${SPR}items/${it.ic}.png" alt=""></span></span>
+  <div class="gt"><span class="gn">${it.n}${pips(it.r)}</span>
+    <span><span class="rar">${it.r}</span>${it.ench ? ' <span class="ench opal">· Enchanted</span>' : ''}</span>
+    ${bons(it, it.ench)}${it.fx ? `<span class="gfx">${it.fx}</span>` : ''}</div></li>`;
+
+function popup() {
+  return `<div class="phone"><div class="modal">
+    <div class="mhead"><h3>Aldric</h3><span class="close">${icon('x')}</span></div>
+    <div class="herow"><img src="${SPR}player/warrior.png" alt="">
+      <div class="info"><span class="lvl">Level 23</span>
+        <div class="bar"><b style="width:72%"></b><span>3.0K / 4.2K</span></div>
+        <div class="xbar"><b style="width:38%"></b></div></div></div>
+    <div class="fx"><span class="ef boon">${icon('critBoost')}+20% crit · 1d</span><span class="ef bane">${icon('blind')}Blinded · no crits · 2d</span></div>
+    <div class="lbl">Equipment</div>
+    <ul class="gear">${items.map(gearRow).join('')}<li class="gr empty"><span class="slot"><span class="art"></span></span>Empty slot</li></ul>
+    <div class="lbl">Stats</div>
+    <div class="tiles">${stats.map(([ic, l, v, g, note]) => `<div class="tile"><span class="tl">${icon(ic)}${l}</span><span class="tv">${v}${g ? `<em>${g}</em>` : ''}</span>${note ? `<span class="tn">${note}</span>` : ''}</div>`).join('')}</div>
+  </div></div>`;
+}
+
+function reveal() {
+  const it = items[1];
+  return `<div class="phone reveal"><div class="modal">
+    <div class="mhead"><h3>New item</h3></div>
+    <div class="rv" style="--r:var(--${it.r})">
+      <span class="card-art">${corners}<span class="art"><img src="${SPR}items/${it.ic}.png" alt=""></span></span>
+      <span class="gn">${it.n}</span>${pips(it.r)}<span class="rar">${it.r}</span>
+      ${bons(it)}<span class="gfx">${it.fx}</span>
+      <div class="btns"><button class="btn soft"><span>Leave it</span></button><button class="btn"><span>Equip</span></button></div>
+    </div></div></div>`;
+}
+
+const options = [
+  ['o-a', 'A · Socket', 'The slot is cut into the stone: a dark well with the bevel flipped, lit in the rarity colour along its lower edge. Gear rows are lifted cards like skills.'],
+  ['o-b', 'B · Plate', 'The item stands on a raised rarity plate with the strike button’s lip. Gear rows sit flat in wells, so only the plates and stat cards lift.'],
+  ['o-c', 'C · Stepped', 'A classic inventory slot: two-step corners, black outer line, rarity inner line, bright corner pixels. No card under each row; stats as one ledger.'],
+  ['o-d', 'D · Banner', 'No box round the item. The rarity tints the whole card and lights a pixel floor under the item; rarity reads as pips, one to five.'],
+];
+document.getElementById('grid').innerHTML = options.map(([cls, h, p]) =>
+  `<div class="col ${cls}"><div class="tag">Option</div><h2>${h}</h2><p>${p}</p>${popup()}${reveal()}</div>`).join('');
+</script>
+</body>
+</html>

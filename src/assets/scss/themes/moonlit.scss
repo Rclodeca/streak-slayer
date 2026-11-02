@@ -64,5 +64,8 @@
   // A panel's bevel (the log, popups, the menu).
   --panel-hi: #232937;
   --panel-lo: #0b0d12;
+  // A well sunk into a panel: its bevel flipped (the hero and stat wells).
+  --sunk-hi: #05070a;
+  --sunk-lo: #1a1f2b;
   --button-lip: #2a3142; // under a primary (silver) button
 }

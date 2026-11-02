@@ -29,6 +29,7 @@ import StatIcon from '../ui/StatIcon.vue';
 import type { StatIconName } from '../ui/statIcons';
 import Sprite from '../ui/Sprite.vue';
 
+const baseUrl = import.meta.env.BASE_URL;
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 
@@ -85,25 +86,30 @@ interface StatTile {
 
 const pct = (n: number) => `${(n * 100).toFixed(0)}%`;
 
+// The boss's own numbers, listed beside it in the details.
 const statTiles = computed<StatTile[]>(() => {
   const b = boss.value;
   return [
     { icon: 'physical', label: 'Physical attack', value: formatCompact(physicalAttack.value) },
     { icon: 'magic', label: 'Magic attack', value: formatCompact(magicAttack.value) },
-    { icon: 'armor', label: 'Armor', value: formatCompact(b.armor), note: `${armorReduction.value.toFixed(1)}% less damage` },
-    { icon: 'magicResist', label: 'Magic resist', value: formatCompact(b.magicResist), note: `${magicResistReduction.value.toFixed(1)}% less damage` },
     { icon: 'crit', label: 'Crit chance', value: pct(b.critChance) },
     ...(b.lifestealPct > 0 ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: pct(b.lifestealPct) }] : []),
-    ...(reflectDays.value !== undefined
-      ? [{ icon: 'reflect' as const, label: 'Reflect', value: `${reflectDays.value}d`, note: bossSkillEffectText('reflect') }]
-      : []),
-    ...(bloodlustDays.value !== undefined
-      ? [{ icon: 'bloodlust' as const, label: 'Bloodlust', value: `${bloodlustDays.value}d`, note: bossSkillEffectText('bloodlust') }]
-      : []),
-    ...(undying.value ? [{ icon: 'undying' as const, label: 'Undying', value: 'Today', note: bossSkillEffectText('undying') }] : []),
-    ...(doomDays.value !== undefined ? [{ icon: 'doom' as const, label: 'Doom', value: `${doomDays.value}d`, note: bossSkillEffectText('doom', doomPct(characterStore.character)) }] : []),
+    { icon: 'armor', label: 'Armor', value: formatCompact(b.armor), note: `${armorReduction.value.toFixed(1)}% less damage` },
+    { icon: 'magicResist', label: 'Magic resist', value: formatCompact(b.magicResist), note: `${magicResistReduction.value.toFixed(1)}% less damage` },
   ];
 });
+
+// Skills that have fired and are still running, as cards under the figure.
+const skillTiles = computed<StatTile[]>(() => [
+  ...(reflectDays.value !== undefined
+    ? [{ icon: 'reflect' as const, label: 'Reflect', value: `${reflectDays.value}d`, note: bossSkillEffectText('reflect') }]
+    : []),
+  ...(bloodlustDays.value !== undefined
+    ? [{ icon: 'bloodlust' as const, label: 'Bloodlust', value: `${bloodlustDays.value}d`, note: bossSkillEffectText('bloodlust') }]
+    : []),
+  ...(undying.value ? [{ icon: 'undying' as const, label: 'Undying', value: 'Today', note: bossSkillEffectText('undying') }] : []),
+  ...(doomDays.value !== undefined ? [{ icon: 'doom' as const, label: 'Doom', value: `${doomDays.value}d`, note: bossSkillEffectText('doom', doomPct(characterStore.character)) }] : []),
+]);
 </script>
 
 <template>
@@ -142,31 +148,44 @@ const statTiles = computed<StatTile[]>(() => {
     <button type="button" class="tap tap-boss" aria-label="Boss details" v-on="pressHandlers" @click="showDetails = true" />
 
     <Modal v-model="showDetails" title="Boss" max-width="520px">
+      <!-- The boss in its socket, its numbers listed beside it. -->
       <div class="hero">
         <div class="hero-sprite">
-          <Sprite :image-name="PERSONALITY_SPRITE[boss.personality]" alt="Boss" />
+          <!-- The base build at its own size: one CSS px per art pixel, whole device pixels on every screen. -->
+          <img class="sprite" :src="`${baseUrl}sprites/${PERSONALITY_SPRITE[boss.personality]}.png`" alt="Boss" />
         </div>
         <div class="hero-info">
           <span class="hero-tag">Boss #{{ boss.index }}</span>
           <span class="hero-name">{{ PERSONALITY_NAME[boss.personality] }}</span>
           <HealthBar :current="boss.health" :max="boss.maxHealth" variant="boss" :marks="skillMarks" />
+          <div class="ledger">
+            <div v-for="stat in statTiles" :key="stat.label" class="stat-tile">
+              <span class="tile-label"><StatIcon :name="stat.icon" />{{ stat.label }}</span>
+              <span class="tile-value">{{ stat.value }}</span>
+              <span v-if="stat.note" class="tile-note">{{ stat.note }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <section class="stat-group">
-        <h4 class="group-label">Stats</h4>
-        <div class="tiles">
-          <div v-for="stat in statTiles" :key="stat.label" class="stat-tile">
-            <span class="tile-label"><StatIcon :name="stat.icon" badge />{{ stat.label }}</span>
-            <span class="tile-value">{{ stat.value }}</span>
-            <span v-if="stat.note" class="tile-note">{{ stat.note }}</span>
+      <section v-if="skillTiles.length" class="stat-group">
+        <h4 class="group-label">Skills</h4>
+        <div class="skills">
+          <div v-for="skill in skillTiles" :key="skill.label" class="stat-tile skill-tile">
+            <span class="skill-socket"><StatIcon :name="skill.icon" :size="20" /></span>
+            <span class="skill-text">
+              <span class="tile-label">{{ skill.label }}</span>
+              <span class="tile-note">{{ skill.note }}</span>
+            </span>
+            <span class="tile-value">{{ skill.value }}</span>
           </div>
         </div>
-        <p class="stat-note">
-          Attack is what a missed medium daily deals. Easy ~0.67x, hard ~1.33x; a crit or missed weekly doubles it.
-          Armor and magic resist show the reduction your attacks face after your pen items.
-        </p>
       </section>
+
+      <p class="stat-note">
+        Attack is what a missed medium daily deals. Easy ~0.67x, hard ~1.33x; a crit or missed weekly doubles it.
+        Armor and magic resist show the reduction your attacks face after your pen items.
+      </p>
     </Modal>
   </div>
 </template>
@@ -339,54 +358,37 @@ const statTiles = computed<StatTile[]>(() => {
   );
 }
 
-/* The panel's stage again, across the top of the box, with the tag, name and
-   HP bar on the fog at the boss's feet. */
+/* The boss in its socket on the left, its tag, name, HP and numbers beside
+   it. */
 .hero {
-  position: relative;
-  overflow: hidden;
-  background: var(--code-bg);
-  border: 1px solid color-mix(in srgb, var(--damage-color) 50%, transparent);
-  border-radius: 12px;
-  box-shadow: 0 0 18px -8px var(--damage-color);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
 }
 
+/* Sized to the art's 128px canvas, with room for the socket's rim. */
 .hero-sprite {
   position: relative;
+  flex-shrink: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: 226px;
+  width: 136px;
+  height: 152px;
+  padding-bottom: 6px;
   overflow: hidden;
   background: radial-gradient(ellipse 55% 58% at 50% 60%, color-mix(in srgb, var(--damage-color) 18%, transparent), transparent 72%);
-}
-
-.hero-sprite::after {
-  content: '';
-  position: absolute;
-  z-index: 2;
-  inset: auto 0 0;
-  height: 45%;
-  pointer-events: none;
-  background: linear-gradient(0deg, var(--stage-fog, var(--code-bg)) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--damage-color) 50%, transparent);
+  border-radius: 8px;
 }
 
 .hero-info {
-  position: relative;
-  z-index: 3;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin: -58px 1rem 0;
-  padding-bottom: 1rem;
-  text-align: center;
-}
-
-/* Read over the boss's feet. */
-.hero-tag,
-.hero-name {
-  text-shadow:
-    0 0 6px #000,
-    0 0 12px #000;
+  gap: 0.35rem;
+  padding-top: 0.2rem;
 }
 
 .hero-tag {
@@ -398,8 +400,57 @@ const statTiles = computed<StatTile[]>(() => {
 
 .hero-name {
   color: var(--text-h);
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 600;
+  line-height: 1.2;
+}
+
+/* One row per number: label on the left, value on the right, a note under. */
+.ledger {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.3rem;
+  padding: 0.1rem 0.6rem;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.ledger .stat-tile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.4rem;
+  padding: 0.3rem 0;
+}
+
+.ledger .stat-tile + .stat-tile {
+  border-top: 1px solid var(--border);
+}
+
+.tile-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+.ledger .tile-label {
+  flex: 1;
+}
+
+.tile-value {
+  color: var(--text-h);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.ledger .tile-note {
+  flex-basis: 100%;
+  padding-left: 1.4rem;
+  color: var(--text);
+  font-size: 0.7rem;
 }
 
 .stat-group {
@@ -415,39 +466,54 @@ const statTiles = computed<StatTile[]>(() => {
   text-transform: uppercase;
 }
 
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 0.5rem;
-}
-
-.stat-tile {
+/* A running skill: its icon in a small socket, what it does, the days left. */
+.skills {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.55rem 0.7rem;
+  gap: 0.4rem;
+}
+
+.skill-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem 0.5rem 0.5rem;
   background: var(--code-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
 }
 
-.tile-label {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--text);
-  font-size: 0.75rem;
+.skill-socket {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--damage-color) 50%, transparent);
+  border-radius: 6px;
 }
 
-.tile-value {
+.skill-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.skill-tile .tile-label {
   color: var(--text-h);
-  font-size: 1.25rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
-.tile-note {
+.skill-tile .tile-note {
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.skill-tile .tile-value {
+  color: var(--damage-color);
 }
 
 .stat-note {
@@ -506,9 +572,9 @@ const statTiles = computed<StatTile[]>(() => {
 }
 
 .hero-sprite :deep(.sprite) {
-  width: 192px;
-  height: 192px;
-  margin-bottom: 6px;
+  flex-shrink: 0;
+  width: 128px;
+  height: 128px;
 }
 
 /* ---------- A kill: flash, fall into the fog, "Slain" ---------- */

@@ -61,6 +61,8 @@ export const PALETTE_TOKENS = [
   'resting-face',
   'panel-hi',
   'panel-lo',
+  'sunk-hi',
+  'sunk-lo',
   'button-lip',
 ];
 

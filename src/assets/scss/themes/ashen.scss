@@ -207,6 +207,44 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   @include bevel(var(--panel-hi), var(--panel-lo));
 }
 
+// A well sunk into a panel: the bevel flipped, dark along the top and left
+// (the hero and the stat tiles in the details).
+@mixin sunk-well {
+  background: $well;
+  border: 0;
+  @include pixel-corners(3px);
+  @include bevel(var(--sunk-hi), var(--sunk-lo));
+}
+
+// A lifted card, as the skills are: a step brighter, a bevel and a dark lip.
+@mixin lifted-card {
+  background: var(--card);
+  border: 0;
+  border-bottom: 3px solid var(--card-lip);
+  @include pixel-corners(3px);
+  @include bevel(var(--card-hi), var(--card-lo));
+}
+
+// A socket cut into the stone, for an item, a boss or a skill's icon
+// (docs/mockups/pixel-gear.html, option A): a dark hole with the bevel
+// flipped, a $rim of $c round it and $c's light along its lower edge.
+// Inset only, since clip-path cuts anything outside; $glow adds one more
+// inset shadow (an enchanted item's pale light).
+@mixin socket($c, $rim: 2px, $depth: 4px, $glow: null) {
+  border: 0;
+  @include pixel-corners(3px);
+  background: radial-gradient(circle, color-mix(in srgb, #{$c} 20%, #07090d), #05060a 72%);
+  $shadows: (
+    inset 0 0 0 $rim color-mix(in srgb, #{$c} 60%, #000),
+    inset $depth $depth 0 #020305,
+    inset (-$depth) (-$depth) 0 color-mix(in srgb, #{$c} 30%, #0b0d12)
+  );
+  @if $glow {
+    $shadows: append($shadows, $glow, comma);
+  }
+  box-shadow: $shadows;
+}
+
 // Embers drifting upward, for a ::before inside an overflow-hidden stage.
 @mixin embers {
   inset: 0 0 auto;
@@ -1383,38 +1421,21 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-color: var(--accent-solid);
   }
 
-  // Item reveal: the icon sits in a lit diamond.
+  // Item reveal: the icon sits in a socket, straight on the popup's stone.
   .hero:has(> .icon-frame) {
-    @include pixel-corners(3px);
-    background:
-      radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--rarity) 10%, transparent), transparent 70%),
-      rgba(0, 0, 0, 0.25);
-    border: 1px solid color-mix(in srgb, var(--rarity) 45%, transparent);
-    box-shadow: 0 0 24px -10px var(--rarity);
+    background: none;
+    border: 0;
+    box-shadow: none;
   }
 
-  // Rotated 45°, so it overflows its box by ~(√2−1)/2 of its width; the
-  // margins keep that clear of the text around it.
+  // The art's transparent padding is clipped by the socket's corners; at
+  // --item-card-art the item itself fits well inside.
   .icon-frame {
-    width: 130px;
-    height: 130px;
-    margin: 1.9rem 0 2rem;
-    transform: rotate(45deg);
-    border: 1px solid var(--rarity);
-    background: radial-gradient(circle, color-mix(in srgb, var(--rarity) 24%, transparent), rgba(0, 0, 0, 0.45) 75%);
-    box-shadow:
-      0 0 30px -8px var(--rarity),
-      inset 0 0 0 4px rgba(0, 0, 0, 0.55),
-      inset 0 0 0 5px color-mix(in srgb, var(--rarity) 35%, transparent);
-  }
-
-  // Undoes the frame's rotation, at 2 CSS px per art pixel on every screen
-  // (whole device pixels at 1x, 2x and 3x): the larger --item-card-art sizes
-  // push the bigger items past the diamond's edges.
-  .icon-frame .icon {
-    width: 240px;
-    height: 240px;
-    transform: rotate(-45deg);
+    width: 150px;
+    height: 150px;
+    margin: 0.25rem 0 0.6rem;
+    overflow: hidden;
+    @include socket(var(--rarity), 3px, 6px);
   }
 
   .hero .rarity {
@@ -1599,15 +1620,23 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-shadow: 0 0 22px color-mix(in srgb, var(--c) 35%, transparent);
   }
 
-  // Boss / character details: the figure in a well, no frame.
+  // Character details: the hero in a sunk well beside its level and bars
+  // (docs/mockups/pixel-gear.html, option A).
   .hero:has(> .hero-sprite) {
-    @include pixel-corners(3px);
-    background: $well;
-    border-color: transparent;
+    @include sunk-well;
   }
 
-  .hero-sprite,
-  .gear-icon {
+  // Boss details: no box round the whole; the boss stands in a socket lit in
+  // its red, its numbers in a well beside it (docs/mockups/pixel-boss.html,
+  // option 3).
+  .hero:has(> .hero-sprite > .sprite) {
+    background: none;
+    box-shadow: none;
+    clip-path: none;
+  }
+
+  .hero-sprite:has(> .sprite) {
+    @include socket(var(--damage-color));
   }
 
   .hero-tag {
@@ -1619,29 +1648,94 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include engraved($caps-lg, 0.16em);
   }
 
+  .hero-level {
+    color: $brass;
+  }
+
+  .ledger {
+    @include sunk-well;
+  }
+
+  .ledger .stat-tile + .stat-tile {
+    border-top-color: $line-faint;
+  }
+
+  .ledger .tile-note {
+    color: var(--spent-text);
+  }
+
   .stat-tile {
-    @include pixel-corners(3px);
-    background: $well;
-    border-color: transparent;
+    @include sunk-well;
+  }
+
+  .ledger .stat-tile {
+    background: none;
+    box-shadow: none;
+    clip-path: none;
   }
 
   .tile-value {
     font-weight: 700;
   }
 
+  // What the gear adds: plain green, no pill.
   .tile-gain {
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--heal-color);
     text-shadow: none;
   }
 
+  .tile-note {
+    color: var(--spent-text);
+  }
+
+  // A running boss skill: a lifted card, its icon in a small red socket.
+  .skill-tile {
+    @include lifted-card;
+  }
+
+  .skill-socket {
+    @include socket(var(--damage-color), 2px, 3px);
+  }
+
+  .skill-tile .tile-label {
+    @include name-serif;
+    color: var(--card-ink);
+  }
+
+  .skill-tile .tile-note {
+    color: var(--text);
+  }
+
+  .skill-tile .tile-value {
+    @include plain-label(0.95rem, 700);
+    color: color-mix(in srgb, var(--damage-color) 55%, #fff);
+  }
+
+  // Boons and banes on the hero: pixel-cut chips, tinted, no frame.
+  .effects .effect {
+    @include plain-label($label-sm, 700);
+    @include pixel-corners(2px);
+    border: 0;
+  }
+
+  // Gear: each item in a socket of its rarity, on a lifted card like the
+  // skills; an empty slot is a sunk well with a dim socket.
   .gear-row {
-    @include pixel-corners(3px);
-    background: $well;
-    border-color: transparent;
-    border-left: 2px solid var(--rarity);
+    @include lifted-card;
+    align-items: flex-start;
   }
 
   .gear-row.empty {
-    border-left: 1px dashed $line-mid;
+    align-items: center;
+    @include sunk-well;
+    color: var(--spent-text);
+  }
+
+  .gear-icon {
+    @include socket(var(--rarity));
   }
 
   .gear-name,
@@ -1649,23 +1743,21 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include name-serif;
   }
 
+  .gear-row .gear-name {
+    color: var(--card-ink);
+  }
+
   .gear-rarity {
     @include plain-label($label-md, 600);
+    color: var(--rarity);
     text-transform: capitalize;
   }
 
   // Enchanted: "Enchanted" and the doubled values are opal, with a slow light
   // running through them, and the slot glows pale
   // (docs/mockups/enchanted-opal.html, shimmering).
-  .gear-row.enchanted {
-    box-shadow: none;
-  }
-
   .gear-row.enchanted .gear-icon {
-    box-shadow:
-      inset 0 0 0 3px rgba(0, 0, 0, 0.55),
-      inset 0 0 0 4px color-mix(in srgb, var(--rarity) 22%, transparent),
-      0 0 18px -5px rgba(170, 220, 240, 0.85);
+    @include socket(var(--rarity), $glow: inset 0 0 18px rgba(170, 220, 240, 0.35));
   }
 
   .gear-enchanted {
@@ -1687,12 +1779,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // The same on the popup that reveals an enchant: its title, the doubled
-  // values and a pale glow round the diamond.
+  // values and a pale light inside the socket.
   .hero.enchanted .icon-frame {
-    box-shadow:
-      0 0 30px -8px rgba(170, 220, 240, 0.85),
-      inset 0 0 0 4px rgba(0, 0, 0, 0.55),
-      inset 0 0 0 5px color-mix(in srgb, var(--rarity) 35%, transparent);
+    @include socket(var(--rarity), 3px, 6px, inset 0 0 26px rgba(170, 220, 240, 0.4));
   }
 
   // Only as wide as the word, so the whole opal shows across it.

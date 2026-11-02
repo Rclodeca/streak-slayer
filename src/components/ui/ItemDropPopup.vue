@@ -60,8 +60,8 @@ const isCurrentEquipped = computed(
               </span>
             </span>
             <div class="gear-text">
-              <span class="gear-name">
-                {{ item.name }}
+              <span class="gear-name">{{ item.name }}</span>
+              <span class="gear-tags">
                 <span class="gear-rarity">{{ item.rarity }}</span>
                 <span v-if="doubleFactor(item.id) > 1" class="gear-enchanted">Enchanted</span>
               </span>
@@ -221,14 +221,17 @@ const isCurrentEquipped = computed(
   gap: 0.2rem;
 }
 
-/* The rarity (and Enchanted) follow the name, and wrap flush left under it. */
 .gear-name {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+/* The rarity (and Enchanted) on a line of their own under the name. */
+.gear-tags {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   column-gap: 0.4rem;
-  color: var(--text-h);
-  font-weight: 600;
 }
 
 .gear-rarity {
