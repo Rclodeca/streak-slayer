@@ -9,7 +9,7 @@ import { DAMAGE_TYPE_ICON } from '../ui/statIcons';
 // number on a raised face over a 3px lip (docs/mockups/pixel-done.html,
 // option A). Pressing drops the face onto the lip; struck, it stays down and
 // goes grey until the period ends. Resting, it's flat and can't be pressed.
-// A struck Overdrive skill with charges left stays tappable, haloed. The type
+// A struck Overdrive skill with charges left stays tappable. The type
 // colour comes from the row's --c.
 const props = defineProps<{
   damageType: DamageType;
@@ -74,9 +74,9 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   justify-content: center;
   gap: 4px;
   box-sizing: border-box;
-  min-width: 58px;
+  width: 76px;
   height: calc(34px + var(--lip));
-  padding: 0 10px var(--lip);
+  padding: 0 6px var(--lip);
   color: var(--ink);
   text-shadow: var(--ink-shadow);
 }
@@ -190,33 +190,13 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   }
 }
 
-/* A struck Overdrive skill with charges left: a slowly breathing ember ring
-   round the pressed face. Only its opacity animates. */
-.strike.overdrive-ready::before {
-  content: '';
-  position: absolute;
-  inset: 3px -4px 1px;
-  clip-path: var(--px2);
-  border: 1px solid var(--overdrive-color);
-  box-shadow: inset 0 0 6px color-mix(in srgb, var(--overdrive-color) 35%, transparent);
-  pointer-events: none;
-  animation: overdrive-halo 5s ease-in-out infinite;
-}
-
-@keyframes overdrive-halo {
-  50% {
-    opacity: 0.55;
-  }
-}
-
 .strike:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strike.lit .face::after,
-  .strike.overdrive-ready::before {
+  .strike.lit .face::after {
     animation: none;
   }
 
