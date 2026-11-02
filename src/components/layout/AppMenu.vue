@@ -13,13 +13,31 @@ import Modal from '../ui/Modal.vue';
 // Top-right menu: Undo, High Scores, Focus mode, save export/import, and the
 // theme picker (hidden while there's only one theme).
 // Picking a theme or flipping Focus mode keeps the menu open so the change can
-// be seen and flipped back; anything else, a tap outside, or Escape closes it.
+// be seen and flipped back; anything else, a tap outside (which does nothing
+// else), or Escape closes it.
+// The panel is teleported to <body> and placed under the button: the button
+// rides inside the pinned stage, and on a phone the panel was being cut off
+// where the stage's layer ends, so it lives above the whole page instead.
 const emit = defineEmits<{ 'high-scores': [] }>();
 
 const themeStore = useThemeStore();
 const focusMode = useFocusModeStore();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
+const panel = ref<HTMLElement | null>(null);
+const panelPos = ref({ top: '0px', right: '0px' });
+
+// Under the button, flush with its right edge.
+function placePanel() {
+  const rect = root.value?.getBoundingClientRect();
+  if (!rect) return;
+  panelPos.value = { top: `${rect.bottom + 6}px`, right: `${document.documentElement.clientWidth - rect.right}px` };
+}
+
+function toggle() {
+  if (!open.value) placePanel();
+  open.value = !open.value;
+}
 
 // Greyed out when there's nothing to undo (see useUndoCheck for when that is).
 const { canUndo, undo } = useUndoCheck();
@@ -94,8 +112,17 @@ function replaceRun() {
   window.location.reload();
 }
 
+// While the menu is open a tap anywhere else only closes it: it is swallowed
+// in the capture phase, before whatever was tapped (a fighter, a habit) sees it.
 function closeOnOutsideTap(event: Event) {
-  if (!root.value?.contains(event.target as Node)) open.value = false;
+  if (!open.value) return;
+  const target = event.target as Node;
+  if (root.value?.contains(target) || panel.value?.contains(target)) return;
+  event.stopPropagation();
+  if (event.type === 'click') {
+    event.preventDefault();
+    open.value = false;
+  }
 }
 
 function closeOnEscape(event: KeyboardEvent) {
@@ -103,49 +130,57 @@ function closeOnEscape(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  document.addEventListener('click', closeOnOutsideTap);
+  document.addEventListener('click', closeOnOutsideTap, true);
+  document.addEventListener('pointerdown', closeOnOutsideTap, true);
   document.addEventListener('keydown', closeOnEscape);
+  window.addEventListener('resize', placePanel);
+  window.addEventListener('scroll', placePanel, { passive: true });
 });
 onBeforeUnmount(() => {
-  document.removeEventListener('click', closeOnOutsideTap);
+  document.removeEventListener('click', closeOnOutsideTap, true);
+  document.removeEventListener('pointerdown', closeOnOutsideTap, true);
   document.removeEventListener('keydown', closeOnEscape);
+  window.removeEventListener('resize', placePanel);
+  window.removeEventListener('scroll', placePanel);
   clearTimeout(toastTimeout);
 });
 </script>
 
 <template>
   <div ref="root" class="app-menu">
-    <button type="button" class="menu-button" aria-label="Menu" aria-haspopup="menu" :aria-expanded="open" @click="open = !open">
+    <button type="button" class="menu-button" aria-label="Menu" aria-haspopup="menu" :aria-expanded="open" @click="toggle">
       <Menu :size="18" />
     </button>
-    <div v-if="open" class="menu-panel" role="menu">
-      <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
-      <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
-      <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
-      <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="focusMode.setOn(!focusMode.on)">
-        <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />
-      </button>
-      <div class="menu-divider" role="separator" />
-      <span class="menu-label">Save</span>
-      <button type="button" class="menu-item" role="menuitem" @click="exportSave"><Upload :size="15" />Export</button>
-      <button type="button" class="menu-item" role="menuitem" @click="pickImport"><Download :size="15" />Import</button>
-      <!-- Hidden while there's only one theme to pick. -->
-      <template v-if="THEMES.length > 1">
-        <div class="menu-divider" role="separator" />
-        <span class="menu-label">Theme</span>
-        <button
-          v-for="option in THEMES"
-          :key="option.id"
-          type="button"
-          class="menu-item"
-          role="menuitemradio"
-          :aria-checked="themeStore.theme === option.id"
-          @click="pickTheme(option.id)"
-        >
-          <Check :size="15" class="tick" :class="{ on: themeStore.theme === option.id }" />{{ option.label }}
+    <Teleport to="body">
+      <div v-if="open" ref="panel" class="menu-panel" role="menu" :style="panelPos">
+        <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
+        <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
+        <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
+        <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="focusMode.setOn(!focusMode.on)">
+          <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />
         </button>
-      </template>
-    </div>
+        <div class="menu-divider" role="separator" />
+        <span class="menu-label">Save</span>
+        <button type="button" class="menu-item" role="menuitem" @click="exportSave"><Upload :size="15" />Export</button>
+        <button type="button" class="menu-item" role="menuitem" @click="pickImport"><Download :size="15" />Import</button>
+        <!-- Hidden while there's only one theme to pick. -->
+        <template v-if="THEMES.length > 1">
+          <div class="menu-divider" role="separator" />
+          <span class="menu-label">Theme</span>
+          <button
+            v-for="option in THEMES"
+            :key="option.id"
+            type="button"
+            class="menu-item"
+            role="menuitemradio"
+            :aria-checked="themeStore.theme === option.id"
+            @click="pickTheme(option.id)"
+          >
+            <Check :size="15" class="tick" :class="{ on: themeStore.theme === option.id }" />{{ option.label }}
+          </button>
+        </template>
+      </div>
+    </Teleport>
     <input ref="fileInput" type="file" class="file-input" tabindex="-1" aria-hidden="true" @change="onFilePicked" />
   </div>
 
@@ -174,10 +209,9 @@ onBeforeUnmount(() => {
   padding: 0.35em 0.55em;
 }
 
+/* Placed by AppMenu (top and right inline), over the page. */
 .menu-panel {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  position: fixed;
   z-index: 50;
   min-width: 190px;
   padding: 0.35rem;

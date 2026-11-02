@@ -17,26 +17,47 @@ describe('AppMenu', () => {
   it('shows no Theme section while Moonlit is the only theme', async () => {
     const wrapper = mount(AppMenu, { attachTo: document.body });
     await wrapper.find('.menu-button').trigger('click');
-    const panel = wrapper.find('.menu-panel');
-    expect(panel.text()).toContain('High Scores');
-    expect(panel.text()).not.toContain('Theme');
-    expect(panel.find('[role="menuitemradio"]').exists()).toBe(false);
+    const panel = document.body.querySelector('.menu-panel')!;
+    expect(panel.textContent).toContain('High Scores');
+    expect(panel.textContent).not.toContain('Theme');
+    expect(panel.querySelector('[role="menuitemradio"]')).toBeNull();
   });
 
   it('flips Focus mode from the menu, and keeps the menu open', async () => {
     const wrapper = mount(AppMenu, { attachTo: document.body });
     await wrapper.find('.menu-button').trigger('click');
-    const item = wrapper.find('[role="menuitemcheckbox"]');
-    expect(item.text()).toContain('Focus mode');
-    expect(item.attributes('aria-checked')).toBe('false');
+    const item = () => document.body.querySelector('[role="menuitemcheckbox"]') as HTMLElement;
+    expect(item().textContent).toContain('Focus mode');
+    expect(item().getAttribute('aria-checked')).toBe('false');
 
-    await item.trigger('click');
+    item().click();
+    await wrapper.vm.$nextTick();
     expect(useFocusModeStore().on).toBe(true);
     expect(localStorage.getItem(STORAGE_KEY)).toBe('on');
-    expect(wrapper.find('.menu-panel').exists()).toBe(true);
-    expect(wrapper.find('[role="menuitemcheckbox"]').attributes('aria-checked')).toBe('true');
+    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
+    expect(item().getAttribute('aria-checked')).toBe('true');
 
-    await wrapper.find('[role="menuitemcheckbox"]').trigger('click');
+    item().click();
     expect(useFocusModeStore().on).toBe(false);
+  });
+
+  it('closes on a tap outside and swallows it, so what was tapped does nothing', async () => {
+    const wrapper = mount(AppMenu, { attachTo: document.body });
+    const outside = document.createElement('button');
+    let taps = 0;
+    outside.addEventListener('click', () => taps++);
+    document.body.appendChild(outside);
+
+    await wrapper.find('.menu-button').trigger('click');
+    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
+
+    outside.click();
+    await wrapper.vm.$nextTick();
+    expect(document.body.querySelector('.menu-panel')).toBeNull();
+    expect(taps).toBe(0);
+
+    outside.click();
+    expect(taps).toBe(1);
+    outside.remove();
   });
 });
