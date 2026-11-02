@@ -1,11 +1,11 @@
-// Compiles the Ashen family's stylesheet and checks that every theme
-// declares the whole palette, that no token is used without being declared,
+// Compiles the theme stylesheet and checks that the theme declares the
+// whole palette, that no token is used without being declared,
 // and that no alpha tone is built the way the browser silently drops.
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { compile } from 'sass';
 import { describe, expect, it } from 'vitest';
-import { ASHEN_FAMILY } from '../../../store/themeStore';
+import { THEMES } from '../../../store/themeStore';
 
 /** Every colour (and light) a theme must set on `:root[data-theme=<id>]`. */
 export const PALETTE_TOKENS = [
@@ -44,9 +44,6 @@ export const PALETTE_TOKENS = [
   'plate',
 ];
 
-// Themes whose palette hasn't landed yet.
-const PENDING_THEMES: string[] = [];
-
 function compileThemes(): string {
   return compile('src/assets/scss/themes/index.scss').css;
 }
@@ -73,11 +70,11 @@ function declaredTokens(css: string, id: string): Set<string> {
   return names;
 }
 
-describe('Ashen themes', () => {
+describe('Moonlit theme', () => {
   const css = compileThemes();
 
-  for (const id of ASHEN_FAMILY) {
-    it.skipIf(PENDING_THEMES.includes(id))(`declares every palette token for ${id}`, () => {
+  for (const { id } of THEMES) {
+    it(`declares every palette token for ${id}`, () => {
       const declared = declaredTokens(css, id);
       expect(PALETTE_TOKENS.filter((name) => !declared.has(name))).toEqual([]);
     });

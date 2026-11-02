@@ -9,7 +9,8 @@ import { THEMES, useThemeStore } from '../../store/themeStore';
 import type { Theme } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
-// Top-right menu: Undo, High Scores, save export/import, and the theme picker.
+// Top-right menu: Undo, High Scores, save export/import, and the theme picker
+// (hidden while there's only one theme).
 // Picking a theme keeps the menu open so themes can be flipped back and
 // forth; anything else, a tap outside, or Escape closes it.
 const emit = defineEmits<{ 'high-scores': [] }>();
@@ -122,19 +123,22 @@ onBeforeUnmount(() => {
       <span class="menu-label">Save</span>
       <button type="button" class="menu-item" role="menuitem" @click="exportSave"><Upload :size="15" />Export</button>
       <button type="button" class="menu-item" role="menuitem" @click="pickImport"><Download :size="15" />Import</button>
-      <div class="menu-divider" role="separator" />
-      <span class="menu-label">Theme</span>
-      <button
-        v-for="option in THEMES"
-        :key="option.id"
-        type="button"
-        class="menu-item"
-        role="menuitemradio"
-        :aria-checked="themeStore.theme === option.id"
-        @click="pickTheme(option.id)"
-      >
-        <Check :size="15" class="tick" :class="{ on: themeStore.theme === option.id }" />{{ option.label }}
-      </button>
+      <!-- Hidden while there's only one theme to pick. -->
+      <template v-if="THEMES.length > 1">
+        <div class="menu-divider" role="separator" />
+        <span class="menu-label">Theme</span>
+        <button
+          v-for="option in THEMES"
+          :key="option.id"
+          type="button"
+          class="menu-item"
+          role="menuitemradio"
+          :aria-checked="themeStore.theme === option.id"
+          @click="pickTheme(option.id)"
+        >
+          <Check :size="15" class="tick" :class="{ on: themeStore.theme === option.id }" />{{ option.label }}
+        </button>
+      </template>
     </div>
     <input ref="fileInput" type="file" class="file-input" tabindex="-1" aria-hidden="true" @change="onFilePicked" />
   </div>

@@ -25,14 +25,13 @@ describe('themeStore', () => {
     expect(useThemeStore().theme).toBe('moonlit');
   });
 
-  it('lists the themes in menu order', () => {
-    expect(THEMES.map((t) => t.id)).toEqual(['moonlit', 'crypt', 'hellforge', 'minimalist']);
-    expect(THEMES.map((t) => t.label)).toEqual(['Moonlit', 'Crypt', 'Hellforge', 'Minimalist']);
+  it('lists Moonlit as the only theme', () => {
+    expect(THEMES).toEqual([{ id: 'moonlit', label: 'Moonlit' }]);
   });
 
-  it('restores a saved choice', () => {
-    localStorage.setItem(STORAGE_KEY, 'minimalist');
-    expect(useThemeStore().theme).toBe('minimalist');
+  it.each(['crypt', 'hellforge', 'minimalist'])('loads a saved %s choice as Moonlit', (old) => {
+    localStorage.setItem(STORAGE_KEY, old);
+    expect(useThemeStore().theme).toBe('moonlit');
   });
 
   it('falls back to the default for an unknown saved value', () => {
@@ -42,10 +41,10 @@ describe('themeStore', () => {
 
   it('setTheme persists the choice and stamps it on <html>', () => {
     const store = useThemeStore();
-    store.setTheme('minimalist');
-    expect(store.theme).toBe('minimalist');
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('minimalist');
-    expect(document.documentElement.dataset.theme).toBe('minimalist');
+    store.setTheme('moonlit');
+    expect(store.theme).toBe('moonlit');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('moonlit');
+    expect(document.documentElement.dataset.theme).toBe('moonlit');
   });
 
   it('applyTheme stamps the theme without persisting it', () => {

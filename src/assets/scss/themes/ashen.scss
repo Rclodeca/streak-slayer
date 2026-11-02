@@ -1,31 +1,26 @@
-// Ashen — Souls-like dark fantasy: stone panels, engraved Roman caps
-// (Cinzel) for titles, and a boss that rises out of fog. Ashen is the family
-// of themes that share this look — Moonlit, Crypt and Hellforge — each with
-// its own palette in a sibling file. Imported once, through index.scss.
+// Pixel-cut — the Moonlit look: blue-black stone cut with the same hard
+// pixel edges as the art (docs/superpowers/specs/2026-11-01-pixel-cut-design.md,
+// docs/mockups/pixel-done.html option A). Moonlit is the only theme; its
+// palette is in moonlit.scss. The old Ashen look, with the Crypt, Hellforge
+// and Minimalist themes, lives on in git tag ashen-classic. Imported once,
+// through index.scss.
 //
-// The comments below describe Moonlit, the original.
-//
-// Four rules keep it scannable (docs/mockups/ashen-hierarchy.html,
-// docs/mockups/ashen-alternatives.html option C, ashen-character.html,
-// moonlit-brass.html option 4):
+// The rules that keep it scannable:
 // - Silver means touch: buttons, checks, inputs and choices. Brass means
 //   earned: ranks, level and victory; EXP and rewards keep their gold.
-//   Frames and titles are ash and bone.
-// - The diamond marks what you tick, and crowns each section. Ranks are
-//   numerals on a plate, difficulty is dots.
+// - Stepped pixel corners (clip-path), 2px bevels and a lip under what you
+//   press. No rounded box corners; only what is round by nature stays round
+//   (dots, rings, the platforms' ellipses, the death screen's embers).
+// - Skills are cards struck by pressing their damage button; a struck skill
+//   goes grey and flat, so what's left stands out.
 // - Engraved caps are for titles and the tiny group labels. Names you read
 //   (skills, quests, items) are the Alegreya serif; buttons, numbers, tags
 //   and small text are Alegreya Sans. Nothing is italic.
-// - Few ornaments: a crest diamond on each main section's top edge and a
-//   moonlit seam along panels and popups; no corner brackets or rules beside titles. Corners are
-//   only just softened, buttons are soft gold fills.
 //
-// Every rule lives under $ashen, the family selector — the three themes'
-// ids (see store/themeStore.ts), never Minimalist.
-// That prefix also outranks the components' scoped styles — it adds a
-// pseudo-class and an attribute on top of their class + data-v attribute —
-// so this file can restyle component internals while Minimalist (the
-// unthemed base styles) stays exactly as it was.
+// Every rule lives under $ashen, the theme's selector. That prefix outranks
+// the components' scoped styles — it adds a pseudo-class and an attribute
+// on top of their class + data-v attribute — so this file can restyle
+// component internals over their plain base styles.
 
 @use 'sass:math';
 @use 'sass:string';
@@ -38,7 +33,7 @@
   @return string.unquote('rgb(var(--#{$name}-rgb) / #{math.div(math.round($alpha * 255), 255)})');
 }
 
-$ashen: ":root:is([data-theme='moonlit'], [data-theme='crypt'], [data-theme='hellforge'])";
+$ashen: ":root[data-theme='moonlit']";
 
 // Structure: frames, rules and dividers, in ash.
 $line: tone(ash, 0.2);
