@@ -1,5 +1,5 @@
-// Moonlit — Ashen's blue-black stone: silver is what you touch, brass what
-// you've earned. The default theme. Palette only; the rules are in ashen.scss.
+// Moonlit — blue-black stone: silver is what you touch, brass what you've
+// earned. The only theme. Palette only; the rules are in ashen.scss.
 
 :root[data-theme='moonlit'] {
   --bg: #07080c;
@@ -40,4 +40,29 @@
   --day-on-rgb: 70 82 108; // a chosen weekday's disc
   --bar-rgb: 19 22 30; // the top of the pinned boss bar
   --plate: #0a0b10; // the level diamond in the boss bar
+
+  // Pixel-cut cards, buttons and panels (docs/mockups/pixel-done.html, option A).
+  // An open card is lifted: a step brighter, with a bevel and a dark lip.
+  --card: #1b2030;
+  --card-hi: #333c52;
+  --card-lo: #0c0f15;
+  --card-lip: #05060a;
+  --card-ink: #f0f3f7; // an open skill's or quest's name
+  // A struck card drops dark and flat; its button loses all colour.
+  --struck-card: #0e1117;
+  --struck-hi: #161a24;
+  --struck-lo: #07090d;
+  --struck-face: #1b1f28;
+  --struck-lip: #111319;
+  --struck-ink: #5b606b;
+  // Quiet cards: Resist, and skills resting today.
+  --quiet-card: #161a24;
+  --quiet-hi: #1c2230;
+  --quiet-lo: #0a0c12;
+  --resist-face: #1d2230; // a Resist button's dark face, over a red lip
+  --resting-face: #12151d; // a resting skill's flat button
+  // A panel's bevel (the log, popups, the menu).
+  --panel-hi: #232937;
+  --panel-lo: #0b0d12;
+  --button-lip: #2a3142; // under a primary (silver) button
 }

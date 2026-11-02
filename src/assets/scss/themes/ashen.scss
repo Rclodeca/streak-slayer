@@ -61,14 +61,78 @@ $frame: var(--frame);
 // A dark well set into a panel or popup: an inner box with no frame.
 $well: rgba(0, 0, 0, 0.22);
 
-// Corners: worked stone, only just softened — panels, popups, the wells
-// inside them, buttons and bars; pills for tags.
-$radius-panel: 6px;
-$radius-popup: 8px;
-$radius-well: 4px;
-$radius-button: 6px;
-$radius-bar: 2px;
-$radius-pill: 999px;
+// Corners: stepped, the way the art's pixels step, cut with clip-path
+// polygons (--px3 on cards, panels and popups; --px2 on buttons, checks,
+// inputs and chips). Box corners are never rounded.
+@mixin pixel-corners($step: 3px) {
+  @if $step == 2px {
+    clip-path: var(--px2);
+  } @else {
+    clip-path: var(--px3);
+  }
+}
+
+// A 2px pixel bevel: light along the top and left, dark along the bottom
+// and right.
+@mixin bevel($hi, $lo) {
+  box-shadow:
+    inset 2px 2px 0 $hi,
+    inset -2px -2px 0 $lo;
+}
+
+// A 3px lip under something you press. Pressing drops the face onto it:
+// the face moves down and the lip goes clear, with no layout shift.
+@mixin lip-press($lip) {
+  border-bottom: 3px solid $lip;
+  background-clip: padding-box;
+  transition: transform 0.07s;
+
+  &:active:not(:disabled) {
+    transform: translateY(3px);
+    border-bottom-color: transparent;
+  }
+}
+
+// A focus ring drawn inside the box, since clip-path cuts anything outside it.
+@mixin inset-focus {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -4px;
+  }
+}
+
+// A plain square checkbox with pixel-cut corners (quests, the daily update):
+// silver while it waits, dim and ticked once done.
+@mixin square-check($size: 20px) {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: $size;
+  height: $size;
+  margin: 0;
+  clip-path: var(--px2);
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--accent);
+  box-shadow: none;
+  transform: none;
+  cursor: pointer;
+
+  &:checked {
+    background: var(--check-done);
+    border-color: var(--check-done-line);
+  }
+
+  &:checked::after {
+    content: '';
+    width: math.div($size, 4);
+    height: math.div($size, 2.2);
+    margin-top: -2px;
+    border: solid var(--accent);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+}
 
 // The boss sprite's dark rim and glow, and the hero backlit against the fog,
 // on the stage and in the details.
@@ -145,7 +209,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   color: $color;
   background: $fill;
   border: 1px solid var(--soft-line);
-  border-radius: $radius-button;
   transition:
     box-shadow 0.2s,
     background 0.2s;
@@ -211,6 +274,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 }
 
 #{$ashen} {
+  // The pixel-cut corners: 3px steps for cards, panels and popups, 2px for
+  // buttons, checks, inputs and chips (see pixel-corners).
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
   // The palette tokens (--bg, --text, --moon, ...) come from the theme files.
   // The soft buttons (menu, back, cancel, replace) are silver tints unless a
   // theme says otherwise.
@@ -287,7 +354,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // Square by default, so diamonds stay sharp, apart from the few things that
   // are round by nature (the hit effects' rings, bolts, motes and pulses among
-  // them). Panels, wells, buttons and bars set their own $radius-* below.
+  // them). Pixel-cut corners come from clip-path, not radii.
   *:not(.ring, .seal, .stone, .level-ring, .fx-ring, .fx-orb, .fx-mote, .fx-pulse) {
     border-radius: 0;
   }
@@ -306,7 +373,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .panel {
     @include moonlit(var(--panel-fill));
     border-color: tone(ash, 0.1);
-    border-radius: $radius-panel;
     box-shadow:
       0 24px 50px -24px rgba(0, 0, 0, 0.95),
       inset 0 1px 0 tone(moon-glow, 0.04);
@@ -337,13 +403,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .menu-button {
     padding: 0.45rem 0.55rem;
-    border-radius: $radius-button;
   }
 
   .menu-panel {
     background: tone(frame, 0.985);
     border-color: $line-mid;
-    border-radius: $radius-panel;
     box-shadow:
       0 24px 50px -20px #000,
       0 0 0 4px rgba(0, 0, 0, 0.55);
@@ -351,7 +415,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .menu-item {
     @include plain-label;
-    border-radius: $radius-well;
   }
 
   // Row and menu highlights only with a real pointer, so a tapped row
@@ -636,7 +699,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     overflow: visible;
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid $line-mid;
-    border-radius: $radius-bar;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
   }
 
@@ -645,7 +707,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .health-bar-fill,
   .health-bar-trail,
   .exp-bar-fill {
-    border-radius: $radius-bar;
   }
 
   // Each margin is exactly the room its numbers take: the text plus 4px.
@@ -868,8 +929,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     position: absolute;
     inset: 0;
     overflow: hidden;
-    // Rounded ends, as in the mock; the row itself is squared like all of Ashen.
-    border-radius: 10px;
     pointer-events: none;
   }
 
@@ -942,7 +1001,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include plain-label($label-sm, 600);
     padding: 3px 7px;
     border: 1px solid $line-mid;
-    border-radius: $radius-pill;
     color: var(--text);
   }
 
@@ -1051,7 +1109,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(190, 160, 100, 0.45);
-    border-radius: 3px;
   }
 
   // On a skill row, streak, rank and damage each hold a fixed place, so they
@@ -1088,7 +1145,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 12%, transparent), $well 55%);
     border-color: transparent;
     border-left: 2px solid var(--tone);
-    border-radius: $radius-well;
     box-shadow: none;
   }
 
@@ -1178,7 +1234,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     // Lifted, so the silver reads as metal rather than grey.
     background: var(--button-fill);
     border: 1px solid var(--button-line);
-    border-radius: $radius-button;
     box-shadow: none;
     filter: none;
     transition:
@@ -1252,7 +1307,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--text-h);
     background: rgba(160, 34, 30, 0.45);
     border: 1px solid transparent;
-    border-radius: $radius-button;
   }
 
   // Overdrive burns ember, the same fire as the check's halo.
@@ -1262,7 +1316,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--text-h);
     background: rgba(160, 60, 20, 0.4);
     border: 1px solid rgba(224, 120, 58, 0.7);
-    border-radius: $radius-button;
   }
 
   .overdrive-button:disabled {
@@ -1306,7 +1359,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     position: relative;
     @include moonlit(tone(frame, 0.985));
     border-color: tone(ash, 0.16);
-    border-radius: $radius-popup;
     box-shadow: 0 40px 80px -30px #000;
   }
 
@@ -1354,7 +1406,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .intro {
     background: $well;
     border-color: transparent;
-    border-radius: $radius-well;
   }
 
   // Level-up event cards.
@@ -1363,7 +1414,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: rgba(0, 0, 0, 0.35);
     border: 1px solid $line;
     border-left: 2px solid $touch-line;
-    border-radius: $radius-well;
     transition:
       border-color 0.3s,
       box-shadow 0.3s;
@@ -1444,7 +1494,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .list > button.row {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid $line;
-    border-radius: $radius-well;
   }
 
   .list > button.row:hover {
@@ -1457,7 +1506,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--rarity) 10%, transparent), transparent 70%),
       rgba(0, 0, 0, 0.25);
     border: 1px solid color-mix(in srgb, var(--rarity) 45%, transparent);
-    border-radius: $radius-well;
     box-shadow: 0 0 24px -10px var(--rarity);
   }
 
@@ -1514,7 +1562,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 13%, transparent), $well 60%);
     border: 1px solid transparent;
     border-left: 2px solid var(--tone);
-    border-radius: $radius-well;
     box-shadow: none;
   }
 
@@ -1536,7 +1583,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .pill,
   .redeem {
     border-color: $touch-line;
-    border-radius: $radius-button;
   }
 
   .pill input,
@@ -1566,7 +1612,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .date-input {
     background: rgba(0, 0, 0, 0.35);
     border-color: $touch-line;
-    border-radius: $radius-well;
   }
 
   .name-input:focus,
@@ -1578,7 +1623,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   label.card {
     background: rgba(0, 0, 0, 0.25);
     border-color: $line;
-    border-radius: $radius-well;
   }
 
   label.card .card-title {
@@ -1588,7 +1632,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .quest-form .chip {
     background: rgba(0, 0, 0, 0.25);
     border-color: $line;
-    border-radius: $radius-button;
     font-weight: 600;
   }
 
@@ -1613,7 +1656,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     margin: 0 0 14px;
     padding: 10px 10px 9px;
     border: 1px solid transparent;
-    border-radius: $radius-well;
     background: $well;
   }
 
@@ -1629,10 +1671,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .rank-bar {
     background: rgba(0, 0, 0, 0.55);
     border: 1px solid $line;
-    border-radius: $radius-bar;
 
     i {
-      border-radius: $radius-bar;
       background: linear-gradient(90deg, #7a6440, $brass);
       box-shadow: 0 0 6px tone(brass, 0.4);
     }
@@ -1686,12 +1726,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .hero:has(> .hero-sprite) {
     background: $well;
     border-color: transparent;
-    border-radius: $radius-well;
   }
 
   .hero-sprite,
   .gear-icon {
-    border-radius: $radius-well;
   }
 
   .hero-tag {
@@ -1706,7 +1744,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .stat-tile {
     background: $well;
     border-color: transparent;
-    border-radius: $radius-well;
   }
 
   .tile-value {
@@ -1721,7 +1758,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: $well;
     border-color: transparent;
     border-left: 2px solid var(--rarity);
-    border-radius: $radius-well;
   }
 
   .gear-row.empty {
@@ -1799,7 +1835,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       radial-gradient(circle at 50% 30%, rgba(230, 199, 127, 0.12), transparent 60%),
       $well;
     border-color: transparent;
-    border-radius: $radius-well;
   }
 
   .seal {
@@ -1927,7 +1962,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .save-toast {
     background: #0e0d0b;
     border-color: $line-mid;
-    border-radius: $radius-well;
   }
 
   .save-toast.bad {
@@ -2012,7 +2046,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: linear-gradient(90deg, tone(ash, 0.1), $well 60%);
     border-color: transparent;
     border-left: 2px solid $line-mid;
-    border-radius: $radius-well;
   }
 
   .lock-seal {
@@ -2066,7 +2099,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .boss-bar .portrait {
     border-color: $line;
-    border-radius: $radius-well;
     background:
       radial-gradient(ellipse 60% 60% at 50% 62%, rgba(215, 205, 185, 0.14), transparent 72%),
       radial-gradient(ellipse 90% 34% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
@@ -2262,7 +2294,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     padding: 1.1rem 1.1rem 0.4rem;
     background: $frame;
     border-color: $line-mid;
-    border-radius: $radius-panel;
     box-shadow: 0 20px 50px -10px #000;
   }
 

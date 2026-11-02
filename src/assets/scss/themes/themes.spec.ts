@@ -42,6 +42,26 @@ export const PALETTE_TOKENS = [
   'day-on-rgb',
   'bar-rgb',
   'plate',
+  // Pixel-cut cards, buttons and panels.
+  'card',
+  'card-hi',
+  'card-lo',
+  'card-lip',
+  'card-ink',
+  'struck-card',
+  'struck-hi',
+  'struck-lo',
+  'struck-face',
+  'struck-lip',
+  'struck-ink',
+  'quiet-card',
+  'quiet-hi',
+  'quiet-lo',
+  'resist-face',
+  'resting-face',
+  'panel-hi',
+  'panel-lo',
+  'button-lip',
 ];
 
 function compileThemes(): string {
@@ -90,6 +110,13 @@ describe('Moonlit theme', () => {
     for (const name of componentTokens()) known.add(name);
     const used = new Set([...css.matchAll(/var\(\s*--([\w-]+)/g)].map((m) => m[1]));
     expect([...used].filter((name) => !known.has(name))).toEqual([]);
+  });
+
+  it('rounds only what is round by nature', () => {
+    // Pixel-cut: corners are stepped (clip-path) or square. Dots, rings and
+    // ellipses keep 50%.
+    const radii = [...css.matchAll(/border-radius:\s*([^;}]+)/g)].map((m) => m[1].trim());
+    expect(radii.filter((r) => !['0', '50%', 'inherit'].includes(r))).toEqual([]);
   });
 
   it('evaluates every tone() call', () => {
