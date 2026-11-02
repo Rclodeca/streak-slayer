@@ -30,6 +30,9 @@ const showAdd = ref(false);
 const detailId = ref<string | null>(null);
 const detailQuest = computed(() => questStore.quests.find((q) => q.id === detailId.value) ?? null);
 
+// Soonest due first; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
+const sortedQuests = computed(() => [...questStore.quests].sort((a, b) => a.dueDateKey.localeCompare(b.dueDateKey)));
+
 function daysLeft(quest: Quest): number {
   return Math.round((Date.parse(`${quest.dueDateKey}T00:00:00Z`) - Date.parse(`${todayKey.value}T00:00:00Z`)) / MS_PER_DAY);
 }
@@ -75,7 +78,7 @@ function onCheckOff(quest: Quest) {
       </div>
     </div>
     <ul v-else-if="questStore.quests.length">
-      <li v-for="quest in questStore.quests" :key="quest.id" class="quest-item" :class="[urgency(quest), { side: quest.kind === 'side' }]">
+      <li v-for="quest in sortedQuests" :key="quest.id" class="quest-item" :class="[urgency(quest), { side: quest.kind === 'side' }]">
         <input type="checkbox" class="check" :aria-label="`Complete ${quest.description}`" @change="onCheckOff(quest)" />
         <button type="button" class="body" @click="detailId = quest.id">
           <span class="description">{{ quest.description }}</span>
