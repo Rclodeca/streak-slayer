@@ -52,6 +52,15 @@ describe('HabitList', () => {
     expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Takeout']);
   });
 
+  it('draws no panel frame around Skills or Resist', () => {
+    const habitStore = useHabitStore();
+    habitStore.addHabit('Run', 'daily', 'medium', false, createRng(1));
+    habitStore.addHabit('Doomscroll', 'daily', 'medium', true, createRng(2));
+    const wrapper = mountList();
+    expect(wrapper.find('.skill-list').classes()).not.toContain('panel');
+    expect(wrapper.find('.resist-list').classes()).not.toContain('panel');
+  });
+
   it('shows no Resist panel without a bad habit', () => {
     addDaily();
     const wrapper = mountList();
@@ -79,7 +88,7 @@ describe('HabitList', () => {
     expect(fold.find('summary').text()).toContain('Resting');
     expect(fold.find('.rest-count').text()).toBe('1');
     expect(fold.find('.next-day').text()).toBe(WEEKDAY_SHORT[(today + 2) % 7]);
-    expect((fold.find('input.check').element as HTMLInputElement).disabled).toBe(true);
+    expect(fold.find('button.strike').attributes('disabled')).toBeDefined();
   });
 
   it('shows no Resting fold when nothing rests today', () => {
@@ -99,17 +108,17 @@ describe('HabitList', () => {
   it('the popup’s Overdrive button lights its charges once the skill lands, and greys one per use', async () => {
     addDaily(undefined, { isOverdrive: true });
     const wrapper = mountList();
-    const check = wrapper.find('input.check');
+    const strike = wrapper.find('button.strike');
     await wrapper.find('li').trigger('click'); // opens the popup
     const charges = (state: string) => document.body.querySelectorAll(`.overdrive-button .charge.${state}`).length;
 
     expect(document.body.querySelectorAll('.overdrive-button .charge')).toHaveLength(TUNING.OVERDRIVE_MAX_EXTRA_USES);
     expect(charges('ready')).toBe(0);
 
-    await check.trigger('click');
+    await strike.trigger('click');
     expect(charges('ready')).toBe(TUNING.OVERDRIVE_MAX_EXTRA_USES);
 
-    await check.trigger('click');
+    await strike.trigger('click');
     expect(charges('used')).toBe(1);
     expect(charges('ready')).toBe(TUNING.OVERDRIVE_MAX_EXTRA_USES - 1);
   });
@@ -148,12 +157,15 @@ describe('HabitList', () => {
     expect(document.body.querySelector('.spotlight-hint')).not.toBeNull();
   });
 
-  it('points at the first good habit due today with a one-time "check it off" hint', async () => {
+  it('points at the first good habit due today with a one-time "Strike it." hint', async () => {
     const habit = addDaily();
-    mountList();
+    const wrapper = mountList();
     await nextTick();
     const hint = document.body.querySelector('.spotlight-hint');
     expect(hint?.textContent).toContain('When it’s done');
+    expect(hint?.textContent).toContain('Strike it.');
+    const hole = document.body.querySelector<HTMLElement>('.hint-hole')!;
+    expect(hole.getAttribute('aria-label')).toBe(wrapper.find('button.strike').attributes('aria-label'));
     expect(hint?.textContent).not.toContain('Start here');
 
     document.body.querySelector<HTMLButtonElement>('.hint-hole')!.click();
@@ -168,7 +180,10 @@ describe('HabitList', () => {
     addDaily(undefined, { isBad: true });
     mountList();
     await nextTick();
-    expect(document.body.querySelector('.spotlight-hint')?.textContent).toContain('If you give in');
+    const text = document.body.querySelector('.spotlight-hint')?.textContent;
+    expect(text).toContain('If you give in');
+    expect(text).toContain('Tap it.');
+    expect(text).not.toContain('Strike it.');
 
     document.body.querySelector<HTMLButtonElement>('.hint-action')!.click();
     await nextTick();

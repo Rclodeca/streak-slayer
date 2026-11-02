@@ -53,7 +53,7 @@ const openHabitId = ref<string | null>(null);
 const openHabit = computed(() => habitStore.habits.find((habit) => habit.id === openHabitId.value));
 
 // A new player's first good habit, and first bad one, each get one
-// "check it off" hint, on the first day it can be checked. It waits for any
+// hint pointing at its strike button, on the first day it can be checked. It waits for any
 // popup to close first. See hintStore for who counts as new.
 const hintStore = useHintStore();
 const { isDead } = useDeathScreen();
@@ -90,12 +90,12 @@ const checkHint = computed<{ id: HintId; habit: Habit } | null>(() => {
 
 const listEl = ref<HTMLElement | null>(null);
 const resistEl = ref<HTMLElement | null>(null);
-const checkZone = ref<HTMLElement | null>(null);
+const strikeButton = ref<HTMLElement | null>(null);
 watch(
   [() => checkHint.value?.habit, listEl, resistEl],
   ([habit, list, resist]) => {
     const panel = habit?.isBad ? resist : list;
-    checkZone.value = habit ? (panel?.querySelector<HTMLElement>(`[data-habit-id="${habit.id}"] .check-zone`) ?? null) : null;
+    strikeButton.value = habit ? (panel?.querySelector<HTMLElement>(`[data-habit-id="${habit.id}"] button.strike`) ?? null) : null;
   },
   { flush: 'post', immediate: true },
 );
@@ -103,21 +103,22 @@ watch(
 const checkHintCopy = computed(() => {
   const habit = checkHint.value?.habit;
   if (!habit) return null;
+  // A bad habit's press means giving in, so it isn't told to strike.
   return habit.isBad
-    ? { title: 'If you give in', rules: `Resist it all ${habit.period === 'weekly' ? 'week' : 'day'}, and you strike the boss.` }
-    : { title: 'When it’s done', rules: 'Each check strikes the boss.' };
+    ? { title: 'If you give in', text: 'Tap it.', rules: `Resist it all ${habit.period === 'weekly' ? 'week' : 'day'}, and you strike the boss.` }
+    : { title: 'When it’s done', text: 'Strike it.', rules: 'Each check strikes the boss.' };
 });
 
 function checkOffFromHint() {
   if (!checkHint.value) return;
   const { id } = checkHint.value;
-  checkZone.value?.querySelector<HTMLInputElement>('input.check')?.click();
+  strikeButton.value?.click();
   hintStore.markSeen(id);
 }
 </script>
 
 <template>
-  <section ref="listEl" class="panel habit-list skill-list">
+  <section ref="listEl" class="habit-list skill-list">
     <div class="habit-list-header">
       <h2>Skills</h2>
       <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="showAddModal = true">+ New habit</button>
@@ -149,7 +150,7 @@ function checkOffFromHint() {
     </template>
   </section>
 
-  <section v-if="resistHabits.length" ref="resistEl" class="panel habit-list resist-list">
+  <section v-if="resistHabits.length" ref="resistEl" class="habit-list resist-list">
     <div class="habit-list-header">
       <h2>Resist</h2>
     </div>
@@ -171,12 +172,12 @@ function checkOffFromHint() {
     @dismiss="hintDismissed = true"
   />
   <SpotlightHint
-    v-else-if="checkHint && checkHintCopy && checkZone"
+    v-else-if="checkHint && checkHintCopy && strikeButton"
     :key="checkHint.id"
-    :target="checkZone"
+    :target="strikeButton"
     :label="`Complete ${checkHint.habit.name}`"
     :title="checkHintCopy.title"
-    text="Check it off."
+    :text="checkHintCopy.text"
     :rules="checkHintCopy.rules"
     action="Got it"
     @tap="checkOffFromHint"
