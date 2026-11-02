@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Boss stages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap" />
+<style>
+/* Same main-screen layout in very different directions. Colour, panel
+   surface, corners and title/name type change per style; the art does not. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #202022; color: #b8b6b0; font: 500 16px/1.35 'Alegreya', Georgia, serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 0 26px; }
+.grid { display: flex; flex-wrap: wrap; gap: 34px 22px; justify-content: center; align-items: flex-start; }
+.col { width: 340px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col p { margin: 0 0 8px; min-height: 88px; font-size: 15px; }
+.sw { display: flex; gap: 3px; margin-bottom: 10px; }
+.sw i { flex: 1; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,.14); }
+
+.phone { width: 340px; background: var(--bg); border: 1px solid #000; border-radius: 26px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); text-shadow: var(--ts); }
+.cap { font: 600 11px var(--cap-font); letter-spacing: .22em; text-transform: uppercase; }
+.stagebar { display: flex; justify-content: space-between; align-items: center; padding: 16px 14px 0; }
+.stagebar .cap { color: var(--ink); letter-spacing: .3em; }
+.menu { width: 38px; height: 38px; border-radius: var(--rb); background: var(--btn-bg); border: 1px solid var(--btn-line); display: grid; place-content: center; gap: 4px; }
+.menu i { display: block; width: 16px; height: 2px; background: var(--btn-c); }
+.stage { position: relative; height: 310px; background: var(--stage); }
+.boss { position: absolute; right: 8px; top: 18px; width: 165px; image-rendering: pixelated; filter: var(--bossf); }
+.hero { position: absolute; left: 4px; top: 132px; width: 130px; image-rendering: pixelated; filter: var(--herof); }
+.unit { position: absolute; }
+.unit.b { left: 14px; top: 16px; width: 180px; }
+.unit.h { left: 150px; top: 204px; width: 178px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px var(--cap-font); letter-spacing: .2em; color: var(--ink); margin-bottom: 4px; }
+.uname small { font-size: 11px; color: var(--earned); letter-spacing: .1em; }
+.uname svg { width: 11px; height: 11px; stroke: var(--touch); fill: none; stroke-width: 2.4; }
+.hp { height: 13px; border-radius: 2px; background: var(--track); border: 1px solid rgba(0,0,0,.5); position: relative; overflow: hidden; }
+.hp b { position: absolute; inset: 0 auto 0 0; background: linear-gradient(var(--hp1), var(--hp2)); }
+.hp span { position: absolute; right: 5px; top: -1px; font: 700 10.5px/13px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.7); }
+.stats { display: flex; gap: 7px; margin-top: 5px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.ico { width: 12px; height: 12px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.panel { position: relative; margin: 16px 12px 0; background: var(--panel); border: var(--bw) solid var(--pborder); border-radius: var(--r); padding: 12px 12px 10px; box-shadow: var(--panel-shadow); }
+.panel::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: linear-gradient(90deg, transparent, var(--touch-line), transparent); }
+.panel::after { content: ''; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: var(--frame); border: 1px solid var(--touch-line); }
+.phead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.phead .cap { color: var(--ink); font-size: 12px; }
+.pill { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--btn-c); background: var(--btn-bg); border: 1px solid var(--btn-line); border-radius: var(--rb); padding: 8px 12px; min-height: 36px; }
+.group { font: 600 10px var(--cap-font); letter-spacing: .24em; color: var(--text); margin: 8px 0 3px; }
+.habit { display: flex; align-items: center; gap: 10px; padding: 8px 2px; min-height: 42px; position: relative; }
+.chk { width: 16px; height: 16px; flex: none; transform: rotate(45deg) scale(.85); border: 1.6px solid var(--ink); border-radius: var(--rc); }
+.habit .chk { margin-left: 5px; }
+.habit.bad .chk { border-color: var(--bad); }
+.habit.bad::before { content: ''; position: absolute; left: -6px; top: 8px; bottom: 8px; width: 2px; background: var(--bad); border-radius: 1px; }
+.habit .nm { flex: 1; font: 700 17px var(--name-font); color: var(--ink); }
+.habit.done .chk { background: var(--done); border-color: var(--done-line); }
+.habit.done .nm { color: var(--done-text); font-weight: 500; text-decoration: line-through; text-decoration-color: var(--done-line); text-decoration-thickness: 1.25px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.habit.done .streak { color: var(--text); }
+.streak svg { width: 12px; height: 12px; stroke: var(--text); fill: none; stroke-width: 1.8; }
+.plate { font: 600 9.5px var(--cap-font); color: var(--earned); border: 1px solid var(--earned-line); border-radius: var(--rw); padding: 2px 6px; min-width: 29px; text-align: center; background: var(--earned-fill); }
+.dmg { font: 700 15px 'Alegreya Sans', sans-serif; min-width: 44px; text-align: right; }
+.phys { color: var(--phys); } .magic { color: var(--mag); } .heal { color: var(--good); }
+
+.quest { display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 7px; border-radius: var(--rw); background: var(--well); border-left: 2px solid var(--pborder); }
+.quest.soon { border-left-color: var(--exp); background: linear-gradient(90deg, var(--exp-fill), var(--well)); }
+.quest .chk { margin: 0 5px; }
+.quest .mid { flex: 1; }
+.qn { font: 700 16px var(--name-font); color: var(--ink); }
+.dots { display: flex; align-items: center; gap: 5px; margin-top: 3px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--earned); }
+.dots i.o { background: none; border: 1.5px solid var(--earned); }
+.dots em { font-style: normal; margin-left: 3px; }
+.quest.soon .dots em { color: var(--exp); }
+.xp { text-align: center; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.xp svg { display: block; margin: 0 auto 1px; width: 20px; height: 20px; stroke: var(--exp); fill: none; stroke-width: 1.5; stroke-linejoin: round; }
+.end { height: 18px; }
+
+/* Boss stages: each boss brings its own light; the theme decides where it
+   falls (Crypt: behind the boss, candle kept in the corner; Hellforge: up
+   from the floor like hellfire). */
+.blocks { display: flex; flex-wrap: wrap; gap: 40px 48px; justify-content: center; }
+.block { width: 702px; max-width: 100%; }
+.block h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .22em; color: #ece8de; margin: 0 0 3px; }
+.block > p { margin: 0 0 12px; font-size: 15px; min-height: 21px; }
+.pair { display: flex; gap: 22px; flex-wrap: wrap; }
+.lbl { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 6px; }
+.fx { position: absolute; inset: 0; pointer-events: none; }
+.stage .boss.wide { width: 200px; right: 0; top: 30px; }
+/* The scene runs up behind the top bar; the stage itself is transparent. */
+.scene { position: relative; background: var(--scene); }
+.scene .stage { background: none; }
+/* Day stages: dark type on the stage. */
+.phone.lightstage .uname, .phone.lightstage .stagebar .cap { color: #1a140e; }
+.phone.lightstage .uname small { color: #5f4510; }
+.phone.lightstage .uname svg { stroke: #1a140e; }
+.phone.lightstage .stats { color: #241c14; }
+.phone.lightstage .stats svg { filter: brightness(.6) saturate(1.3); }
+.phone.t-crypt.lightstage .menu { background: rgba(26,20,14,.1); border-color: rgba(26,20,14,.45); }
+.phone.t-crypt.lightstage .menu i { background: #1a140e; }
+</style>
+<style id="themes"></style>
+</head>
+<body>
+<div class="page">
+  <h1>Boss stages</h1>
+  <p class="lede">Each boss brings its own place and time of day: night, dusk or full daylight. The panels below stay in the theme; Hellforge puts its stages under smoke and embers.</p>
+  <div class="blocks" id="blocks"></div>
+</div>
+<script>
+const ic = (d, c) => `<svg class="ico" viewBox="0 0 24 24" style="stroke:${c}">${d}</svg>`;
+const I = {
+  sword: c => ic('<path d="M5 19 17 7M14 4h6v6M5 19l-1 1M7 15l2 2"/>', c),
+  magic: c => ic('<path d="M4 20 16 8M14 3v4M12 5h4M19 10v3M17.5 11.5h3"/>', c),
+  armor: c => ic('<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6z"/>', c),
+  ward: c => ic('<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6zM12 3v18"/>', c),
+  aim: c => ic('<circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>', c),
+  heart: c => ic('<path d="M12 20S4 15 4 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15 12 20 12 20z"/>', c),
+  bolt: c => ic('<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>', c),
+  flame: '<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-10z"/></svg>',
+  chev: '<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>',
+};
+const rimmed = (tail, r = '#2a1a10') => `drop-shadow(2px 0 0 ${r}) drop-shadow(-2px 0 0 ${r}) drop-shadow(0 2px 0 ${r}) drop-shadow(0 -2px 0 ${r}) ${tail}`;
+const darkBoss = g => rimmed(`drop-shadow(0 0 12px ${g}) brightness(1.06)`);
+const HP = ['#c4402a', '#8c2616'];
+const hellRed = { btnC: '#f2d8c0', btnBg: 'linear-gradient(#6a1a12, #3e0c08)', btnLine: '#8a3020' };
+
+const THEMES = [
+  { id: 'crypt', n: 'Crypt',
+    bg: '#0a0908', frame: '#181512', panel: 'linear-gradient(#1c1916, #13110f)', ps: 'inset 0 1px 0 rgba(255,235,200,.06), 0 2px 8px rgba(0,0,0,.5)', ink: '#ece6dc', text: '#a9a196', ln: '170,150,120', tint: '215,215,205', touch: '#e2e0d8', earned: '#d2bb85', exp: '#d9a93c', bad: '#d4574a', phys: '#e5705c', mag: '#a98be0', good: '#7fc17a', ward: '#8fa8d0', done: '#3d3934', dl: '#5a544c', dt: '#7d776e', track: 'rgba(0,0,0,.5)',
+    hf: 'drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.95) sepia(.12)',
+    // The boss's colour glows behind it; the candle stays, dimmed, in the corner.
+    stage: b => b.sky
+      // Day: the scene as it is, a soft vignette, fading into the page at the bottom.
+      ? `linear-gradient(transparent 82%, #0a0908), radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.28)), ${b.sky}`
+      : `radial-gradient(55% 48% at 74% 40%, rgba(${b.c},.22), transparent 70%), radial-gradient(40% 38% at 20% 80%, rgba(235,150,70,.13), transparent 70%), radial-gradient(60% 25% at 70% 100%, rgba(${b.floor || b.c},.10), transparent 70%), #0a0908` },
+  { id: 'hellsoft', n: 'Hellforge, rounded',
+    bg: '#080504', frame: '#3e0c08', panel: 'linear-gradient(#1f1612, #140d0a)', pborder: '#5c4630', bw: '2px', r: '6px', rb: '6px', rw: '4px',
+    ps: '0 0 0 1px #000, inset 0 0 0 1px rgba(0,0,0,.6), inset 0 0 18px rgba(0,0,0,.6)', ink: '#eadbb8', text: '#a8937a', ln: '150,110,70', tint: '200,140,80', touch: '#d8b45e', ...hellRed,
+    earned: '#d8b45e', exp: '#e6b23a', bad: '#ff6a3a', phys: '#e8503c', mag: '#b07ae0', good: '#7ab86a', ward: '#7f9ed0', done: '#3a2620', dl: '#5e3c30', dt: '#7a6656', hp: ['#b8221a', '#5e0a06'], track: '#000',
+    hf: 'drop-shadow(0 0 16px rgba(0,0,0,.95)) brightness(.85) sepia(.15)',
+    // The boss's colour rises from the floor, like the hellfire.
+    stage: b => b.sky
+      // Day: the same scene under smoke, with embers glowing up from the floor.
+      ? `linear-gradient(transparent 82%, #080504), radial-gradient(75% 30% at 50% 112%, rgba(210,60,20,.34), transparent 70%), linear-gradient(rgba(70,20,5,.3), rgba(70,20,5,.3)), ${b.sky}`
+      : `radial-gradient(75% 32% at 50% 112%, rgba(${b.floor || b.c},.28), transparent 70%), radial-gradient(40% 35% at 74% 45%, rgba(${b.c},.12), transparent 70%), #080504`,
+    css: `.t-hellsoft .phead .cap, .t-hellsoft .uname, .t-hellsoft .stagebar .cap { color: #d8b45e; }` },
+];
+
+const dots = (col, size) => `radial-gradient(1.5px 1.5px at 12px 14px, ${col}, transparent), radial-gradient(1px 1px at 46px 52px, ${col}, transparent), radial-gradient(1.2px 1.2px at 74px 24px, ${col}, transparent), radial-gradient(1px 1px at 28px 70px, ${col}, transparent); background-size: ${size}`;
+const BOSSES = [
+  { id: 'balanced', n: 'Drifter', i: 9, c: '210,60,20', d: 'Night. Ember red, the one you liked.' },
+  { id: 'tank', n: 'Colossus', i: 12, c: '230,140,50', d: 'Day. A sunbaked canyon, low sun, red rock.',
+    sky: 'linear-gradient(#e9c08a 0, #dca068 40%, #c47a48 64%, #8a4f2e 66%, #6a3a22 100%)',
+    fx: 'background: radial-gradient(9% 9% at 28% 20%, rgba(255,244,214,.95), rgba(255,230,170,.35) 60%, transparent 100%)' },
+  { id: 'armored', n: 'Iron Guardian', i: 4, c: '170,190,225', d: 'Day. An overcast castle courtyard, grey sky over a battlement.',
+    sky: 'linear-gradient(#b4bec8 0, #98a4b0 52%, #5c646c 72%, #3c4046 100%)',
+    fx: 'background: repeating-linear-gradient(90deg, #4c535b 0 18px, transparent 18px 30px) 0 52% / 100% 12px no-repeat, linear-gradient(#4c535b, #4c535b) 0 64% / 100% 14% no-repeat' },
+  { id: 'warded3x', n: 'Frost Sentinel', i: 15, c: '110,190,255', d: 'Day. A pale snowfield under falling snow.',
+    sky: 'linear-gradient(#9fbfd6 0, #bcd6e6 56%, #cfe1ea 68%, #8eaabf 100%)',
+    fx: `background: ${dots('rgba(255,255,255,.9)', '90px 80px')}` },
+  { id: 'warded5x', n: 'Ethereal Sovereign', i: 31, c: '255,205,110', d: 'Bright. A golden heaven, rays fanning out from behind the boss.',
+    sky: 'radial-gradient(90% 80% at 74% 36%, #fbe7b4, #e8c07a 40%, #b88448 78%, #7a5228 100%)',
+    fx: 'background: repeating-conic-gradient(from 0deg at 74% 36%, rgba(255,250,225,.28) 0 5deg, transparent 5deg 16deg); -webkit-mask: radial-gradient(60% 60% at 74% 36%, #000, transparent 78%); mask: radial-gradient(60% 60% at 74% 36%, #000, transparent 78%)' },
+  { id: 'brute4x', n: 'Bloodfang Marauder', i: 22, c: '120,170,60', d: 'Dusk. A misty forest edge, green daylight going grey.',
+    sky: 'linear-gradient(#9cab8c 0, #7f9070 48%, #55643f 70%, #333d27 100%)',
+    fx: 'background: linear-gradient(transparent 42%, rgba(205,215,195,.34) 66%, transparent 88%)' },
+  { id: 'warded', n: 'Arcane Warden', i: 6, c: '170,80,230', floor: '90,200,120', d: 'Night. Violet necrotic glow over a sickly green floor.' },
+  { id: 'arcane5x', n: 'Voidcaller', i: 40, c: '120,60,210', floor: '200,40,30', wide: true, d: 'Night. A starry void, with red heat under the dragon.',
+    fx: `background: ${dots('rgba(230,220,255,.45)', '110px 90px')}; -webkit-mask: linear-gradient(#000 40%, transparent 75%); mask: linear-gradient(#000 40%, transparent 75%)` },
+];
+
+const vars = (p, b) => {
+  const v = {
+    bg: p.bg, frame: p.frame, panel: p.panel, 'panel-shadow': p.ps || 'none',
+    pborder: p.pborder || `rgba(${p.ln},.24)`, bw: p.bw || '1px', r: p.r || '6px', rb: p.rb || '6px', rw: p.rw || '4px', rc: p.rc || '2px',
+    ink: p.ink, text: p.text, touch: p.touch, 'touch-line': `rgba(${p.tint},.55)`,
+    'btn-c': p.btnC || p.touch, 'btn-bg': p.btnBg || `rgba(${p.tint},.1)`, 'btn-line': p.btnLine || `rgba(${p.tint},.55)`,
+    earned: p.earned, 'earned-line': `${p.earned}8c`, 'earned-fill': `${p.earned}14`, exp: p.exp, 'exp-fill': `${p.exp}26`,
+    bad: p.bad, phys: p.phys, mag: p.mag, good: p.good, done: p.done, 'done-line': p.dl, 'done-text': p.dt,
+    well: `rgba(${p.ln},.1)`, track: p.track, hp1: (p.hp || HP)[0], hp2: (p.hp || HP)[1],
+    scene: p.stage(b), stage: 'none', ts: 'none',
+    // By day the sprites drop a shadow instead of glowing.
+    bossf: b.sky ? rimmed('drop-shadow(0 8px 12px rgba(30,20,10,.4))') : darkBoss(`rgba(${b.c},.4)`),
+    herof: b.sky ? 'drop-shadow(0 8px 10px rgba(30,20,10,.45))' : p.hf,
+    'cap-font': "'Cinzel', serif", 'name-font': "'Alegreya', serif",
+  };
+  return Object.entries(v).map(([k, x]) => `--${k}:${x}`).join(';');
+};
+
+const phone = (p, b) => `
+<div><div class="lbl">${p.n.toUpperCase()}</div>
+<div class="phone t-${p.id}${b.sky ? ' lightstage' : ''}" style="${vars(p, b)}">
+  <div class="scene">
+  <div class="stagebar"><span class="cap">Boss #${b.i}</span><span class="menu"><i></i><i></i><i></i></span></div>
+  <div class="stage">
+    ${b.fx ? `<div class="fx" style="${b.fx}"></div>` : ''}
+    <img class="boss${b.wide ? ' wide' : ''}" src="../../public/sprites/bosses/${b.id}@3x.png" alt="">
+    <img class="hero" src="../../public/sprites/player/warrior@3x.png" alt="">
+    <div class="unit b"><div class="uname">${b.n.toUpperCase()} ${I.chev}</div>
+      <div class="hp"><b style="width:62%"></b><span>402 / 648</span></div>
+      <div class="stats"><span>${I.sword(p.phys)}61</span><span>${I.magic(p.mag)}58</span><span>${I.armor(p.text)}213</span><span>${I.ward(p.ward)}221</span><span>${I.aim(p.exp)}1%</span></div></div>
+    <div class="unit h"><div class="uname">RYN <small>14</small> ${I.chev}</div>
+      <div class="hp"><b style="width:18%"></b><span>1.04K / 5.74K</span></div>
+      <div class="stats"><span>${I.sword(p.phys)}1.4K</span><span>${I.magic(p.mag)}416</span><span>${I.heart(p.good)}526</span><span>${I.bolt(p.text)}611</span><span>${I.aim(p.exp)}3%</span></div></div>
+  </div>
+  </div>
+  <div class="panel"><div class="phead"><span class="cap">Skills</span><span class="pill">+ New habit</span></div>
+    <div class="group">DAILY</div>
+    <div class="habit bad"><span class="chk"></span><span class="nm">Doomscrolling</span><span class="streak">${I.flame}12</span><span class="plate">II</span><span class="dmg heal">1.09K</span></div>
+    <div class="habit done"><span class="chk"></span><span class="nm">Morning run</span><span class="streak">${I.flame}23</span><span class="plate">III</span><span class="dmg phys">5.96K</span></div>
+  </div>
+  <div class="end"></div>
+</div></div>`;
+
+document.getElementById('themes').textContent = THEMES.map(p => p.css || '').join('\n');
+document.getElementById('blocks').innerHTML = BOSSES.map(b => `
+<div class="block"><h2>${b.n.toUpperCase()}</h2><p>${b.d}</p>
+  <div class="pair">${THEMES.map(p => phone(p, b)).join('')}</div>
+</div>`).join('');
+</script>
+</body>
+</html>

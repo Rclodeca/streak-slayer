@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Ashen palettes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500&family=Alegreya+Sans:wght@400;500;700&display=swap" />
+<style>
+/* Colour schemes only: the same Ashen layout in each palette. Roles match the
+   real tokens: touch = silver/--accent, earned = brass, exp = gold. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b0d; color: #b9b6b0; font: 500 16px/1.4 'Alegreya', Georgia, serif; }
+.page { max-width: 1500px; margin: 0 auto; padding: 30px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #e8e4da; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 0 26px; }
+.grid { display: flex; flex-wrap: wrap; gap: 28px 22px; justify-content: center; }
+.pal { width: 300px; }
+.pal h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .22em; color: #e8e4da; margin: 0 0 4px; }
+.pal p { margin: 0 0 10px; min-height: 66px; font-size: 15px; }
+.sw { display: flex; gap: 4px; margin-bottom: 10px; }
+.sw i { flex: 1; height: 26px; border-radius: 4px; border: 1px solid rgba(255,255,255,.12); }
+
+/* the mock screen, themed by custom properties set inline */
+.scr { background: var(--bg); color: var(--text); border-radius: 16px; border: 1px solid var(--line); overflow: hidden; font-family: 'Alegreya Sans', sans-serif; font-weight: 500; font-size: 14px; }
+.top { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--frame); border-bottom: 1px solid var(--line); }
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .2em; color: var(--text-h); }
+.lvl { margin-left: auto; font: 600 11px 'Cinzel', serif; letter-spacing: .12em; color: var(--earned); border: 1px solid var(--earned-line); border-radius: 999px; padding: 2px 9px; }
+.stage { position: relative; height: 150px; background: radial-gradient(120% 90% at 50% 105%, var(--fog), transparent 70%), var(--stage); display: flex; align-items: flex-end; justify-content: center; }
+.boss { width: 70px; height: 92px; margin-bottom: 20px; background: var(--bossc); clip-path: polygon(50% 0, 78% 18%, 92% 55%, 78% 100%, 22% 100%, 8% 55%, 22% 18%); filter: drop-shadow(0 0 14px var(--glow)); }
+.boss::before, .boss::after { content: ''; position: absolute; top: 46px; width: 8px; height: 5px; background: var(--eye); border-radius: 50%; box-shadow: 0 0 8px var(--eye); }
+.boss::before { left: calc(50% - 15px); } .boss::after { left: calc(50% + 7px); }
+.name { position: absolute; top: 10px; left: 0; right: 0; text-align: center; font: 600 11px 'Cinzel', serif; letter-spacing: .22em; color: var(--text-h); }
+.hp { position: absolute; left: 14px; right: 14px; bottom: 10px; height: 4px; border-radius: 2px; background: rgba(0,0,0,.45); }
+.hp b { display: block; width: 64%; height: 100%; border-radius: 2px; background: var(--hp); }
+.body { padding: 12px; background: var(--bg); }
+.sec { display: flex; align-items: center; gap: 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 2px 0 8px; }
+.sec::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.row { display: flex; align-items: center; gap: 10px; background: var(--frame); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; margin-bottom: 6px; }
+.row .t { font: 500 16px 'Alegreya', serif; color: var(--text-h); flex: 1; }
+.row .s { font-size: 12px; color: var(--earned); }
+.chk { width: 17px; height: 17px; transform: rotate(45deg) scale(.82); border: 1.5px solid var(--touch-line); border-radius: 2px; flex: none; }
+.chk.done { background: var(--done); border-color: var(--done-line); }
+.chk.bad { border-color: var(--bad); }
+.row.done .t { color: var(--done-text); text-decoration: line-through; text-decoration-color: var(--done-line); }
+.rank { display: flex; gap: 6px; margin: 10px 0; }
+.rank span { flex: 1; text-align: center; padding: 6px 0; font: 600 12px 'Cinzel', serif; color: var(--earned); border: 1px solid var(--earned-line); border-radius: 4px; background: rgba(0,0,0,.2); }
+.exp { height: 4px; border-radius: 2px; background: rgba(0,0,0,.4); margin: 4px 0 12px; }
+.exp b { display: block; width: 48%; height: 100%; border-radius: 2px; background: var(--exp); }
+.btns { display: flex; gap: 8px; }
+.btn { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; font: 600 11px 'Cinzel', serif; letter-spacing: .16em; color: var(--accent); border: 1px solid var(--touch-line); background: var(--accent-fill); }
+.btn.p { color: var(--on-accent); background: var(--accent-solid); border-color: transparent; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Ashen palettes</h1>
+  <p class="lede">Same layout, different colour schemes. Silver/touch, brass/earned and EXP gold roles are kept in each.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+// bg, frame, line, text, text-h, accent (touch), accent-solid, earned (rank/level), exp, bad, stage/fog/boss colours
+const P = [
+  { n: 'Current · Moonlit', d: 'Blue-black stone, silver touch, brass earned. For reference.',
+    bg: '#07080c', frame: '#141720', line: '150,141,126', text: '#a9adb6', th: '#e8ebf0', acc: '#dbe2ee', accs: '#a9b4c8', tint: '170,185,215', earned: '#d2bb85', exp: '#d9a93c', bad: '#c0524a', stage: '#0d1018', fog: '#2a3142', boss: '#1a1620', glow: 'rgba(224,120,58,.4)', eye: '#e0783a', hp: '#b8453a', done: '#3c4352', doneline: '#566074', donetext: '#787c87', onacc: '#0a0c12' },
+  { n: 'Cinder', d: 'Warm charcoal with no blue at all. Bone text, rusted copper to touch, old gold earned.',
+    bg: '#0c0a09', frame: '#1a1613', line: '170,140,110', text: '#aca196', th: '#ede3d3', acc: '#d98a58', accs: '#c0693a', tint: '217,138,88', earned: '#cdb27a', exp: '#e0b040', bad: '#c4443a', stage: '#120e0c', fog: '#3a2a20', boss: '#241a16', glow: 'rgba(255,110,50,.45)', eye: '#ff7a3a', hp: '#c4443a', done: '#4a3d33', doneline: '#6e5b4a', donetext: '#8a7c6c', onacc: '#150d08' },
+  { n: 'Verdigris', d: 'Deep green-black, like oxidised bronze. Aged copper-teal to touch, pale gold earned.',
+    bg: '#06090a', frame: '#0f1a1a', line: '120,150,140', text: '#9fb0aa', th: '#e3eee8', acc: '#7fd1be', accs: '#4fa593', tint: '127,209,190', earned: '#d6c07e', exp: '#e0b84a', bad: '#c85a48', stage: '#0a1312', fog: '#1e4440', boss: '#101a1a', glow: 'rgba(120,230,200,.35)', eye: '#9ff5dd', hp: '#c85a48', done: '#26413d', doneline: '#3f6a62', donetext: '#6f8a84', onacc: '#04100d' },
+  { n: 'Aubergine', d: 'Plum-black dusk. Soft lilac to touch, rose-gold earned. Moody, more magical.',
+    bg: '#0a070c', frame: '#1a1320', line: '160,130,160', text: '#aa9fb2', th: '#efe6f2', acc: '#c9a8e8', accs: '#9d78c4', tint: '201,168,232', earned: '#e0b48a', exp: '#e6b84a', bad: '#d0506a', stage: '#110b16', fog: '#3a2450', boss: '#1c1224', glow: 'rgba(190,110,255,.4)', eye: '#e08aff', hp: '#d0506a', done: '#3e2f4c', doneline: '#5f4a78', donetext: '#82748f', onacc: '#12081a' },
+  { n: 'Oxblood', d: 'Black with dried-blood red. Bone for touch, tarnished gold earned. Heavy and grim.',
+    bg: '#0b0707', frame: '#1c1111', line: '170,130,120', text: '#b0a29c', th: '#f0e4dc', acc: '#e6d2c0', accs: '#c8a890', tint: '230,210,192', earned: '#d4b46a', exp: '#e6ae3a', bad: '#e0503c', stage: '#130a0a', fog: '#4a1a1a', boss: '#1e0e0e', glow: 'rgba(220,40,40,.45)', eye: '#ff4a3a', hp: '#c43030', done: '#472a28', doneline: '#6e4440', donetext: '#8a746f', onacc: '#170807' },
+  { n: 'Lichen', d: 'Mossy dark olive, damp stone. Pale sage to touch, antique gold earned. Quiet and natural.',
+    bg: '#080a07', frame: '#141a12', line: '140,150,115', text: '#a4ac98', th: '#e8eddc', acc: '#b4cf8e', accs: '#8aa862', tint: '180,207,142', earned: '#d8bc74', exp: '#e4b440', bad: '#c8564a', stage: '#0c120a', fog: '#2c3c20', boss: '#141a10', glow: 'rgba(170,220,90,.3)', eye: '#d4f07a', hp: '#c8564a', done: '#323f2a', doneline: '#4f6240', donetext: '#7a856c', onacc: '#0b1006' },
+  { n: 'Bone', d: 'A light option: aged parchment and iron-gall ink. Oxblood touch, deep brass earned.',
+    bg: '#e4dbc6', frame: '#efe7d4', line: '90,70,40', text: '#5e5342', th: '#241c10', acc: '#7c2d22', accs: '#7c2d22', tint: '124,45,34', earned: '#8a6a22', exp: '#b8861a', bad: '#a8321e', stage: '#d4c8ac', fog: '#f4ecd8', boss: '#2a2218', glow: 'rgba(60,40,20,.35)', eye: '#c44a2a', hp: '#a8321e', done: '#c8bc9e', doneline: '#a89a78', donetext: '#8a7e66', onacc: '#f4ecd8' },
+];
+document.getElementById('grid').innerHTML = P.map(p => `
+<div class="pal">
+  <h2>${p.n}</h2><p>${p.d}</p>
+  <div class="sw">${[p.bg, p.frame, p.text, p.acc, p.earned, p.exp, p.bad].map(c => `<i style="background:${c}"></i>`).join('')}</div>
+  <div class="scr" style="--bg:${p.bg};--frame:${p.frame};--line:rgba(${p.line},.22);--text:${p.text};--text-h:${p.th};--accent:${p.acc};--accent-solid:${p.accs};--accent-fill:rgba(${p.tint},.1);--touch-line:rgba(${p.tint},.5);--earned:${p.earned};--earned-line:${p.earned}66;--exp:${p.exp};--bad:${p.bad};--stage:${p.stage};--fog:${p.fog};--bossc:${p.boss};--glow:${p.glow};--eye:${p.eye};--hp:${p.hp};--done:${p.done};--done-line:${p.doneline};--done-text:${p.donetext};--on-accent:${p.onacc}">
+    <div class="top"><span class="cap">STREAKSLAYER</span><span class="lvl">LV 14</span></div>
+    <div class="stage"><div class="name">THE ASHEN WARDEN</div><div class="boss"></div><div class="hp"><b></b></div></div>
+    <div class="body">
+      <div class="sec">DAILY</div>
+      <div class="row"><span class="chk"></span><span class="t">Morning run</span><span class="s">12 ◆</span></div>
+      <div class="row done"><span class="chk done"></span><span class="t">Read ten pages</span><span class="s">31 ◆</span></div>
+      <div class="row"><span class="chk bad"></span><span class="t">Doomscroll</span></div>
+      <div class="rank"><span>I</span><span>II</span><span>III</span></div>
+      <div class="exp"><b></b></div>
+      <div class="btns"><div class="btn">+ NEW HABIT</div><div class="btn p">STRIKE</div></div>
+    </div>
+  </div>
+</div>`).join('');
+</script>
+</body>
+</html>

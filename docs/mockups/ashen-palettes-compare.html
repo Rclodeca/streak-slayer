@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Palette compare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap" />
+<style>
+/* Main screen in seven palettes. Same layout; only colour (and the panel
+   surface / sprite lighting that go with it) changes. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #202022; color: #b8b6b0; font: 500 16px/1.35 'Alegreya', Georgia, serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 0 22px; }
+.scroll { overflow-x: auto; padding-bottom: 14px; }
+.row { display: flex; gap: 22px; width: max-content; margin: 0 auto; align-items: flex-start; }
+.col { width: 340px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col p { margin: 0 0 8px; min-height: 66px; font-size: 15px; }
+.sw { display: flex; gap: 3px; margin-bottom: 10px; }
+.sw i { flex: 1; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,.14); }
+
+.phone { width: 340px; background: var(--bg); border: 1px solid var(--line-mid); border-radius: 26px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); }
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; }
+.stagebar { display: flex; justify-content: space-between; align-items: center; padding: 16px 14px 0; }
+.stagebar .cap { color: var(--text); letter-spacing: .3em; }
+.menu { width: 38px; height: 38px; border-radius: 6px; background: var(--touch-fill); border: 1px solid var(--line); display: grid; place-content: center; gap: 4px; }
+.menu i { display: block; width: 16px; height: 2px; background: var(--ink); }
+.stage { position: relative; height: 310px; background: var(--stage); }
+.boss { position: absolute; right: 8px; top: 18px; width: 165px; image-rendering: pixelated; filter: var(--bossf); }
+.hero { position: absolute; left: 4px; top: 132px; width: 130px; image-rendering: pixelated; filter: var(--herof); }
+.unit { position: absolute; }
+.unit.b { left: 14px; top: 16px; width: 180px; }
+.unit.h { left: 150px; top: 204px; width: 178px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 4px; }
+.uname small { font-size: 11px; color: var(--earned); letter-spacing: .1em; }
+.uname svg { width: 11px; height: 11px; stroke: var(--touch); fill: none; stroke-width: 2.4; }
+.hp { height: 13px; border-radius: 2px; background: var(--track); border: 1px solid var(--line-mid); position: relative; overflow: hidden; }
+.hp b { position: absolute; inset: 0 auto 0 0; background: linear-gradient(var(--hp1), var(--hp2)); }
+.hp span { position: absolute; right: 5px; top: -1px; font: 700 10.5px/13px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.7); }
+.stats { display: flex; gap: 7px; margin-top: 5px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.ico { width: 12px; height: 12px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.panel { position: relative; margin: 16px 12px 0; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 12px 10px; box-shadow: var(--panel-shadow); }
+.panel::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: linear-gradient(90deg, transparent, var(--touch-line), transparent); }
+.panel::after { content: ''; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: var(--frame); border: 1px solid var(--touch-line); }
+.phead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.phead .cap { color: var(--ink); font-size: 12px; }
+.pill { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); background: var(--touch-fill); border: 1px solid var(--touch-line); border-radius: 6px; padding: 8px 11px; min-height: 36px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 8px 0 3px; }
+.habit { display: flex; align-items: center; gap: 10px; padding: 8px 2px; min-height: 42px; position: relative; }
+.habit .chk { width: 16px; height: 16px; flex: none; transform: rotate(45deg) scale(.85); border: 1.6px solid var(--ink); border-radius: 2px; margin-left: 5px; }
+.habit.bad .chk { border-color: var(--bad); }
+.habit.bad::before { content: ''; position: absolute; left: -6px; top: 8px; bottom: 8px; width: 2px; background: var(--bad); border-radius: 1px; }
+.habit .nm { flex: 1; font: 700 17px 'Alegreya', serif; color: var(--ink); }
+.habit.done .chk { background: var(--done); border-color: var(--done-line); }
+.habit.done .nm { color: var(--done-text); font-weight: 500; text-decoration: line-through; text-decoration-color: var(--done-line); text-decoration-thickness: 1.25px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.habit.done .streak { color: var(--text); }
+.streak svg { width: 12px; height: 12px; stroke: var(--text); fill: none; stroke-width: 1.8; }
+.plate { font: 600 9.5px 'Cinzel', serif; color: var(--earned); border: 1px solid var(--earned-line); border-radius: 4px; padding: 2px 6px; min-width: 29px; text-align: center; background: var(--earned-fill); }
+.dmg { font: 700 15px 'Alegreya Sans', sans-serif; min-width: 44px; text-align: right; }
+.phys { color: var(--phys); } .magic { color: var(--mag); } .heal { color: var(--good); }
+
+.quest { display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 7px; border-radius: 4px; background: var(--well); border-left: 2px solid var(--line-mid); }
+.quest.soon { border-left-color: var(--exp); background: linear-gradient(90deg, var(--exp-fill), var(--well)); }
+.quest .chk { width: 16px; height: 16px; transform: rotate(45deg) scale(.85); border: 1.6px solid var(--ink); border-radius: 2px; flex: none; margin: 0 5px; }
+.quest .mid { flex: 1; }
+.qn { font: 700 16px 'Alegreya', serif; color: var(--ink); }
+.dots { display: flex; align-items: center; gap: 5px; margin-top: 3px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--earned); }
+.dots i.o { background: none; border: 1.5px solid var(--earned); }
+.dots em { font-style: normal; margin-left: 3px; }
+.quest.soon .dots em { color: var(--exp); }
+.xp { text-align: center; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.xp svg { display: block; margin: 0 auto 1px; width: 20px; height: 20px; stroke: var(--exp); fill: none; stroke-width: 1.5; stroke-linejoin: round; }
+.end { height: 18px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Palette compare</h1>
+  <p class="lede">Current and Bone, then five new directions. Scroll sideways.</p>
+  <div class="scroll"><div class="row" id="row"></div></div>
+</div>
+<script>
+const ic = (d, c) => `<svg class="ico" viewBox="0 0 24 24" style="stroke:${c}">${d}</svg>`;
+const I = {
+  sword: c => ic('<path d="M5 19 17 7M14 4h6v6M5 19l-1 1M7 15l2 2"/>', c),
+  magic: c => ic('<path d="M4 20 16 8M14 3v4M12 5h4M19 10v3M17.5 11.5h3"/>', c),
+  armor: c => ic('<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6z"/>', c),
+  ward: c => ic('<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6zM12 3v18"/>', c),
+  aim: c => ic('<circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>', c),
+  heart: c => ic('<path d="M12 20S4 15 4 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15 12 20 12 20z"/>', c),
+  bolt: c => ic('<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>', c),
+  flame: '<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-10z"/></svg>',
+  chev: '<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>',
+  spark: '<svg viewBox="0 0 24 24"><path d="M12 3c.5 4 2 6 6 6.5-4 .5-5.5 2.5-6 6.5-.5-4-2-6-6-6.5 4-.5 5.5-2.5 6-6.5zM18 14c.3 2 1 3 3 3.3-2 .3-2.7 1.3-3 3.2-.3-1.9-1-2.9-3-3.2 2-.3 2.7-1.3 3-3.3z"/></svg>',
+};
+
+// Sprite lighting: dark rim + ember glow for dark pages; dark rim + soft drop shadow for light ones.
+const rim = '#2a1a10';
+const rimmed = tail => `drop-shadow(2px 0 0 ${rim}) drop-shadow(-2px 0 0 ${rim}) drop-shadow(0 2px 0 ${rim}) drop-shadow(0 -2px 0 ${rim}) ${tail}`;
+const darkBoss = g => rimmed(`drop-shadow(0 0 12px ${g}) brightness(1.06)`);
+const darkHero = 'drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.85) contrast(1.05)';
+const lightBoss = rimmed('drop-shadow(0 8px 12px rgba(30,30,30,.35))');
+const lightHero = 'drop-shadow(0 8px 10px rgba(30,30,30,.4))';
+
+// ink = names; text = secondary; touch = what you tap; earned = ranks/level; exp = EXP gold.
+const P = [
+  { tag: 'CURRENT', n: 'Moonlit', d: 'Blue-black stone, silver touch, brass earned.',
+    bg: '#07080c', frame: '#141720', panel: '#141720', ps: 'none', ink: '#e8ebf0', text: '#a9adb6', ln: '150,141,126', tint: '170,185,215', touch: '#dbe2ee', earned: '#d2bb85', exp: '#d9a93c', bad: '#d4574a', phys: '#e5705c', mag: '#a98be0', good: '#7fc17a', ward: '#7f9fd8', done: '#3c4352', dl: '#566074', dt: '#787c87', hp: ['#c4402a', '#8c2616'], track: 'rgba(0,0,0,.5)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, #1c2230, transparent 70%), #07080c', bf: darkBoss('rgba(224,120,58,.4)'), hf: darkHero },
+  { tag: 'LIKED', n: 'Bone', d: 'Aged parchment, ink, oxblood. Light, warm. Critique: reads as paper or a notebook.',
+    bg: '#e4dbc6', frame: '#efe7d4', panel: '#efe7d4', ps: 'none', ink: '#241c10', text: '#5e5342', ln: '90,70,40', tint: '124,45,34', touch: '#7c2d22', earned: '#8a6a22', exp: '#b8861a', bad: '#a8321e', phys: '#a8321e', mag: '#6a4a9a', good: '#3f6b3a', ward: '#4a6a9a', done: '#c8bc9e', dl: '#a89a78', dt: '#8a7e66', hp: ['#c4402a', '#8c2616'], track: 'rgba(60,40,20,.2)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, rgba(255,250,235,.7), transparent 70%), #e4dbc6', bf: lightBoss, hf: lightHero },
+  { tag: 'NEW · LIGHT', n: 'Limestone', d: 'Cool carved stone instead of warm paper. Panels are bevelled slabs; deep teal to touch.',
+    bg: '#b9bfbd', frame: '#cdd2d0', panel: 'linear-gradient(#d6dad8, #c6cbc9)', ps: 'inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 6px rgba(30,45,50,.18), 0 2px 6px rgba(30,45,50,.22)', ink: '#182226', text: '#434f54', ln: '30,50,60', tint: '24,90,100', touch: '#17555c', earned: '#7d5f1c', exp: '#a8741a', bad: '#a2321f', phys: '#a2321f', mag: '#5a469a', good: '#35683f', ward: '#33669a', done: '#a7aeac', dl: '#869090', dt: '#76817f', hp: ['#c4402a', '#8c2616'], track: 'rgba(20,35,40,.25)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, rgba(235,240,238,.75), transparent 70%), linear-gradient(#aeb5b3, #b9bfbd)', bf: lightBoss, hf: lightHero },
+  { tag: 'NEW · MID', n: 'Fog', d: 'Mid-tone grey-green, neither dark nor light. Sea-glass to touch, amber earned. Misty, calm.',
+    bg: '#38413f', frame: '#465150', panel: '#465150', ps: 'inset 0 1px 0 rgba(255,255,255,.07), 0 2px 6px rgba(0,0,0,.25)', ink: '#eef3ef', text: '#bcc7c2', ln: '220,235,225', tint: '168,216,200', touch: '#a8dcc8', earned: '#e0b868', exp: '#f0c050', bad: '#f07a62', phys: '#f59272', mag: '#c4acf5', good: '#a2de92', ward: '#92bdec', done: '#5a6664', dl: '#76847f', dt: '#9aa5a0', hp: ['#d8503a', '#a02e1c'], track: 'rgba(0,0,0,.3)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, rgba(210,230,222,.28), transparent 70%), linear-gradient(#2f3836, #38413f)', bf: darkBoss('rgba(200,230,215,.35)'), hf: 'drop-shadow(0 8px 14px rgba(0,0,0,.5))' },
+  { tag: 'NEW · MID', n: 'Dusk', d: 'Dusty plum-slate, the hour after sunset. Peach to touch, soft gold earned.',
+    bg: '#3a3244', frame: '#483f55', panel: '#483f55', ps: 'inset 0 1px 0 rgba(255,255,255,.07), 0 2px 6px rgba(0,0,0,.28)', ink: '#f6f0f8', text: '#cdc2d6', ln: '230,215,240', tint: '244,184,160', touch: '#f4bca0', earned: '#e6c07a', exp: '#f0c050', bad: '#ff8070', phys: '#ff917c', mag: '#cbaaff', good: '#a2de92', ward: '#92bdec', done: '#5e5470', dl: '#7a6e90', dt: '#a096ae', hp: ['#d8503a', '#a02e1c'], track: 'rgba(0,0,0,.3)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, rgba(244,184,160,.22), transparent 70%), linear-gradient(#2e2838, #3a3244)', bf: darkBoss('rgba(255,170,130,.4)'), hf: 'drop-shadow(0 8px 14px rgba(0,0,0,.5))' },
+  { tag: 'NEW · DARK', n: 'Verdigris', d: 'Green-black like oxidised bronze. Copper-teal to touch, pale gold earned.',
+    bg: '#06090a', frame: '#0f1a1a', panel: '#0f1a1a', ps: 'none', ink: '#e3eee8', text: '#9fb0aa', ln: '120,150,140', tint: '127,209,190', touch: '#7fd1be', earned: '#d6c07e', exp: '#e0b84a', bad: '#d4624e', phys: '#e27560', mag: '#b49af0', good: '#86d08a', ward: '#7fb2e0', done: '#26413d', dl: '#3f6a62', dt: '#6f8a84', hp: ['#c4402a', '#8c2616'], track: 'rgba(0,0,0,.5)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, #1e4440, transparent 70%), #06090a', bf: darkBoss('rgba(120,230,200,.35)'), hf: darkHero },
+  { tag: 'NEW · DARK', n: 'Cinder', d: 'Warm charcoal, no blue. Bone text, rusted copper to touch, old gold earned.',
+    bg: '#0c0a09', frame: '#1a1613', panel: '#1a1613', ps: 'none', ink: '#ede3d3', text: '#aca196', ln: '170,140,110', tint: '217,138,88', touch: '#e0925e', earned: '#cdb27a', exp: '#e0b040', bad: '#d4503f', phys: '#e5705a', mag: '#b49af0', good: '#86c880', ward: '#7fa8d8', done: '#4a3d33', dl: '#6e5b4a', dt: '#8a7c6c', hp: ['#c4402a', '#8c2616'], track: 'rgba(0,0,0,.5)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, #3a2a20, transparent 70%), #0c0a09', bf: darkBoss('rgba(255,110,50,.45)'), hf: darkHero },
+];
+
+const vars = p => `--bg:${p.bg};--frame:${p.frame};--panel:${p.panel};--panel-shadow:${p.ps};--ink:${p.ink};--text:${p.text};--line:rgba(${p.ln},.24);--line-mid:rgba(${p.ln},.4);--touch:${p.touch};--touch-line:rgba(${p.tint},.55);--touch-fill:rgba(${p.tint},.1);--earned:${p.earned};--earned-line:${p.earned}8c;--earned-fill:${p.earned}14;--exp:${p.exp};--exp-fill:${p.exp}26;--bad:${p.bad};--phys:${p.phys};--mag:${p.mag};--good:${p.good};--done:${p.done};--done-line:${p.dl};--done-text:${p.dt};--well:rgba(${p.ln},.1);--track:${p.track};--hp1:${p.hp[0]};--hp2:${p.hp[1]};--stage:${p.stage};--bossf:${p.bf};--herof:${p.hf}`;
+
+const screen = p => {
+  const sw = p.phys, mg = p.mag;
+  const fl = I.flame;
+  return `
+<div class="phone" style="${vars(p)}">
+  <div class="stagebar"><span class="cap">Boss #9</span><span class="menu"><i></i><i></i><i></i></span></div>
+  <div class="stage">
+    <img class="boss" src="../../public/sprites/bosses/balanced@3x.png" alt="">
+    <img class="hero" src="../../public/sprites/player/warrior@3x.png" alt="">
+    <div class="unit b"><div class="uname">DRIFTER ${I.chev}</div>
+      <div class="hp"><b style="width:41%"></b><span>266 / 648</span></div>
+      <div class="stats"><span>${I.sword(p.phys)}61</span><span>${I.magic(p.mag)}58</span><span>${I.armor(p.text)}213</span><span>${I.ward(p.ward)}221</span><span>${I.aim(p.exp)}1%</span></div></div>
+    <div class="unit h"><div class="uname">RYN <small>14</small> ${I.chev}</div>
+      <div class="hp"><b style="width:18%"></b><span>1.04K / 5.74K</span></div>
+      <div class="stats"><span>${I.sword(p.phys)}1.4K</span><span>${I.magic(p.mag)}416</span><span>${I.heart(p.good)}526</span><span>${I.bolt(p.text)}611</span><span>${I.aim(p.exp)}3%</span></div></div>
+  </div>
+  <div class="panel"><div class="phead"><span class="cap">Skills</span><span class="pill">+ New habit</span></div>
+    <div class="group">DAILY</div>
+    <div class="habit bad"><span class="chk"></span><span class="nm">Doomscrolling</span><span class="streak">${fl}12</span><span class="plate">II</span><span class="dmg heal">1.09K</span></div>
+    <div class="habit done"><span class="chk"></span><span class="nm">Morning run</span><span class="streak">${fl}23</span><span class="plate">III</span><span class="dmg phys">5.96K</span></div>
+    <div class="habit done"><span class="chk"></span><span class="nm">Read 20 pages</span><span class="streak">${fl}9</span><span class="plate">IV</span><span class="dmg magic">1.41K</span></div>
+    <div class="habit"><span class="chk"></span><span class="nm">Meditate</span><span class="streak">${fl}4</span><span class="plate">I</span><span class="dmg magic">566</span></div>
+  </div>
+  <div class="panel"><div class="phead"><span class="cap">Quests</span><span class="pill">+ New quest</span></div>
+    <div class="quest soon"><span class="chk"></span><div class="mid"><div class="qn">Call the dentist</div><div class="dots"><i></i><i class="o"></i><i class="o"></i><em>2 days left</em></div></div><div class="xp">${I.spark}+EXP</div></div>
+    <div class="quest"><span class="chk"></span><div class="mid"><div class="qn">Finish the tax return</div><div class="dots"><i></i><i></i><i></i><em>6 days left</em></div></div><div class="xp">${I.spark}+EXP</div></div>
+  </div>
+  <div class="end"></div>
+</div>`;
+};
+
+document.getElementById('row').innerHTML = P.map(p => `
+<div class="col">
+  <div class="tag">${p.tag}</div><h2>${p.n.toUpperCase()}</h2><p>${p.d}</p>
+  <div class="sw">${[p.bg, p.panel.startsWith('linear') ? p.frame : p.panel, p.ink, p.touch, p.earned, p.exp, p.bad].map(c => `<i style="background:${c}"></i>`).join('')}</div>
+  ${screen(p)}
+</div>`).join('');
+</script>
+</body>
+</html>

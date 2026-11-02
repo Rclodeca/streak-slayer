@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Style directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=Fredoka:wght@500;600;700&family=Pixelify+Sans:wght@500;700&display=swap" />
+<style>
+/* Same main-screen layout in very different directions. Colour, panel
+   surface, corners and title/name type change per style; the art does not. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #202022; color: #b8b6b0; font: 500 16px/1.35 'Alegreya', Georgia, serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 0 26px; }
+.grid { display: flex; flex-wrap: wrap; gap: 34px 22px; justify-content: center; align-items: flex-start; }
+.col { width: 340px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col p { margin: 0 0 8px; min-height: 88px; font-size: 15px; }
+.sw { display: flex; gap: 3px; margin-bottom: 10px; }
+.sw i { flex: 1; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,.14); }
+
+.phone { width: 340px; background: var(--bg); border: 1px solid #000; border-radius: 26px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); text-shadow: var(--ts); }
+.cap { font: 600 11px var(--cap-font); letter-spacing: .22em; text-transform: uppercase; }
+.stagebar { display: flex; justify-content: space-between; align-items: center; padding: 16px 14px 0; }
+.stagebar .cap { color: var(--ink); letter-spacing: .3em; }
+.menu { width: 38px; height: 38px; border-radius: var(--rb); background: var(--btn-bg); border: 1px solid var(--btn-line); display: grid; place-content: center; gap: 4px; }
+.menu i { display: block; width: 16px; height: 2px; background: var(--btn-c); }
+.stage { position: relative; height: 310px; background: var(--stage); }
+.boss { position: absolute; right: 8px; top: 18px; width: 165px; image-rendering: pixelated; filter: var(--bossf); }
+.hero { position: absolute; left: 4px; top: 132px; width: 130px; image-rendering: pixelated; filter: var(--herof); }
+.unit { position: absolute; }
+.unit.b { left: 14px; top: 16px; width: 180px; }
+.unit.h { left: 150px; top: 204px; width: 178px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px var(--cap-font); letter-spacing: .2em; color: var(--ink); margin-bottom: 4px; }
+.uname small { font-size: 11px; color: var(--earned); letter-spacing: .1em; }
+.uname svg { width: 11px; height: 11px; stroke: var(--touch); fill: none; stroke-width: 2.4; }
+.hp { height: 13px; border-radius: 2px; background: var(--track); border: 1px solid rgba(0,0,0,.5); position: relative; overflow: hidden; }
+.hp b { position: absolute; inset: 0 auto 0 0; background: linear-gradient(var(--hp1), var(--hp2)); }
+.hp span { position: absolute; right: 5px; top: -1px; font: 700 10.5px/13px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.7); }
+.stats { display: flex; gap: 7px; margin-top: 5px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.ico { width: 12px; height: 12px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.panel { position: relative; margin: 16px 12px 0; background: var(--panel); border: var(--bw) solid var(--pborder); border-radius: var(--r); padding: 12px 12px 10px; box-shadow: var(--panel-shadow); }
+.panel::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: linear-gradient(90deg, transparent, var(--touch-line), transparent); }
+.panel::after { content: ''; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: var(--frame); border: 1px solid var(--touch-line); }
+.phead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.phead .cap { color: var(--ink); font-size: 12px; }
+.pill { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--btn-c); background: var(--btn-bg); border: 1px solid var(--btn-line); border-radius: var(--rb); padding: 8px 12px; min-height: 36px; }
+.group { font: 600 10px var(--cap-font); letter-spacing: .24em; color: var(--text); margin: 8px 0 3px; }
+.habit { display: flex; align-items: center; gap: 10px; padding: 8px 2px; min-height: 42px; position: relative; }
+.chk { width: 16px; height: 16px; flex: none; transform: rotate(45deg) scale(.85); border: 1.6px solid var(--ink); border-radius: var(--rc); }
+.habit .chk { margin-left: 5px; }
+.habit.bad .chk { border-color: var(--bad); }
+.habit.bad::before { content: ''; position: absolute; left: -6px; top: 8px; bottom: 8px; width: 2px; background: var(--bad); border-radius: 1px; }
+.habit .nm { flex: 1; font: 700 17px var(--name-font); color: var(--ink); }
+.habit.done .chk { background: var(--done); border-color: var(--done-line); }
+.habit.done .nm { color: var(--done-text); font-weight: 500; text-decoration: line-through; text-decoration-color: var(--done-line); text-decoration-thickness: 1.25px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.habit.done .streak { color: var(--text); }
+.streak svg { width: 12px; height: 12px; stroke: var(--text); fill: none; stroke-width: 1.8; }
+.plate { font: 600 9.5px var(--cap-font); color: var(--earned); border: 1px solid var(--earned-line); border-radius: var(--rw); padding: 2px 6px; min-width: 29px; text-align: center; background: var(--earned-fill); }
+.dmg { font: 700 15px 'Alegreya Sans', sans-serif; min-width: 44px; text-align: right; }
+.phys { color: var(--phys); } .magic { color: var(--mag); } .heal { color: var(--good); }
+
+.quest { display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 7px; border-radius: var(--rw); background: var(--well); border-left: 2px solid var(--pborder); }
+.quest.soon { border-left-color: var(--exp); background: linear-gradient(90deg, var(--exp-fill), var(--well)); }
+.quest .chk { margin: 0 5px; }
+.quest .mid { flex: 1; }
+.qn { font: 700 16px var(--name-font); color: var(--ink); }
+.dots { display: flex; align-items: center; gap: 5px; margin-top: 3px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--earned); }
+.dots i.o { background: none; border: 1.5px solid var(--earned); }
+.dots em { font-style: normal; margin-left: 3px; }
+.quest.soon .dots em { color: var(--exp); }
+.xp { text-align: center; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.xp svg { display: block; margin: 0 auto 1px; width: 20px; height: 20px; stroke: var(--exp); fill: none; stroke-width: 1.5; stroke-linejoin: round; }
+.end { height: 18px; }
+</style>
+<style id="themes"></style>
+</head>
+<body>
+<!-- Game Boy: posterise any image to the four DMG greens -->
+<svg width="0" height="0" style="position:absolute">
+  <filter id="gb" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values=".3 .59 .11 0 0  .3 .59 .11 0 0  .3 .59 .11 0 0  0 0 0 1 0" />
+    <feComponentTransfer>
+      <feFuncR type="discrete" tableValues=".059 .188 .545 .608" />
+      <feFuncG type="discrete" tableValues=".22 .384 .675 .737" />
+      <feFuncB type="discrete" tableValues=".059 .188 .059 .059" />
+    </feComponentTransfer>
+  </filter>
+</svg>
+<div class="page">
+  <h1>Style directions</h1>
+  <p class="lede">The main screen in eight directions, from grim to cute. Colour, panel surface, corners and type change; the art doesn't.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const ic = (d, c) => `<svg class="ico" viewBox="0 0 24 24" style="stroke:${c}">${d}</svg>`;
+const I = {
+  sword: c => ic('<path d="M5 19 17 7M14 4h6v6M5 19l-1 1M7 15l2 2"/>', c),
+  magic: c => ic('<path d="M4 20 16 8M14 3v4M12 5h4M19 10v3M17.5 11.5h3"/>', c),
+  armor: c => ic('<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6z"/>', c),
+  ward: c => ic('<path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6zM12 3v18"/>', c),
+  aim: c => ic('<circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>', c),
+  heart: c => ic('<path d="M12 20S4 15 4 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15 12 20 12 20z"/>', c),
+  bolt: c => ic('<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>', c),
+  flame: '<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-10z"/></svg>',
+  chev: '<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>',
+  spark: '<svg viewBox="0 0 24 24"><path d="M12 3c.5 4 2 6 6 6.5-4 .5-5.5 2.5-6 6.5-.5-4-2-6-6-6.5 4-.5 5.5-2.5 6-6.5zM18 14c.3 2 1 3 3 3.3-2 .3-2.7 1.3-3 3.2-.3-1.9-1-2.9-3-3.2 2-.3 2.7-1.3 3-3.3z"/></svg>',
+};
+
+const rimmed = (tail, r = '#2a1a10') => `drop-shadow(2px 0 0 ${r}) drop-shadow(-2px 0 0 ${r}) drop-shadow(0 2px 0 ${r}) drop-shadow(0 -2px 0 ${r}) ${tail}`;
+const darkBoss = g => rimmed(`drop-shadow(0 0 12px ${g}) brightness(1.06)`);
+const darkHero = 'drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.85) contrast(1.05)';
+const lightBoss = rimmed('drop-shadow(0 8px 12px rgba(30,30,30,.35))');
+const lightHero = 'drop-shadow(0 8px 10px rgba(30,30,30,.4))';
+const HP = ['#c4402a', '#8c2616'];
+
+const P = [
+  { id: 'moonlit', tag: 'REFERENCE · CURRENT', n: 'Moonlit', d: 'Blue-black stone, silver touch, brass earned.',
+    bg: '#07080c', frame: '#141720', panel: '#141720', ink: '#e8ebf0', text: '#a9adb6', ln: '150,141,126', tint: '170,185,215', touch: '#dbe2ee', earned: '#d2bb85', exp: '#d9a93c', bad: '#d4574a', phys: '#e5705c', mag: '#a98be0', good: '#7fc17a', ward: '#7f9fd8', done: '#3c4352', dl: '#566074', dt: '#787c87', track: 'rgba(0,0,0,.5)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, #1c2230, transparent 70%), #07080c', bf: darkBoss('rgba(224,120,58,.4)'), hf: darkHero },
+
+  { id: 'bone', tag: 'REFERENCE · LIKED', n: 'Bone', d: 'Parchment and ink. Liked, but reads as paper or a notebook.',
+    bg: '#e4dbc6', frame: '#efe7d4', panel: '#efe7d4', ink: '#241c10', text: '#5e5342', ln: '90,70,40', tint: '124,45,34', touch: '#7c2d22', earned: '#8a6a22', exp: '#b8861a', bad: '#a8321e', phys: '#a8321e', mag: '#6a4a9a', good: '#3f6b3a', ward: '#4a6a9a', done: '#c8bc9e', dl: '#a89a78', dt: '#8a7e66', track: 'rgba(60,40,20,.2)',
+    stage: 'radial-gradient(70% 55% at 72% 55%, rgba(255,250,235,.7), transparent 70%), #e4dbc6', bf: lightBoss, hf: lightHero },
+
+  { id: 'crypt', tag: 'MATCHES CURRENT', n: 'Crypt', d: 'Same rules as now (silver touch, brass earned) but warm stone, and the stage is lit by a candle on one side and the moon on the other. A place, not a dark mode.',
+    bg: '#0a0908', frame: '#181512', panel: 'linear-gradient(#1c1916, #13110f)', ps: 'inset 0 1px 0 rgba(255,235,200,.06), 0 2px 8px rgba(0,0,0,.5)', ink: '#ece6dc', text: '#a9a196', ln: '170,150,120', tint: '215,215,205', touch: '#e2e0d8', earned: '#d2bb85', exp: '#d9a93c', bad: '#d4574a', phys: '#e5705c', mag: '#a98be0', good: '#7fc17a', ward: '#8fa8d0', done: '#3d3934', dl: '#5a544c', dt: '#7d776e', track: 'rgba(0,0,0,.5)',
+    stage: 'radial-gradient(40% 38% at 20% 80%, rgba(235,150,70,.24), transparent 70%), radial-gradient(55% 45% at 78% 28%, rgba(190,200,225,.11), transparent 70%), #0a0908', bf: darkBoss('rgba(235,150,70,.3)'), hf: 'drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.95) sepia(.12)' },
+
+  { id: 'hellforge', tag: 'SERIOUS RPG', n: 'Hellforge', d: 'Diablo-like. Black leather in bronze-edged iron frames, hellfire under the stage, blood-red buttons, gold titles. Heavy and grim.',
+    bg: '#080504', frame: '#3e0c08', panel: 'linear-gradient(#1f1612, #140d0a)', pborder: '#5c4630', bw: '2px', r: '2px', rb: '2px', rw: '2px',
+    ps: '0 0 0 1px #000, inset 0 0 0 1px rgba(0,0,0,.6), inset 0 0 18px rgba(0,0,0,.6)', ink: '#eadbb8', text: '#a8937a', ln: '150,110,70', tint: '200,140,80', touch: '#d8b45e', btnC: '#f2d8c0', btnBg: 'linear-gradient(#6a1a12, #3e0c08)', btnLine: '#8a3020',
+    earned: '#d8b45e', exp: '#e6b23a', bad: '#ff6a3a', phys: '#e8503c', mag: '#b07ae0', good: '#7ab86a', ward: '#7f9ed0', done: '#3a2620', dl: '#5e3c30', dt: '#7a6656', hp: ['#b8221a', '#5e0a06'], track: '#000',
+    stage: 'radial-gradient(80% 45% at 50% 112%, rgba(220,60,20,.5), transparent 70%), radial-gradient(40% 30% at 74% 45%, rgba(120,30,10,.35), transparent 70%), #080504', bf: darkBoss('rgba(255,70,30,.5)'), hf: 'drop-shadow(0 0 16px rgba(0,0,0,.95)) brightness(.85) sepia(.15)',
+    css: `.t-hellforge .phead .cap, .t-hellforge .uname, .t-hellforge .stagebar .cap { color: #d8b45e; }` },
+
+  { id: 'crystal', tag: 'CLASSIC JRPG', n: 'Crystal', d: '16-bit JRPG menus: deep-blue gradient windows in a bright white frame, white type with a hard shadow, a sunset battlefield behind.',
+    bg: '#05061a', frame: '#101a68', panel: 'linear-gradient(#3a4fc0, #101a68)', pborder: '#e8ecf8', bw: '2px', r: '8px', rw: '4px',
+    ps: '0 0 0 2px #0a0a1a, inset 0 0 0 1px #6a7ad8', ink: '#ffffff', text: '#d0d6f4', ln: '200,210,255', tint: '255,255,255', touch: '#ffffff', btnBg: 'rgba(255,255,255,.12)', btnLine: 'rgba(255,255,255,.75)',
+    earned: '#ffe36a', exp: '#ffd040', bad: '#ff7a7a', phys: '#ffa08a', mag: '#d2b8ff', good: '#8af0a0', ward: '#a8d0ff', done: '#4a5ab0', dl: '#8a9ad8', dt: '#a8b2e0', hp: ['#ff6a5a', '#c02a2a'], track: '#000', ts: '2px 2px 0 #000',
+    cap: "'Alegreya Sans', sans-serif", name: "'Alegreya Sans', sans-serif",
+    stage: 'linear-gradient(#1a0f3a 0, #4a2a6a 38%, #c0607a 60%, #f0a070 68%, #2e3e26 68%, #1a2a16)', bf: rimmed('drop-shadow(0 6px 6px rgba(0,0,0,.6))'), hf: 'drop-shadow(0 6px 6px rgba(0,0,0,.6))',
+    css: `.t-crystal .panel::before, .t-crystal .panel::after { display: none; } .t-crystal .cap, .t-crystal .uname, .t-crystal .group { font-weight: 700; letter-spacing: .14em; }` },
+
+  { id: 'sprout', tag: 'CUTE RPG', n: 'Sprout', d: 'Cosy and bright, like Stardew or Animal Crossing. Sky over a grassy hill, cream cards with chunky soft shadows, strawberry buttons, lavender ranks, round everything.',
+    bg: '#dff3e4', frame: '#fffdf8', panel: '#fffdf8', pborder: '#f3c9d6', bw: '2px', r: '18px', rb: '999px', rw: '12px', rc: '5px',
+    ps: '0 4px 0 #e9b8c8', ink: '#4b3a55', text: '#7d6b88', ln: '120,90,130', tint: '255,110,150', touch: '#ff5c8a', btnC: '#ffffff', btnBg: '#ff7aa2', btnLine: '#ff7aa2',
+    earned: '#9a62e0', exp: '#ee9f10', bad: '#ff5a5a', phys: '#f04a4a', mag: '#8f58ea', good: '#2aa05c', ward: '#3a8fe8', done: '#ffd3e0', dl: '#f4a6bf', dt: '#b5a3bd', hp: ['#ff8fa8', '#ff5c7a'], track: '#f6e3ea',
+    cap: "'Fredoka', sans-serif", name: "'Fredoka', sans-serif",
+    stage: 'radial-gradient(120% 40% at 28% 114%, #8fd36a 60%, transparent 61%), radial-gradient(100% 34% at 88% 112%, #a6e07c 60%, transparent 61%), linear-gradient(#9fd8ff, #e4f6ff 78%)',
+    bf: rimmed('drop-shadow(0 6px 8px rgba(75,58,85,.25))', '#4b3a55'), hf: 'drop-shadow(0 6px 6px rgba(75,58,85,.3))',
+    css: `.t-sprout .panel::before, .t-sprout .panel::after { display: none; } .t-sprout .cap, .t-sprout .uname, .t-sprout .group { letter-spacing: .08em; } .t-sprout .plate { border-radius: 999px; font-weight: 700; } .t-sprout .hp { border-radius: 999px; border: 2px solid #fff; height: 15px; } .t-sprout .hp span { line-height: 11px; } .t-sprout .menu { border-radius: 12px; } .t-sprout .quest { border-left: 0; }` },
+
+  { id: 'overworld', tag: 'BLOCKY · MINECRAFT', n: 'Overworld', d: 'Grey inventory panels with hard bevels and square corners, item-slot rank plates, square checks, grass-and-dirt stage, green EXP, pixel type.',
+    bg: '#3a2a1c', frame: '#c6c6c6', panel: '#c6c6c6', pborder: '#000', bw: '2px', r: '0', rb: '0', rw: '0', rc: '0',
+    ps: 'inset 2px 2px 0 #fff, inset -2px -2px 0 #555', ink: '#3f3f3f', text: '#555555', ln: '0,0,0', tint: '0,0,0', touch: '#3f3f3f', btnC: '#ffffff', btnBg: '#7a7a7a', btnLine: '#000',
+    earned: '#ffff55', exp: '#3fa516', bad: '#aa0000', phys: '#aa0000', mag: '#aa00aa', good: '#00aa00', ward: '#2a3fd0', done: '#8b8b8b', dl: '#555', dt: '#7a7a7a', hp: ['#ff3a3a', '#b00000'], track: '#000',
+    cap: "'Pixelify Sans', sans-serif", name: "'Pixelify Sans', sans-serif",
+    stage: 'linear-gradient(#78a7ff 0, #b4d0ff 72%, #5d9b3a 72%, #5d9b3a 77%, #4a7d2c 77%, #4a7d2c 78%, #8b5a2b 78%)', bf: 'drop-shadow(0 6px 0 rgba(0,0,0,.28))', hf: 'drop-shadow(0 6px 0 rgba(0,0,0,.28))',
+    css: `.t-overworld.phone { background: repeating-conic-gradient(#3a2a1c 0 25%, #33251a 0 50%) 0 0/16px 16px; }
+      .t-overworld .panel::before, .t-overworld .panel::after { display: none; }
+      .t-overworld .pill, .t-overworld .menu { box-shadow: inset 2px 2px 0 #aaa, inset -2px -2px 0 #444; border-width: 2px; text-shadow: 2px 2px 0 #3f3f3f; font-family: 'Pixelify Sans', sans-serif; }
+      .t-overworld .plate { background: #8b8b8b; border: 0; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; text-shadow: 2px 2px 0 #3f3f15; font-size: 11px; }
+      .t-overworld .chk { transform: none; border: 2px solid #373737; background: #8b8b8b; box-shadow: inset 2px 2px 0 #555; }
+      .t-overworld .habit.bad .chk { border-color: #aa0000; }
+      .t-overworld .habit.done .chk { background: #5d9b3a; border-color: #373737; }
+      .t-overworld .uname, .t-overworld .stagebar .cap { color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
+      .t-overworld .stats { color: #fff; text-shadow: 1px 1px 0 #3f3f3f; }
+      .t-overworld .hp { border: 2px solid #000; border-radius: 0; }
+      .t-overworld .quest { background: #8b8b8b; border-left: 0; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; }
+      .t-overworld .quest .qn { color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
+      .t-overworld .quest .dots { color: #eee; text-shadow: 1px 1px 0 #3f3f3f; }
+      .t-overworld .quest.soon .dots em { color: #ffff55; }
+      .t-overworld .xp { color: #80ff20; text-shadow: 2px 2px 0 #203f08; } .t-overworld .xp svg { stroke: #80ff20; }
+      .t-overworld .dots i { background: #ffff55; } .t-overworld .dots i.o { background: none; border-color: #ffff55; }` },
+
+  { id: 'pocket', tag: 'RETRO HANDHELD', n: 'Pocket', d: 'Four greens, like the original Game Boy. Everything, sprites included, is cut down to the same four tones. Damage types lose their colours.',
+    bg: '#9bbc0f', frame: '#8bac0f', panel: '#8bac0f', pborder: '#0f380f', bw: '2px', r: '2px', rb: '2px', rw: '0', rc: '0',
+    ps: '3px 3px 0 #306230', ink: '#0f380f', text: '#306230', ln: '15,56,15', tint: '15,56,15', touch: '#0f380f', btnC: '#9bbc0f', btnBg: '#306230', btnLine: '#0f380f',
+    earned: '#0f380f', exp: '#306230', bad: '#0f380f', phys: '#0f380f', mag: '#306230', good: '#306230', ward: '#306230', done: '#306230', dl: '#0f380f', dt: '#306230', hp: ['#306230', '#0f380f'], track: '#9bbc0f',
+    cap: "'Pixelify Sans', sans-serif", name: "'Pixelify Sans', sans-serif",
+    stage: '#9bbc0f', bf: 'brightness(1.6) contrast(1.1) url(#gb)', hf: 'brightness(1.35) url(#gb)',
+    css: `.t-pocket .panel::before, .t-pocket .panel::after { display: none; } .t-pocket .hp span { color: #9bbc0f; text-shadow: none; } .t-pocket .plate { background: #9bbc0f; } .t-pocket .hp { border: 2px solid #0f380f; }` },
+];
+
+const vars = p => {
+  const v = {
+    bg: p.bg, frame: p.frame, panel: p.panel, 'panel-shadow': p.ps || 'none',
+    pborder: p.pborder || `rgba(${p.ln},.24)`, bw: p.bw || '1px', r: p.r || '6px', rb: p.rb || '6px', rw: p.rw || '4px', rc: p.rc || '2px',
+    ink: p.ink, text: p.text, touch: p.touch, 'touch-line': `rgba(${p.tint},.55)`,
+    'btn-c': p.btnC || p.touch, 'btn-bg': p.btnBg || `rgba(${p.tint},.1)`, 'btn-line': p.btnLine || `rgba(${p.tint},.55)`,
+    earned: p.earned, 'earned-line': `${p.earned}8c`, 'earned-fill': `${p.earned}14`, exp: p.exp, 'exp-fill': `${p.exp}26`,
+    bad: p.bad, phys: p.phys, mag: p.mag, good: p.good, done: p.done, 'done-line': p.dl, 'done-text': p.dt,
+    well: `rgba(${p.ln},.1)`, track: p.track, hp1: (p.hp || HP)[0], hp2: (p.hp || HP)[1],
+    stage: p.stage, bossf: p.bf, herof: p.hf, ts: p.ts || 'none',
+    'cap-font': p.cap || "'Cinzel', serif", 'name-font': p.name || "'Alegreya', serif",
+  };
+  return Object.entries(v).map(([k, x]) => `--${k}:${x}`).join(';');
+};
+
+const screen = p => {
+  const fl = I.flame;
+  return `
+<div class="phone t-${p.id}" style="${vars(p)}">
+  <div class="stagebar"><span class="cap">Boss #9</span><span class="menu"><i></i><i></i><i></i></span></div>
+  <div class="stage">
+    <img class="boss" src="../../public/sprites/bosses/balanced@3x.png" alt="">
+    <img class="hero" src="../../public/sprites/player/warrior@3x.png" alt="">
+    <div class="unit b"><div class="uname">DRIFTER ${I.chev}</div>
+      <div class="hp"><b style="width:41%"></b><span>266 / 648</span></div>
+      <div class="stats"><span>${I.sword(p.phys)}61</span><span>${I.magic(p.mag)}58</span><span>${I.armor(p.text)}213</span><span>${I.ward(p.ward)}221</span><span>${I.aim(p.exp)}1%</span></div></div>
+    <div class="unit h"><div class="uname">RYN <small>14</small> ${I.chev}</div>
+      <div class="hp"><b style="width:18%"></b><span>1.04K / 5.74K</span></div>
+      <div class="stats"><span>${I.sword(p.phys)}1.4K</span><span>${I.magic(p.mag)}416</span><span>${I.heart(p.good)}526</span><span>${I.bolt(p.text)}611</span><span>${I.aim(p.exp)}3%</span></div></div>
+  </div>
+  <div class="panel"><div class="phead"><span class="cap">Skills</span><span class="pill">+ New habit</span></div>
+    <div class="group">DAILY</div>
+    <div class="habit bad"><span class="chk"></span><span class="nm">Doomscrolling</span><span class="streak">${fl}12</span><span class="plate">II</span><span class="dmg heal">1.09K</span></div>
+    <div class="habit done"><span class="chk"></span><span class="nm">Morning run</span><span class="streak">${fl}23</span><span class="plate">III</span><span class="dmg phys">5.96K</span></div>
+    <div class="habit done"><span class="chk"></span><span class="nm">Read 20 pages</span><span class="streak">${fl}9</span><span class="plate">IV</span><span class="dmg magic">1.41K</span></div>
+    <div class="habit"><span class="chk"></span><span class="nm">Meditate</span><span class="streak">${fl}4</span><span class="plate">I</span><span class="dmg magic">566</span></div>
+  </div>
+  <div class="panel"><div class="phead"><span class="cap">Quests</span><span class="pill">+ New quest</span></div>
+    <div class="quest soon"><span class="chk"></span><div class="mid"><div class="qn">Call the dentist</div><div class="dots"><i></i><i class="o"></i><i class="o"></i><em>2 days left</em></div></div><div class="xp">${I.spark}+EXP</div></div>
+    <div class="quest"><span class="chk"></span><div class="mid"><div class="qn">Finish the tax return</div><div class="dots"><i></i><i></i><i></i><em>6 days left</em></div></div><div class="xp">${I.spark}+EXP</div></div>
+  </div>
+  <div class="end"></div>
+</div>`;
+};
+
+document.getElementById('themes').textContent = P.map(p => p.css || '').join('\n');
+document.getElementById('grid').innerHTML = P.map(p => `
+<div class="col">
+  <div class="tag">${p.tag}</div><h2>${p.n.toUpperCase()}</h2><p>${p.d}</p>
+  <div class="sw">${[p.bg, p.frame, p.ink, p.touch, p.earned, p.exp, p.bad].map(c => `<i style="background:${c}"></i>`).join('')}</div>
+  ${screen(p)}
+</div>`).join('');
+</script>
+</body>
+</html>
