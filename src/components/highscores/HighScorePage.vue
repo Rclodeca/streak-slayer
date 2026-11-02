@@ -9,6 +9,7 @@ import type { DamageType } from '../../game-engine';
 import type { HighScoreRun, HighScoreRunItem } from '../../store/highScoreStore';
 import { runHabitRank, runHero, useHighScoreStore } from '../../store/highScoreStore';
 import { PERSONALITY_SPRITE } from '../boss/bossSprites';
+import { sortByDamageType } from '../habits/habitDisplay';
 import RankDiamonds from '../habits/RankDiamonds.vue';
 import Modal from '../ui/Modal.vue';
 import { spriteUrl } from '../ui/spriteUrl';
@@ -58,6 +59,18 @@ function daysText(days: number): string {
 function formatDayKey(dayKey: string): string {
   const [year, month, day] = dayKey.split('-').map(Number);
   return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+// Skills group as they do on the main list: Daily, then Weekly, each by damage
+// type. A run saves no set days, so there is no Resting fold.
+function skillGroups(run: HighScoreRun) {
+  return (['daily', 'weekly'] as const)
+    .map((period) => ({
+      period,
+      title: period === 'daily' ? 'Daily' : 'Weekly',
+      habits: sortByDamageType(run.habits.filter((habit) => habit.period === period)),
+    }))
+    .filter((group) => group.habits.length);
 }
 
 const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
@@ -147,15 +160,17 @@ const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
 
         <template v-if="openRun.habits.length">
           <h4 class="run-section">Skills</h4>
-          <ul class="run-skills">
-            <li v-for="(habit, hi) in openRun.habits" :key="hi">
-              <StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" />
-              {{ habit.name }}
-              <span class="run-skill-period">{{ habit.period }}</span>
-              <span class="run-skill-streak"><StatIcon name="streak" :size="13" />{{ habit.streakCount }}</span>
-              <RankDiamonds :rank="runHabitRank(habit)" />
-            </li>
-          </ul>
+          <div v-for="group in skillGroups(openRun)" :key="group.period" class="run-skill-group">
+            <h5 class="run-skill-group-title">{{ group.title }}</h5>
+            <ul class="run-skills">
+              <li v-for="(habit, hi) in group.habits" :key="hi">
+                <StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" />
+                {{ habit.name }}
+                <span class="run-skill-streak"><StatIcon name="streak" :size="13" />{{ habit.streakCount }}</span>
+                <RankDiamonds :rank="runHabitRank(habit)" />
+              </li>
+            </ul>
+          </div>
         </template>
       </div>
     </Modal>
@@ -448,9 +463,17 @@ const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
   font-size: 0.9em;
 }
 
-.run-skill-period {
-  font-size: 0.85em;
-  opacity: 0.6;
+.run-skill-group + .run-skill-group {
+  margin-top: 0.6rem;
+}
+
+.run-skill-group-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
 }
 
 .run-skill-streak {

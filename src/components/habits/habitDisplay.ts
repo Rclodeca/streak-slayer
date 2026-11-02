@@ -1,9 +1,9 @@
-import type { DamageType, Habit } from '../../game-engine';
+import type { DamageType } from '../../game-engine';
 
 // Healing first, then physical, then magic, then true damage
 // — stable sort preserves each damage type's original relative order.
 const DAMAGE_TYPE_ORDER: DamageType[] = ['healing', 'physical', 'magic', 'trueDamage'];
-export function sortByDamageType(habits: Habit[]): Habit[] {
+export function sortByDamageType<T extends { damageType: DamageType }>(habits: T[]): T[] {
   return [...habits].sort(
     (a, b) => DAMAGE_TYPE_ORDER.indexOf(a.damageType) - DAMAGE_TYPE_ORDER.indexOf(b.damageType),
   );
