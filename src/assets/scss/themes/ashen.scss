@@ -1177,7 +1177,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .primary-button,
   .submit,
   .restart-button,
-  .ok-button {
+  .ok-button,
+  .replace-button {
     @include plain-label($label-lg, 700);
     padding: 0.85rem 1rem;
     color: var(--button-text);
@@ -1211,12 +1212,14 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include soft-button;
   }
 
-  // Stone buttons on the item popup. Replace is tighter, so the list keeps
-  // room for item names on a phone; it sits level with the item's name.
+  // The item popup: Replace is the silver choice on each row, tighter so the
+  // list keeps room for item names on a phone, level with the item's name;
+  // Drop is the stone way out.
   .replace-button {
     flex-shrink: 0;
+    min-height: 44px;
     padding: 0 0.75rem;
-    @include stone-button;
+    font-size: $label-md;
   }
 
   .drop-button {
