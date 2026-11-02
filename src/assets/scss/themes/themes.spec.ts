@@ -44,8 +44,8 @@ export const PALETTE_TOKENS = [
   'plate',
 ];
 
-// Hellforge has no palette until Task 4 lands it.
-const PENDING_THEMES: string[] = ['hellforge'];
+// Themes whose palette hasn't landed yet.
+const PENDING_THEMES: string[] = [];
 
 function compileThemes(): string {
   return compile('src/assets/scss/themes/index.scss').css;

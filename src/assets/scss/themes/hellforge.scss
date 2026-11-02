@@ -1,0 +1,78 @@
+// Hellforge — black leather in bronze-edged iron, lit by a low, dim hellfire.
+// Buttons are blood red, titles are gold, and the frames are iron. Corners
+// are Moonlit's (6px panels and buttons). The palette is below; the rules
+// are in ashen.scss, and the few that differ follow the tokens.
+
+:root[data-theme='hellforge'] {
+  --bg: #080504;
+  --bg-rgb: 8 5 4;
+  --text: #a8937a;
+  --text-h: #eadbb8;
+  --border: #3a2a1c;
+  --code-bg: #120c09;
+  --frame: #1a120e;
+  --frame-rgb: 26 18 14;
+  --panel-fill: linear-gradient(#1f1612, #140d0a);
+  --ash-rgb: 150 110 70;
+  --ash-mark: #6e5640;
+  --ash-deep: #5c4630;
+  --moon: #eadbb8;
+  --moon-solid: #b8a47a;
+  --moon-tint-rgb: 200 140 80;
+  --moon-glow-rgb: 230 190 120;
+  --brass: #d8b45e;
+  --brass-rgb: 216 180 94;
+  --brass-solid: #b08f48;
+  --check-done: #3a2620;
+  --check-done-line: #5e3c30;
+  --page-glow: rgba(200, 60, 20, 0.07);
+  --button-fill: linear-gradient(180deg, #6a1a12, #3e0c08);
+  --button-fill-hover: linear-gradient(180deg, #7e2216, #4a100a);
+  --button-line: #8a3020;
+  --button-text: #f2d8c0;
+  --stage-light:
+    radial-gradient(ellipse 75% 32% at 50% 112%, rgba(210, 60, 20, 0.26), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 78% 28%, rgba(190, 170, 150, 0.06), transparent 70%);
+  --boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
+    drop-shadow(0 -2px 0 #2a120c) drop-shadow(0 0 12px rgba(255, 80, 40, 0.32)) brightness(1.06);
+  --hero-sprite-filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.95)) brightness(0.85) sepia(0.15);
+
+  // Warm stand-ins for Moonlit's cast-blue odds and ends.
+  --spent-text: #6e5a48;
+  --day-on-rgb: 90 50 36;
+  --bar-rgb: 26 18 14;
+  --plate: #0a0605;
+
+  // Soft buttons (menu, back, cancel, replace) are red too.
+  --soft-fill: linear-gradient(180deg, #6a1a12, #3e0c08);
+  --soft-fill-hover: linear-gradient(180deg, #7e2216, #4a100a);
+  --soft-text: #f2d8c0;
+  --soft-line: #8a3020;
+
+  // Iron frames. These match the family's selectors in specificity and win by
+  // coming later (see index.scss).
+  .panel {
+    border: 2px solid #5c4630;
+    box-shadow:
+      0 0 0 1px #000,
+      inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+      inset 0 0 18px rgba(0, 0, 0, 0.6),
+      0 24px 50px -24px rgba(0, 0, 0, 0.95);
+  }
+
+  .modal-content {
+    border: 2px solid #5c4630;
+    box-shadow:
+      0 0 0 1px #000,
+      inset 0 0 18px rgba(0, 0, 0, 0.6),
+      0 40px 80px -30px #000;
+  }
+
+  // Titles in gold.
+  .panel h2,
+  .modal-header h3,
+  .fight-stage .boss-name,
+  .fight-stage .name-line {
+    color: var(--brass);
+  }
+}
