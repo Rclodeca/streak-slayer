@@ -5,16 +5,15 @@
 
 import { computed, ref } from 'vue';
 import { describeItemBonus, formatCompact, ITEM_CATALOG, PERSONALITY_NAME } from '../../game-engine';
-import type { DamageType } from '../../game-engine';
 import type { HighScoreRun, HighScoreRunItem } from '../../store/highScoreStore';
 import { runHabitRank, runHero, useHighScoreStore } from '../../store/highScoreStore';
 import { PERSONALITY_SPRITE } from '../boss/bossSprites';
 import { sortByDamageType } from '../habits/habitDisplay';
-import RankDiamonds from '../habits/RankDiamonds.vue';
+import RankPips from '../habits/RankPips.vue';
 import Modal from '../ui/Modal.vue';
 import { spriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
-import type { StatIconName } from '../ui/statIcons';
+import { DAMAGE_TYPE_ICON } from '../ui/statIcons';
 
 const highScoreStore = useHighScoreStore();
 const baseUrl = import.meta.env.BASE_URL;
@@ -72,13 +71,6 @@ function skillGroups(run: HighScoreRun) {
     }))
     .filter((group) => group.habits.length);
 }
-
-const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
-  physical: 'physical',
-  magic: 'magic',
-  healing: 'healing',
-  trueDamage: 'true',
-};
 </script>
 
 <template>
@@ -167,7 +159,7 @@ const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
                 <StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" />
                 {{ habit.name }}
                 <span class="run-skill-streak"><StatIcon name="streak" :size="13" />{{ habit.streakCount }}</span>
-                <RankDiamonds :rank="runHabitRank(habit)" />
+                <RankPips :rank="runHabitRank(habit)" />
               </li>
             </ul>
           </div>

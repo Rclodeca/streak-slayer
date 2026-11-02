@@ -4,9 +4,11 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
-import { createRng, dailyPeriodKey } from '../../game-engine';
+import { createRng, dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { TUNING } from '../../game-engine/constants/tuning';
+import { useBossStore } from '../../store/bossStore';
+import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import HabitListItem from './HabitListItem.vue';
 
@@ -39,16 +41,16 @@ describe('HabitListItem', () => {
     return mount(HabitListItem, { props: { habit: habitStore.habits[0] }, global: { plugins: [pinia] }, attachTo: document.body });
   }
 
-  it('a tap on the check zone around the box completes the skill and leaves the details closed', async () => {
+  it('pressing the button strikes the skill and leaves the details closed', async () => {
     const wrapper = mountRow();
 
-    await wrapper.find('.check-zone').trigger('click');
+    await wrapper.find('button.strike').trigger('click');
 
     expect(useHabitStore().habits[0].lastCompletedPeriodKey).not.toBeNull();
     expect(wrapper.emitted('open')).toBeUndefined();
   });
 
-  it('a tap on the name opens the details and completes nothing', async () => {
+  it('a tap on the card opens the details and strikes nothing', async () => {
     const wrapper = mountRow();
 
     await wrapper.find('.name').trigger('click');
@@ -57,86 +59,123 @@ describe('HabitListItem', () => {
     expect(useHabitStore().habits[0].lastCompletedPeriodKey).toBeNull();
   });
 
-  it('a tap on the check zone of a done skill still opens the details', async () => {
-    const wrapper = mountRow();
-    await wrapper.find('.check-zone').trigger('click'); // lands the skill
-    await wrapper.setProps({ habit: useHabitStore().habits[0] });
+  it('once struck the button stays down and a tap on the card opens the details', async () => {
+    const wrapper = mountSkill();
+    await wrapper.find('button.strike').trigger('click');
 
-    await wrapper.find('.check-zone').trigger('click');
+    const button = wrapper.find('button.strike');
+    expect(button.attributes('aria-pressed')).toBe('true');
+    expect(button.attributes('disabled')).toBeDefined();
 
-    expect(wrapper.emitted('open')).toHaveLength(1);
+    const row = wrapper.findComponent(HabitListItem);
+    await row.find('li.habit-item').trigger('click');
+    expect(row.emitted('open')).toHaveLength(1);
   });
 
-  it('a second tap on a done Overdrive skill spends one charge and leaves it checked', async () => {
+  it('a second press on a struck Overdrive skill spends a charge and stays pressed', async () => {
     const wrapper = mountSkill({ isOverdrive: true });
-    const check = wrapper.find('input.check');
+    const button = wrapper.find('button.strike');
 
-    await check.trigger('click'); // lands the skill
-    await check.trigger('click'); // overdrives it
+    await button.trigger('click'); // strikes the skill
+    expect(button.attributes('aria-label')).toBe('Overdrive Read');
+    await button.trigger('click'); // overdrives it
 
     expect(useHabitStore().habits[0].overdriveUsesThisPeriod).toBe(1);
-    expect((check.element as HTMLInputElement).checked).toBe(true);
+    expect(button.attributes('aria-pressed')).toBe('true');
   });
 
-  it('a done Overdrive skill keeps its halo until its charges are spent', async () => {
+  it('a struck Overdrive skill keeps its halo until its charges are spent', async () => {
     const wrapper = mountSkill({ isOverdrive: true });
-    const check = wrapper.find('input.check');
-    expect(check.classes()).not.toContain('overdrive-ready');
+    const button = wrapper.find('button.strike');
+    expect(button.classes()).not.toContain('overdrive-ready');
 
-    await check.trigger('click');
-    expect(check.classes()).toContain('overdrive-ready');
+    await button.trigger('click');
+    expect(button.classes()).toContain('overdrive-ready');
+    expect(button.attributes('disabled')).toBeUndefined();
 
-    for (let i = 0; i < TUNING.OVERDRIVE_MAX_EXTRA_USES; i++) await check.trigger('click');
-    expect(check.classes()).not.toContain('overdrive-ready');
-    expect(check.attributes('disabled')).toBeDefined();
+    for (let i = 0; i < TUNING.OVERDRIVE_MAX_EXTRA_USES; i++) await button.trigger('click');
+    expect(button.classes()).not.toContain('overdrive-ready');
+    expect(button.attributes('disabled')).toBeDefined();
+    expect(button.attributes('aria-label')).toBe('Complete Read');
   });
 
-  describe('spent', () => {
-    it('marks the row spent once the skill lands', async () => {
+  it('shows the damage on the button with its type icon', () => {
+    const wrapper = mountSkill();
+    const habit = useHabitStore().habits[0];
+    const damage = habitDamageBreakdown(useCharacterStore().character, habit, useHabitStore().habits, useBossStore().boss, dailyPeriodKey(new Date())).effectiveDamage;
+    const button = wrapper.find('button.strike');
+    expect(button.find('b').text()).toBe(formatCompact(damage));
+    expect(button.findAll('.stat-icon')).toHaveLength(1);
+    expect(wrapper.find('.damage').exists()).toBe(false);
+  });
+
+  it("a resting skill's button is flat and can't be pressed", () => {
+    const wrapper = mountSkill({ days: [(dayOfWeekIndex(new Date()) + 2) % 7] });
+    const button = wrapper.find('button.strike');
+    expect(button.classes()).toContain('resting');
+    expect(button.attributes('disabled')).toBeDefined();
+    expect(button.attributes('aria-pressed')).toBe('false');
+  });
+
+  it("a bad habit's button is a resist button, and pressing it gives in", async () => {
+    const wrapper = mountSkill({ isBad: true });
+    const before = useCharacterStore().character.currentHealth;
+    const button = wrapper.find('button.strike');
+    expect(button.classes()).toContain('resist');
+
+    await button.trigger('click');
+
+    expect(useHabitStore().habits[0].lastCompletedPeriodKey).not.toBeNull();
+    expect(useCharacterStore().character.currentHealth).toBeLessThan(before);
+    expect(wrapper.find('.habit-item').classes()).toContain('struck');
+  });
+
+  describe('struck', () => {
+    it('marks the row struck once the skill lands', async () => {
       const wrapper = mountSkill();
       const row = wrapper.find('.habit-item');
-      expect(row.classes()).not.toContain('spent');
+      expect(row.classes()).not.toContain('struck');
 
-      await wrapper.find('input.check').trigger('click');
+      await wrapper.find('button.strike').trigger('click');
 
-      expect(row.classes()).toContain('spent');
+      expect(row.classes()).toContain('struck');
     });
 
-    it('a done Overdrive skill is spent at once, with charges left or not', async () => {
+    it('a struck Overdrive skill is struck at once, with charges left or not', async () => {
       const wrapper = mountSkill({ isOverdrive: true });
-      const check = wrapper.find('input.check');
+      const button = wrapper.find('button.strike');
       const row = wrapper.find('.habit-item');
 
-      await check.trigger('click');
-      expect(check.classes()).toContain('overdrive-ready');
-      expect(row.classes()).toContain('spent');
+      await button.trigger('click');
+      expect(button.classes()).toContain('overdrive-ready');
+      expect(row.classes()).toContain('struck');
 
-      for (let i = 0; i < TUNING.OVERDRIVE_MAX_EXTRA_USES; i++) await check.trigger('click');
-      expect(row.classes()).toContain('spent');
+      for (let i = 0; i < TUNING.OVERDRIVE_MAX_EXTRA_USES; i++) await button.trigger('click');
+      expect(row.classes()).toContain('struck');
     });
   });
 
-  describe('check light', () => {
+  describe('landing flash', () => {
     afterEach(() => {
       vi.useRealTimers();
     });
 
-    it('lights the check once when the skill lands, then lets it settle', async () => {
+    it('flashes the button once when the skill lands, then lets it settle', async () => {
       vi.useFakeTimers();
       const wrapper = mountSkill();
-      const check = wrapper.find('input.check');
+      const button = wrapper.find('button.strike');
 
-      await check.trigger('click');
-      expect(check.classes()).toContain('lit');
+      await button.trigger('click');
+      expect(button.classes()).toContain('lit');
 
-      vi.advanceTimersByTime(900);
+      vi.advanceTimersByTime(600);
       await nextTick();
-      expect(check.classes()).not.toContain('lit');
+      expect(button.classes()).not.toContain('lit');
     });
 
-    it('a skill already done when the list opens is not lit', () => {
+    it('a skill already struck when the list opens does not flash', () => {
       const wrapper = mountSkill({ lastCompletedPeriodKey: dailyPeriodKey(new Date()) });
-      expect(wrapper.find('input.check').classes()).not.toContain('lit');
+      expect(wrapper.find('button.strike').classes()).not.toContain('lit');
     });
   });
 
@@ -145,29 +184,16 @@ describe('HabitListItem', () => {
       vi.useRealTimers();
     });
 
-    it('shows one diamond per rank, none unranked, and no difficulty pips', () => {
+    it('shows one pip per rank under the name, none unranked', () => {
       const unranked = mountSkill({ rank: 0 });
-      expect(unranked.find('.rank-diamonds').exists()).toBe(false);
+      expect(unranked.find('.rank-pips').exists()).toBe(false);
       expect(unranked.find('.pips').exists()).toBe(false);
       unranked.unmount();
       setActivePinia((pinia = createPinia()));
       const ranked = mountSkill({ rank: 3 });
-      expect(ranked.findAll('.rank-diamonds i')).toHaveLength(3);
-      expect(ranked.find('.rank-diamonds').attributes('aria-label')).toBe('Rank III');
-    });
-
-    it('carries the rank as a numeral too, for themes that show it instead', () => {
-      const ranked = mountSkill({ rank: 8 });
-      expect(ranked.find('.rank-diamonds .rank-numeral').text()).toBe('VIII');
-    });
-
-    it('keeps an empty rank slot on an unranked skill, so a theme can hold its column', () => {
-      const unranked = mountSkill({ rank: 0 });
-      expect(unranked.find('.rank-slot').exists()).toBe(true);
-      expect(unranked.find('.rank-slot').attributes('aria-hidden')).toBe('true');
-      unranked.unmount();
-      setActivePinia((pinia = createPinia()));
-      expect(mountSkill({ rank: 2 }).find('.rank-slot').exists()).toBe(false);
+      expect(ranked.findAll('.title .rank-pips i')).toHaveLength(3);
+      expect(ranked.find('.meta .rank-pips').exists()).toBe(false);
+      expect(ranked.find('.rank-pips').attributes('aria-label')).toBe('Rank III');
     });
 
     it('keeps the streak one size however long it runs', () => {

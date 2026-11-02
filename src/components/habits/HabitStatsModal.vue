@@ -26,7 +26,7 @@ import type { StatIconName } from '../ui/statIcons';
 import { DAMAGE_TYPE_COLORS } from './damageTypeColors';
 import DayPicker from './DayPicker.vue';
 import { rankNumeral } from './habitDisplay';
-import RankDiamonds from './RankDiamonds.vue';
+import RankPips from './RankPips.vue';
 import SkillSigil from './SkillSigil.vue';
 import { ALL_DAYS, dayCountLabel } from './weekdays';
 
@@ -164,7 +164,7 @@ function removeHabit() {
     <div class="rank-block">
       <div class="rank-top">
         <span class="rank-label">{{ rank ? `Rank ${rankNumeral(rank)}` : 'Unranked' }}</span>
-        <RankDiamonds :rank="rank" />
+        <RankPips :rank="rank" />
       </div>
       <div class="rank-bar"><i :style="{ width: `${rankBarPct}%` }" /></div>
       <div class="rank-caption">

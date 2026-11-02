@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
@@ -11,8 +11,9 @@ import { useHabitStore } from '../../store/habitStore';
 import { DAMAGE_TYPE_COLORS } from './damageTypeColors';
 import StatIcon from '../ui/StatIcon.vue';
 import { MIN_STREAK_SHOWN, rankNumeral, streakStyleFor } from './habitDisplay';
-import RankDiamonds from './RankDiamonds.vue';
+import RankPips from './RankPips.vue';
 import SkillSigil from './SkillSigil.vue';
+import StrikeButton from './StrikeButton.vue';
 import { WEEKDAY_SHORT } from './weekdays';
 
 // periodTag marks a weekly skill "Week", for lists that mix the periods (Resist).
@@ -30,16 +31,16 @@ const habitStore = useHabitStore();
 
 const currentPeriodKey = computed(() => periodKeyFor(props.habit.period, debugClockStore.now()));
 const isCompletedThisPeriod = computed(() => props.habit.lastCompletedPeriodKey === currentPeriodKey.value);
-// A set-day skill on one of its rest days: can't be checked or overdriven.
+// A set-day skill on one of its rest days: can't be struck or overdriven.
 const isResting = computed(() => !isDueOn(props.habit, debugClockStore.now()));
 const nextDayLabel = computed(() =>
   props.habit.days ? WEEKDAY_SHORT[nextDueDay(props.habit.days, dayOfWeekIndex(debugClockStore.now()))] : '',
 );
-// A done Overdrive skill's check stays live, haloed, until its charges are spent.
+// A struck Overdrive skill's button stays live, haloed, until its charges are spent.
 const canOverdrive = computed(
   () => !isResting.value && isCompletedThisPeriod.value && overdriveUsesRemaining(props.habit, currentPeriodKey.value) > 0,
 );
-const checkDisabled = computed(() => isResting.value || (isCompletedThisPeriod.value && !canOverdrive.value));
+const strikeState = computed(() => (isResting.value ? 'resting' : isCompletedThisPeriod.value ? 'struck' : 'open'));
 
 const breakdown = computed(() =>
   habitDamageBreakdown(characterStore.character, props.habit, habitStore.habits, bossStore.boss, dailyPeriodKey(debugClockStore.now())),
@@ -66,16 +67,16 @@ watch(
     flareTimer = setTimeout(() => (flareRank.value = 0), RANK_FLARE_MS);
   },
 );
-// Landing a skill lights its check for a moment before it settles (Ashen
-// plays the light; Minimalist has none). Mounting done plays nothing.
-const CHECK_LIGHT_MS = 900;
-const checkLit = ref(false);
+// Landing a skill flashes its button its type colour as it goes down, before
+// it fades to grey. Mounting struck plays nothing.
+const LAND_FLASH_MS = 600;
+const landing = ref(false);
 let litTimer: ReturnType<typeof setTimeout> | undefined;
 watch(isCompletedThisPeriod, (done, before) => {
   if (!done || before) return;
-  checkLit.value = true;
+  landing.value = true;
   clearTimeout(litTimer);
-  litTimer = setTimeout(() => (checkLit.value = false), CHECK_LIGHT_MS);
+  litTimer = setTimeout(() => (landing.value = false), LAND_FLASH_MS);
 });
 onBeforeUnmount(() => {
   clearTimeout(flareTimer);
@@ -88,54 +89,38 @@ const hasSigil = computed(() => !!(props.habit.isSpecial || props.habit.isUlt));
 const nameHead = computed(() => props.habit.name.slice(0, props.habit.name.lastIndexOf(' ') + 1));
 const nameTail = computed(() => props.habit.name.slice(nameHead.value.length));
 
-function onCheckOff() {
-  const result = checkOffHabit(props.habit.id);
+// Pressing a struck Overdrive skill's button overdrives it; otherwise it
+// strikes (for a bad habit, gives in).
+function onStrike() {
+  const result = canOverdrive.value ? activateOverdrive(props.habit.id) : checkOffHabit(props.habit.id);
   if (result.itemsDropped.length > 0) enqueueDrops(result.itemsDropped, result.droppedBy);
-}
-
-// Tapping a haloed check overdrives the skill. Cancelling the click keeps
-// the box checked, and no change event fires.
-function onCheckClick(event: MouseEvent) {
-  if (!canOverdrive.value) return;
-  event.preventDefault();
-  const result = activateOverdrive(props.habit.id);
-  if (result.itemsDropped.length > 0) enqueueDrops(result.itemsDropped, result.droppedBy);
-}
-
-// The zone around the check belongs to the check while it is live, so a tap
-// that misses the box doesn't open the details. Once the check is spent the
-// zone is just row, and the tap opens them as before.
-function onZoneClick(event: MouseEvent) {
-  if (!checkDisabled.value) event.stopPropagation();
 }
 </script>
 
 <template>
-  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, spent: isCompletedThisPeriod, flare: flareRank > 0 }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
-    <label class="check-zone" @click="onZoneClick">
-      <input
-        type="checkbox"
-        class="check"
-        :class="{ 'overdrive-ready': canOverdrive, lit: checkLit }"
-        :aria-label="canOverdrive ? `Overdrive ${habit.name}` : `Complete ${habit.name}`"
-        :checked="isCompletedThisPeriod"
-        :disabled="checkDisabled"
-        @click.stop="onCheckClick"
-        @change="onCheckOff"
-      />
-    </label>
-    <span v-if="hasSigil" class="name" :class="{ done: isCompletedThisPeriod }">{{ nameHead }}<span class="name-end">{{ nameTail }}<SkillSigil :habit="habit" /></span></span>
-    <span v-else class="name" :class="{ done: isCompletedThisPeriod }">{{ habit.name }}</span>
+  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, struck: isCompletedThisPeriod, flare: flareRank > 0 }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
+    <span class="title">
+      <span v-if="hasSigil" class="name">{{ nameHead }}<span class="name-end">{{ nameTail }}<SkillSigil :habit="habit" /></span></span>
+      <span v-else class="name">{{ habit.name }}</span>
+      <RankPips :rank="habit.rank ?? 0" />
+    </span>
     <span class="meta">
       <span v-if="isResting" class="next-day">{{ nextDayLabel }}</span>
       <span v-if="periodTag && habit.period === 'weekly'" class="period-tag">Week</span>
       <span class="streak" :style="streakStyle" :title="showStreak ? `${habit.streakCount} streak` : undefined">
         <template v-if="showStreak"><StatIcon name="streak" :size="12" />{{ habit.streakCount }}</template>
       </span>
-      <RankDiamonds :rank="habit.rank ?? 0" />
     </span>
-    <span class="damage">{{ formatCompact(effectiveDamage) }}</span>
-    <span class="veil" aria-hidden="true" />
+    <StrikeButton
+      :damage-type="habit.damageType"
+      :damage="effectiveDamage"
+      :state="strikeState"
+      :resist="habit.isBad"
+      :overdrive="canOverdrive"
+      :lit="landing"
+      :label="canOverdrive ? `Overdrive ${habit.name}` : `Complete ${habit.name}`"
+      @strike="onStrike"
+    />
     <span v-if="flareRank > 0" class="rank-ghost" aria-hidden="true">Rank {{ rankNumeral(flareRank) }}</span>
   </li>
 </template>
@@ -156,124 +141,22 @@ function onZoneClick(event: MouseEvent) {
   transition: background 0.15s;
 }
 
-/* The tap zone for the check: a strip down the row's left edge, out to just
-   past the gap, at least 44px square. The box keeps its look. The strip is a
-   pseudo-element of the label, so it anchors to the row and paints over the
-   name's first pixels rather than sitting in the layout. */
-.check-zone {
-  display: flex;
-  flex-shrink: 0;
-}
-
-.check-zone::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: calc(var(--row-pad) + 22px + var(--row-gap) + 0.25rem);
-}
-
 .habit-item:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
-/* One neutral check color for every row — the type color lives only on the
-   damage number, so a long list doesn't turn into a rainbow. */
-.check {
-  appearance: none;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  background: transparent;
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-
-.check:hover:not(:disabled) {
-  border-color: var(--accent-border);
-}
-
-.bad .check:not(:checked) {
-  border-color: color-mix(in srgb, var(--damage-color) 70%, transparent);
-}
-
-.bad .check:checked {
-  background: var(--damage-color);
-  border-color: var(--damage-color);
-}
-
-.bad .check:hover:not(:disabled) {
-  border-color: var(--damage-color);
-}
-
-.check:checked {
-  background: var(--accent-solid);
-  border-color: var(--accent-solid);
-}
-
-.check:checked::after {
-  content: '✓';
-  color: var(--bg);
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* A spent check lets the tap fall through to the zone, which opens the details. */
-.check:disabled {
-  cursor: default;
-  pointer-events: none;
-}
-
-/* A skill resting today: dimmed, with a hollow dashed check. */
+/* A skill resting today: dimmed. */
 .habit-item.resting {
   opacity: 0.45;
 }
 
-.resting .check {
-  border-style: dashed;
-}
-
-/* A done Overdrive skill's check keeps a slowly breathing ember halo while it has
-   charges left. Only the ring's opacity animates, which stays cheap. */
-.check.overdrive-ready {
-  position: relative;
-}
-
-.check.overdrive-ready::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border: 1.5px solid var(--overdrive-color);
-  border-radius: 10px;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--overdrive-color) 25%, transparent);
-  pointer-events: none;
-  animation: overdrive-halo 5s ease-in-out infinite;
-}
-
-@keyframes overdrive-halo {
-  50% {
-    opacity: 0.55;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .check.overdrive-ready::before {
-    animation: none;
-  }
-}
-
-.check:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+/* The name with the rank pips under it. */
+.title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .name {
@@ -284,29 +167,14 @@ function onZoneClick(event: MouseEvent) {
   overflow-wrap: break-word;
 }
 
-.name.done {
-  text-decoration: line-through;
-  color: var(--text);
-  opacity: 0.6;
-}
-
 /* A bad habit rests quiet: there's nothing to do unless you give in. */
 .bad .name {
   color: var(--text);
 }
 
-.bad .damage {
-  color: color-mix(in srgb, var(--c) 60%, var(--text));
-}
-
-/* One unit, so the last word and its sigil wrap together. Text decoration
-   doesn't reach into inline blocks, hence the explicit strike-through. */
+/* One unit, so the last word and its sigil wrap together. */
 .name-end {
   display: inline-block;
-}
-
-.name.done .name-end {
-  text-decoration: inherit;
 }
 
 .sigil {
@@ -341,20 +209,6 @@ function onZoneClick(event: MouseEvent) {
 .period-tag {
   font-size: 0.7rem;
   color: var(--text);
-}
-
-.damage {
-  flex-shrink: 0;
-  width: 3rem;
-  text-align: right;
-  color: var(--c);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* A spent skill's shadow, for themes that draw one (Ashen); none here. */
-.veil {
-  display: none;
 }
 
 /* The rank-up flare: one sweep across the row, and the new rank rising off
@@ -427,10 +281,6 @@ function onZoneClick(event: MouseEvent) {
 
   .meta {
     gap: 0.5rem;
-  }
-
-  .damage {
-    width: 2.5rem;
   }
 }
 </style>

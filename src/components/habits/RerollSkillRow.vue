@@ -9,7 +9,7 @@ import { useHabitStore } from '../../store/habitStore';
 import StatIcon from '../ui/StatIcon.vue';
 import { DAMAGE_TYPE_COLORS } from './damageTypeColors';
 import { MIN_STREAK_SHOWN, streakStyleFor } from './habitDisplay';
-import RankDiamonds from './RankDiamonds.vue';
+import RankPips from './RankPips.vue';
 import SkillSigil from './SkillSigil.vue';
 
 // A skill row for the Reroll popup: the main list's row (name, sigil, streak,
@@ -51,7 +51,7 @@ const nameTail = computed(() => props.habit.name.slice(nameHead.value.length));
         <span class="streak" :style="streakStyleFor(habit.streakCount)">
           <template v-if="showStreak"><StatIcon name="streak" :size="12" />{{ habit.streakCount }}</template>
         </span>
-        <RankDiamonds :rank="habit.rank ?? 0" />
+        <RankPips :rank="habit.rank ?? 0" />
       </span>
       <span class="damage">{{ formatCompact(effectiveDamage) }}</span>
     </button>

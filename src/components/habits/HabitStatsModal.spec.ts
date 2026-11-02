@@ -116,11 +116,11 @@ describe('HabitStatsModal', () => {
       expect(metaParts()).toEqual(['Magic', 'Weekly', 'Medium']);
     });
 
-    it('a ranked skill shows its rank, diamonds, the way to the next, and the Rank and Streak lines', () => {
+    it('a ranked skill shows its rank, pips, the way to the next, and the Rank and Streak lines', () => {
       addHabit('daily', { damageType: 'physical', rank: 5, streakCount: 112 });
       mountPopup();
       expect(text('.rank-label')).toBe('Rank V');
-      expect(document.body.querySelectorAll('.rank-block .rank-diamonds i')).toHaveLength(5);
+      expect(document.body.querySelectorAll('.rank-block .rank-pips i')).toHaveLength(5);
       expect(text('.rank-caption')).toContain('VI at 200');
       expect((q('.rank-bar i') as HTMLElement).style.width).toBe('56%');
       expect(sumRow('Rank')?.querySelector('dd')?.textContent).toBe('×6.0');

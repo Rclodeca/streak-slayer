@@ -38,7 +38,7 @@ import {
   ChevronsUp,
 } from 'lucide-vue-next';
 
-import type { BoostableStat, EventId } from '../../game-engine';
+import type { BoostableStat, DamageType, EventId } from '../../game-engine';
 
 // Colours are CSS variables (defined in style.css, restyled per theme).
 export const STAT_ICONS = {
@@ -86,6 +86,13 @@ export const STAT_ICONS = {
 } as const;
 
 export type StatIconName = keyof typeof STAT_ICONS;
+
+export const DAMAGE_TYPE_ICON: Record<DamageType, StatIconName> = {
+  healing: 'healing',
+  physical: 'physical',
+  magic: 'magic',
+  trueDamage: 'true',
+};
 
 export const BOOST_STAT_ICON: Record<BoostableStat, StatIconName> = {
   physicalDamage: 'physical',
