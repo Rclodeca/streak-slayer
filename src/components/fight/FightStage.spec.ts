@@ -8,6 +8,7 @@ import { PERSONALITY_NAME } from '../../game-engine';
 import { holdHp, playHit } from '../../composables/useHitFeed';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useFocusModeStore } from '../../store/focusModeStore';
 import BossBar from '../boss/BossBar.vue';
 import FightStage from './FightStage.vue';
 import { IMPACT_MS } from './hitFx';
@@ -16,6 +17,7 @@ enableAutoUnmount(afterEach);
 
 describe('FightStage', () => {
   beforeEach(() => {
+    localStorage.clear();
     setActivePinia(createPinia());
     // jsdom has no ResizeObserver; the hero's stat line watches its own size.
     vi.stubGlobal(
@@ -57,6 +59,19 @@ describe('FightStage', () => {
     const style = wrapper.find('.stage-inner').attributes('style');
     expect(style).toContain('--boss-bottom: 133px');
     expect(style).toContain('--hero-top: 205px');
+  });
+
+  it('takes the page menu into its corner', () => {
+    const wrapper = mount(FightStage, { slots: { default: '<span class="menu-stub" />' }, global: { stubs: { teleport: true } } });
+    expect(wrapper.find('.stage-menu .menu-stub').exists()).toBe(true);
+  });
+
+  it('shrinks to the focus strip when Focus mode is on', async () => {
+    const wrapper = mountStage();
+    expect(wrapper.find('.fight-stage').classes()).not.toContain('focus');
+    useFocusModeStore().setOn(true);
+    await nextTick();
+    expect(wrapper.find('.fight-stage').classes()).toContain('focus');
   });
 
   it('feeds the drop-down bar the boss and the hero, parked until the stage scrolls away', () => {

@@ -477,11 +477,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-color: var(--accent-border);
   }
 
+  // The menu button has no outline: just its faint fill.
   .menu-button {
     display: grid;
     place-items: center;
     width: 44px;
     padding: 0;
+    border-color: transparent;
   }
 
   .menu-panel {
@@ -553,6 +555,39 @@ $label-lg: 0.95rem; // primary buttons, choice titles
         4px 8px,
         4px 4px;
       background-clip: content-box, border-box;
+    }
+  }
+
+  // Phones pin the stage over the lists, so it needs a floor of its own: an
+  // opaque night, a black lip and a shadow for the lists to slide under. Focus
+  // mode is the same stage cut to a 76px strip: names on one line (a long one
+  // cut with "…"), the bars at their usual height.
+  @media (max-width: 820px) {
+    .fight-stage {
+      background: #0c0f17;
+      border-bottom: 3px solid var(--card-lip);
+      box-shadow: 0 10px 18px -8px rgba(0, 0, 0, 0.7);
+    }
+
+    .fight-stage .stage-bg {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    // The boss steps left a little, clear of the menu button.
+    .boss-plat {
+      right: calc(36 * var(--u));
+    }
+
+    .boss-figure {
+      right: calc(40 * var(--u));
+    }
+
+    .fight-stage.focus .boss-name {
+      @include engraved(0.72rem, 0.12em);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
   }
 

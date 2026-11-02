@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, pinned stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The fight stage locked to the top of the screen while the lists scroll under it.
+   Every phone below scrolls for real (drag or wheel inside it). The stage is the shipped
+   Pixel-cut stage; --t runs 0 (full stage) to 1 (compact strip), and the compact strip
+   halves the sprites (boss 128 -> 64, heroes 112 -> 56) so their pixels stay exact. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; text-transform: uppercase; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col p { margin: 0 0 12px; min-height: 112px; font-size: 15px; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6; --streak-i: #8d8475;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --card-lip: #05060a;
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  /* The stage text, per option. */
+  --name-fam: 'Cinzel', serif; --name-case: uppercase; --name-ls: .16em; --name-wt: 600;
+  --boss-name: 12.8px; --hero-name: 12.8px;
+  --chip-fam: 'Alegreya Sans', sans-serif; --chip-size: 11.2px; --chip-wt: 500;
+  width: 390px; height: 640px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.menu svg { width: 18px; height: 18px; }
+
+
+.unit { position: absolute; z-index: 2; text-shadow: 0 0 8px #000, 0 1px 2px #000; }
+.uname { display: flex; align-items: center; gap: 6px; font-family: var(--name-fam); font-weight: var(--name-wt); letter-spacing: var(--name-ls); text-transform: var(--name-case); color: var(--ink); margin-bottom: 5px; line-height: 1.2; }
+.b .uname { font-size: var(--boss-name); }
+.h .uname { font-size: var(--hero-name); }
+.uname small, .bnum { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); }
+.stats { display: flex; flex-wrap: wrap; gap: 2px 7px; margin-top: 5px; font-family: var(--chip-fam); font-size: var(--chip-size); font-weight: var(--chip-wt); line-height: 1.2; color: var(--text); font-variant-numeric: lining-nums; }
+.stats span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.stats svg { width: 12px; height: 12px; opacity: .8; }
+
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.h .bar { height: 15px; }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26;
+  box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: var(--exp); z-index: 1; }
+.bar span { position: absolute; right: 5px; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; font: 700 12px/1 'Alegreya Sans', sans-serif; letter-spacing: .03em; font-variant-numeric: lining-nums tabular-nums; color: var(--ink); text-shadow: 0 0 3px #000, 0 0 2px #000; }
+.h .bar span { bottom: 2px; }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: var(--brass); z-index: 1; }
+.bar .mk.fired { background: #4a4f5c; }
+
+/* Pixel night, as in pixel-stage.html */
+.stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none; background: linear-gradient(180deg, transparent, #0c0f17 55%, #0f131d 100%); }
+.stars { position: absolute; left: 0; top: -10px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 60px #3a4358, 120px 30px #2c3446, 230px 52px #3a4358, 300px 18px #4a5470, 352px 96px #2c3446, 200px 120px #2c3446, 90px 150px #232a39, 260px 170px #232a39, 330px 140px #3a4358, 20px 110px #2c3446; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--bg)); }
+.plinth { position: absolute; height: 18px; z-index: 0; }
+.plinth::before { content: ''; position: absolute; inset: 0;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: #1f2534; box-shadow: inset 0 3px 0 #3a4358, inset 0 6px 0 #283041, inset 0 -3px 0 #10141d; }
+
+
+/* ---- the pinned stage, geometry driven by --t (0 full, 1 compact) ---- */
+.scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding-top: var(--full, 212px); padding-bottom: 40px; }
+.scroll::-webkit-scrollbar { display: none; }
+.stage { position: absolute; left: 0; right: 0; top: 0; z-index: 5; overflow: hidden; height: var(--h, 212px); background: #0c0f17;
+  border-bottom: 3px solid var(--card-lip); box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); }
+.stage > * { transition: none; }
+.menu { position: absolute; right: 14px; top: calc(14px + 4px * var(--t)); z-index: 4; width: 40px; height: 40px; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+.boss { position: absolute; z-index: 1; right: calc(26px + 32px * var(--t)); top: calc(24px - 18px * var(--t)); width: calc(128px - 64px * var(--t)); }
+.hero { position: absolute; z-index: 1; left: calc(18px - 6px * var(--t)); top: calc(94px - 82px * var(--t)); width: calc(112px - 56px * var(--t)); }
+.boss, .hero { filter: none; }
+.unit.b { left: calc(16px + 64px * var(--t)); top: calc(16px - 8px * var(--t)); width: calc(196px - 6px * var(--t)); }
+.unit.h { left: calc(150px - 70px * var(--t)); top: calc(154px - 112px * var(--t)); width: calc(226px - 36px * var(--t)); }
+.b .uname { font-size: calc(12.8px - 1px * var(--t)); margin-bottom: calc(5px - 2px * var(--t)); }
+.h .uname { height: calc(16px * (1 - var(--t))); margin-bottom: calc(5px * (1 - var(--t))); overflow: hidden; opacity: calc(1 - 2 * var(--t)); }
+.b .stats { opacity: calc(1 - 2.5 * var(--t)); }
+.h .stats { opacity: calc(1 - 2.5 * var(--t)); }
+.b .cue, .h .cue { opacity: calc(1 - 2 * var(--t)); }
+.plinth { opacity: calc(1 - 1.6 * var(--t)); }
+.plinth.b { right: calc(22px + 32px * var(--t)); top: calc(130px - 100px * var(--t)); width: calc(136px - 68px * var(--t)); }
+.plinth.h { left: 14px; top: calc(192px - 140px * var(--t)); width: calc(120px - 60px * var(--t)); }
+.horizon { position: absolute; left: 0; right: 0; bottom: 0; height: calc(70px + 6px * var(--t));
+  background: conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px, #0f131d; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, #0c0f17); }
+.stage::before { content: none; }
+.hint { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #4d5466; pointer-events: none; z-index: 6; }
+.jump { display: flex; gap: 8px; margin-top: 10px; }
+.jump button { font: 700 13px 'Alegreya Sans', sans-serif; color: #12141a; background: #c8d0dd; border: 0; padding: 6px 12px; cursor: pointer; }
+.note { font-size: 14px; color: #8f8b80; margin-top: 10px; }
+/* The skills row: the reference for "the skills font" */
+.sec { margin: 12px 12px 0; }
+.shead { display: flex; align-items: center; height: 36px; padding: 0 2px; }
+.shead h3 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.row { --face: color-mix(in srgb, var(--c) 88%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.nm { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25); }
+.press svg, .press b { position: relative; z-index: 1; }
+.press svg { width: 13px; height: 13px; }
+.rowlist { margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; list-style: none; }
+.row.q { --c: var(--exp); }
+.row.r { --c: #6c7893; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · pinned stage</h1>
+  <p class="lede">The stage stays at the top of the screen while Skills, Resist and Quests scroll under it, so every hit and every HP change is always in view. The drop-down bar is no longer needed in any of these. Each phone scrolls for real.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+};
+const COLOR = { physical: '#e5705c', magic: '#a98be0', true: '#f1e9d6', healing: '#7fc17a', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: '#8d8475' };
+const icon = (name, color = COLOR[name] || 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+
+
+const BOSS = '../../public/sprites/bosses/balanced.png';
+const HERO = '../../public/sprites/player/warrior.png';
+
+const bossUnit = `<div class="unit b"><div class="uname"><span><span class="bnum">#9</span> Arcane Adept</span><span class="cue"></span></div>
+  <div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>
+  <div class="stats"><span>${icon('physical')}57</span><span>${icon('magic')}117</span><span>${icon('armor')}158</span><span>${icon('magicResist')}223</span><span>${icon('crit')}3%</span></div></div>`;
+const heroUnit = `<div class="unit h"><div class="uname"><span>Ryn <small>14</small></span><span class="cue"></span></div>
+  <div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>
+  <div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div></div>`;
+
+const ROW = (cls, color, name, pips, streak, kind, val) => `<li class="row ${cls}" style="--c: ${color}">
+  <span class="nm"><span class="nt">${name}</span>${pips ? `<span class="pp">${'<i></i>'.repeat(pips)}</span>` : ''}</span>
+  ${streak ? `<span class="streak">${icon('streak')}${streak}</span>` : ''}
+  <button class="press" type="button">${icon(kind, 'currentColor')}<b>${val}</b></button></li>`;
+const SECTIONS = `
+  <section class="sec"><div class="shead"><h3>Skills</h3></div><ul class="rowlist">
+    ${ROW('', 'var(--phys)', 'Morning run', 8, 23, 'physical', '1.1K')}
+    ${ROW('', 'var(--magic)', 'Read 20 pages', 6, 11, 'magic', '640')}
+    ${ROW('', 'var(--heal)', 'Stretch', 4, 31, 'healing', '526')}
+    ${ROW('', 'var(--true)', 'Journal', 3, 5, 'true', '611')}
+    ${ROW('', 'var(--phys)', 'Pushups', 5, 14, 'physical', '980')}
+  </ul></section>
+  <section class="sec"><div class="shead"><h3>Resist</h3></div><ul class="rowlist">
+    ${ROW('r', '#6c7893', 'Doomscrolling', 0, 4, 'armor', '2')}
+    ${ROW('r', '#6c7893', 'Late snack', 0, 9, 'armor', '1')}
+  </ul></section>
+  <section class="sec"><div class="shead"><h3>Quests</h3></div><ul class="rowlist">
+    ${ROW('q', 'var(--exp)', 'Book the dentist', 0, 0, 'crit', '300')}
+    ${ROW('q', 'var(--exp)', 'Clear the garage', 0, 0, 'crit', '900')}
+    ${ROW('q', 'var(--exp)', 'Renew passport', 0, 0, 'crit', '600')}
+  </ul></section>`;
+
+const OPTIONS = [
+  { id: 'a', tag: 'Option A', h: 'Pin the whole stage', mode: 'full', start: 150,
+    p: 'The stage as shipped, 212px, glued to the top. Simplest to build, and the fight is always fully there. It costs a quarter of an 844px phone, and a third of a small one, to the lists for good.' },
+  { id: 'b1', tag: 'Option B · Recommended', h: 'Pinned, shrinks as you scroll', mode: 'shrink', start: 0,
+    p: 'Full stage at the top. As the lists scroll it shrinks, tracking your finger, into a 76px strip: halved sprites, both HP bars, boss name. Back at the top it grows again. Shown at rest here.' },
+  { id: 'b2', tag: 'Option B · scrolled', h: 'The same, scrolled down', mode: 'shrink', start: 220,
+    p: 'Scrolled past the first rows. The strip keeps the two HP bars, the boss name and both fighters; the stat chips and plinths are gone. Tap it to open the same boss and hero sheets.' },
+  { id: 'c', tag: 'Option C', h: 'Always the compact strip', mode: 'compact', start: 150,
+    p: 'The 76px strip, never the big stage. Most room for the lists and nothing moves, but the stage loses its look, the stat chips and the room for hit effects.' },
+];
+
+const FULL = 212, MIN = 76;
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col" id="col-${o.id}">
+  <div class="tag">${o.tag}</div><h2>${o.h}</h2><p>${o.p}</p>
+  <div class="phone" style="--full:${o.mode === 'compact' ? MIN : FULL}px">
+    <div class="scroll" data-mode="${o.mode}" data-start="${o.start}">${SECTIONS}</div>
+    <div class="stage"><span class="stars"></span><span class="horizon"></span>
+      <span class="menu">${icon('menu', 'currentColor')}</span>
+      <span class="plinth b"></span><img class="boss" src="${BOSS}"><span class="plinth h"></span><img class="hero" src="${HERO}">
+      ${bossUnit}${heroUnit}</div>
+  </div>
+  ${o.mode === 'shrink' ? '<div class="jump"><button type="button" data-to="0">Top</button><button type="button" data-to="220">Scrolled</button></div>' : ''}
+</div>`).join('');
+
+function apply(scroll) {
+  const phone = scroll.parentElement, stage = phone.querySelector('.stage');
+  const mode = scroll.dataset.mode, s = scroll.scrollTop;
+  const h = mode === 'full' ? FULL : mode === 'compact' ? MIN : Math.max(MIN, FULL - s);
+  const t = (FULL - h) / (FULL - MIN);
+  stage.style.setProperty('--h', h + 'px');
+  phone.style.setProperty('--t', mode === 'compact' ? 1 : t);
+}
+document.querySelectorAll('.scroll').forEach((sc) => {
+  sc.addEventListener('scroll', () => apply(sc), { passive: true });
+  sc.scrollTop = +sc.dataset.start; apply(sc);
+});
+document.querySelectorAll('.jump button').forEach((b) => b.addEventListener('click', () => {
+  const sc = b.closest('.col').querySelector('.scroll'); sc.scrollTo({ top: +b.dataset.to, behavior: 'smooth' });
+}));
+</script>
+</body>
+</html>

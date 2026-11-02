@@ -8,9 +8,10 @@ import HealthBar from '../ui/HealthBar.vue';
 import Sprite from '../ui/Sprite.vue';
 import { spriteUrl } from '../ui/spriteUrl';
 
-// Once the fight stage has scrolled off the top, at every width, this bar
-// drops in so every hit stays in view while ticking skills (FightStage decides
-// when, see useScrolledPast). It is status only, not tappable: the details
+// Once the fight stage has scrolled off the top, on desktop and tablet, this
+// bar drops in so every hit stays in view while ticking skills (FightStage
+// decides when, see useScrolledPast). Phones pin the stage instead, so the bar
+// never shows there. It is status only, not tappable: the details
 // open from the stage. Laid out like the fight: the hero on the left, HP as
 // a ring around their portrait with the level on it, and the boss taking the
 // rest of the row, its HP draining toward its portrait on the right.
@@ -98,6 +99,12 @@ const { popups: heroPopups, isHit: heroHit } = useDamagePopup(() => props.heroCu
 
 .boss-bar.shown {
   transform: none;
+}
+
+@media (max-width: 820px) {
+  .boss-bar {
+    display: none;
+  }
 }
 
 .portrait {

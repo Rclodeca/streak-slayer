@@ -43,19 +43,20 @@ const needsName = computed(() => characterStore.character.name === undefined);
 // button. The popup overlays below stay mounted regardless (they're
 // independently gated Teleports, see useModalPriority), so a queued
 // death/item/quest popup isn't hidden by this toggle.
-// With the fight showing there's no top bar: the menu floats in the stage's
-// top-right corner and the boss's number joins its name (BossPanel). High
-// Scores keeps the bar, with its Back button.
+// With the fight showing there's no top bar: the menu rides in the stage's
+// top-right corner (FightStage's slot, so it stays with the pinned stage) and
+// the boss's number joins its name (BossPanel). High Scores keeps the bar,
+// with its Back button.
 const showHighScores = ref(false);
 </script>
 
 <template>
   <NewHeroScreen v-if="needsName" />
   <div v-else class="app-shell">
-    <div class="progress-bar" :class="{ 'over-stage': !showHighScores }">
-      <span v-if="showHighScores">Boss #{{ bossIndex }}</span>
+    <div v-if="showHighScores" class="progress-bar">
+      <span>Boss #{{ bossIndex }}</span>
       <div class="top-actions">
-        <button v-if="showHighScores" type="button" class="nav-button" @click="showHighScores = false"><ArrowLeft :size="14" />Back</button>
+        <button type="button" class="nav-button" @click="showHighScores = false"><ArrowLeft :size="14" />Back</button>
         <AppMenu @high-scores="showHighScores = true" />
       </div>
     </div>
@@ -74,7 +75,9 @@ const showHighScores = ref(false);
       <SkipDayButton v-if="isDev" />
       <PopupPreview v-if="isDev" />
       <div class="layout">
-        <FightStage />
+        <FightStage>
+          <AppMenu @high-scores="showHighScores = true" />
+        </FightStage>
         <main class="main">
           <HabitList />
           <QuestSection />
@@ -114,14 +117,6 @@ const showHighScores = ref(false);
   gap: 0.5rem;
 }
 
-/* Out of the flow, over the stage's corner and its tap areas. */
-.progress-bar.over-stage {
-  position: absolute;
-  z-index: 7;
-  top: env(safe-area-inset-top, 0px);
-  right: 0;
-}
-
 .nav-button {
   display: inline-flex;
   align-items: center;
@@ -140,8 +135,9 @@ const showHighScores = ref(false);
 }
 
 /* The fight runs across the page as a banner, then skills and quests on the
-   left and progress and the log on the right. Nothing sticks: the banner
-   scrolls away and the drop-down bar takes over. */
+   left and progress and the log on the right. On desktop the banner scrolls
+   away and the drop-down bar takes over; on phones the stage stays pinned at
+   the top (FightStage). */
 .layout > .fight-stage {
   grid-column: 1 / -1;
 }

@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Check, Download, Menu, Trophy, Undo2, Upload } from 'lucide-vue-next';
+import { Check, Download, Focus, Menu, Trophy, Undo2, Upload } from 'lucide-vue-next';
 import { exportSaveFile } from '../../composables/useSaveFileTransfer';
 import { useUndoCheck } from '../../composables/useUndoCheck';
+import { useFocusModeStore } from '../../store/focusModeStore';
 import { applySaveFile, readSaveFile } from '../../store/saveFile';
 import type { SaveFile, SaveFileSummary } from '../../store/saveFile';
 import { THEMES, useThemeStore } from '../../store/themeStore';
 import type { Theme } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
-// Top-right menu: Undo, High Scores, save export/import, and the theme picker
-// (hidden while there's only one theme).
-// Picking a theme keeps the menu open so themes can be flipped back and
-// forth; anything else, a tap outside, or Escape closes it.
+// Top-right menu: Undo, High Scores, Focus mode, save export/import, and the
+// theme picker (hidden while there's only one theme).
+// Picking a theme or flipping Focus mode keeps the menu open so the change can
+// be seen and flipped back; anything else, a tap outside, or Escape closes it.
 const emit = defineEmits<{ 'high-scores': [] }>();
 
 const themeStore = useThemeStore();
+const focusMode = useFocusModeStore();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
 
@@ -119,6 +121,10 @@ onBeforeUnmount(() => {
     <div v-if="open" class="menu-panel" role="menu">
       <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
       <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
+      <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
+      <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="focusMode.setOn(!focusMode.on)">
+        <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />
+      </button>
       <div class="menu-divider" role="separator" />
       <span class="menu-label">Save</span>
       <button type="button" class="menu-item" role="menuitem" @click="exportSave"><Upload :size="15" />Export</button>
@@ -222,6 +228,17 @@ onBeforeUnmount(() => {
 
 .tick {
   opacity: 0;
+}
+
+/* Pushed to the row's right end. */
+.focus-tick {
+  margin-left: auto;
+}
+
+@media (min-width: 821px) {
+  .focus-item {
+    display: none;
+  }
 }
 
 .tick.on {
