@@ -31,16 +31,14 @@ export function assignUltIfEligible(habits: Habit[], level: number, rng: Rng): H
 }
 
 /**
- * Grants permanent Overdrive to one random good habit (either period).
- * Stacking: a habit that already has it is a valid, no-op pick. Returns the
- * same array reference and `granted: null` when there is nothing to grant
- * (no good habit, or the pick already had Overdrive).
+ * Grants permanent Overdrive to one random good habit (either period) that
+ * doesn't have it yet. Returns the same array reference and `granted: null`
+ * when there is nothing to grant (no good habit, or all already have it).
  */
 export function grantOverdrive(habits: Habit[], rng: Rng): { habits: Habit[]; granted: Habit | null } {
-  const pool = habits.filter((h) => !h.isBad);
+  const pool = habits.filter((h) => !h.isBad && !h.isOverdrive);
   if (pool.length === 0) return { habits, granted: null };
   const chosen = pickRandom(pool, rng);
-  if (chosen.isOverdrive) return { habits, granted: null };
   const granted = { ...chosen, isOverdrive: true };
   return { habits: habits.map((h) => (h.id === chosen.id ? granted : h)), granted };
 }

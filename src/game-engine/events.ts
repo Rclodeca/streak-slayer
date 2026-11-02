@@ -59,7 +59,7 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: `A random good skill can be used ${TUNING.OVERDRIVE_MAX_EXTRA_USES} extra times per period.`,
     minLevel: 1,
     oneTime: false,
-    isEligible: (_character, habits) => habits.some((h) => !h.isBad),
+    isEligible: (_character, habits) => habits.some((h) => !h.isBad && !h.isOverdrive),
   },
   {
     id: 'item-slots',

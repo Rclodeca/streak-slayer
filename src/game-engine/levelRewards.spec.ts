@@ -107,10 +107,18 @@ describe('grantOverdrive', () => {
     }
   });
 
-  it('is a no-op when the picked habit already has Overdrive', () => {
+  it('is a no-op when every good habit already has Overdrive', () => {
     const habits = [makeHabit({ id: 'only-one', isOverdrive: true })];
     const { habits: result, granted } = grantOverdrive(habits, createRng(1));
     expect(result).toBe(habits);
     expect(granted).toBeNull();
+  });
+
+  it('never re-picks a habit that already has Overdrive', () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const habits = [makeHabit({ id: 'has', isOverdrive: true }), makeHabit({ id: 'new' })];
+      const { granted } = grantOverdrive(habits, createRng(seed));
+      expect(granted?.id).toBe('new');
+    }
   });
 });
