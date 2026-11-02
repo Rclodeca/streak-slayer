@@ -36,7 +36,7 @@ const isResting = computed(() => !isDueOn(props.habit, debugClockStore.now()));
 const nextDayLabel = computed(() =>
   props.habit.days ? WEEKDAY_SHORT[nextDueDay(props.habit.days, dayOfWeekIndex(debugClockStore.now()))] : '',
 );
-// A struck Overdrive skill's button stays live until its charges are spent.
+// A struck Overdrive skill's button stays live, haloed, until its charges are spent.
 const canOverdrive = computed(
   () => !isResting.value && isCompletedThisPeriod.value && overdriveUsesRemaining(props.habit, currentPeriodKey.value) > 0,
 );
