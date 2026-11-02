@@ -5,6 +5,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { compile } from 'sass';
 import { describe, expect, it } from 'vitest';
+import { ASHEN_FAMILY } from '../../../store/themeStore';
 
 /** Every colour (and light) a theme must set on `:root[data-theme=<id>]`. */
 export const PALETTE_TOKENS = [
@@ -43,7 +44,8 @@ export const PALETTE_TOKENS = [
   'plate',
 ];
 
-const ASHEN_THEMES = ['ashen'];
+// Crypt and Hellforge have no palette until Tasks 3 and 4 land theirs.
+const PENDING_THEMES: string[] = ['crypt', 'hellforge'];
 
 function compileThemes(): string {
   return compile('src/assets/scss/themes/index.scss').css;
@@ -74,9 +76,15 @@ function declaredTokens(css: string, id: string): Set<string> {
 describe('Ashen themes', () => {
   const css = compileThemes();
 
-  it.each(ASHEN_THEMES)('declares every palette token for %s', (id) => {
-    const declared = declaredTokens(css, id);
-    expect(PALETTE_TOKENS.filter((name) => !declared.has(name))).toEqual([]);
+  for (const id of ASHEN_FAMILY) {
+    it.skipIf(PENDING_THEMES.includes(id))(`declares every palette token for ${id}`, () => {
+      const declared = declaredTokens(css, id);
+      expect(PALETTE_TOKENS.filter((name) => !declared.has(name))).toEqual([]);
+    });
+  }
+
+  it('no longer mentions the ashen theme id', () => {
+    expect(css).not.toMatch(/data-theme=['"]?ashen/);
   });
 
   it('declares every custom property it uses', () => {

@@ -1,6 +1,9 @@
-// Ashen — Souls-like dark fantasy: blue-black, moonlit stone panels,
-// engraved Roman caps (Cinzel) for titles, and a boss that rises out of fog.
-// Imported once from main.ts.
+// Ashen — Souls-like dark fantasy: stone panels, engraved Roman caps
+// (Cinzel) for titles, and a boss that rises out of fog. Ashen is the family
+// of themes that share this look — Moonlit, Crypt and Hellforge — each with
+// its own palette in a sibling file. Imported once, through index.scss.
+//
+// The comments below describe Moonlit, the original.
 //
 // Four rules keep it scannable (docs/mockups/ashen-hierarchy.html,
 // docs/mockups/ashen-alternatives.html option C, ashen-character.html,
@@ -17,7 +20,8 @@
 //   moonlit seam along panels and popups; no corner brackets or rules beside titles. Corners are
 //   only just softened, buttons are soft gold fills.
 //
-// Every rule lives under $ashen, the family selector (see store/themeStore.ts).
+// Every rule lives under $ashen, the family selector — the three themes'
+// ids (see store/themeStore.ts), never Minimalist.
 // That prefix also outranks the components' scoped styles — it adds a
 // pseudo-class and an attribute on top of their class + data-v attribute —
 // so this file can restyle component internals while Minimalist (the
@@ -34,7 +38,7 @@
   @return string.unquote('rgb(var(--#{$name}-rgb) / #{math.div(math.round($alpha * 255), 255)})');
 }
 
-$ashen: ":root[data-theme='ashen']";
+$ashen: ":root:is([data-theme='moonlit'], [data-theme='crypt'], [data-theme='hellforge'])";
 
 // Structure: frames, rules and dividers, in ash.
 $line: tone(ash, 0.2);

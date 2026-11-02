@@ -6,18 +6,25 @@
 
 import { defineStore } from 'pinia';
 
-export type Theme = 'ashen' | 'minimalist';
+export type Theme = 'moonlit' | 'crypt' | 'hellforge' | 'minimalist';
 
 export const THEMES: { id: Theme; label: string }[] = [
-  { id: 'ashen', label: 'Ashen' },
+  { id: 'moonlit', label: 'Moonlit' },
+  { id: 'crypt', label: 'Crypt' },
+  { id: 'hellforge', label: 'Hellforge' },
   { id: 'minimalist', label: 'Minimalist' },
 ];
 
+/** The themes that share Ashen's look (assets/scss/themes/ashen.scss) and differ in palette. */
+export const ASHEN_FAMILY: Theme[] = ['moonlit', 'crypt', 'hellforge'];
+
 export const STORAGE_KEY = 'streak-slayer:theme:v1';
-const DEFAULT_THEME: Theme = 'ashen';
+const DEFAULT_THEME: Theme = 'moonlit';
 
 function loadTheme(): Theme {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const stored = localStorage.getItem(STORAGE_KEY);
+  // Moonlit used to be the one Ashen theme.
+  const saved = stored === 'ashen' ? 'moonlit' : stored;
   return THEMES.some((t) => t.id === saved) ? (saved as Theme) : DEFAULT_THEME;
 }
 
