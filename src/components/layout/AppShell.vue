@@ -52,7 +52,7 @@ const showHighScores = ref(false);
 
 <template>
   <NewHeroScreen v-if="needsName" />
-  <div v-else class="app-shell">
+  <div v-else class="app-shell" :class="{ 'fight-view': !showHighScores }">
     <div v-if="showHighScores" class="progress-bar">
       <span>Boss #{{ bossIndex }}</span>
       <div class="top-actions">
@@ -78,14 +78,16 @@ const showHighScores = ref(false);
         <FightStage>
           <AppMenu @high-scores="showHighScores = true" />
         </FightStage>
-        <main class="main">
-          <HabitList />
-          <QuestSection />
-        </main>
-        <aside class="side">
-          <ProgressSummary class="progress" />
-          <ActivityLog />
-        </aside>
+        <div class="scroll-body">
+          <main class="main">
+            <HabitList />
+            <QuestSection />
+          </main>
+          <aside class="side">
+            <ProgressSummary class="progress" />
+            <ActivityLog />
+          </aside>
+        </div>
       </div>
     </template>
   </div>
@@ -142,6 +144,11 @@ const showHighScores = ref(false);
   grid-column: 1 / -1;
 }
 
+/* Desktop: no box of its own, the columns are the grid's. */
+.scroll-body {
+  display: contents;
+}
+
 .main,
 .side {
   display: flex;
@@ -156,11 +163,38 @@ const showHighScores = ref(false);
   }
 }
 
-/* Phones: one column, every section a row of the grid spaced like the rest.
-   The progress rings are desktop and tablet only. */
+/* Phones: one column. The fight view fills the screen and never scrolls
+   itself: the stage is the top row and the lists scroll in a box beneath it,
+   so a pull past either end of the lists bounces only the lists, never the
+   stage (the page has nothing to bounce, see main.scss). Every section is a
+   row of the scroll box's grid, spaced like the rest. The progress rings are
+   desktop and tablet only. */
 @media (max-width: 820px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-shell.fight-view {
+    position: fixed;
+    inset: 0;
+    gap: 0;
+  }
+
+  .fight-view .layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .scroll-body {
+    display: grid;
+    align-content: start;
+    align-self: stretch;
+    gap: 1.25rem;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1.25rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
   }
 
   .main,

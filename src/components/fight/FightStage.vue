@@ -17,8 +17,8 @@ import { createHitPlayer } from './hitFx';
 // each half its own panel with its own details. Hits play out across it
 // (hitFx.ts), each fighter's HP held back until its blow lands.
 //
-// On phones the stage is pinned to the top of the screen while the lists
-// scroll under it; Focus mode (the menu's) shrinks it to a 76px strip, the
+// On phones the stage holds the top of the screen while the lists scroll in
+// their own box beneath it; Focus mode (the menu's) shrinks it to a 76px strip, the
 // fighters at half size with only their names and bars. The page's menu rides
 // in the stage's corner through the default slot, so it stays with the stage.
 
@@ -178,20 +178,15 @@ onBeforeUnmount(() => {
   --split-ym: var(--split-yr);
 }
 
-/* Phones: pinned to the top, the lists scrolling under it (its backdrop is
-   opaque, see the theme). Above the lists and their buttons, below the popups. */
+/* Phones: the top row of the screen, the lists scrolling in their own box
+   beneath it (AppShell), so it never moves. Its backdrop is opaque, see the
+   theme. Above the lists and their buttons, below the popups. */
 @media (max-width: 820px) {
   /* The air above the names is the stage's own padding (plus the status bar's
-     inset), so it travels with the pin; the page's top padding is pulled back
-     to match, so the stage at rest sits where it did. */
+     inset). */
   .fight-stage {
     --stage-top: calc(10px + env(safe-area-inset-top, 0px));
-    position: sticky;
-    top: 0;
     z-index: 8;
-    width: 100vw;
-    margin-inline: calc(50% - 50vw);
-    margin-top: -1rem;
     padding-top: var(--stage-top);
   }
 

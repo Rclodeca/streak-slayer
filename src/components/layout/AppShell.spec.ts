@@ -29,4 +29,12 @@ describe('AppShell', () => {
     expect(wrapper.find('.progress-bar').exists()).toBe(false);
     expect(wrapper.find('fight-stage-stub app-menu-stub').exists()).toBe(true);
   });
+
+  it('puts the lists in their own scroll box beside the stage, so phones scroll only them', () => {
+    const wrapper = shallowMount(AppShell);
+    const body = wrapper.find('.layout > .scroll-body');
+    expect(body.find('.main').exists()).toBe(true);
+    expect(body.find('.side').exists()).toBe(true);
+    expect(body.find('fight-stage-stub').exists()).toBe(false);
+  });
 });
