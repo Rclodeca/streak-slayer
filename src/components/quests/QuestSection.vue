@@ -65,7 +65,7 @@ function onCheckOff(quest: Quest) {
 </script>
 
 <template>
-  <section class="panel quest-section" :class="{ locked: !open }">
+  <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
       <h2><Lock v-if="!open" :size="14" class="lock-icon" />Quests</h2>
       <button v-if="open" type="button" class="add-button" aria-label="Add task" @click="showAdd = true">+ New task</button>
@@ -79,7 +79,7 @@ function onCheckOff(quest: Quest) {
     </div>
     <ul v-else-if="questStore.quests.length">
       <li v-for="quest in sortedQuests" :key="quest.id" class="quest-item" :class="[urgency(quest), { side: quest.kind === 'side' }]">
-        <input type="checkbox" class="check" :aria-label="`Complete ${quest.description}`" @change="onCheckOff(quest)" />
+        <label class="check-zone"><input type="checkbox" class="check" :aria-label="`Complete ${quest.description}`" @change="onCheckOff(quest)" /></label>
         <button type="button" class="body" @click="detailId = quest.id">
           <span class="description">{{ quest.description }}</span>
           <span class="meta">

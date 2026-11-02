@@ -241,38 +241,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   animation: ashen-embers 14s linear infinite;
 }
 
-// The checkbox: a crisp silver diamond while it waits, a dim solid one once
-// done, so what's left draws the eye. Landing it (`.lit`, HabitListItem)
-// burns it bright for a moment, then it settles.
-@mixin diamond-check {
-  --check-glow: #{tone(moon-glow, 0.7)};
-  width: 13px;
-  height: 13px;
-  margin: 0 4px;
-  transform: rotate(45deg);
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid var(--accent);
-  transition:
-    background 0.3s,
-    box-shadow 0.3s;
-
-  &:checked {
-    background: var(--check-done);
-    border-color: var(--check-done-line);
-    box-shadow: none;
-  }
-
-  // The fill lands at once, so the flash burns a solid diamond.
-  &:checked.lit {
-    animation: ashen-check-settle 0.9s ease-out;
-    transition: none;
-  }
-
-  &:checked::after {
-    content: none;
-  }
-}
-
 #{$ashen} {
   // The pixel-cut corners: 3px steps for cards, panels and popups, 2px for
   // buttons, checks, inputs and chips (see pixel-corners).
@@ -822,189 +790,157 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     filter: drop-shadow(0 0 8px rgba(224, 120, 58, 0.6));
   }
 
-  // ---------- Skills ----------
+  // ---------- Skills, Resist and Quests: cards ----------
+  // (docs/mockups/pixel-done.html, option A) No frame round the lists: each
+  // is a title, with its add button, over its cards. A card's background is
+  // --card-bg, so the base hover can't repaint it.
+
+  :is(.habit-list-header, .quest-header) {
+    min-height: 40px;
+    padding: 0 2px;
+  }
+
+  :is(.habit-list-header, .quest-header) h2 {
+    margin: 0;
+    @include engraved($caps-lg, 0.22em);
+    color: var(--text-h);
+  }
+
+  .habit-group {
+    margin-top: 0;
+  }
 
   .habit-group-title {
+    margin: 12px 2px 7px;
     @include engraved($caps-xs, 0.26em);
     color: var(--text);
   }
 
+  :is(.habit-list, .quest-section) ul {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .resist-list ul {
+    margin-top: 4px;
+  }
+
+  .quest-section ul {
+    margin-top: 4px;
+  }
+
+  .habit-item,
+  .quest-item,
+  .quest-item:is(.side, .urgent) {
+    --card-bg: var(--card);
+    min-height: 52px;
+    background: var(--card-bg);
+    border: 0;
+    border-bottom: 3px solid var(--card-lip);
+    @include bevel(var(--card-hi), var(--card-lo));
+    @include pixel-corners(3px);
+    transition: none;
+  }
+
+  .habit-item:hover {
+    background: var(--card-bg);
+  }
+
   .habit-item {
-    padding: 0.62rem 0.6rem 0.62rem 0.7rem;
-    transition: background 0.25s;
+    gap: 10px;
+    padding: 6px 8px 6px 12px;
   }
 
-  @media (hover: hover) {
-    .habit-item:hover {
-      background: linear-gradient(90deg, tone(moon-tint, 0.12), tone(moon-tint, 0.02) 60%, transparent);
-      box-shadow: inset 1px 0 0 var(--accent-solid);
-    }
+  // Resist and resting skills are quieter cards.
+  .habit-item.bad {
+    --card-bg: var(--quiet-card);
   }
 
-  // A spent row takes no hover, its own or the base one, so the skill just
-  // used (a phone keeps :hover on what was last tapped) dims like the rest.
-  .habit-item.spent:hover {
-    background: none;
-    box-shadow: none;
+  .habit-item.resting {
+    --card-bg: var(--quiet-card);
+    @include bevel(var(--quiet-hi), var(--quiet-lo));
+    opacity: 1;
   }
 
-  .habit-item .check,
-  .quest-item .check {
-    @include diamond-check;
-  }
-
-  .habit-item .check:hover:not(:disabled),
-  .quest-item .check:hover {
-    box-shadow: 0 0 10px -1px tone(moon-glow, 0.6);
-  }
-
-  // A bad habit's diamond is red, and lights red once checked: giving in
-  // is a blow taken, not a skill landed. Waiting, it's a dimmer red, as the
-  // Resist rows rest quiet.
-  .habit-item.bad .check {
-    --check-glow: rgba(200, 64, 47, 0.7);
-    border-color: color-mix(in srgb, var(--damage-color) 70%, transparent);
-  }
-
-  .habit-item.bad .check:checked {
-    background: #4f241d;
-    border-color: #74352b;
-    box-shadow: none;
-  }
-
-  .habit-item.bad .check:hover:not(:disabled) {
-    box-shadow: 0 0 10px -1px rgba(200, 64, 47, 0.6);
-  }
-
-  // The Overdrive halo turns with the diamond: a second, ember diamond
-  // around the lit one.
-  .habit-item .check.overdrive-ready::before {
-    inset: -5px;
-    border-width: 1px;
-    border-color: rgba(224, 120, 58, 0.75);
-    border-radius: 0;
-    box-shadow: 0 0 6px 0 rgba(224, 120, 58, 0.25);
+  // Struck: the card drops dark and flat, and its name goes grey.
+  .habit-item.struck {
+    --card-bg: var(--struck-card);
+    @include bevel(var(--struck-hi), var(--struck-lo));
   }
 
   .habit-item .name {
     @include name-serif;
+    font-size: 1.03rem;
+    line-height: 1.2;
+    color: var(--card-ink);
   }
 
-  // Resist rows rest quiet: there's nothing to do there unless you give in
-  // (docs/mockups/resist-section.html, option C).
-  .habit-item.bad .name {
+  .habit-item:is(.bad, .resting) .name {
     font-weight: 500;
+    color: var(--text);
   }
 
-  .habit-item .period-tag {
-    @include plain-label($label-sm, 600);
-    color: $ash-mark;
+  .habit-item.struck .name {
+    color: var(--struck-ink);
   }
 
-  // A spent skill is an ability waiting for dawn, not a task crossed off
-  // (docs/mockups/skill-attack.html, option E). Landing it sweeps a flash of
-  // its colour across the row; a shadow follows and stays. Under it the name
-  // dims, the number keeps a trace of its colour, and neighbouring spent rows
-  // join into one block. A done Overdrive skill dims too; its halo still
-  // shows under the shadow while it has charges.
-  .habit-item .name.done {
-    opacity: 1;
-    text-decoration: none;
-  }
-
-  .habit-item.spent .name {
-    color: var(--spent-text);
-  }
-
-  .habit-item.spent .damage {
-    color: color-mix(in srgb, var(--c) 50%, var(--spent-text));
-  }
-
-  .habit-item.spent :is(.streak, .rank-numeral) {
+  .habit-item.struck :is(.streak, .rank-pips, .sigil) {
     opacity: 0.45;
   }
 
-  .habit-item .veil {
-    display: block;
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
+  .habit-item .rank-pips {
+    padding-left: 2px;
   }
 
-  .habit-item.spent:has(+ .habit-item.spent) .veil {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+  .habit-item .meta {
+    gap: 7px;
   }
 
-  .habit-item.spent + .habit-item.spent .veil {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+  .habit-item .streak {
+    min-width: 26px;
+    gap: 2px;
+    font-weight: 700;
   }
 
-  .habit-item .veil::before,
-  .habit-item .veil::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+  .habit-item .next-day {
+    padding: 0;
+    border: 0;
+    @include plain-label($label-sm, 700);
+    color: var(--accent);
+    opacity: 0.7;
   }
 
-  // The shadow. transform only, so it stays cheap.
-  .habit-item .veil::before {
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.18));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.7s cubic-bezier(0.6, 0, 0.4, 1) 0.25s;
-  }
-
-  .habit-item.spent .veil::before {
-    transform: scaleX(1);
-  }
-
-  // The flash, once, as the check lights. A bad habit's is red, like its check.
-  .habit-item .veil::after {
-    background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--c) 38%, transparent) 50%, transparent 80%);
-    transform: translateX(-100%);
-  }
-
-  .habit-item.bad .veil::after {
-    --c: var(--damage-color);
-  }
-
-  .habit-item:has(.check.lit) .veil::after {
-    animation: ashen-spent-flash 0.52s ease-out;
+  .habit-item .period-tag {
+    @include plain-label($label-sm, 700);
+    color: var(--spent-text);
   }
 
   .sigil.special {
     color: var(--accent);
-    filter: drop-shadow(0 0 4px tone(moon-glow, 0.45));
   }
 
   .sigil.ult {
     color: $ember;
-    filter: drop-shadow(0 0 5px rgba(224, 120, 58, 0.55));
   }
 
-  .habit-item .streak,
-  .habit-item .damage {
-    font-weight: 700;
+  // A rank-up: a brass sweep across the card and the new rank rising off it.
+  .habit-item.flare::after {
+    background: linear-gradient(100deg, transparent 20%, tone(brass, 0.28) 50%, transparent 80%);
   }
 
-  // Resting today: a hollow, dashed ash diamond that can't be checked.
-  .habit-item.resting .check {
-    border: 1px dashed $ash-deep;
-    background: transparent;
-    box-shadow: none;
+  .rank-ghost {
+    @include engraved($caps-xs, 0.22em);
+    color: $brass;
+    text-shadow: 0 0 10px tone(brass, 0.7);
   }
 
-  .habit-item .next-day {
-    @include plain-label($label-sm, 600);
-    padding: 3px 7px;
-    border: 1px solid $line-mid;
-    color: var(--text);
+  .rest-fold {
+    margin-top: 8px;
   }
 
   .rest-fold summary {
+    padding: 0 2px;
     list-style: none;
     @include engraved($caps-xs, 0.24em);
     color: var(--text);
@@ -1030,10 +966,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .rest-fold .rest-count {
-    color: var(--accent-solid);
+    color: var(--accent);
   }
 
-  // Day picker: a diamond behind each letter, lit gold when the day is due.
+  // Day picker: a pixel-cut chip behind each letter, lit silver when the day is due.
   .days {
     gap: 2px;
   }
@@ -1047,14 +983,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     &::before {
       content: '';
       position: absolute;
-      width: 26px;
-      height: 26px;
-      transform: rotate(45deg);
+      width: 30px;
+      height: 30px;
+      @include pixel-corners(2px);
       border: 1px solid $ash-deep;
       background: rgba(0, 0, 0, 0.35);
-      transition:
-        background 0.25s,
-        box-shadow 0.25s;
+      transition: background 0.25s;
     }
 
     span {
@@ -1068,117 +1002,84 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     &::before {
       border-color: var(--accent-solid);
       background: radial-gradient(circle, tone(moon-glow, 0.3), tone(day-on, 0.25) 70%);
-      box-shadow: 0 0 10px -2px tone(moon-glow, 0.45);
     }
   }
 
-  // Difficulty: round dots, so the diamond stays the check's alone.
+  // Difficulty: round dots.
   .pip {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: transparent;
-    border: 1px solid $ash-deep;
+    border: 1.5px solid $brass;
   }
 
   .pip.lit {
-    background: $brass-solid;
-    border-color: $brass-solid;
+    background: $brass;
     box-shadow: none;
-  }
-
-  // Skill ranks: the Roman numeral on a small dark plate edged in gold, not
-  // a diamond per rank, so they never read as checks. Every plate is the same
-  // width.
-  .rank-diamonds i {
-    display: none;
-  }
-
-  .rank-numeral {
-    display: block;
-    box-sizing: border-box;
-    width: 30px;
-    // The extra left padding balances the tracking after the last letter.
-    padding: 3px 0 2px 0.08em;
-    text-align: center;
-    font-family: var(--heading);
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    color: $brass;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(190, 160, 100, 0.45);
-  }
-
-  // On a skill row, streak, rank and damage each hold a fixed place, so they
-  // line up down the list; an unranked skill keeps an empty plate's width
-  // (docs/mockups/plate-columns.html, option A).
-  .habit-item .meta {
-    gap: 0.6rem;
-  }
-
-  .habit-item .streak {
-    min-width: 2.6rem;
-  }
-
-  .habit-item .rank-slot {
-    display: block;
-    width: 30px;
-  }
-
-  // A rank-up: a brass sweep across the row and the new rank rising off it.
-  .habit-item.flare::after {
-    background: linear-gradient(100deg, transparent 20%, tone(brass, 0.28) 50%, transparent 80%);
-  }
-
-  .rank-ghost {
-    @include engraved($caps-xs, 0.22em);
-    color: $brass;
-    text-shadow: 0 0 10px tone(brass, 0.7);
   }
 
   // ---------- Quests ----------
 
-  // A well edged only by its due tone.
-  .quest-item {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 12%, transparent), $well 55%);
-    border-color: transparent;
-    border-left: 2px solid var(--tone);
-    box-shadow: none;
+  .quest-item,
+  .quest-item:is(.side, .urgent) {
+    gap: 6px;
+    padding: 4px 8px 4px 4px;
   }
 
-  .quest-item.side {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--side-quest-color) 14%, transparent), $well 55%);
-    box-shadow: none;
+  // The square checkbox on the left, in a 44px tap zone.
+  .quest-item .check-zone {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
   }
 
-  .quest-item.urgent,
-  .quest-item.side.urgent {
-    box-shadow: inset 10px 0 20px -12px rgba(200, 64, 47, 0.7);
+  .quest-item .check {
+    @include square-check;
+    @include inset-focus;
+  }
+
+  .quest-item .body {
+    padding: 4px 0;
+    gap: 3px;
   }
 
   .quest-item .description {
     @include name-serif;
+    font-size: 1rem;
+    line-height: 1.2;
+    color: var(--card-ink);
   }
 
   .quest-item .meta {
-    @include plain-label($label-sm, 600);
+    gap: 6px;
+    @include plain-label($label-sm, 700);
   }
 
-  .reward-exp {
-    filter: drop-shadow(0 0 6px rgba(230, 199, 127, 0.35));
+  .quest-item .pips {
+    gap: 3px;
   }
 
-  // The glow sits behind the icon itself, not the icon + label block.
+  // The reward: its icon over its label, in gold (a side quest's gift in its own).
   .reward-exp {
     isolation: isolate;
-    @include plain-label(0.72rem);
-    color: var(--accent);
+    width: auto;
+    padding-right: 6px;
+    gap: 1px;
+    @include plain-label(0.72rem, 700);
+    color: var(--icon-exp);
+  }
+
+  .quest-item.side .reward-exp {
+    color: var(--icon-gift);
   }
 
   .reward-exp .stat-icon {
     position: relative;
+    color: inherit;
   }
 
   .reward-exp .stat-icon::before {
@@ -1186,7 +1087,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     position: absolute;
     inset: -12px;
     z-index: -1;
-    background: radial-gradient(circle, rgba(230, 199, 127, 0.28), transparent 65%);
+    background: radial-gradient(circle, rgba(230, 199, 127, 0.22), transparent 65%);
   }
 
   // ---------- Log ----------
@@ -2331,20 +2232,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
 }
 
-// A landed check: the dim diamond burns gold (or red) and cools back down.
-@keyframes ashen-check-settle {
-  from {
-    filter: brightness(2.3);
-    box-shadow: 0 0 14px 2px var(--check-glow);
-  }
-}
-
-@keyframes ashen-spent-flash {
-  to {
-    transform: translateX(100%);
-  }
-}
-
 @keyframes ashen-embers {
   to {
     transform: translateY(-50%);
@@ -2386,18 +2273,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: $opal;
     -webkit-background-clip: text;
     background-clip: text;
-    animation: none;
-  }
-
-  #{$ashen} :is(.habit-item, .quest-item) .check:checked.lit {
-    animation: none;
-  }
-
-  #{$ashen} .habit-item .veil::before {
-    transition: none;
-  }
-
-  #{$ashen} .habit-item:has(.check.lit) .veil::after {
     animation: none;
   }
 }
