@@ -49,6 +49,21 @@
   --soft-text: #f2d8c0;
   --soft-line: #8a3020;
 
+  // The menu sits in every screen's corner, so it stays quiet: an iron frame
+  // like the panels, with no red fill.
+  .menu-button {
+    background: rgba(26, 18, 14, 0.6);
+    border-color: #5c4630;
+    color: var(--text);
+
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background: rgba(26, 18, 14, 0.9);
+        color: var(--text-h);
+      }
+    }
+  }
+
   // Iron frames. These match the family's selectors in specificity and win by
   // coming later (see index.scss).
   .panel {

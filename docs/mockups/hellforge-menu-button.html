@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Hellforge menu button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya+Sans:wght@500;700&display=swap" />
+<style>
+/* The Hellforge top bar, five ways. Only the menu button changes. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #202022; color: #b8b6b0; font: 500 15px/1.35 'Alegreya Sans', sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 24px; }
+.grid { display: flex; flex-wrap: wrap; gap: 30px 22px; justify-content: center; align-items: flex-start; }
+.col { width: 340px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 10px; min-height: 40px; }
+
+.phone {
+  --bg: #080504; --text: #a8937a; --text-h: #eadbb8;
+  width: 340px; background: var(--bg); border: 1px solid #000; border-radius: 26px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5);
+}
+.stage {
+  height: 150px; padding: 16px 14px 0;
+  background:
+    radial-gradient(ellipse 75% 32% at 50% 112%, rgba(210, 60, 20, 0.26), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 78% 28%, rgba(190, 170, 150, 0.06), transparent 70%),
+    #080504;
+}
+.bar { display: flex; justify-content: space-between; align-items: center; }
+.bar .cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--text-h); }
+
+/* The button is 38px square like the live one (0.45rem/0.55rem padding + 18px icon). */
+.menu { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 6px; padding: 0; cursor: pointer; }
+.menu svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+.cur  { background: linear-gradient(180deg, #6a1a12, #3e0c08); border: 1px solid #8a3020; color: #f2d8c0; }
+
+/* B: iron frame, the same bronze as the panels, tan icon. */
+.iron { background: rgba(26, 18, 14, .6); border: 1px solid #5c4630; color: #a8937a; }
+
+/* C: no button at all, just the icon. */
+.bare { background: transparent; border: 1px solid transparent; color: #a8937a; }
+
+/* D: black leather like the panels, thin line, bone icon. */
+.leather { background: linear-gradient(#1f1612, #140d0a); border: 1px solid #3a2a1c; color: #eadbb8; box-shadow: inset 0 0 8px rgba(0,0,0,.6); }
+
+/* E: leather with only a dull ember line, so it still belongs to the red family. */
+.ember { background: linear-gradient(#1f1612, #140d0a); border: 1px solid #5a2418; color: #c9a98a; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>HELLFORGE · MENU BUTTON</h1>
+  <div class="grid">
+    <div class="col"><h2>NOW</h2><p>Blood-red fill. The loudest thing on the screen.</p>
+      <div class="phone"><div class="stage"><div class="bar"><span class="cap">Boss #3</span><button class="menu cur"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></div></div>
+
+    <div class="col"><h2>B · IRON</h2><p>Bronze frame like the panels, tan icon, no fill.</p>
+      <div class="phone"><div class="stage"><div class="bar"><span class="cap">Boss #3</span><button class="menu iron"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></div></div>
+
+    <div class="col"><h2>C · BARE</h2><p>Just the icon, no box. Quietest; the tap area stays 38px.</p>
+      <div class="phone"><div class="stage"><div class="bar"><span class="cap">Boss #3</span><button class="menu bare"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></div></div>
+
+    <div class="col"><h2>D · LEATHER</h2><p>Same black leather as the habit panels, bone icon.</p>
+      <div class="phone"><div class="stage"><div class="bar"><span class="cap">Boss #3</span><button class="menu leather"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></div></div>
+
+    <div class="col"><h2>E · EMBER LINE</h2><p>Leather with a dull red edge only, so it stays in the forge family.</p>
+      <div class="phone"><div class="stage"><div class="bar"><span class="cap">Boss #3</span><button class="menu ember"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></div></div>
+  </div>
+</div>
+</body>
+</html>
