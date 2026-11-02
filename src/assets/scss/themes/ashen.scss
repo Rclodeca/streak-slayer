@@ -1085,8 +1085,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // Add: a ghost plus in the section's colour. The tap area is 44px; the
-  // drawn square is 30px. (docs/mockups/pixel-add-together.html)
+  // drawn square is 30px. (docs/mockups/pixel-add-together.html) It is
+  // dropped 9px so the square's top edge lines up with the top of the
+  // title's capitals; a transform leaves the header's layout alone.
   .add-button {
+    transform: translateY(9px);
     display: grid;
     place-items: center;
     flex-shrink: 0;
