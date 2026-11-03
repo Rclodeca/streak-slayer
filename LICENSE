@@ -1,0 +1,19 @@
+Copyright (c) 2026 Ryan Clode. All rights reserved.
+
+StreakSlayer's source code is public so it can be read, not so it can be reused.
+No permission is granted to copy, modify, distribute, sublicense, sell or
+otherwise use it, other than the viewing and forking that GitHub's Terms of
+Service allow for public repositories.
+
+What this license covers: the original source code written for this project
+(src/, scripts/, configuration and documentation).
+
+What it does not cover:
+
+- Art. The sprites under public/sprites/ are processed from third-party art
+  that is used under its own terms (see CREDITS.md). They are not licensed by
+  this repository, and nothing here lets you reuse them. Do not extract them
+  from the repo or the built app to use as assets.
+- Third-party packages and fonts, which stay under their own licenses (see
+  THIRD-PARTY-NOTICES.md).
+- The name "StreakSlayer" and its logo.
