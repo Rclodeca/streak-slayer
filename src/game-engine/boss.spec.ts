@@ -228,23 +228,11 @@ describe('generateBoss', () => {
     }
   });
 
-  it('rolls crit chance within [0, rare value], mostly the small default range, regardless of index', () => {
-    const rareValue = TUNING.BOSS_RARE_CRIT_CHANCE;
-    const results: number[] = [];
-    for (let seed = 0; seed < 500; seed++) {
-      results.push(generateBoss(1, createRng(seed), 1).critChance);
+  it('rolls no crit chance of its own — only Frenzy makes a boss crit', () => {
+    for (let seed = 0; seed < 50; seed++) {
+      expect(generateBoss(1, createRng(seed), 1)).not.toHaveProperty('critChance');
+      expect(generateBoss(20, createRng(seed), 1)).not.toHaveProperty('critChance');
     }
-    for (const critChance of results) {
-      expect(critChance).toBeGreaterThanOrEqual(0);
-      expect(critChance).toBeLessThanOrEqual(rareValue);
-    }
-    const rareCount = results.filter((c) => c === rareValue).length;
-    expect(rareCount).toBeGreaterThan(0); // the rare 20% override does happen sometimes
-    const defaultCount = results.filter((c) => c <= TUNING.BOSS_DEFAULT_CRIT_CHANCE_MAX).length;
-    expect(defaultCount).toBeGreaterThan(results.length * 0.8); // BOSS_RARE_CRIT_CHANCE_PROBABILITY is only 5%
-
-    // Same [0, rareValue] bound holds at a much higher boss index.
-    expect(generateBoss(20, createRng(1), 1).critChance).toBeLessThanOrEqual(rareValue);
   });
 
   it('never rolls a permanent reflect — Reflect is a boss skill now', () => {
@@ -551,7 +539,8 @@ describe('generateBoss — hidden attack lean', () => {
     // Rolled after the Wounds ability, so the lean can't shift any earlier rng() draw.
     // Seed 42 at index 5 was captured before the lean was added, and re-captured
     // when Reflect left the roll order, the boss health/attack curves eased, and
-    // health moved to growth bands (a float-rounding change only, at boss 5).
+    // health moved to growth bands (a float-rounding change only, at boss 5),
+    // and again when the random boss crit roll left the generator.
     const { physicalShare, ...rest } = generateBoss(5, createRng(42));
     expect(physicalShare).toBeDefined();
     expect(rest).toEqual({
@@ -559,11 +548,10 @@ describe('generateBoss — hidden attack lean', () => {
       personality: 'warded',
       maxHealth: 1846.742266679831,
       health: 1846.742266679831,
-      physicalAttack: 574.6747075954526,
-      magicAttack: 616.995697460808,
-      armor: 278.1175695000878,
-      magicResist: 352.1594129276755,
-      critChance: 0.005244416962377727,
+      physicalAttack: 562.8261029047989,
+      magicAttack: 605.1786344194317,
+      armor: 206.2447934692112,
+      magicResist: 373.3143935951569,
       lifestealPct: 0,
       difficultyModifier: 1.0202207503840328,
     });

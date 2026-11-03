@@ -282,12 +282,6 @@ export const TUNING = {
   // the favored type (0.5 = an even split). A brute/arcane boss always
   // favors its own type; every other personality picks a side at random.
   BOSS_ATTACK_LEAN_WEIGHTS: { '0.5': 50, '0.6': 25, '0.7': 25 },
-  // Every boss rolls a crit chance independently of its personality: usually
-  // a small 0-3% roll, but a rare 5% chance instead grants a flat 20% —
-  // a dangerous outlier rather than a smooth curve.
-  BOSS_DEFAULT_CRIT_CHANCE_MAX: 0.03,
-  BOSS_RARE_CRIT_CHANCE_PROBABILITY: 0.05,
-  BOSS_RARE_CRIT_CHANCE: 0.2,
   // Lifesteal (% of damage dealt to the player healed back to the boss),
   // rolled independently of personality via pickWeighted. Weight ratios
   // mirror the same "much rarer at each step up" shape as
@@ -302,17 +296,18 @@ export const TUNING = {
   ARMOR_MAGIC_PEN_CAP_PCT: 90,
   // Late-game boss skills, fired at HP breakpoints (see bossSkills.ts).
   BOSS_SKILLS: {
-    UNLOCK_INDEX: { wounds: 15, bloodlust: 15, blind: 15, sever: 15, mend: 15, reflect: 15, rend: 20, doom: 20, sunder: 20, undying: 20, ravage: 25, empower: 20, ascend: 25 } as Record<BossSkillId, number>,
+    UNLOCK_INDEX: { wounds: 15, bloodlust: 15, blind: 15, sever: 15, mend: 15, reflect: 15, frenzy: 15, rend: 20, doom: 20, sunder: 20, undying: 20, ravage: 25, empower: 20, ascend: 25 } as Record<BossSkillId, number>,
     // [first boss index of the band, weights for 0/1/2/3 skills]; fixed bands, no blending.
     COUNT_BANDS: [[15, [65, 35, 0, 0]], [20, [45, 35, 20, 0]], [25, [30, 40, 30, 0]], [30, [25, 30, 35, 10]]] as [number, number[]][],
     SLOTS: { 1: [0.5], 2: [0.75, 0.25], 3: [0.75, 0.5, 0.25] } as Record<number, Breakpoint[]>,
     HP_HIT_SKILLS: ['rend', 'ravage', 'doom'] as BossSkillId[],
     LAST_SLOT_SKILLS: ['empower', 'ascend'] as BossSkillId[], // only roll in a boss's lowest breakpoint
     DOUBLED_STATS: ['physicalAttack', 'magicAttack', 'armor', 'magicResist'] as BossStat[], // what Empower picks from and Ascend doubles
-    DURATION_DAYS: 2, // Wounds, Bloodlust, Reflect, Blind, Sever, Sunder
+    DURATION_DAYS: 2, // Wounds, Bloodlust, Reflect, Frenzy, Blind, Sever, Sunder
     WOUNDS_EFFECT_RATE: 0.5,
     BLOODLUST_HEAL_PCT: 3, // of the boss's max HP, per hit it lands
     REFLECT_PCT: 5, // of the damage the hero deals, thrown back at the hero while it runs
+    FRENZY_CRIT_CHANCE: 0.2, // a boss only crits while Frenzy runs; its hits then do TUNING.CRIT_MULTIPLIER
     MEND_HEAL_PCT: 10,
     REND_PCT: 20,
     RAVAGE_PCT: 40,

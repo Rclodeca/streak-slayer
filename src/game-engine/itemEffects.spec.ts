@@ -30,7 +30,6 @@ function makeBoss(overrides: Partial<Boss> = {}): Boss {
     magicAttack: 20,
     armor: 0,
     magicResist: 0,
-    critChance: 0,
     lifestealPct: 0,
     ...overrides,
   };

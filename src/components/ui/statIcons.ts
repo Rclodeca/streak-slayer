@@ -8,6 +8,7 @@ import {
   Dices,
   Droplet,
   DropletOff,
+  Axe,
   Droplets,
   EyeOff,
   Flame,
@@ -73,6 +74,7 @@ export const STAT_ICONS = {
   gift: { icon: Gift, color: 'var(--icon-gift)' },
   // Boss skills (see game-engine/bossSkills.ts).
   bloodlust: { icon: Droplets, color: 'var(--dmg-physical)' },
+  frenzy: { icon: Axe, color: 'var(--icon-crit)' },
   blind: { icon: EyeOff, color: 'var(--icon-crit)' },
   sever: { icon: DropletOff, color: 'var(--icon-lifesteal)' },
   sunder: { icon: ShieldX, color: 'var(--icon-steel)' },

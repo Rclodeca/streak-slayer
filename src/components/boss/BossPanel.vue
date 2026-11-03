@@ -13,6 +13,7 @@ import {
   effectiveResistAfterPen,
   itemBonusPercent,
   PERSONALITY_NAME,
+  frenzyDaysLeft,
   reflectDaysLeft,
   undyingActive,
 } from '../../game-engine';
@@ -48,6 +49,7 @@ const skillMarks = computed(() => bossSkillMarks(boss.value));
 const debugClockStore = useDebugClockStore();
 const currentDayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
 const bloodlustDays = computed(() => bloodlustDaysLeft(boss.value, currentDayKey.value));
+const frenzyDays = computed(() => frenzyDaysLeft(boss.value, currentDayKey.value));
 const reflectDays = computed(() => reflectDaysLeft(boss.value, currentDayKey.value));
 const undying = computed(() => undyingActive(boss.value, currentDayKey.value));
 const doomDays = computed(() => doomDaysLeft(boss.value, currentDayKey.value));
@@ -92,7 +94,6 @@ const statTiles = computed<StatTile[]>(() => {
   return [
     { icon: 'physical', label: 'Physical attack', value: formatCompact(physicalAttack.value) },
     { icon: 'magic', label: 'Magic attack', value: formatCompact(magicAttack.value) },
-    { icon: 'crit', label: 'Crit chance', value: pct(b.critChance) },
     ...(b.lifestealPct > 0 ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: pct(b.lifestealPct) }] : []),
     { icon: 'armor', label: 'Armor', value: formatCompact(b.armor), note: `${armorReduction.value.toFixed(1)}% less damage` },
     { icon: 'magicResist', label: 'Magic resist', value: formatCompact(b.magicResist), note: `${magicResistReduction.value.toFixed(1)}% less damage` },
@@ -103,6 +104,9 @@ const statTiles = computed<StatTile[]>(() => {
 const skillTiles = computed<StatTile[]>(() => [
   ...(reflectDays.value !== undefined
     ? [{ icon: 'reflect' as const, label: 'Reflect', value: `${reflectDays.value}d`, note: bossSkillEffectText('reflect') }]
+    : []),
+  ...(frenzyDays.value !== undefined
+    ? [{ icon: 'frenzy' as const, label: 'Frenzy', value: `${frenzyDays.value}d`, note: bossSkillEffectText('frenzy') }]
     : []),
   ...(bloodlustDays.value !== undefined
     ? [{ icon: 'bloodlust' as const, label: 'Bloodlust', value: `${bloodlustDays.value}d`, note: bossSkillEffectText('bloodlust') }]
@@ -136,9 +140,9 @@ const skillTiles = computed<StatTile[]>(() => [
         <span><StatIcon name="magic" /> {{ formatCompact(magicAttack) }}</span>
         <span><StatIcon name="armor" /> {{ formatCompact(boss.armor) }}</span>
         <span><StatIcon name="magicResist" /> {{ formatCompact(boss.magicResist) }}</span>
-        <span><StatIcon name="crit" /> {{ (boss.critChance * 100).toFixed(0) }}%</span>
         <span v-if="boss.lifestealPct > 0"><StatIcon name="lifesteal" /> {{ (boss.lifestealPct * 100).toFixed(0) }}%</span>
         <span v-if="reflectDays !== undefined"><StatIcon name="reflect" /> <span class="reflect">{{ reflectDays }}d</span></span>
+        <span v-if="frenzyDays !== undefined"><StatIcon name="frenzy" /> <span class="frenzy">{{ frenzyDays }}d</span></span>
         <span v-if="bloodlustDays !== undefined"><StatIcon name="bloodlust" /> <span class="bloodlust">{{ bloodlustDays }}d</span></span>
         <span v-if="undying"><StatIcon name="undying" class="undying" /></span>
         <span v-if="doomDays !== undefined"><StatIcon name="doom" /> <span class="doom">{{ doomDays }}d</span></span>

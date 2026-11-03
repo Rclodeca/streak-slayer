@@ -1,5 +1,5 @@
 import { applyResist, bossAttackAnchorHealth, bossExpReward, generateBoss } from './boss';
-import { activeSever, activeSunder, bloodlustActive, reflectActive, resolveBreakpoints, spendPassedBreakpoints } from './bossSkills';
+import { activeSever, activeSunder, bloodlustActive, frenzyActive, reflectActive, resolveBreakpoints, spendPassedBreakpoints } from './bossSkills';
 import type { FiredBossSkill } from './bossSkills';
 import { createCharacter, heroClassFor } from './character';
 import type { HeroClass } from './character';
@@ -402,7 +402,9 @@ export function missHabit(
   const updatedHabit = resetHabitStreak(habit);
   const attackType: 'physical' | 'magic' = rng() < (boss.physicalShare ?? 0.5) ? 'physical' : 'magic';
   const attack = attackType === 'physical' ? boss.physicalAttack : boss.magicAttack;
-  const wasCrit = rng() < boss.critChance;
+  // Rolled every miss (so the rng sequence is stable), but only a Frenzied boss can crit.
+  const critRoll = rng();
+  const wasCrit = frenzyActive(boss, currentDayKey) && critRoll < TUNING.BOSS_SKILLS.FRENZY_CRIT_CHANCE;
   const weeklyMultiplier = habit.period === 'weekly' ? TUNING.WEEKLY_MISS_MULTIPLIER : 1;
   const damage =
     attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[habit.difficulty] / 1.5) *

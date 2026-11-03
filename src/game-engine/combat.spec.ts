@@ -64,7 +64,6 @@ function makeBoss(overrides: Partial<Boss> = {}): Boss {
     magicAttack: 20,
     armor: 10,
     magicResist: 10,
-    critChance: 0.01,
     lifestealPct: 0,
     ...overrides,
   };
@@ -488,9 +487,9 @@ describe('effectiveResistAfterPen', () => {
 describe('missHabit', () => {
   it('flags the boss as having hurt the player, and keeps the flag once set', () => {
     const habit = makeHabit({ difficulty: 'medium' });
-    const first = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss({ critChance: 0 }), DAY_KEY, noCritRng);
+    const first = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss(), DAY_KEY, noCritRng);
     expect(first.boss.hurtPlayer).toBe(true);
-    const again = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss({ critChance: 0, hurtPlayer: true }), DAY_KEY, noCritRng);
+    const again = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss({ hurtPlayer: true }), DAY_KEY, noCritRng);
     expect(again.boss.hurtPlayer).toBe(true);
   });
 
@@ -504,7 +503,7 @@ describe('missHabit', () => {
     // reflects the resist formula directly rather than being clamped by missHabit's health-floor.
     const character = makeCharacter({ currentHealth: 100000, equippedItemIds: ['juggernaut-carapace'] }); // +450 flat armor
     const habit = makeHabit({ difficulty: 'medium' });
-    const boss = makeBoss({ physicalAttack: 1000, critChance: 0 });
+    const boss = makeBoss({ physicalAttack: 1000 });
     const forcePhysicalNoCrit = () => 0.4; // < 0.5 picks 'physical'; also beats critChance 0
     const result = missHabit(character, habit, boss, DAY_KEY, forcePhysicalNoCrit);
 
@@ -516,7 +515,7 @@ describe('missHabit', () => {
   it('mitigates magic miss damage through equipped magicResist, not armor', () => {
     const character = makeCharacter({ currentHealth: 100000, equippedItemIds: ['warding-sigil'] }); // +150 flat magicResist, no armor
     const habit = makeHabit({ difficulty: 'medium' });
-    const boss = makeBoss({ magicAttack: 1000, critChance: 0 });
+    const boss = makeBoss({ magicAttack: 1000 });
     const forceMagicNoCrit = () => 0.6; // >= 0.5 picks 'magic'
     const result = missHabit(character, habit, boss, DAY_KEY, forceMagicNoCrit);
 
@@ -528,7 +527,7 @@ describe('missHabit', () => {
   it('boss lifesteal heals off the mitigated damage, not the raw pre-mitigation amount', () => {
     const character = makeCharacter({ equippedItemIds: ['juggernaut-carapace'] }); // +450 flat armor
     const habit = makeHabit({ difficulty: 'medium' });
-    const boss = makeBoss({ physicalAttack: 1000, critChance: 0, lifestealPct: 1, maxHealth: 100000, health: 100 });
+    const boss = makeBoss({ physicalAttack: 1000, lifestealPct: 1, maxHealth: 100000, health: 100 });
     const forcePhysicalNoCrit = () => 0.4;
     const result = missHabit(character, habit, boss, DAY_KEY, forcePhysicalNoCrit);
 
@@ -541,7 +540,7 @@ describe('missHabit', () => {
   it('with no armor/magicResist equipped, mitigation is a no-op (matches pre-overhaul behavior)', () => {
     const character = makeCharacter({ currentHealth: 100000 });
     const habit = makeHabit({ difficulty: 'medium' });
-    const boss = makeBoss({ physicalAttack: 1000, critChance: 0 });
+    const boss = makeBoss({ physicalAttack: 1000 });
     const forcePhysicalNoCrit = () => 0.4;
     const result = missHabit(character, habit, boss, DAY_KEY, forcePhysicalNoCrit);
 
@@ -581,7 +580,7 @@ describe('missHabit', () => {
     const character = makeCharacter({ currentHealth: 100 });
     const habit = makeHabit({ difficulty: 'medium' });
     const boss = makeBoss({ physicalAttack: 30, magicAttack: 10 });
-    const pickPhysicalNoCritRng = () => 0.02; // < 0.5 -> physicalAttack; >= boss.critChance (0.01) -> no crit
+    const pickPhysicalNoCritRng = () => 0.02; // < 0.5 -> physicalAttack; a boss without Frenzy never crits
 
     const result = missHabit(character, habit, boss, DAY_KEY, pickPhysicalNoCritRng);
 
@@ -676,11 +675,16 @@ describe('crit chance', () => {
     expect(result.wasCrit).toBeUndefined();
   });
 
-  it('missHabit doubles damage and reports wasCrit=true on a crit roll, using the boss crit chance', () => {
+  it('a boss without Frenzy never crits, whatever the roll', () => {
+    const result = missHabit(makeCharacter({ currentHealth: 100 }), makeHabit({ difficulty: 'medium' }), makeBoss(), DAY_KEY, alwaysCritRng);
+    expect(result.wasCrit).toBe(false);
+  });
+
+  it('missHabit doubles damage and reports wasCrit=true on a crit roll while the boss is Frenzied', () => {
     const character = makeCharacter({ currentHealth: 100 });
     const habit = makeHabit({ difficulty: 'medium' });
     // physicalAttack === magicAttack so the attack-type coin flip doesn't affect the comparison below.
-    const boss = makeBoss({ physicalAttack: 20, magicAttack: 20 });
+    const boss = makeBoss({ physicalAttack: 20, magicAttack: 20, frenzyDayKey: DAY_KEY });
 
     const normal = missHabit(character, habit, boss, DAY_KEY, noCritRng);
     const crit = missHabit(character, habit, boss, DAY_KEY, alwaysCritRng);
@@ -1472,14 +1476,14 @@ describe('missHabit — item effects', () => {
   const forcePhysicalNoCrit = () => 0.4; // < 0.5 picks 'physical'; beats critChance 0
 
   it('Bloodbound Carapace stops boss lifesteal', () => {
-    const boss = makeBoss({ critChance: 0, lifestealPct: 1, maxHealth: 1000, health: 100 });
+    const boss = makeBoss({ lifestealPct: 1, maxHealth: 1000, health: 100 });
     const result = missHabit(makeCharacter({ currentHealth: 1000, equippedItemIds: ['bloodbound-carapace'] }), makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit);
     expect(result.bossLifestealHealed).toBeUndefined();
     expect(result.boss.health).toBe(100);
   });
 
   it('Dawnguard Helm halves the first hit each day only', () => {
-    const boss = makeBoss({ critChance: 0, physicalAttack: 1000 });
+    const boss = makeBoss({ physicalAttack: 1000 });
     const character = makeCharacter({ currentHealth: 100000, equippedItemIds: ['dawnguard-helm'] });
     const first = missHabit(character, makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit);
     const second = missHabit(first.character, makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit);
@@ -1562,7 +1566,7 @@ describe('boss skill effects in combat', () => {
   });
 
   it('Sunder halves the armor a miss is mitigated by', () => {
-    const boss = makeBoss({ critChance: 0, physicalAttack: 400 });
+    const boss = makeBoss({ physicalAttack: 400 });
     const sundered = missHabit(
       makeCharacter({ currentHealth: 1000, equippedItemIds: ['executioners-axe'], statusEffects: [sunder] }), // 150 armor, halved
       makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit,
@@ -1572,7 +1576,7 @@ describe('boss skill effects in combat', () => {
   });
 
   it('Bloodlust heals the boss 3% of its max HP per hit, on top of its lifesteal', () => {
-    const boss = makeBoss({ critChance: 0, maxHealth: 1000, health: 500, lifestealPct: 0.1, bloodlustDayKey: DAY_KEY });
+    const boss = makeBoss({ maxHealth: 1000, health: 500, lifestealPct: 0.1, bloodlustDayKey: DAY_KEY });
     const result = missHabit(makeCharacter({ currentHealth: 1000 }), makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit);
     const dealt = 1000 - result.character.currentHealth;
     expect(result.boss.health).toBeCloseTo(500 + dealt * 0.1 + 30, 10);
@@ -1580,19 +1584,19 @@ describe('boss skill effects in combat', () => {
   });
 
   it('Bloodlust heals no more than to full', () => {
-    const boss = makeBoss({ critChance: 0, maxHealth: 1000, health: 990, bloodlustDayKey: DAY_KEY });
+    const boss = makeBoss({ maxHealth: 1000, health: 990, bloodlustDayKey: DAY_KEY });
     expect(missHabit(makeCharacter({ currentHealth: 1000 }), makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit).boss.health).toBe(1000);
   });
 
   it('Bloodbound Carapace blocks the Bloodlust heal too', () => {
-    const boss = makeBoss({ critChance: 0, maxHealth: 1000, health: 500, bloodlustDayKey: DAY_KEY });
+    const boss = makeBoss({ maxHealth: 1000, health: 500, bloodlustDayKey: DAY_KEY });
     const result = missHabit(makeCharacter({ currentHealth: 1000, equippedItemIds: ['bloodbound-carapace'] }), makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit);
     expect(result.boss.health).toBe(500);
     expect(result.bossLifestealHealed).toBeUndefined();
   });
 
   it('Bloodlust has worn off two days later', () => {
-    const boss = makeBoss({ critChance: 0, maxHealth: 1000, health: 500, bloodlustDayKey: DAY_KEY });
+    const boss = makeBoss({ maxHealth: 1000, health: 500, bloodlustDayKey: DAY_KEY });
     expect(missHabit(makeCharacter({ currentHealth: 1000 }), makeHabit(), boss, '2026-01-03', forcePhysicalNoCrit).boss.health).toBe(500);
   });
 });

@@ -231,7 +231,6 @@ export interface Boss {
   magicAttack: number;
   armor: number;
   magicResist: number;
-  critChance: number; // randomized per boss, not scaled by index — see generateBoss
   lifestealPct: number; // fraction (0-1) of damage dealt to the player healed back to the boss — see missHabit
   // Hidden per-run difficulty scaling (see rollRunDifficultyModifier) —
   // carried forward to every boss within the same run, never shown in the
@@ -260,6 +259,10 @@ export interface Boss {
   // The day key Reflect fired on (see reflectActive); undefined = never. Older
   // saves may still carry the retired permanent `reflectPct`, which is ignored.
   reflectDayKey?: string;
+  // The day key Frenzy fired on (see frenzyActive); undefined = never. A boss
+  // has no crit chance of its own: Frenzy is the only way it crits. Older saves
+  // may still carry the retired random `critChance`, which is ignored.
+  frenzyDayKey?: string;
   // The day key Undying fired on — it only holds that day (see undyingActive).
   undyingDayKey?: string;
   // The day key Doom lands on, set when it fires (see resolveDoom).
@@ -268,7 +271,7 @@ export interface Boss {
 
 // Rend is the 20% HP hit, Ravage the 40% one. Empower doubles one boss stat for
 // good, Ascend all four; both only roll in a boss's last slot.
-export type BossSkillId = 'wounds' | 'bloodlust' | 'reflect' | 'blind' | 'sever' | 'mend' | 'rend' | 'doom' | 'sunder' | 'undying' | 'ravage' | 'empower' | 'ascend';
+export type BossSkillId = 'wounds' | 'bloodlust' | 'reflect' | 'frenzy' | 'blind' | 'sever' | 'mend' | 'rend' | 'doom' | 'sunder' | 'undying' | 'ravage' | 'empower' | 'ascend';
 
 /** The boss stats Empower and Ascend double. */
 export type BossStat = 'physicalAttack' | 'magicAttack' | 'armor' | 'magicResist';

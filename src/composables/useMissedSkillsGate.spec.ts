@@ -178,7 +178,7 @@ describe('useMissedSkillsGate', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
-    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, critChance: 0, lifestealPct: 0 });
+    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, lifestealPct: 0 });
     characterStore.setCharacter({
       ...characterStore.character,
       starterStats: { ...characterStore.character.starterStats, health: 1000, healing: 100_000 },

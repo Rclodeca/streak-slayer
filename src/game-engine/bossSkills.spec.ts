@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoss } from './boss';
 import { completeHabit, missHabit, overdriveHabit, resolveBossDefeatIfDead } from './combat';
-import { activeBlind, activeSever, activeSunder, bloodlustActive, bloodlustDaysLeft, bossSkillEffectText, bossSkillMarks, doomDaysLeft, doomPct, hpHitDamage, reflectActive, reflectDaysLeft, resolveBreakpoints, resolveDoom, rollBossSkills, spendPassedBreakpoints, undyingActive } from './bossSkills';
+import { activeBlind, activeSever, activeSunder, bloodlustActive, bloodlustDaysLeft, bossSkillEffectText, bossSkillMarks, doomDaysLeft, doomPct, frenzyActive, frenzyDaysLeft, hpHitDamage, reflectActive, reflectDaysLeft, resolveBreakpoints, resolveDoom, rollBossSkills, spendPassedBreakpoints, undyingActive } from './bossSkills';
 import { createRng } from './rng';
 import type { Boss, BossSkillId, BossSkillSlot, Character, Habit } from './types';
 
@@ -63,7 +63,7 @@ describe('rollBossSkills', () => {
 
   it('only picks skills unlocked at that boss', () => {
     for (const slots of [...sample(15), ...sample(19)]) {
-      for (const slot of slots) expect(['wounds', 'bloodlust', 'blind', 'sever', 'mend', 'reflect']).toContain(slot.skill);
+      for (const slot of slots) expect(['wounds', 'bloodlust', 'blind', 'sever', 'mend', 'reflect', 'frenzy']).toContain(slot.skill);
     }
     for (const slots of sample(24)) {
       for (const slot of slots) expect(slot.skill).not.toBe('ravage');
@@ -123,7 +123,7 @@ describe('generateBoss — skills', () => {
   it('leaves every other stat as it was before skills existed, for a given seed', () => {
     // Seed 7 at boss 30, captured before skills were added, and re-captured when
     // Reflect left the roll order, the boss health/attack curves eased, and
-    // health moved to growth bands.
+    // health moved to growth bands, and again when the random boss crit roll left the generator.
     const rest = generateBoss(30, createRng(7));
     delete rest.skills;
     expect(rest).toEqual({
@@ -131,14 +131,13 @@ describe('generateBoss — skills', () => {
       personality: 'balanced',
       maxHealth: 150326.61496487504,
       health: 150326.61496487504,
-      physicalAttack: 3293.486617755793,
-      magicAttack: 3143.404935716983,
-      armor: 819.1077991395447,
-      magicResist: 857.7095762002356,
-      critChance: 0.015643358055967838,
+      physicalAttack: 3330.1023164743215,
+      magicAttack: 3253.2245724686118,
+      armor: 800.5216099753421,
+      magicResist: 753.5905708853237,
       lifestealPct: 0,
       difficultyModifier: 0.9023409506306053,
-      physicalShare: 0.5,
+      physicalShare: 0.4,
     });
   });
 
@@ -167,7 +166,6 @@ const foe = (overrides: Partial<Boss> = {}): Boss => ({
   magicAttack: 20,
   armor: 10,
   magicResist: 10,
-  critChance: 0,
   lifestealPct: 0,
   ...overrides,
 });
@@ -209,6 +207,17 @@ describe('lasting skill effects', () => {
     expect(bloodlustActive(foe(), '2026-01-01')).toBe(false);
     expect(undyingActive(boss, '2026-01-01')).toBe(true);
     expect(undyingActive(boss, '2026-01-02')).toBe(false);
+  });
+
+  it('Frenzy lasts 2 days, and counts them down', () => {
+    const boss = foe({ frenzyDayKey: '2026-01-01' });
+    expect(frenzyActive(boss, '2026-01-01')).toBe(true);
+    expect(frenzyActive(boss, '2026-01-02')).toBe(true);
+    expect(frenzyActive(boss, '2026-01-03')).toBe(false);
+    expect(frenzyActive(foe(), '2026-01-01')).toBe(false);
+    expect(frenzyDaysLeft(boss, '2026-01-01')).toBe(2);
+    expect(frenzyDaysLeft(boss, '2026-01-02')).toBe(1);
+    expect(frenzyDaysLeft(boss, '2026-01-03')).toBeUndefined();
   });
 
   it('counts down Bloodlust\'s days', () => {
@@ -361,6 +370,13 @@ describe('resolveBreakpoints', () => {
     expect(doom.fired).toEqual({ skill: 'doom', outcome: 'landed', pct: 50 });
   });
 
+  it('Frenzy starts on the day it fires', () => {
+    const frenzy = resolveBreakpoints(600, foe({ skills: [{ at: 0.5, skill: 'frenzy' }], health: 400 }), hero(), DAY, neverRng);
+    expect(frenzyActive(frenzy.boss, DAY)).toBe(true);
+    expect(frenzy.fired).toEqual({ skill: 'frenzy', outcome: 'landed' });
+    expect(bossSkillEffectText('frenzy')).toBe('Boss crits 20% of the time');
+  });
+
   it('Bloodlust starts on the day it fires', () => {
     const lust = resolveBreakpoints(600, foe({ skills: [{ at: 0.5, skill: 'bloodlust' }], health: 400 }), hero(), DAY, neverRng);
     expect(bloodlustActive(lust.boss, '2026-01-02')).toBe(true);
@@ -378,16 +394,16 @@ describe('resolveBreakpoints', () => {
     [0.6, 'armor', { physicalAttack: 20, magicAttack: 20, armor: 20, magicResist: 10 }],
     [0.99, 'magicResist', { physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 20 }],
   ] as const)('Empower on a roll of %s doubles the boss\'s %s and nothing else', (roll, stat, expected) => {
-    const boss = foe({ skills: [{ at: 0.5, skill: 'empower' }], health: 400, critChance: 0.1, lifestealPct: 0.05 });
+    const boss = foe({ skills: [{ at: 0.5, skill: 'empower' }], health: 400, lifestealPct: 0.05 });
     const result = resolveBreakpoints(600, boss, hero(), DAY, () => roll);
-    expect(result.boss).toMatchObject({ ...expected, health: 400, maxHealth: 1000, critChance: 0.1, lifestealPct: 0.05 });
+    expect(result.boss).toMatchObject({ ...expected, health: 400, maxHealth: 1000, lifestealPct: 0.05 });
     expect(result.fired).toEqual({ skill: 'empower', outcome: 'landed', stat });
   });
 
   it('Ascend doubles all four of the boss\'s stats and nothing else', () => {
-    const boss = foe({ skills: [{ at: 0.25, skill: 'ascend' }], health: 200, critChance: 0.1, lifestealPct: 0.05 });
+    const boss = foe({ skills: [{ at: 0.25, skill: 'ascend' }], health: 200, lifestealPct: 0.05 });
     const result = resolveBreakpoints(300, boss, hero(), DAY, neverRng);
-    expect(result.boss).toMatchObject({ physicalAttack: 40, magicAttack: 40, armor: 20, magicResist: 20, health: 200, maxHealth: 1000, critChance: 0.1, lifestealPct: 0.05 });
+    expect(result.boss).toMatchObject({ physicalAttack: 40, magicAttack: 40, armor: 20, magicResist: 20, health: 200, maxHealth: 1000, lifestealPct: 0.05 });
     expect(result.fired).toEqual({ skill: 'ascend', outcome: 'landed' });
   });
 

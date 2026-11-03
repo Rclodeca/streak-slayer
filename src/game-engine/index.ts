@@ -220,6 +220,8 @@ export {
   bossSkillMarks,
   doomDaysLeft,
   doomPct,
+  frenzyActive,
+  frenzyDaysLeft,
   hpHitDamage,
   reflectActive,
   reflectDaysLeft,
