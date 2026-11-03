@@ -322,6 +322,14 @@ describe('completeHabit', () => {
     expect(result.reflectedDamage).toBeCloseTo(expectedReflect, 10);
   });
 
+  it('does not flag the boss as having hurt the player when it only reflects damage', () => {
+    const habit = makeHabit({ damageType: 'physical' });
+    const boss = makeBoss({ armor: 0, health: 1000, reflectDayKey: DAY_KEY });
+    const result = completeHabit(makeCharacter({ currentHealth: 50 }), habit, [habit], boss, DAY_KEY, noCritRng);
+    expect(result.reflectedDamage).toBeGreaterThan(0);
+    expect(result.boss.hurtPlayer).toBeUndefined();
+  });
+
   it('reflects on the day Reflect fires and the next, then stops', () => {
     const habit = makeHabit({ damageType: 'physical' });
     const boss = makeBoss({ armor: 0, health: 1000, reflectDayKey: DAY_KEY });
@@ -478,6 +486,14 @@ describe('effectiveResistAfterPen', () => {
 });
 
 describe('missHabit', () => {
+  it('flags the boss as having hurt the player, and keeps the flag once set', () => {
+    const habit = makeHabit({ difficulty: 'medium' });
+    const first = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss({ critChance: 0 }), DAY_KEY, noCritRng);
+    expect(first.boss.hurtPlayer).toBe(true);
+    const again = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss({ critChance: 0, hurtPlayer: true }), DAY_KEY, noCritRng);
+    expect(again.boss.hurtPlayer).toBe(true);
+  });
+
   // bossMissDamage's doc comment defines it as the damage dealt on a missed
   // medium daily habit specifically (medium's DIFFICULTY_WEIGHT / 1.5
   // cancels to exactly 1) — every makeHabit({ difficulty: 'medium' })
@@ -624,14 +640,14 @@ describe('missHabit', () => {
     expect(result.boss.health).toBe(100);
   });
 
-  it('leaves the boss untouched when it has no lifesteal', () => {
+  it('leaves the boss\'s health alone when it has no lifesteal', () => {
     const character = makeCharacter({ currentHealth: 100 });
     const habit = makeHabit({ difficulty: 'medium' });
     const boss = makeBoss({ physicalAttack: 20, magicAttack: 20 });
 
     const result = missHabit(character, habit, boss, DAY_KEY, noCritRng);
 
-    expect(result.boss).toBe(boss);
+    expect(result.boss).toMatchObject({ ...boss, hurtPlayer: true });
   });
 });
 
@@ -889,6 +905,11 @@ describe('resolveBossDefeatIfDead', () => {
     expect(result.expReward).toBeCloseTo(104, 10);
     expect(result.character.exp).toBeCloseTo(104, 10);
     expect(resolveBossDefeatIfDead(character, makeBoss({ health: 1 }), createRng(1)).expReward).toBe(0);
+  });
+
+  it('gives the next boss no hurtPlayer flag', () => {
+    const result = resolveBossDefeatIfDead(makeCharacter(), makeBoss({ health: 0, hurtPlayer: true }), createRng(1));
+    expect(result.boss.hurtPlayer).toBeUndefined();
   });
 
   it('is a no-op when boss.health > 0', () => {

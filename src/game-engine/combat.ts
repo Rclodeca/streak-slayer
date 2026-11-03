@@ -425,7 +425,7 @@ export function missHabit(
     !bloodbound && bloodlustActive(boss, currentDayKey) ? boss.maxHealth * (TUNING.BOSS_SKILLS.BLOODLUST_HEAL_PCT / 100) : 0;
   const healedBoss = Math.min(boss.maxHealth, boss.health + mitigatedDamage * bossLifestealPct + bloodlustHeal);
   const bossLifestealHealed = healedBoss - boss.health;
-  const newBoss = healedBoss !== boss.health ? { ...boss, health: healedBoss } : boss;
+  const newBoss: Boss = { ...boss, health: healedBoss, hurtPlayer: true };
 
   const hitCharacter = dawnguard ? stampEffectDay(character, 'dawnguard', currentDayKey) : character;
 

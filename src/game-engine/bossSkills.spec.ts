@@ -336,6 +336,19 @@ describe('resolveBreakpoints', () => {
     expect(low.character.currentHealth).toBeCloseTo(1, 10);
   });
 
+  it('a landed Rend or Ravage flags the boss as having hurt the player', () => {
+    for (const skill of ['rend', 'ravage'] as const) {
+      const result = resolveBreakpoints(600, foe({ skills: [{ at: 0.5, skill }], health: 400 }), hero({ currentHealth: 500 }), DAY, neverRng);
+      expect(result.fired?.outcome).toBe('landed');
+      expect(result.boss.hurtPlayer).toBe(true);
+    }
+  });
+
+  it('a skill that does no damage to the hero leaves the boss unflagged', () => {
+    const wounds = resolveBreakpoints(600, foe({ skills: [{ at: 0.5, skill: 'wounds' }], health: 400 }), hero({ currentHealth: 500 }), DAY, neverRng);
+    expect(wounds.boss.hurtPlayer).toBeUndefined();
+  });
+
   it('Rend ignores the hero\'s armor', () => {
     const armored = hero({ currentHealth: 500, equippedItemIds: ['executioners-axe', 'warding-sigil'] });
     const rend = resolveBreakpoints(600, foe({ skills: [{ at: 0.5, skill: 'rend' }], health: 400 }), armored, DAY, neverRng);
@@ -496,6 +509,11 @@ describe('boss skills through combat', () => {
 
 describe('resolveDoom', () => {
   const dooming = foe({ doomDueDayKey: '2026-01-04' });
+
+  it('flags the boss as having hurt the player when it lands, and not before', () => {
+    expect(resolveDoom(hero({ currentHealth: 1000 }), dooming, '2026-01-03').boss.hurtPlayer).toBeUndefined();
+    expect(resolveDoom(hero({ currentHealth: 1000 }), dooming, '2026-01-04').boss.hurtPlayer).toBe(true);
+  });
 
   it('waits until its landing day', () => {
     const character = hero({ currentHealth: 1000 });

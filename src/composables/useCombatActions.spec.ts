@@ -224,6 +224,15 @@ describe('useCombatActions', () => {
       expect(hits).toEqual([{ kind: 'hurt', amount: lost, hp: -lost }]);
     });
 
+    it('flags the boss as having hurt the player when a quest is missed', () => {
+      const bossStore = useBossStore();
+      const questStore = useQuestStore();
+      const { failQuest } = useCombatActions();
+      expect(bossStore.boss.hurtPlayer).toBeUndefined();
+      failQuest(questStore.addQuest('Clean garage', 'medium', '2026-02-01').id);
+      expect(bossStore.boss.hurtPlayer).toBe(true);
+    });
+
     it('lets the killing blow land before the boss falls', () => {
       vi.useFakeTimers();
       try {

@@ -608,6 +608,7 @@ export function useCombatActions() {
     const amount = questMissDamage(quest, bossStore.boss, rng);
     const newHealth = Math.max(0, healthBefore - amount);
     characterStore.setCharacter({ ...characterStore.character, currentHealth: newHealth });
+    bossStore.setBoss({ ...bossStore.boss, hurtPlayer: true });
     playHit({ kind: 'hurt', amount: healthBefore - newHealth, hp: newHealth - healthBefore });
 
     activityLogStore.addEntry({ kind: 'quest-failed', description: quest.description, amount });

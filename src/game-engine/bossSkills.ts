@@ -227,7 +227,7 @@ function applySkill(skill: BossSkillId, boss: Boss, character: Character, curren
     case 'rend':
     case 'ravage': {
       const taken = hpHitDamage(character.currentHealth, (skill === 'rend' ? S.REND_PCT : S.RAVAGE_PCT) * halved);
-      return landed({ character: { ...character, currentHealth: character.currentHealth - taken }, amount: taken });
+      return landed({ character: { ...character, currentHealth: character.currentHealth - taken }, boss: taken > 0 ? { ...boss, hurtPlayer: true } : boss, amount: taken });
     }
     case 'doom':
       return landed({ boss: { ...boss, doomDueDayKey: addDaysToDayKey(currentDayKey, S.DOOM_DELAY_DAYS) }, pct: doomPct(character) });
@@ -297,5 +297,6 @@ export function resolveDoom(character: Character, boss: Boss, currentDayKey: str
   const amount = hpHitDamage(character.currentHealth, doomPct(character));
   const cleared = { ...boss };
   delete cleared.doomDueDayKey;
+  if (amount > 0) cleared.hurtPlayer = true;
   return { character: { ...character, currentHealth: character.currentHealth - amount }, boss: cleared, amount };
 }

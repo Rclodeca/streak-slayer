@@ -245,6 +245,10 @@ export interface Boss {
   physicalShare?: number;
   // Set once the player first damages this boss (First Blood reads it).
   playerHasHit?: boolean;
+  // Set the first time this boss damages the player (a miss, a checked bad
+  // habit, a missed quest, a landed Rend/Ravage/Doom) — not by Reflect. A new
+  // boss starts without it. The Untouched challenge reads it.
+  hurtPlayer?: true;
   // Damage past 0 health on the killing blow (Echoing Scythe carries it over).
   overkill?: number;
   // Hidden skills waiting at HP breakpoints, rolled once at generation from
