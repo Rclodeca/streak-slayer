@@ -18,7 +18,7 @@ const debugClockStore = useDebugClockStore();
 
 // Sealed until QUESTS_UNLOCK_LEVEL each run, unless quests carried over (see questsOpen).
 const open = computed(() => questsOpen(characterStore.character));
-const { completeQuest } = useCombatActions();
+const { completeQuest, addQuest } = useCombatActions();
 const { enqueue: enqueueCompletion } = useQuestCompleteQueue();
 
 const PIPS: Record<Difficulty, number> = { easy: 1, medium: 2, hard: 3 };
@@ -57,7 +57,7 @@ function dueText(quest: Quest): string {
 }
 
 function onAdd(description: string, difficulty: Difficulty, dueDateKey: string) {
-  questStore.addQuest(description, difficulty, dueDateKey);
+  addQuest(description, difficulty, dueDateKey);
   showAdd.value = false;
 }
 

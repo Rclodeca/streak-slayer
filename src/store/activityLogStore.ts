@@ -51,6 +51,7 @@ export type ActivityLogEntry =
   | { id: string; kind: 'wounds-applied'; durationDays: number; effectRate: number }
   | { id: string; kind: 'quest-completed'; description: string; amount: number; itemName?: string }
   | { id: string; kind: 'quest-failed'; description: string; amount: number }
+  | { id: string; kind: 'challenge-completed'; name: string; amount: number; itemName?: string }
   | { id: string; kind: 'doom-landed'; amount: number }
   // A boss skill a blow made fire (a landed Wounds logs 'wounds-applied' instead); amount is HP taken or, for Mend, healed; pct is the share of HP a Doom will take; stat is the one an Empower doubled.
   | { id: string; kind: 'boss-skill'; skill: BossSkillId; outcome: 'landed' | 'failed' | 'resisted'; amount?: number; pct?: number; stat?: BossStat };

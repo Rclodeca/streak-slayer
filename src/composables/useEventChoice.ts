@@ -23,7 +23,7 @@ import {
   recordSideQuestOffer,
   rollEventChoices,
 } from '../game-engine';
-import type { EventDef, EventId, ItemDef } from '../game-engine';
+import type { ChallengeEvent, EventDef, EventId, ItemDef } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -31,6 +31,7 @@ import { useCharacterStore } from '../store/characterStore';
 import { useDebugClockStore } from '../store/debugClockStore';
 import { useHabitStore } from '../store/habitStore';
 import { useQuestStore } from '../store/questStore';
+import { useCombatActions } from './useCombatActions';
 import { useItemDropQueue } from './useItemDropQueue';
 
 const rng = createRng();
@@ -46,6 +47,7 @@ export function useEventChoice() {
   const activityLogStore = useActivityLogStore();
   const debugClockStore = useDebugClockStore();
   const { enqueueDrops } = useItemDropQueue();
+  const { reportChallenge } = useCombatActions();
 
   const pending = computed(() => characterStore.character.pendingEventPicks ?? 0);
   const choices = computed(() => options.value ?? []);
@@ -70,6 +72,8 @@ export function useEventChoice() {
   /** Picks an event that needs no further input (everything except side-quest and reroll-skill). */
   function choose(id: Exclude<EventId, 'side-quest' | 'reroll-skill'>) {
     const { level } = characterStore.character;
+    // Reported once the pick is spent, so a challenge it finishes pays out on top of it.
+    let happened: ChallengeEvent | null = null;
     if (id === 'special') {
       const before = habitStore.habits;
       const habits = applySpecialEvent(before, level, rng);
@@ -99,18 +103,22 @@ export function useEventChoice() {
       if (item) {
         activityLogStore.addEntry({ kind: 'item-doubled', itemName: item.name });
         revealed.value = item;
+        happened = { type: 'enchanted' };
       }
     } else if (id === 'crit-boost') {
       characterStore.setCharacter(applyCritBoostEvent(characterStore.character, dailyPeriodKey(debugClockStore.now())));
       activityLogStore.addEntry({ kind: 'crit-boost-gained', days: TUNING.CRIT_BOOST_DAYS });
     } else if (id === 'item-drop') {
-      enqueueDrops(characterStore.grantItemDrops(bossStore.boss.index, rng, 1));
+      const dropped = characterStore.grantItemDrops(bossStore.boss.index, rng, 1);
+      enqueueDrops(dropped);
+      if (dropped.some((item) => item.rarity === 'epic')) happened = { type: 'epic-dropped' };
     } else {
       // item-slots / item-slots-2: the cap once this pick is recorded.
       const takenEventIds = [...(characterStore.character.takenEventIds ?? []), id];
       activityLogStore.addEntry({ kind: 'item-slots-gained', slots: maxEquipSlots({ takenEventIds }) });
     }
     finish(id);
+    if (happened) reportChallenge(happened);
   }
 
   function chooseReroll(habitId: string) {

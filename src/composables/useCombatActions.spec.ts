@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -22,8 +22,11 @@ import { useCombatActions } from './useCombatActions';
 import { useDeathScreen } from './useDeathScreen';
 import { useFallenHero } from './useFallenHero';
 import { useHoodedFigure } from './useHoodedFigure';
+import { useItemDropQueue } from './useItemDropQueue';
+import { useQuestCompleteQueue } from './useQuestCompleteQueue';
+import { useUndoCheck } from './useUndoCheck';
 import { setHitPlayer } from './useHitFeed';
-import type { Habit, Quest } from '../game-engine';
+import type { ChallengeEntry, ChallengeId, Habit, Quest } from '../game-engine';
 import type { Hit } from './useHitFeed';
 import { useReviveNotice } from './useReviveNotice';
 
@@ -1013,6 +1016,202 @@ describe('useCombatActions', () => {
     it('logs the next rank once the streak passes it', () => {
       // Streak 50 is also a milestone, so a level-up may land above it.
       expect(checkOff({ streakCount: 49, rank: 3, damageType: 'physical' }).find((e) => e.kind === 'rank-up')).toMatchObject({ rank: 4 });
+    });
+  });
+
+  describe('challenges', () => {
+    const dayKey = () => dailyPeriodKey(useDebugClockStore().now());
+
+    function take(id: ChallengeId, relicId = 'ember-heart', overrides: Partial<ChallengeEntry> = {}) {
+      const characterStore = useCharacterStore();
+      const entry: ChallengeEntry = { id, relicId, takenDayKey: dayKey(), progress: 0, ...overrides };
+      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0, challenges: [...(characterStore.character.challenges ?? []), entry] });
+    }
+
+    const entryOf = (id: ChallengeId) => useCharacterStore().character.challenges?.find((e) => e.id === id);
+
+    function strikeHabit(overrides: Partial<Habit> = {}) {
+      const habitStore = useHabitStore();
+      const habit = habitStore.addHabit('Lift', 'daily', 'hard', false, createRng());
+      habitStore.updateHabit({ ...habit, damageType: 'physical', ...overrides });
+      return habit;
+    }
+
+    afterEach(() => {
+      const { dismiss, current } = useItemDropQueue();
+      while (current.value) dismiss();
+      const completions = useQuestCompleteQueue();
+      while (completions.current.value) completions.dismiss();
+    });
+
+    it('a live crit advances a taken Crit streak', () => {
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      take('land-crits');
+      characterStore.setCharacter({ ...characterStore.character, critChance: 1 });
+      bossStore.setBoss({ ...bossStore.boss, health: 100000, maxHealth: 100000 });
+      const habit = strikeHabit();
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(entryOf('land-crits')?.progress).toBe(1);
+    });
+
+    it('a kill with no hit taken completes Untouched: relic granted, medium EXP paid, no weekly slot used', () => {
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      take('untouched', 'ember-heart');
+      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: undefined });
+      const habit = strikeHabit();
+      const questWeekBefore = characterStore.character.questWeek;
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(entryOf('untouched')).toMatchObject({ doneDayKey: dayKey(), progress: 1 });
+      expect(characterStore.character.ownedItemIds).toContain('ember-heart');
+      expect(characterStore.character.earnedRelicIds).toContain('ember-heart');
+      expect(characterStore.character.questWeek).toBe(questWeekBefore);
+      const logged = useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed');
+      expect(logged).toMatchObject({ kind: 'challenge-completed', name: 'Untouched', amount: questSlotExp(20, 'medium', 0), itemName: 'Ember Heart' });
+      expect(useQuestCompleteQueue().current.value).toMatchObject({ description: 'Untouched', difficulty: 'medium', amount: questSlotExp(20, 'medium', 0) });
+    });
+
+    it('a kill of a boss that already hurt the player leaves Untouched open', () => {
+      const bossStore = useBossStore();
+      take('untouched');
+      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: true });
+      const habit = strikeHabit();
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(entryOf('untouched')).toMatchObject({ progress: 0 });
+      expect(entryOf('untouched')?.doneDayKey).toBeUndefined();
+    });
+
+    it('a kill with a true damage skill completes True strike', () => {
+      const bossStore = useBossStore();
+      take('true-kill', 'ember-heart');
+      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
+      const habit = strikeHabit({ damageType: 'trueDamage' });
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(entryOf('true-kill')?.doneDayKey).toBe(dayKey());
+    });
+
+    it('a bad-habit check notes the day, and a good habit does not', () => {
+      const habitStore = useHabitStore();
+      const characterStore = useCharacterStore();
+      const { checkOffHabit } = useCombatActions();
+      checkOffHabit(strikeHabit().id);
+      expect(characterStore.character.lastBadCheckDayKey).toBeUndefined();
+
+      const bad = habitStore.addHabit('Doomscroll', 'daily', 'easy', true, createRng());
+      checkOffHabit(bad.id);
+      expect(characterStore.character.lastBadCheckDayKey).toBe(dayKey());
+    });
+
+    it('resisting a bad habit advances Hold the line', () => {
+      const habitStore = useHabitStore();
+      take('resist');
+      const bad = habitStore.addHabit('Doomscroll', 'daily', 'easy', true, createRng());
+
+      useCombatActions().checkAvoidedHabit(bad.id);
+
+      expect(entryOf('resist')?.progress).toBe(1);
+    });
+
+    it('a skill rank-up completes Rank up', () => {
+      take('rank-up');
+      const habit = strikeHabit({ streakCount: 9, rank: 0 });
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(entryOf('rank-up')?.doneDayKey).toBe(dayKey());
+    });
+
+    it('a check that completes a challenge is not offered to Undo', () => {
+      const { checkOffHabit } = useCombatActions();
+      checkOffHabit(strikeHabit({ streakCount: 0 }).id);
+      expect(useUndoCheck().canUndo()).toBe(true); // a plain check is offered
+
+      take('rank-up');
+      checkOffHabit(strikeHabit({ streakCount: 9, rank: 0 }).id);
+      expect(entryOf('rank-up')?.doneDayKey).toBeDefined();
+      expect(useUndoCheck().canUndo()).toBe(false);
+    });
+
+    it('addHabit queues a pending addition, and addQuest stamps the day and queues one', () => {
+      const characterStore = useCharacterStore();
+      take('new-good');
+      take('fresh-quests', 'stone-heart');
+      const { addHabit, addQuest } = useCombatActions();
+
+      const habit = addHabit('Stretch', 'daily', 'easy', false);
+      const quest = addQuest('Clean garage', 'medium', '2099-01-01');
+
+      expect(quest.createdDayKey).toBe(dayKey());
+      expect(useQuestStore().quests).toEqual([quest]);
+      expect(entryOf('new-good')?.pending).toEqual([{ id: habit.id, dayKey: dayKey() }]);
+      expect(entryOf('fresh-quests')?.pending).toEqual([{ id: quest.id, dayKey: dayKey() }]);
+      expect(characterStore.character.challenges).toHaveLength(2);
+    });
+
+    it('completing a quest on time advances Quest run only when it survived a day', () => {
+      take('quest-run');
+      const questStore = useQuestStore();
+      const { completeQuest } = useCombatActions();
+      const fresh = questStore.addQuest('Today', 'easy', '2099-01-01', dayKey());
+      const old = questStore.addQuest('Older', 'easy', '2099-01-01', addDaysToDayKey(dayKey(), -1));
+      const legacy = questStore.addQuest('Legacy', 'easy', '2099-01-01');
+
+      completeQuest(fresh.id);
+      expect(entryOf('quest-run')?.progress).toBe(0);
+      completeQuest(old.id);
+      completeQuest(legacy.id);
+      expect(entryOf('quest-run')?.progress).toBe(2);
+    });
+
+    it('an overdue quest completion does not count toward Quest run', () => {
+      take('quest-run');
+      const questStore = useQuestStore();
+      const { completeQuest, failQuest } = useCombatActions();
+      const quest = questStore.addQuest('Late', 'easy', '2026-02-01');
+      failQuest(quest.id);
+      completeQuest(quest.id);
+      expect(entryOf('quest-run')?.progress).toBe(0);
+    });
+
+    it('finishing a challenge whose relic is already owned still completes, with no second grant and no crash', () => {
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      take('untouched', 'ember-heart');
+      characterStore.setCharacter({ ...characterStore.character, ownedItemIds: ['ember-heart'], equippedItemIds: ['ember-heart'] });
+      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
+
+      useCombatActions().checkOffHabit(strikeHabit().id);
+
+      expect(entryOf('untouched')?.doneDayKey).toBe(dayKey());
+      expect(characterStore.character.ownedItemIds.filter((id) => id === 'ember-heart')).toHaveLength(1);
+      expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toMatchObject({ amount: questSlotExp(20, 'medium', 0) });
+      expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).not.toHaveProperty('itemName');
+    });
+
+    it('a character with no challenges goes through every hook untouched', () => {
+      const characterStore = useCharacterStore();
+      const habitStore = useHabitStore();
+      const { checkOffHabit, checkAvoidedHabit, addHabit, addQuest, completeQuest, reportChallenge } = useCombatActions();
+      expect(characterStore.character.challenges).toBeUndefined();
+
+      const good = addHabit('Stretch', 'daily', 'easy', false);
+      const bad = addHabit('Doomscroll', 'daily', 'easy', true);
+      checkOffHabit(good.id);
+      checkAvoidedHabit(bad.id);
+      completeQuest(addQuest('Q', 'easy', '2099-01-01').id);
+      reportChallenge({ type: 'rank-up' });
+
+      expect(characterStore.character.challenges).toBeUndefined();
+      expect(habitStore.habits).toHaveLength(2);
     });
   });
 });

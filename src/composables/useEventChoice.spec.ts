@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng } from '../game-engine';
+import { createRng, ITEM_CATALOG } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -119,5 +119,37 @@ describe('useEventChoice', () => {
     expect(pick).toBeDefined();
     events.choose(pick as Exclude<typeof offered[number], 'side-quest' | 'reroll-skill'>);
     expect(characterStore.character.sideQuestPicksMissed).toBe(offered.includes('side-quest') ? 0 : 1);
+  });
+
+  it('enchanting an item completes a taken Enchanted challenge', () => {
+    const { characterStore, events } = setup(20, 1);
+    characterStore.setCharacter({
+      ...characterStore.character,
+      ownedItemIds: ['rusty-blade'],
+      equippedItemIds: ['rusty-blade'],
+      challenges: [{ id: 'enchant', relicId: 'ember-heart', takenDayKey: '2026-01-01', progress: 0 }],
+    });
+
+    events.choose('double-item');
+
+    expect(characterStore.character.challenges?.[0].doneDayKey).toBeDefined();
+    expect(characterStore.character.ownedItemIds).toContain('ember-heart');
+    useItemDropQueue().dismiss();
+  });
+
+  it('an item-drop that finds an epic completes a taken Epic find challenge', () => {
+    const { characterStore, events } = setup(40, 1);
+    // With every other drop owned, the only item left to find is an epic.
+    const owned = ITEM_CATALOG.filter((i) => i.rarity !== 'epic' && i.rarity !== 'relic').map((i) => i.id);
+    characterStore.setCharacter({
+      ...characterStore.character,
+      ownedItemIds: owned,
+      challenges: [{ id: 'epic-find', relicId: 'ember-heart', takenDayKey: '2026-01-01', progress: 0 }],
+    });
+
+    events.choose('item-drop');
+
+    expect(characterStore.character.challenges?.[0].doneDayKey).toBeDefined();
+    expect(characterStore.character.ownedItemIds).toContain('ember-heart');
   });
 });

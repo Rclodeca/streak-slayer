@@ -7,12 +7,14 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor } from '../game-engine';
+import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor } from '../game-engine';
+import type { ChallengeEntry } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
 import { useQuestStore } from '../store/questStore';
+import { useCombatActions } from './useCombatActions';
 import { useDailyRollover } from './useDailyRollover';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useQuestMissGate } from './useQuestMissGate';
@@ -491,5 +493,72 @@ describe('useDailyRollover — run again before the popup is acknowledged', () =
     useDailyRollover(now);
 
     expect(useQuestMissGate().misses.value).toHaveLength(1);
+  });
+
+  describe('challenge day-end', () => {
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    function take(entry: ChallengeEntry) {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 20, challenges: [...(characterStore.character.challenges ?? []), entry] });
+    }
+
+    const entryOf = (id: ChallengeEntry['id']) => useCharacterStore().character.challenges?.find((e) => e.id === id);
+    const today = () => dailyPeriodKey(new Date());
+
+    it('counts a kept addition at the next rollover, and not one deleted before it', () => {
+      const habitStore = useHabitStore();
+      const { addHabit } = useCombatActions();
+      take({ id: 'new-good', relicId: 'ember-heart', takenDayKey: today(), progress: 0 });
+      take({ id: 'new-bad', relicId: 'stone-heart', takenDayKey: today(), progress: 0 });
+      const kept = addHabit('Stretch', 'daily', 'easy', false);
+      const dropped = addHabit('Doomscroll', 'daily', 'easy', true);
+      habitStore.removeHabit(dropped.id);
+
+      expect(entryOf('new-good')?.pending).toEqual([{ id: kept.id, dayKey: today() }]);
+      useDailyRollover(new Date(Date.now() + DAY_MS));
+
+      expect(entryOf('new-good')).toMatchObject({ progress: 1, doneDayKey: dailyPeriodKey(new Date(Date.now() + DAY_MS)) });
+      expect(entryOf('new-bad')).toMatchObject({ progress: 0 });
+      expect(entryOf('new-bad')?.doneDayKey).toBeUndefined();
+    });
+
+    it('does not count an addition made the same day the rollover runs', () => {
+      const { addHabit } = useCombatActions();
+      take({ id: 'new-good', relicId: 'ember-heart', takenDayKey: today(), progress: 0 });
+      addHabit('Stretch', 'daily', 'easy', false);
+
+      useDailyRollover(new Date());
+
+      expect(entryOf('new-good')).toMatchObject({ progress: 0 });
+    });
+
+    it('running the rollover twice for the same day does not double count Clean slate', () => {
+      take({ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today(), -5), progress: 0 });
+      const next = new Date(Date.now() + DAY_MS);
+
+      useDailyRollover(next);
+      useDailyRollover(next);
+
+      expect(entryOf('clean-days')?.progress).toBe(1);
+    });
+
+    it('a bad habit checked that day breaks Clean slate, and a gap resets it', () => {
+      const habitStore = useHabitStore();
+      const { checkOffHabit } = useCombatActions();
+      take({ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today(), -9), progress: 2, lastDayKey: addDaysToDayKey(today(), -1) });
+      checkOffHabit(habitStore.addHabit('Doomscroll', 'daily', 'easy', true, createRng()).id);
+
+      useDailyRollover(new Date(Date.now() + DAY_MS));
+
+      expect(entryOf('clean-days')).toMatchObject({ progress: 0, lastDayKey: today() });
+    });
+
+    it('a character with no challenges is left alone by the rollover', () => {
+      const characterStore = useCharacterStore();
+      const before = characterStore.character;
+      useDailyRollover(new Date(Date.now() + DAY_MS));
+      expect(characterStore.character).toBe(before);
+    });
   });
 });

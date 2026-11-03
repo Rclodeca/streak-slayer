@@ -29,6 +29,7 @@
 
 import {
   addExpAndResolveLevelUps,
+  applyChallengeEvent,
   chooseHero,
   completeHabit,
   createRng,
@@ -37,6 +38,8 @@ import {
   effectiveCritChance,
   effectiveStat,
   describeItemBonus,
+  doneChallenges,
+  getChallengeDef,
   HERO_CLASSES,
   heroClassFor,
   ITEM_CATALOG,
@@ -52,6 +55,7 @@ import {
   questOverdueExp,
   questRewardExp,
   questWeekFor,
+  recordBadCheck,
   recordQuestCompletion,
   resolveBossDefeatIfDead,
   resolveDoom,
@@ -61,7 +65,7 @@ import {
   unlockQuests,
   weeklyPeriodKey,
 } from '../game-engine';
-import type { Character, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period } from '../game-engine';
+import type { Character, ChallengeEntry, ChallengeEvent, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -77,6 +81,7 @@ import { useHoodedFigure } from './useHoodedFigure';
 import { useBossSkillCard } from './useBossSkillCard';
 import { playHit } from './useHitFeed';
 import { useItemDropQueue } from './useItemDropQueue';
+import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useReviveNotice } from './useReviveNotice';
 import { useUndoCheck } from './useUndoCheck';
 
@@ -106,7 +111,8 @@ export function useCombatActions() {
   const { recordFallen, clearFallen } = useFallenHero();
   const { startScene } = useHoodedFigure();
   const { showReviveNotice } = useReviveNotice();
-  const { clear: clearItemDrops } = useItemDropQueue();
+  const { enqueueDrops, clear: clearItemDrops } = useItemDropQueue();
+  const { enqueue: enqueueCompletion } = useQuestCompleteQueue();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
   const { showBossSkill, clear: clearBossSkills } = useBossSkillCard();
   const undoCheck = useUndoCheck();
@@ -152,6 +158,40 @@ export function useCombatActions() {
     if (levelsGained <= 0) return;
     const character = characterStore.character;
     characterStore.setCharacter({ ...character, pendingEventPicks: (character.pendingEventPicks ?? 0) + levelsGained });
+  }
+
+  /**
+   * Pays one finished challenge: its reserved relic (a relic already owned
+   * still finishes the challenge, just without the item), and EXP as a medium
+   * quest at the current weekly slot — without using that slot up.
+   */
+  function payChallenge(entry: ChallengeEntry): void {
+    const def = getChallengeDef(entry.id);
+    const item = characterStore.grantItem(entry.relicId);
+    if (item) enqueueDrops([item]);
+
+    const before = characterStore.character;
+    const week = questWeekFor(before.questWeek, weeklyPeriodKey(debugClockStore.now()));
+    const amount = questRewardExp(before, 'medium', week.completed);
+    const { character, levelsGained } = addExpAndResolveLevelUps(before, amount);
+    logLevelUpIfAny(before, character);
+    characterStore.setCharacter(character);
+    grantEventPicks(levelsGained);
+
+    activityLogStore.addEntry({ kind: 'challenge-completed', name: def.name, amount, ...(item && { itemName: item.name }) });
+    enqueueCompletion({ description: def.name, difficulty: 'medium', amount });
+  }
+
+  /**
+   * Feeds one happening to the character's challenges and pays out any it
+   * finishes. A no-op for a character with no challenges. Reads the character
+   * fresh, so call it between steps that already wrote theirs back.
+   */
+  function reportChallenge(event: ChallengeEvent, todayKey: string = dailyPeriodKey(debugClockStore.now())): void {
+    const result = applyChallengeEvent(characterStore.character, event, todayKey);
+    if (result.character === characterStore.character) return;
+    characterStore.setCharacter(result.character);
+    for (const entry of result.completed) payChallenge(entry);
   }
 
   /**
@@ -261,6 +301,14 @@ export function useCombatActions() {
       activityLogStore.addEntry({ kind: 'rank-up', habitName: habit.name, rank: result.updatedHabit.rank ?? 0 });
     }
 
+    // Challenges that watch this blow. A live tap of a good habit is the only
+    // one that counts as a check (a rollover resolution or an Overdrive use
+    // is not); the rest read what the engine rolled.
+    const rankedUp = (result.updatedHabit.rank ?? 0) > (habit.rank ?? 0);
+    if (result.wasCrit) reportChallenge({ type: 'crit-landed' });
+    if (rankedUp) reportChallenge({ type: 'rank-up' });
+    if (stampPeriodKey && !habit.isBad) reportChallenge({ type: 'habit-checked', habit, hour: debugClockStore.now().getHours() });
+
     // Overdrive uses pay no skill EXP (and no milestone, see completeHabit).
     const skillExp = options.isOverdriveUse
       ? 0
@@ -277,7 +325,10 @@ export function useCombatActions() {
     const beforeDefeat = characterStore.character;
     const slain = bossStore.boss;
     const defeatResult = resolveBossDefeatIfDead(characterStore.character, slain, rng);
-    if (!defeatResult.defeated) return { itemsDropped: [] };
+    if (!defeatResult.defeated) {
+      reportChallenge({ type: 'state-changed', habits: habitStore.habits });
+      return { itemsDropped: [] };
+    }
 
     activityLogStore.addEntry({ kind: 'boss-defeated', bossIndex: slain.index, amount: defeatResult.expReward });
     if (defeatResult.itemHealed) activityLogStore.addEntry({ kind: 'item-heal', itemName: 'Soul Lantern', amount: defeatResult.itemHealed });
@@ -288,6 +339,10 @@ export function useCombatActions() {
     characterStore.setCharacter(defeatResult.character);
     bossStore.setBoss(defeatResult.boss);
     grantEventPicks(defeatResult.levelsGained);
+
+    reportChallenge({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
+    if (defeatResult.itemsDropped.some((item) => item.rarity === 'epic')) reportChallenge({ type: 'epic-dropped' });
+    reportChallenge({ type: 'state-changed', habits: habitStore.habits });
 
     return { itemsDropped: defeatResult.itemsDropped, droppedBy: PERSONALITY_NAME[slain.personality] };
   }
@@ -388,10 +443,17 @@ export function useCombatActions() {
     const before = undoCheck.snapshot();
     let result: RewardResult = { itemsDropped: [] };
     let fell = false;
-    if (habit.isBad) fell = applyPenalty(habitId, currentPeriodKey);
-    else result = applyReward(habitId, currentPeriodKey);
+    if (habit.isBad) {
+      fell = applyPenalty(habitId, currentPeriodKey);
+      characterStore.setCharacter(recordBadCheck(characterStore.character, dailyPeriodKey(debugClockStore.now())));
+    } else result = applyReward(habitId, currentPeriodKey);
 
-    const plain = !fell && characterStore.character.level === before.character.level && bossStore.boss.index === before.boss.index;
+    // A finished challenge pays a relic and EXP, which Undo couldn't take back cleanly.
+    const plain =
+      !fell &&
+      characterStore.character.level === before.character.level &&
+      bossStore.boss.index === before.boss.index &&
+      doneChallenges(characterStore.character).length === doneChallenges(before.character).length;
     if (plain) undoCheck.offer(before);
     else undoCheck.forget();
     return result;
@@ -414,7 +476,9 @@ export function useCombatActions() {
    * `useMissedSkillsGate.acknowledge()`.
    */
   function checkAvoidedHabit(habitId: string): RewardResult {
-    return applyReward(habitId);
+    const result = applyReward(habitId);
+    if (habitStore.habits.find((h) => h.id === habitId)?.isBad) reportChallenge({ type: 'bad-resisted' });
+    return result;
   }
 
   /**
@@ -448,7 +512,15 @@ export function useCombatActions() {
     const now = debugClockStore.now();
     const habit = { ...created, lastCheckedPeriodKey: periodKeyFor(period, now), createdDayKey: dailyPeriodKey(now) };
     habitStore.updateHabit(habit);
+    reportChallenge({ type: 'habit-added', habit });
     return habit;
+  }
+
+  /** Adds a quest stamped with today's day, so Fresh quests and Quest run can tell when it was made. */
+  function addQuest(description: string, difficulty: Difficulty, dueDateKey: string): Quest {
+    const quest = questStore.addQuest(description, difficulty, dueDateKey, dailyPeriodKey(debugClockStore.now()));
+    reportChallenge({ type: 'quest-added', questId: quest.id });
+    return quest;
   }
 
   /**
@@ -573,6 +645,7 @@ export function useCombatActions() {
 
     activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount });
     questStore.markDone(questId, dayKey);
+    if (!quest.overdue) reportChallenge({ type: 'quest-completed', createdDayKey: quest.createdDayKey });
     return { amount };
   }
 
@@ -631,6 +704,8 @@ export function useCombatActions() {
     activateOverdrive,
     landDoom,
     addHabit,
+    addQuest,
+    reportChallenge,
     restart,
     beginRun,
     completeQuest,

@@ -99,6 +99,14 @@ export function useDailyRollover(now: Date = new Date()): void {
     if (regen.healed > 0) useActivityLogStore().addEntry({ kind: 'item-heal', itemName: 'Ember Heart', amount: regen.healed });
   }
 
+  // Challenges look back at the day that just ended, before a quest finished
+  // that day leaves the list. Safe to repeat: a day is only counted once.
+  const combat = useCombatActions();
+  combat.reportChallenge(
+    { type: 'day-end', endedDate: new Date(now.getTime() - MS_PER_DAY), habits: habitStore.habits, quests: questStore.quests },
+    todayKey,
+  );
+
   // A quest checked off on an earlier day leaves with the turn of the day; one already overdue took its hit.
   questStore.clearDone(todayKey);
   for (const quest of questStore.quests) {
@@ -110,5 +118,5 @@ export function useDailyRollover(now: Date = new Date()): void {
   // A due Doom lands after the day's misses resolve: now if nothing is
   // queued, otherwise when the last popup's OK runs them (see
   // useMissedSkillsGate/useQuestMissGate acknowledge).
-  if (!hasPending.value && !questMissesPending.value) useCombatActions().landDoom(todayKey);
+  if (!hasPending.value && !questMissesPending.value) combat.landDoom(todayKey);
 }
