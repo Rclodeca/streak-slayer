@@ -124,7 +124,7 @@ export function useEventChoice() {
 
   /** Creates the side quest, promising it one of the currently available relics at random. */
   function chooseSideQuest(description: string, difficulty: Difficulty, dueDateKey: string) {
-    const rewards = availableRelics(characterStore.character, questStore.quests);
+    const rewards = availableRelics(characterStore.character);
     const reward = rewards[Math.floor(rng() * rewards.length)];
     questStore.addQuest(description, difficulty, dueDateKey, 'side', reward?.id);
     finish('side-quest');

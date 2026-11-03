@@ -18,6 +18,7 @@ import {
 } from './events';
 import { effectiveCritChance } from './leveling';
 import { createRng } from './rng';
+import { CHALLENGE_DEFS } from './challenges';
 import { createQuest } from './quests';
 import type { Character, Habit } from './types';
 
@@ -125,11 +126,21 @@ describe('side-quest event', () => {
     expect(ids(eligibleEvents(makeCharacter({ level: 3, earnedRelicIds: relicIds.slice(1) }), []))).toContain('side-quest');
   });
 
-  it('is ineligible once every relic is owned or promised to a pending side quest', () => {
+  it('is ineligible once every relic is owned or promised to an active challenge', () => {
     expect(ids(eligibleEvents(makeCharacter({ level: 3, ownedItemIds: relicIds }), []))).not.toContain('side-quest');
-    const quests = relicIds.map((id, i) => createQuest(`q${i}`, 'easy', '2099-01-01', 'side', id));
-    expect(ids(eligibleEvents(makeCharacter({ level: 3 }), [], quests))).not.toContain('side-quest');
-    expect(ids(eligibleEvents(makeCharacter({ level: 3 }), [], quests.slice(1)))).toContain('side-quest');
+    const challenges = CHALLENGE_DEFS.map((d, i) => ({ id: d.id, relicId: relicIds[i], takenDayKey: '2026-11-01', progress: 0 }));
+    expect(ids(eligibleEvents(makeCharacter({ level: 3, challenges }), []))).not.toContain('side-quest');
+    // One challenge left and one relic left: still eligible.
+    expect(ids(eligibleEvents(makeCharacter({ level: 3, challenges: challenges.slice(1) }), []))).toContain('side-quest');
+  });
+
+  it('is ineligible when no challenge can be offered, even with relics left', () => {
+    const done = CHALLENGE_DEFS.map((d) => ({ id: d.id, relicId: 'gone', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' }));
+    expect(ids(eligibleEvents(makeCharacter({ level: 3, challenges: done }), []))).not.toContain('side-quest');
+  });
+
+  it('is ineligible while the quests section is sealed', () => {
+    expect(ids(eligibleEvents(makeCharacter({ level: 2, questsUnlocked: false }), []))).not.toContain('side-quest');
   });
 
   it('a regular quest does not promise a relic', () => {
@@ -182,6 +193,11 @@ describe('consumeEventPick', () => {
     const result = consumeEventPick(makeCharacter({ pendingEventPicks: 0, takenEventIds: [] }), 'side-quest');
     expect(result.pendingEventPicks).toBe(0);
     expect(result.takenEventIds).toEqual([]);
+  });
+
+  it('clears the offered challenge whichever event is picked', () => {
+    expect(consumeEventPick(makeCharacter({ pendingEventPicks: 1, offeredChallengeId: 'resist' }), 'heal').offeredChallengeId).toBeUndefined();
+    expect(consumeEventPick(makeCharacter({ pendingEventPicks: 1, offeredChallengeId: 'resist' }), 'side-quest').offeredChallengeId).toBeUndefined();
   });
 });
 

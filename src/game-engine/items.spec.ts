@@ -19,7 +19,6 @@ import {
 } from './items';
 import type { BoostableStat, DropRarity, ItemDef } from './items';
 import { createRng } from './rng';
-import { createQuest } from './quests';
 import type { Character } from './types';
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
@@ -422,20 +421,25 @@ describe('relics', () => {
   const relicIds = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
 
   it('availableRelics offers every relic from level 1', () => {
-    expect(availableRelics(makeCharacter({ level: 1 }), []).map((i) => i.id)).toEqual(relicIds);
+    expect(availableRelics(makeCharacter({ level: 1 })).map((i) => i.id)).toEqual(relicIds);
   });
 
   it('availableRelics excludes earned, owned, and promised relics', () => {
-    const [a, b, c] = relicIds;
-    const character = makeCharacter({ level: 1, earnedRelicIds: [a], ownedItemIds: [b] });
-    const promised = createQuest('q', 'easy', '2099-01-01', 'side', c);
-    const ids = availableRelics(character, [promised]).map((i) => i.id);
+    const [a, b, c, d] = relicIds;
+    const challenges = [
+      { id: 'resist' as const, relicId: c, takenDayKey: '2026-11-01', progress: 0 },
+      { id: 'rank-up' as const, relicId: d, takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' },
+    ];
+    const character = makeCharacter({ level: 1, earnedRelicIds: [a], ownedItemIds: [b], challenges });
+    const ids = availableRelics(character).map((i) => i.id);
     expect(ids).not.toContain(a);
     expect(ids).not.toContain(b);
     expect(ids).not.toContain(c);
+    // A done entry's relic is no longer promised (it was granted or is owned/earned by then).
+    expect(ids).toContain(d);
     expect(ids).toHaveLength(relicIds.length - 3);
-    // Once that quest is gone (missed), its relic is available again.
-    expect(availableRelics(character, []).map((i) => i.id)).toContain(c);
+    // Once that challenge is gone, its relic is available again.
+    expect(availableRelics({ ...character, challenges: [] }).map((i) => i.id)).toContain(c);
   });
 
   it('recordRelicEarned records a relic once and ignores other items', () => {

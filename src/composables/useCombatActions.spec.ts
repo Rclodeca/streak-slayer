@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
+import { createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -825,21 +825,6 @@ describe('useCombatActions', () => {
     expect(characterStore.character.ownedItemIds).toContain(result?.item?.id);
     expect(characterStore.character.earnedRelicIds).toEqual([result?.item?.id]);
     dismiss();
-  });
-
-  it('a missed side quest returns its relic to the pool', () => {
-    const characterStore = useCharacterStore();
-    const questStore = useQuestStore();
-    const { failQuest } = useCombatActions();
-
-    const itemId = 'ember-heart';
-    const quest = questStore.addQuest('Slay it', 'easy', '2026-02-01', 'side', itemId);
-    expect(availableRelics(characterStore.character, questStore.quests).map((i) => i.id)).not.toContain(itemId);
-
-    failQuest(quest.id);
-
-    expect(characterStore.character.ownedItemIds).not.toContain(itemId);
-    expect(availableRelics(characterStore.character, questStore.quests).map((i) => i.id)).toContain(itemId);
   });
 
   it('completeQuest on an overdue regular quest pays half the next slot and takes none', () => {

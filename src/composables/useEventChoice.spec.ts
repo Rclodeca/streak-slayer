@@ -116,7 +116,7 @@ describe('useEventChoice', () => {
 
   it('side-quest creates a side quest promised an available relic and spends the pick', () => {
     const { characterStore, events } = setup(1, 1);
-    const relics = availableRelics(characterStore.character, []).map((i) => i.id);
+    const relics = availableRelics(characterStore.character).map((i) => i.id);
     events.chooseSideQuest('Clean garage', 'hard', '2099-01-01');
 
     const quests = useQuestStore().quests;
@@ -142,7 +142,7 @@ describe('useEventChoice', () => {
     const characterStore = useCharacterStore();
     const habitStore = useHabitStore();
     habitStore.addHabit('Daily good', 'daily', 'medium', false, createRng(1));
-    const [onlyItem, ...rest] = availableRelics({ ...characterStore.character, level: 3 }, []).map((i) => i.id);
+    const [onlyItem, ...rest] = availableRelics({ ...characterStore.character, level: 3 }).map((i) => i.id);
     characterStore.setCharacter({
       ...characterStore.character,
       level: 3,

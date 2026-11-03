@@ -221,6 +221,17 @@ export const TUNING = {
   // Level-up picks that can pass with the side-quest event eligible but not
   // offered before it is forced into the next pick.
   SIDE_QUEST_GUARANTEE_LEVELS: 5,
+  // Side-quest challenge goals (see challenges.ts).
+  CHALLENGES: {
+    RESISTS: 5,
+    CLEAN_DAYS: 3,
+    FRESH_QUESTS: 3,
+    QUEST_RUN: 3,
+    SLAY_BOSSES: 2,
+    LAND_CRITS: 5,
+    STREAK_EVERYTHING_MIN: 3,
+    EARLY_START_HOUR: 12,
+  },
   HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.38, magic: 0.38, healing: 0.12, trueDamage: 0.12 },
   // A ranger rolls true damage twice as often, taken equally from physical
   // and magic.

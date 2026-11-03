@@ -123,6 +123,54 @@ export interface Character {
   // once if quests carried over from the last run (useCombatActions.restart).
   // Undefined only on a save from before the lock; migrateQuestUnlock settles it.
   questsUnlocked?: boolean;
+  // Side-quest challenges for this run (see challenges.ts): every one taken,
+  // active and done, so a finished one is never offered again. A death starts
+  // a fresh run with none. Undefined on a save from before challenges.
+  challenges?: ChallengeEntry[];
+  // The challenge the level-up side-quest card currently names; kept so the
+  // popup shows the same one after a reload. Cleared by any pick.
+  offeredChallengeId?: ChallengeId;
+  // The last day a bad habit was checked off — Perfect day and Clean slate
+  // read it when the day ends.
+  lastBadCheckDayKey?: string;
+}
+
+export type ChallengeId =
+  | 'perfect-day'
+  | 'clean-days'
+  | 'resist'
+  | 'early-start'
+  | 'streak-all'
+  | 'new-good'
+  | 'new-bad'
+  | 'fresh-quests'
+  | 'rank-up'
+  | 'enchant'
+  | 'epic-find'
+  | 'true-kill'
+  | 'untouched'
+  | 'crit-kill'
+  | 'quest-run'
+  | 'slay-two'
+  | 'land-crits';
+
+/** A habit or quest added after a challenge was taken; it counts at the next day rollover if it still exists. */
+export interface PendingAddition {
+  id: string;
+  dayKey: string;
+}
+
+export interface ChallengeEntry {
+  id: ChallengeId;
+  /** The relic reserved when the challenge was taken. */
+  relicId: string;
+  takenDayKey: string;
+  progress: number;
+  /** The last day a day-end check ran for this challenge (so a repeat run can't double count). */
+  lastDayKey?: string;
+  pending?: PendingAddition[];
+  /** Set the day the challenge finished; absent while active. */
+  doneDayKey?: string;
 }
 
 // Discriminated on `type`. Intentionally a plain union rather than a

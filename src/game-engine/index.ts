@@ -156,6 +156,17 @@ export {
   spellweaveStacks,
 } from './itemEffects';
 
+export type { ChallengeDef } from './challenges';
+export {
+  activeChallenges,
+  CHALLENGE_DEFS,
+  doneChallenges,
+  drawChallenge,
+  getChallengeDef,
+  offerableChallenges,
+  takeChallenge,
+} from './challenges';
+
 export { formatCompact } from './format';
 
 export type { BoostableStat, DropRarity, ItemBonus, ItemDef, ItemEffectId, ItemRarity } from './items';

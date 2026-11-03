@@ -2,7 +2,7 @@ import { ITEM_CATALOG } from './constants/itemCatalog';
 import { TUNING } from './constants/tuning';
 import { formatCompact } from './format';
 import { pickRandom, pickWeighted, type Rng } from './rng';
-import type { Character, Quest } from './types';
+import type { Character } from './types';
 
 export { ITEM_CATALOG };
 
@@ -21,7 +21,7 @@ export type BoostableStat =
   | 'magicResist' // flat only — player mitigation stat, see combat.ts missHabit
   | 'allDamage'; // percent only — adds to the physical, magic and true damage multipliers (see itemStatMultiplier)
 
-// 'relic' items never drop: side quests pay them (see availableRelics).
+// 'relic' items never drop: challenges pay them (see availableRelics).
 export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'relic';
 /** The rarities the boss-drop tables weigh. */
 export type DropRarity = Exclude<ItemRarity, 'relic'>;
@@ -255,14 +255,13 @@ export function unownedDroppableItems(character: Character): ItemDef[] {
 }
 
 /**
- * Relics a new side quest could offer: not yet earned this run (earned is
- * earned, even if later dropped), not owned, and not already promised to a
- * pending side quest. A missed side quest leaves the quest list, which
- * returns its relic here.
+ * Relics a new challenge could reserve: not yet earned this run (earned is
+ * earned, even if later dropped), not owned, and not already promised to an
+ * active challenge.
  */
-export function availableRelics(character: Character, quests: readonly Quest[]): ItemDef[] {
+export function availableRelics(character: Character): ItemDef[] {
   const earned = character.earnedRelicIds ?? [];
-  const promised = quests.filter((q) => q.kind === 'side' && q.rewardItemId).map((q) => q.rewardItemId);
+  const promised = (character.challenges ?? []).filter((c) => !c.doneDayKey).map((c) => c.relicId);
   return ITEM_CATALOG.filter(
     (item) =>
       item.rarity === 'relic' &&

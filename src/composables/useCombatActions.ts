@@ -568,7 +568,7 @@ export function useCombatActions() {
       // dropped from a boss (nothing kept it out of the drop pool anymore);
       // pay an available relic instead so the deed is never unrewarded.
       const promised = quest.rewardItemId ? characterStore.grantItem(quest.rewardItemId) : null;
-      const fallback = promised ? [] : availableRelics(characterStore.character, questStore.quests.filter((q) => q.id !== questId));
+      const fallback = promised ? [] : availableRelics(characterStore.character);
       const item = promised ?? (fallback.length > 0 ? characterStore.grantItem(fallback[Math.floor(rng() * fallback.length)].id) : null);
       if (item) enqueueDrops([item]);
       activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount: 0, itemName: item?.name });

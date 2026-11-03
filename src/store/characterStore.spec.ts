@@ -23,7 +23,7 @@ describe('characterStore equip/discard', () => {
     store.discardItem('ember-heart');
 
     expect(store.character.earnedRelicIds).toEqual(['ember-heart']);
-    expect(availableRelics(store.character, []).map((i) => i.id)).not.toContain('ember-heart');
+    expect(availableRelics(store.character).map((i) => i.id)).not.toContain('ember-heart');
   });
 
   it('equips an owned item', () => {

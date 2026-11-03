@@ -3,6 +3,7 @@
 // id in useEventChoice (src/composables).
 
 import type { HeroClass } from './character';
+import { offerableChallenges } from './challenges';
 import { TUNING } from './constants/tuning';
 import { healingAllowed, rerollDamageType } from './habits';
 import { availableRelics, doublableItems, equippedDoubledItemIds, unownedDroppableItems } from './items';
@@ -35,7 +36,7 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: 'Earn a rare and powerful item.',
     minLevel: 1,
     oneTime: false,
-    isEligible: (character, _habits, quests) => questsOpen(character) && availableRelics(character, quests).length > 0,
+    isEligible: (character) => questsOpen(character) && offerableChallenges(character).length > 0 && availableRelics(character).length > 0,
   },
   {
     id: 'special',
@@ -168,11 +169,12 @@ export function recordSideQuestOffer(character: Character, offered: readonly Eve
   return { ...character, sideQuestPicksMissed: missed };
 }
 
-/** Records a pick: marks a one-time event as taken and spends one pending pick. */
+/** Records a pick: marks a one-time event as taken, spends one pending pick and drops the offered challenge. */
 export function consumeEventPick(character: Character, id: EventId): Character {
   const taken = character.takenEventIds ?? [];
   return {
     ...character,
+    offeredChallengeId: undefined,
     takenEventIds: getEventDef(id).oneTime && !taken.includes(id) ? [...taken, id] : taken,
     pendingEventPicks: Math.max(0, (character.pendingEventPicks ?? 0) - 1),
   };
