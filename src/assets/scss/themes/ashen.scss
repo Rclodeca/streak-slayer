@@ -1612,8 +1612,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // The level-up pick's side card (Rim): a brass rim round the card, a
-  // brass-ringed socket, a small brass caption, and the hidden gift at the
-  // right edge.
+  // brass-ringed socket, a small brass caption, and the challenge name in
+  // brass at the head of the deed line.
   .cards > button.card.side {
     box-shadow:
       inset 2px 2px 0 var(--card-hi),
@@ -1633,11 +1633,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
   }
 
-  button.card .side-gift {
-    @include hidden-gift;
+  button.card .side-name {
+    font-weight: 800;
+    color: $brass;
   }
 
-  button.card .side-gift .mark,
   .challenge .challenge-gift .mark {
     font-size: 1.1rem;
   }

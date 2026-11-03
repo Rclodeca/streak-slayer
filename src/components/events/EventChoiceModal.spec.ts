@@ -48,7 +48,7 @@ describe('EventChoiceModal side-quest card', () => {
     return wrapper;
   }
 
-  it('names the challenge, its deed and a gift "?" on the side card', async () => {
+  it('offers a rare item for a challenge, naming the challenge and its deed', async () => {
     await mountModal();
     const characterStore = useCharacterStore();
     const def = getChallengeDef(characterStore.character.offeredChallengeId!);
@@ -56,10 +56,10 @@ describe('EventChoiceModal side-quest card', () => {
     const card = q('.card.side');
     expect(card).not.toBeNull();
     expect(card!.textContent).toContain(def.name);
-    expect(card!.textContent).toContain(def.deed);
+    expect(card!.textContent).toContain(def.deed.charAt(0).toLowerCase() + def.deed.slice(1));
     expect(card!.textContent).toContain('Side quest');
+    expect(card!.querySelector('.card-title')?.textContent).toBe('Complete a challenge for a rare item');
     expect(card!.querySelector('.side-socket')).not.toBeNull();
-    expect(card!.querySelector('.side-gift')?.textContent).toContain('?');
   });
 
   it('tapping it takes the challenge, with no form step', async () => {
@@ -80,6 +80,6 @@ describe('EventChoiceModal side-quest card', () => {
     await mountModal();
     const cards = [...document.body.querySelectorAll('.cards .card')];
     expect(cards.filter((c) => c.classList.contains('side'))).toHaveLength(1);
-    for (const card of cards.filter((c) => !c.classList.contains('side'))) expect(card.querySelector('.side-gift')).toBeNull();
+    for (const card of cards.filter((c) => !c.classList.contains('side'))) expect(card.querySelector('.side-name')).toBeNull();
   });
 });

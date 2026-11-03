@@ -67,6 +67,11 @@ const subtitle = computed(() => {
   return pending.value > 1 ? `Choose 1 event · ${pending.value} picks waiting` : 'Choose 1 event';
 });
 
+/** The deed follows "Name:" on the side card, so it starts lower case. */
+function deedLower(deed: string) {
+  return deed.charAt(0).toLowerCase() + deed.slice(1);
+}
+
 function onPick(id: EventId) {
   if (id === 'side-quest') chooseSideQuest();
   else if (id === 'reroll-skill') {
@@ -110,10 +115,9 @@ function onPick(id: EventId) {
           <span class="side-socket"><component :is="challengeIcon(offeredChallenge.icon)" :size="22" /></span>
           <span class="card-text">
             <small class="side-caption">Side quest</small>
-            <strong class="card-title">{{ offeredChallenge.name }}</strong>
-            <span class="card-desc">{{ offeredChallenge.deed }}</span>
+            <strong class="card-title">Complete a challenge for a rare item</strong>
+            <span class="card-desc"><b class="side-name">{{ offeredChallenge.name }}:</b> {{ deedLower(offeredChallenge.deed) }}</span>
           </span>
-          <span class="side-gift" role="img" aria-label="An unknown item"><StatIcon name="gift" :size="20" /><span class="mark">?</span></span>
         </template>
         <template v-else>
           <StatIcon :name="EVENT_ICON[event.id]" :size="22" class="icon" />
@@ -264,14 +268,6 @@ function onPick(id: EventId) {
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.side-gift {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-  margin-left: auto;
-  flex: none;
 }
 
 .habit-group {
