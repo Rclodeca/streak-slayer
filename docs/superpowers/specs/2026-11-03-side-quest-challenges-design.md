@@ -46,7 +46,7 @@ Side quests become **optional in-game challenges**, like side quests in an RPG: 
 
 - The moment a challenge's condition is met it completes on its own: no claim button. The reserved relic is granted through the same path a finished side quest uses today (`characterStore.grantItem` → the item drop / equip popup), and recorded with `recordRelicEarned`.
 - The relic stays hidden until then. The active card shows only a gift with "?"; once earned, the card shows the relic's name. (The reveal popup already states plainly what the item does.)
-- Completion pays the relic only, no EXP (as side quests do today).
+- Completion pays the relic **and EXP like a regular quest** (user's decision). My calls on the details: it pays as a medium quest at the current weekly slot (`questRewardExp(character, 'medium', completedThisWeek)`, so Scroll of Oaths doubles it too), but it **doesn't use up a weekly slot**, so finishing a challenge never lowers what the player's real quests pay that week. Shown with the usual EXP feedback.
 
 ### Where they live — Quests section, "Main | Side" tabs
 
@@ -64,7 +64,7 @@ Side quests become **optional in-game challenges**, like side quests in an RPG: 
 ### Removing the old side quest
 
 - Side quests no longer create `Quest` records with `kind: 'side'`. Remove the side-quest form path, the due-date / overdue / forfeit logic for side quests, and the side styling in the quest list.
-- Existing saves don't matter (the game is in testing); no migration needed for old side-quest records — dropping them is fine.
+- Any existing `kind: 'side'` quest in a save converts to a regular quest on load (user's decision): `kind` becomes `'regular'` and `rewardItemId` is dropped, so its relic returns to the pool (`availableRelics` stops treating it as promised). It keeps its description, difficulty, due date and overdue/done state, and from then on pays and misses like any regular quest. Make it idempotent, like `migrateQuest`.
 
 ## The 17 challenges
 
