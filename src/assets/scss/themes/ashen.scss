@@ -1416,6 +1416,232 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     cursor: default;
   }
 
+  // ---------- Challenges ----------
+  // Game-side deeds, kept apart from the quests the player writes: two sunk
+  // tabs under the header, brass for the side one, and challenge cards cut
+  // like the quest cards (docs/mockups/pixel-challenges-2.html option C;
+  // pixel-challenges.html, Rim for the level-up card, Cards for the list).
+
+  // A small brass count, as on the Side tab.
+  @mixin brass-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    @include pixel-corners(2px);
+    background: $brass;
+    color: #14161c;
+    @include plain-label($label-sm, 800);
+    line-height: 1;
+  }
+
+  // The prize no one may see yet: a gift and a question mark.
+  @mixin hidden-gift {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--icon-gift);
+    @include name-serif(700);
+    font-size: 1rem;
+  }
+
+  .quest-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 4px;
+    @include sunk-well;
+  }
+
+  .quest-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    background: none;
+    color: var(--spent-text);
+    @include pixel-corners(2px);
+    @include engraved($caps-xs, 0.2em);
+    @include inset-focus;
+
+    &.selected {
+      background: var(--card);
+      color: var(--card-ink);
+      @include bevel(var(--card-hi), var(--card-lo));
+    }
+
+    // Side is brass: dim when it waits, bright with a brass rim when open.
+    &.side {
+      color: color-mix(in srgb, #{$brass} 70%, #000);
+    }
+
+    &.side.selected {
+      color: $brass;
+      box-shadow:
+        inset 2px 2px 0 var(--card-hi),
+        inset -2px -2px 0 var(--card-lo),
+        inset 0 0 0 2px color-mix(in srgb, #{$brass} 55%, #000);
+    }
+  }
+
+  .quest-tab .tab-count {
+    margin: 0;
+    @include brass-count;
+  }
+
+  .challenge-list {
+    margin-top: 0;
+  }
+
+  .challenge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 10px 12px 12px 10px;
+    border-radius: 0;
+    @include lifted-card;
+  }
+
+  .challenge .challenge-socket {
+    align-self: flex-start;
+    width: 42px;
+    height: 42px;
+    color: var(--moon-solid);
+    @include socket(var(--card-hi));
+  }
+
+  .challenge .challenge-body {
+    gap: 6px;
+  }
+
+  .challenge .challenge-name {
+    @include name-serif;
+    font-size: 1.05rem;
+    line-height: 1.2;
+    color: var(--card-ink);
+  }
+
+  .challenge .challenge-deed {
+    @include true-sans(0.84rem);
+    line-height: 1.3;
+    color: var(--text);
+  }
+
+  // The counted ones: a brass bar sunk in a well, "cur / max" on it.
+  .challenge .challenge-progress {
+    position: relative;
+    display: block;
+    height: 14px;
+    @include pixel-corners(2px);
+    background: #090b10;
+    box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo);
+  }
+
+  .challenge .challenge-bar {
+    position: absolute;
+    inset: 2px;
+    height: auto;
+    background: none;
+  }
+
+  .challenge .challenge-bar i {
+    background: $brass;
+    box-shadow:
+      inset 0 2px 0 color-mix(in srgb, #{$brass} 60%, #fff),
+      inset 0 -2px 0 $brass-solid;
+  }
+
+  .challenge .challenge-count {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    @include plain-label(0.7rem, 800);
+    line-height: 1;
+    color: var(--card-ink);
+    text-shadow: 0 0 3px #000, 0 0 2px #000;
+  }
+
+  // The state ones: one brass line.
+  .challenge .challenge-status {
+    @include plain-label($label-sm, 700);
+    color: $brass;
+  }
+
+  .challenge .challenge-gift {
+    align-self: flex-start;
+    @include hidden-gift;
+  }
+
+  // Earned: the card sinks and names what it paid.
+  .challenge.done {
+    --card: var(--struck-card);
+    background: var(--struck-card);
+    @include bevel(var(--struck-hi), var(--struck-lo));
+    opacity: 1;
+  }
+
+  .challenge.done :is(.challenge-name, .challenge-deed) {
+    color: var(--struck-ink);
+  }
+
+  .challenge.done .challenge-name {
+    text-decoration-color: rgba(219, 226, 238, 0.3);
+  }
+
+  .challenge.done .challenge-socket {
+    opacity: 0.45;
+  }
+
+  .challenge .challenge-relic {
+    align-self: flex-start;
+    max-width: 38%;
+    @include name-serif(700);
+    font-size: 0.9rem;
+    line-height: 1.15;
+    text-align: right;
+    color: $brass;
+  }
+
+  // The level-up pick's side card (Rim): a brass rim round the card, a
+  // brass-ringed socket, a small brass caption, and the hidden gift at the
+  // right edge.
+  .cards > button.card.side {
+    box-shadow:
+      inset 2px 2px 0 var(--card-hi),
+      inset -2px -2px 0 var(--card-lo),
+      inset 0 0 0 3px color-mix(in srgb, #{$brass} 55%, #000);
+  }
+
+  button.card .side-socket {
+    width: 46px;
+    height: 46px;
+    color: $brass;
+    @include socket($brass);
+  }
+
+  button.card .side-caption {
+    @include engraved(0.6rem, 0.24em);
+    color: $brass;
+  }
+
+  button.card .side-gift {
+    @include hidden-gift;
+  }
+
+  button.card .side-gift .mark,
+  .challenge .challenge-gift .mark {
+    font-size: 1.1rem;
+  }
+
   // The quest popup (docs/mockups/pixel-quests.html, Plates): the deed in a
   // sunk well, with the due date and the reward as two plates beneath.
   .quest-detail .deed-well {
@@ -1469,15 +1695,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .quest-detail .reward {
     gap: 7px;
     color: var(--icon-exp);
-  }
-
-  .quest-detail .reward.gift {
-    color: var(--icon-gift);
-  }
-
-  .quest-detail .reward .mark {
-    @include name-serif(700);
-    font-size: 1.15rem;
   }
 
   .quest-detail .reward small {
