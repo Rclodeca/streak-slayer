@@ -181,7 +181,7 @@ export {
   migrateQuestUnlock,
   questMissDamage,
   questRewardExp,
-  questRewardTier,
+  questOverdueExp,
   questsOpen,
   questSlotExp,
   questUnlockPending,

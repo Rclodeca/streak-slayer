@@ -11,7 +11,7 @@ import {
   migrateQuestUnlock,
   questMissDamage,
   questRewardExp,
-  questRewardTier,
+  questOverdueExp,
   questsOpen,
   questSlotExp,
   questUnlockPending,
@@ -148,11 +148,15 @@ describe('weekly counter', () => {
   });
 });
 
-describe('questRewardTier', () => {
-  it('maps difficulty to a vague tier', () => {
-    expect(questRewardTier('easy')).toBe('Small');
-    expect(questRewardTier('medium')).toBe('Medium');
-    expect(questRewardTier('hard')).toBe('Large');
+describe('questOverdueExp', () => {
+  it('pays half the next slot, whatever the difficulty', () => {
+    const character = createCharacter(createRng(1));
+    expect(questOverdueExp(character, 'hard', 0)).toBeCloseTo(questRewardExp(character, 'hard', 0) / 2, 10);
+    expect(questOverdueExp(character, 'easy', 3)).toBeCloseTo(questRewardExp(character, 'easy', 3) / 2, 10);
+  });
+
+  it('pays nothing once the week\'s slots are used up', () => {
+    expect(questOverdueExp(createCharacter(createRng(1)), 'medium', 20)).toBe(0);
   });
 });
 

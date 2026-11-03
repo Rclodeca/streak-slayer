@@ -318,7 +318,7 @@ describe('useDailyRollover — quests', () => {
     useDailyRollover(now);
 
     expect(useQuestMissGate().misses.value).toEqual([
-      { questId: quest.id, description: 'Clean garage', dueDateKey: yesterday, difficulty: 'medium', kind: 'regular', rewardText: 'Medium EXP' },
+      { questId: quest.id, description: 'Clean garage', dueDateKey: yesterday, difficulty: 'medium', kind: 'regular', rewardText: 'EXP' },
     ]);
   });
 
@@ -335,6 +335,34 @@ describe('useDailyRollover — quests', () => {
     const [miss] = useQuestMissGate().misses.value;
     expect(miss).toMatchObject({ questId: quest.id, kind: 'side' });
     expect(miss.rewardText).toBe(ITEM_CATALOG.find((i) => i.id === itemId)!.name);
+  });
+
+  it('does not queue a miss again for a quest already overdue', () => {
+    const questStore = useQuestStore();
+    const now = new Date();
+    const yesterday = dailyPeriodKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+    const quest = questStore.addQuest('Clean garage', 'medium', yesterday);
+    questStore.markOverdue(quest.id);
+
+    useDailyRollover(now);
+
+    expect(useQuestMissGate().misses.value).toEqual([]);
+    expect(questStore.quests).toHaveLength(1);
+  });
+
+  it('removes a quest checked off on an earlier day, and keeps one checked off today', () => {
+    const questStore = useQuestStore();
+    const now = new Date();
+    const yesterday = dailyPeriodKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+    const old = questStore.addQuest('Old deed', 'easy', yesterday);
+    const fresh = questStore.addQuest('Fresh deed', 'easy', '2099-01-01');
+    questStore.markDone(old.id, yesterday);
+    questStore.markDone(fresh.id, dailyPeriodKey(now));
+
+    useDailyRollover(now);
+
+    expect(questStore.quests.map((q) => q.id)).toEqual([fresh.id]);
+    expect(useQuestMissGate().misses.value).toEqual([]); // a checked-off quest past its due date is no miss
   });
 
   it('does not queue a miss for a quest due exactly today', () => {

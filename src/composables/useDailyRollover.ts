@@ -99,8 +99,10 @@ export function useDailyRollover(now: Date = new Date()): void {
     if (regen.healed > 0) useActivityLogStore().addEntry({ kind: 'item-heal', itemName: 'Ember Heart', amount: regen.healed });
   }
 
+  // A quest checked off on an earlier day leaves with the turn of the day; one already overdue took its hit.
+  questStore.clearDone(todayKey);
   for (const quest of questStore.quests) {
-    if (daysBetweenDayKeys(quest.dueDateKey, todayKey) > 0) {
+    if (!quest.overdue && !quest.doneDayKey && daysBetweenDayKeys(quest.dueDateKey, todayKey) > 0) {
       queueQuestMiss(quest);
     }
   }

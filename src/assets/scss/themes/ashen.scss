@@ -1382,31 +1382,128 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     gap: 3px;
   }
 
-  // The reward: its icon over its label, in gold (a side quest's gift in its own).
-  .reward-exp {
-    isolation: isolate;
-    width: auto;
-    padding-right: 6px;
-    gap: 1px;
-    @include plain-label(0.72rem, 700);
+  // A side quest wears a folded brass corner (docs/mockups/pixel-quests.html).
+  .quest-item {
+    position: relative;
+  }
+
+  .quest-item.side::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    background: linear-gradient(225deg, $brass 50%, transparent 50%);
+    pointer-events: none;
+  }
+
+  // Overdue: the due words burn red.
+  .quest-item.urgent .due {
+    color: color-mix(in srgb, var(--damage-color) 72%, #fff);
+  }
+
+  // Checked off: the card drops dark and flat like a struck skill, and stays
+  // until the day turns.
+  .quest-item.done {
+    --card-bg: var(--struck-card);
+    @include bevel(var(--struck-hi), var(--struck-lo));
+  }
+
+  .quest-item.done :is(.description, .due) {
+    color: var(--struck-ink);
+  }
+
+  .quest-item.done .pips {
+    opacity: 0.45;
+  }
+
+  .quest-item.done .description {
+    text-decoration: line-through;
+    text-decoration-color: rgba(219, 226, 238, 0.3);
+  }
+
+  .quest-item.done.side::after {
+    opacity: 0.4;
+  }
+
+  .quest-item .check:disabled {
+    cursor: default;
+  }
+
+  // The quest popup (docs/mockups/pixel-quests.html, Plates): the deed in a
+  // sunk well, with the due date and the reward as two plates beneath.
+  .quest-detail .deed-well {
+    padding: 14px 14px 15px;
+    @include sunk-well;
+  }
+
+  .quest-detail .deed {
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    color: var(--card-ink);
+  }
+
+  .quest-detail.side .deed-well {
+    box-shadow:
+      inset 2px 2px 0 var(--sunk-hi),
+      inset -2px -2px 0 var(--sunk-lo),
+      inset 4px 0 0 $brass;
+  }
+
+  .quest-detail .plate {
+    min-height: 76px;
+    padding: 11px 12px 12px;
+    gap: 8px;
+    border: 0;
+    background: rgba(0, 0, 0, 0.35);
+    @include pixel-corners(3px);
+    @include bevel(var(--sunk-hi), var(--sunk-lo));
+  }
+
+  .quest-detail .plate-label {
+    @include engraved($caps-xs, 0.24em);
+  }
+
+  .quest-detail .due-line {
+    @include plain-label($label-lg, 700);
+    color: var(--text-h);
+  }
+
+  .quest-detail .due-line small {
+    @include plain-label($label-sm, 700);
+    color: var(--text);
+  }
+
+  .quest-detail .due-line.soon small {
+    color: var(--soon-color);
+  }
+
+  .quest-detail .due-line.urgent small {
+    color: color-mix(in srgb, var(--damage-color) 72%, #fff);
+  }
+
+  .quest-detail .due-date svg {
+    color: var(--accent);
+  }
+
+  .quest-detail .reward {
+    gap: 7px;
     color: var(--icon-exp);
   }
 
-  .quest-item.side .reward-exp {
+  .quest-detail .reward.gift {
     color: var(--icon-gift);
   }
 
-  .reward-exp .stat-icon {
-    position: relative;
-    color: inherit;
+  .quest-detail .reward .mark {
+    @include name-serif(700);
+    font-size: 1.15rem;
   }
 
-  .reward-exp .stat-icon::before {
-    content: '';
-    position: absolute;
-    inset: -12px;
-    z-index: -1;
-    background: radial-gradient(circle, rgba(230, 199, 127, 0.22), transparent 65%);
+  .quest-detail .reward small {
+    @include plain-label($label-sm, 700);
   }
 
   // ---------- Log ----------

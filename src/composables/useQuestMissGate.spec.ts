@@ -39,7 +39,7 @@ describe('useQuestMissGate', () => {
         dueDateKey: '2026-01-01',
         difficulty: 'medium',
         kind: 'regular',
-        rewardText: 'Medium EXP',
+        rewardText: 'EXP',
       },
     ]);
   });
@@ -56,7 +56,7 @@ describe('useQuestMissGate', () => {
     useQuestMissGate().acknowledge();
 
     expect(characterStore.character.currentHealth).toBeLessThan(healthBefore);
-    expect(questStore.quests).toEqual([]);
+    expect(questStore.quests).toEqual([{ ...quest, overdue: true }]); // the quest stays, flagged overdue
     expect(useQuestMissGate().misses.value).toEqual([]);
   });
 
@@ -92,7 +92,7 @@ describe('useQuestMissGate', () => {
 
     expect(characterStore.character.currentHealth).toBe(healthBefore); // no penalty applied
     expect(characterStore.character.exp).toBeGreaterThan(expBefore); // reward applied instead
-    expect(questStore.quests).toEqual([]);
+    expect(questStore.quests).toEqual([{ ...quest, doneDayKey: dailyPeriodKey(new Date()) }]); // checked off, not overdue
   });
 
   it('isOverridden reflects toggleOverride, and acknowledge clears overrides for the next round', () => {

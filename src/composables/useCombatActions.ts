@@ -50,6 +50,7 @@ import {
   PERSONALITY_NAME,
   pickRandom,
   questMissDamage,
+  questOverdueExp,
   questRewardExp,
   questWeekFor,
   recordQuestCompletion,
@@ -539,20 +540,25 @@ export function useCombatActions() {
   /**
    * Completes a quest — used both for an on-time checkbox tap (QuestSection)
    * and an "I actually did this" override from the missed-deadline gate (see
-   * useQuestMissGate); the two cases resolve identically.
+   * useQuestMissGate); the two cases resolve identically. A quest already
+   * checked off is left alone (null).
    *
    * Regular: grants the weekly-curve EXP for the next slot (questRewardExp, at
    * the level held right now), bumps this calendar week's completion count,
    * and resolves any level-ups. Side: grants its reward item through the item
    * drop popup and nothing else — no EXP, and the weekly count is untouched.
-   * Either way it logs a quest-completed entry and removes the quest. Returns
-   * what was paid out (null for an unknown id) so the caller can celebrate it.
+   * An overdue quest (its miss already landed) pays half the next slot's EXP
+   * instead — a side quest too, its relic being forfeit — and takes no slot.
+   * Either way it logs a quest-completed entry and keeps the quest, checked
+   * off for today (the rollover removes it). Returns what was paid out (null
+   * for an unknown or already checked id) so the caller can celebrate it.
    */
   function completeQuest(questId: string): { amount: number; item: ItemDef | null } | null {
     const quest = questStore.quests.find((q) => q.id === questId);
-    if (!quest) return null;
+    if (!quest || quest.doneDayKey) return null;
+    const dayKey = dailyPeriodKey(debugClockStore.now());
 
-    if (quest.kind === 'side') {
+    if (quest.kind === 'side' && !quest.overdue) {
       // A side quest from before relics may promise an item that has since
       // dropped from a boss (nothing kept it out of the drop pool anymore);
       // pay an available relic instead so the deed is never unrewarded.
@@ -561,29 +567,32 @@ export function useCombatActions() {
       const item = promised ?? (fallback.length > 0 ? characterStore.grantItem(fallback[Math.floor(rng() * fallback.length)].id) : null);
       if (item) enqueueDrops([item]);
       activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount: 0, itemName: item?.name });
-      questStore.removeQuest(questId);
+      questStore.markDone(questId, dayKey);
       return { amount: 0, item };
     }
 
     const weekKey = weeklyPeriodKey(debugClockStore.now());
     const beforeLevelUp = characterStore.character;
     const week = questWeekFor(beforeLevelUp.questWeek, weekKey);
-    const amount = questRewardExp(beforeLevelUp, quest.difficulty, week.completed);
+    const amount = quest.overdue
+      ? questOverdueExp(beforeLevelUp, quest.difficulty, week.completed)
+      : questRewardExp(beforeLevelUp, quest.difficulty, week.completed);
     const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, amount);
     logLevelUpIfAny(beforeLevelUp, character);
-    characterStore.setCharacter({ ...character, questWeek: recordQuestCompletion(beforeLevelUp.questWeek, weekKey) });
+    characterStore.setCharacter(quest.overdue ? character : { ...character, questWeek: recordQuestCompletion(beforeLevelUp.questWeek, weekKey) });
     grantEventPicks(levelsGained);
 
     activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount });
-    questStore.removeQuest(questId);
+    questStore.markDone(questId, dayKey);
     return { amount, item: null };
   }
 
   /**
    * Resolves a quest's missed due date (not overridden): applies
    * questMissDamage to the character, checks for death (Phoenix Feather
-   * revive, same as applyPenalty), logs a quest-failed entry, and removes it
-   * from the quest store. Called only from useQuestMissGate.acknowledge()
+   * revive, same as applyPenalty), logs a quest-failed entry, and flags the
+   * quest overdue — it stays in the list, still finishable for half EXP. Called
+   * only from useQuestMissGate.acknowledge()
    * for a quest the player didn't flag as "I actually did this".
    */
   function failQuest(questId: string): void {
@@ -597,7 +606,7 @@ export function useCombatActions() {
     playHit({ kind: 'hurt', amount: healthBefore - newHealth, hp: newHealth - healthBefore });
 
     activityLogStore.addEntry({ kind: 'quest-failed', description: quest.description, amount });
-    questStore.removeQuest(questId);
+    questStore.markOverdue(questId);
 
     if (Math.round(newHealth) <= 0) {
       const reviveResult = reviveWithFeatherIfEquipped(characterStore.character);

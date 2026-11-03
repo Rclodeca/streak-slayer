@@ -22,6 +22,26 @@ export const useQuestStore = defineStore('quest', {
       return quest;
     },
 
+    /** Checks a quest off for `dayKey`: it stays in the list, checked, until clearDone runs on a later day. */
+    markDone(id: string, dayKey: string) {
+      this.quests = this.quests.map((quest) => (quest.id === id ? { ...quest, doneDayKey: dayKey } : quest));
+    },
+
+    /** Flags a quest overdue once its miss has landed; a side quest forfeits its relic, which returns to the pool. */
+    markOverdue(id: string) {
+      this.quests = this.quests.map((quest) => {
+        if (quest.id !== id) return quest;
+        const overdue: Quest = { ...quest, overdue: true };
+        delete overdue.rewardItemId;
+        return overdue;
+      });
+    },
+
+    /** Removes every quest checked off on a day before `todayKey`. */
+    clearDone(todayKey: string) {
+      this.quests = this.quests.filter((quest) => quest.doneDayKey === undefined || quest.doneDayKey >= todayKey);
+    },
+
     /** Removes a quest by id, e.g. once it's been completed or failed. */
     removeQuest(id: string) {
       this.quests = this.quests.filter((quest) => quest.id !== id);

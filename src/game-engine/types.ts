@@ -275,7 +275,9 @@ export interface Quest {
   description: string; // free-text one-time task, player-authored
   difficulty: Difficulty;
   dueDateKey: string; // YYYY-MM-DD — same format as dailyPeriodKey; required for every quest
-  rewardItemId?: string; // side quests only: the item granted on completion
+  rewardItemId?: string; // side quests only: the item granted on completion; dropped once the quest goes overdue
+  overdue?: boolean; // the due date passed and the miss landed; the quest stays, and pays half EXP if still finished
+  doneDayKey?: string; // dailyPeriodKey of the day it was checked off; it stays checked until the day turns, then is removed
 }
 
 /** Regular-quest completions in one calendar week — see questSlotExp in quests.ts. */

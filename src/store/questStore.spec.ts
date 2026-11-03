@@ -57,4 +57,30 @@ describe('questStore', () => {
     store.removeQuest(a.id);
     expect(store.quests).toEqual([b]);
   });
+
+  it('markDone stamps the day and keeps the quest', () => {
+    const store = useQuestStore();
+    const quest = store.addQuest('Clean garage', 'easy', '2026-02-01');
+    store.markDone(quest.id, '2026-01-30');
+    expect(store.quests).toEqual([{ ...quest, doneDayKey: '2026-01-30' }]);
+  });
+
+  it('markOverdue flags the quest and a side quest forfeits its relic', () => {
+    const store = useQuestStore();
+    const quest = store.addQuest('Slay it', 'medium', '2026-02-01', 'side', 'dragons-heart');
+    store.markOverdue(quest.id);
+    expect(store.quests[0]).toMatchObject({ id: quest.id, kind: 'side', overdue: true });
+    expect(store.quests[0].rewardItemId).toBeUndefined();
+  });
+
+  it('clearDone removes only quests checked off before today', () => {
+    const store = useQuestStore();
+    const past = store.addQuest('Past', 'easy', '2026-02-01');
+    const today = store.addQuest('Today', 'easy', '2026-02-01');
+    const open = store.addQuest('Open', 'easy', '2026-02-01');
+    store.markDone(past.id, '2026-01-29');
+    store.markDone(today.id, '2026-01-30');
+    store.clearDone('2026-01-30');
+    expect(store.quests.map((q) => q.id)).toEqual([today.id, open.id]);
+  });
 });

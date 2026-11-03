@@ -82,6 +82,11 @@ export function questRewardExp(character: Character, difficulty: Difficulty, com
   return hasItemEffect(character, 'quill-of-oaths') ? exp * TUNING.ITEM_EFFECTS.QUILL_EXP_MULTIPLIER : exp;
 }
 
+/** EXP for finishing an overdue quest: the next slot's pay at `QUEST_OVERDUE_EXP_FRACTION`, for a side quest too (its relic is forfeit). */
+export function questOverdueExp(character: Character, difficulty: Difficulty, completedThisWeek: number): number {
+  return questRewardExp(character, difficulty, completedThisWeek) * TUNING.QUEST_OVERDUE_EXP_FRACTION;
+}
+
 /** The week counter as of `weekKey`: a stale (or missing) counter starts over at 0. */
 export function questWeekFor(questWeek: QuestWeek | undefined, weekKey: string): QuestWeek {
   return questWeek && questWeek.weekKey === weekKey ? questWeek : { weekKey, completed: 0 };
@@ -91,11 +96,6 @@ export function questWeekFor(questWeek: QuestWeek | undefined, weekKey: string):
 export function recordQuestCompletion(questWeek: QuestWeek | undefined, weekKey: string): QuestWeek {
   const current = questWeekFor(questWeek, weekKey);
   return { weekKey, completed: current.completed + 1 };
-}
-
-/** Vague player-facing reward tier — the exact EXP depends on the week's slot, so it's never shown. */
-export function questRewardTier(difficulty: Difficulty): 'Small' | 'Medium' | 'Large' {
-  return difficulty === 'easy' ? 'Small' : difficulty === 'medium' ? 'Medium' : 'Large';
 }
 
 /**

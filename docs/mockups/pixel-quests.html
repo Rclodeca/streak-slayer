@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut quests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Quest cards (no +EXP / +Item column) and the quest detail popup, in Pixel-cut (Moonlit).
+   Same quests and order as QuestSection.vue: soonest due first. Tap a box to strike a quest. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 640px; }
+.band { text-align: center; font: 600 12px 'Cinzel', serif; letter-spacing: .3em; color: #ece8de; margin: 38px 0 18px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.08); text-transform: uppercase; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+button, input { font: inherit; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --soon: #d49a46; --gift: #c8a96e;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --done: #3c4352; --done-line: #566074;
+  --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-name: #5b606b;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --sunk: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b;
+  --lifted: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  position: relative; width: 390px; background: radial-gradient(70% 22% at 72% 4%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone.sec-phone { padding: 22px 0 30px; }
+svg.i { width: 14px; height: 14px; flex: none; }
+
+/* ---------- Section (as in pixel-periods, Quests) ---------- */
+.sec { --sp: var(--brass); position: relative; margin: 0 12px 0 18px; padding-left: 14px; }
+.sec::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 6px; width: 3px; background: var(--sp); opacity: .5; }
+.shead { position: relative; display: flex; justify-content: space-between; align-items: center; height: 44px; margin-bottom: 4px; padding: 0 2px; }
+.shead::before { content: ''; position: absolute; left: -17px; top: 50%; width: 9px; height: 9px; margin-top: -5px; background: var(--sp); box-shadow: 0 0 0 3px var(--bg); }
+.shead h2 { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.shead h2 svg { width: 16px; height: 16px; color: var(--brass); }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+.cap { margin: 0 2px 9px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); text-transform: uppercase; }
+
+/* ---------- Quest card base ---------- */
+.q { position: relative; display: flex; align-items: center; gap: 6px; min-height: 56px; padding: 6px 10px 6px 4px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.qchk { position: relative; flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qchk input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.qchk i { width: 20px; height: 20px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); pointer-events: none; }
+.qchk svg { width: 14px; height: 14px; opacity: 0; color: var(--touch); }
+.qchk input:checked + i { background: var(--done); border-color: var(--done-line); }
+.qchk input:checked + i svg { opacity: 1; }
+.body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.qn { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qm { display: flex; align-items: center; gap: 7px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qm em { font-style: normal; }
+.pips { display: inline-flex; gap: 3px; }
+.pips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.pips i.lit { background: var(--brass); }
+.q.soon .due { color: var(--soon); }
+.q.urgent .due { color: color-mix(in srgb, var(--bad) 72%, #fff); }
+.q.done { background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.q.done .qn { color: var(--s-name); text-decoration: line-through; text-decoration-color: rgba(219,226,238,.3); }
+.q.done .qm, .q.done .plate, .q.done .gauge { opacity: .45; }
+
+/* ======================= A · Plain ======================= */
+/* Name, then pips and the due words. A side quest gets a brass spine. */
+.o-a .q.side { box-shadow: var(--lifted), inset 4px 0 0 var(--brass); }
+.o-a .q.side.done { box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo), inset 4px 0 0 #5b5440; }
+
+/* ======================= B · Countdown ======================= */
+/* Pips stay under the name; the days left move to a plate on the right.
+   A side quest gets a brass rim. */
+.o-b .plate { flex: none; width: 56px; height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  clip-path: var(--px2); background: #0d1017; box-shadow: var(--sunk); }
+.o-b .plate b { font: 700 19px/1 'Alegreya', Georgia, serif; color: var(--ink); }
+.o-b .plate small { font: 700 10px/1 'Alegreya Sans', sans-serif; letter-spacing: .06em; color: var(--dim); text-transform: uppercase; }
+.o-b .q.soon .plate b { color: var(--soon); }
+.o-b .q.urgent .plate { box-shadow: var(--sunk), inset 0 0 0 2px color-mix(in srgb, var(--bad) 70%, #000); }
+.o-b .q.urgent .plate b { font-size: 14px; color: color-mix(in srgb, var(--bad) 72%, #fff); }
+.o-b .q.side { box-shadow: var(--lifted), inset 0 0 0 3px #7c6a3f; }
+.o-b .q.side.done { box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo), inset 0 0 0 3px #3a3526; }
+
+/* ======================= C · Gauge ======================= */
+/* Difficulty is a three-step gauge down the card's edge, so the text line is just the due words.
+   A side quest gets a folded brass corner. */
+.o-c .q { padding-left: 14px; }
+.o-c .gauge { position: absolute; left: 0; top: 0; bottom: 3px; width: 8px; display: flex; flex-direction: column-reverse; gap: 2px; padding: 5px 0 5px 3px; }
+.o-c .gauge i { flex: 1; background: #0d1017; }
+.o-c .gauge i.lit { background: var(--brass); }
+.o-c .q.side::after { content: ''; position: absolute; right: 0; top: 0; width: 16px; height: 16px; background: linear-gradient(225deg, var(--brass) 50%, transparent 50%); }
+.o-c .qchk { margin-left: -6px; }
+.o-c .qm { font-size: 12.5px; }
+.o-c .due-ic { width: 12px; height: 12px; }
+
+/* ---------- Popup chrome (as in pixel-forms) ---------- */
+.mphone { padding: 54px 10px 28px; }
+.mphone::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; z-index: 0; }
+.mphone > * { position: relative; z-index: 1; }
+.mphone + .mphone { margin-top: 18px; }
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 16px; }
+.mhead { display: flex; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; flex: 1; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.mhead.side h3 { color: var(--brass); }
+.close { width: 40px; height: 40px; margin-right: -4px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.06); border: 1px solid rgba(219,226,238,.25); color: var(--touch); }
+.close svg { width: 16px; height: 16px; }
+.lbl { display: block; margin: 0 0 7px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.deed { font: 600 21px/1.2 'Alegreya', Georgia, serif; color: var(--ink); overflow-wrap: anywhere; }
+.pips.lg { gap: 4px; } .pips.lg i { width: 9px; height: 9px; }
+.rwd { display: inline-flex; align-items: center; gap: 7px; color: var(--exp); }
+.rwd svg { width: 20px; height: 20px; }
+.rwd.gift { color: var(--gift); }
+.rwd .q-mark { font: 700 18px 'Alegreya', Georgia, serif; }
+.dueline { display: flex; align-items: baseline; gap: 8px; font: 700 14px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.dueline small { font-size: 12.5px; color: var(--text); }
+.dueline.soon small { color: var(--soon); } .dueline.urgent small { color: color-mix(in srgb, var(--bad) 72%, #fff); }
+
+/* M-A · Plates: deed in a sunk well; due and reward as two plates */
+.m-a .well { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); padding: 14px 14px 15px; }
+.m-a .plates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.m-a .pl { clip-path: var(--px); background: #090b10; box-shadow: var(--sunk); padding: 11px 12px 12px; display: flex; flex-direction: column; gap: 8px; min-height: 76px; }
+.m-a .pl .lbl { margin: 0; }
+.m-a .pl .dueline { flex-direction: column; gap: 2px; align-items: flex-start; }
+
+/* M-B · Socket: the reward sits in a lit socket like an item frame, deed beside it */
+.m-b .top { display: flex; gap: 12px; align-items: stretch; }
+.m-b .sock { flex: none; width: 92px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px 6px;
+  --r: #6e5a2a; clip-path: var(--px); background: radial-gradient(circle, rgba(217,169,60,.2), #07090d 75%); box-shadow: inset 0 0 0 2px var(--r), inset 4px 4px 0 #020305; }
+.m-b .sock svg { width: 34px; height: 34px; color: var(--exp); }
+.m-b .sock.gift { --r: #6d5f3e; background: radial-gradient(circle, rgba(200,169,110,.18), #07090d 75%); }
+.m-b .sock.gift svg { color: var(--gift); }
+.m-b .sock .q-mark { position: absolute; font: 700 20px 'Alegreya', serif; color: #1b1c20; }
+.m-b .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+.m-b .strip { margin-top: 12px; clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); padding: 11px 14px; display: flex; align-items: center; gap: 10px; }
+.m-b .strip svg { width: 18px; height: 18px; color: var(--touch); }
+.m-b .strip .dueline { flex: 1; justify-content: space-between; }
+
+/* M-C · Ledger: one sunk ledger, a line per fact */
+.m-c .deed { margin: 2px 2px 14px; }
+.m-c .ledger { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); padding: 2px 14px; }
+.m-c .line { display: flex; align-items: center; gap: 10px; min-height: 50px; }
+.m-c .line + .line { border-top: 1px solid rgba(255,255,255,.05); }
+.m-c .line .lbl { margin: 0; width: 80px; flex: none; }
+.m-c .line .v { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.m-c .diff { font: 700 14px 'Alegreya Sans', sans-serif; color: var(--ink); }
+
+.note { margin: 8px 4px 0; font-size: 12.5px; color: var(--dim); text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · quests</h1>
+  <p class="lede">The Quests section without the +EXP / +Item column, and the quest popup. No Small / Medium / Large anywhere: difficulty is the brass pips, and the reward is the EXP icon with the same pips, as in the new-quest popup. Tap a box to strike a quest.</p>
+
+  <div class="band">Cards</div>
+  <div class="grid" id="cards"></div>
+
+  <div class="band">Quest popup</div>
+  <div class="grid" id="modals"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const LU = {
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  cal: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+};
+const icon = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LU[n]}</svg>`;
+const pips = (n, cls = '') => `<span class="pips ${cls}">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'lit' : ''}"></i>`).join('')}</span>`;
+
+// Soonest due first. Today is Mon 2 Nov.
+const QUESTS = [
+  { n: 'Pay the electric bill',  p: 1, days: 0, date: 'Mon, Nov 2' },
+  { n: 'Call the dentist',       p: 1, days: 2, date: 'Wed, Nov 4' },
+  { n: 'Clear out the attic',    p: 2, days: 4, date: 'Fri, Nov 6', side: true },
+  { n: 'Finish the tax return',  p: 3, days: 6, date: 'Sun, Nov 8' },
+  { n: 'Renew passport',         p: 2, days: 9, date: 'Wed, Nov 11', done: true },
+];
+const tone = (d) => (d <= 0 ? 'urgent' : d <= 2 ? 'soon' : 'calm');
+const dueText = (d) => (d < 0 ? 'Overdue' : d === 0 ? 'Due today' : d === 1 ? 'Due tomorrow' : `${d} days left`);
+
+const check = (q) => `<label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"${q.done ? ' checked' : ''}><i>${icon('check')}</i></label>`;
+const cls = (q) => `q ${tone(q.days)}${q.side ? ' side' : ''}${q.done ? ' done' : ''}`;
+
+const cardA = (q) => `<li class="${cls(q)}" onclick="">${check(q)}
+  <span class="body"><span class="qn">${q.n}</span><span class="qm">${pips(q.p)}<em class="due">${dueText(q.days)}</em></span></span></li>`;
+const cardB = (q) => `<li class="${cls(q)}">${check(q)}
+  <span class="body"><span class="qn">${q.n}</span><span class="qm">${pips(q.p)}</span></span>
+  <span class="plate">${q.days <= 0 ? '<b>Today</b>' : `<b>${q.days}</b><small>days</small>`}</span></li>`;
+const cardC = (q) => `<li class="${cls(q)}"><span class="gauge">${[1, 2, 3].map((k) => `<i class="${k <= q.p ? 'lit' : ''}"></i>`).join('')}</span>${check(q)}
+  <span class="body"><span class="qn">${q.n}</span><span class="qm"><em class="due">${dueText(q.days)}</em></span></span></li>`;
+
+const section = (card) => `<div class="phone sec-phone"><section class="sec">
+  <div class="shead"><h2>${icon('quest')}Quests</h2><button class="add" type="button">+ New quest</button></div>
+  <p class="cap">One-off tasks</p>
+  <ul>${QUESTS.map(card).join('')}</ul></section></div>`;
+
+const CARDS = [
+  { k: 'a', tag: 'Option A', n: 'Plain', d: 'Name, then the pips and the due words. The simplest card. A side quest gets a brass spine down its left edge, so you can tell it apart without naming its prize.', f: cardA },
+  { k: 'b', tag: 'Option B', n: 'Countdown', d: 'The pips stay under the name and the days left move to a plate on the right, where the old reward sat. Today turns red-rimmed. A side quest gets a brass rim.', f: cardB },
+  { k: 'c', tag: 'Option C', n: 'Gauge', d: 'Difficulty becomes a three-step brass gauge on the card\'s left edge; the text line is only the due words. A side quest gets a folded brass corner.', f: cardC },
+];
+document.getElementById('cards').innerHTML = CARDS.map((o) => `<div class="col o-${o.k}">
+  <div class="tag">${o.tag}</div><h2>${o.n}</h2><p>${o.d}</p>${section(o.f)}</div>`).join('');
+
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.qchk input')) e.target.closest('.q').classList.toggle('done', e.target.checked);
+});
+
+// ---------- Popups ----------
+const POP = [
+  { n: 'Call the dentist', p: 1, days: 2, date: 'Wed, Nov 4', side: false },
+  { n: 'Clear out the attic', p: 2, days: 0, date: 'Mon, Nov 2', side: true },
+];
+const head = (q) => `<div class="mhead${q.side ? ' side' : ''}"><h3>${q.side ? 'Side quest' : 'Quest'}</h3><span class="close">${icon('x')}</span></div>`;
+const reward = (q) => q.side
+  ? `<span class="rwd gift">${icon('gift')}<span class="q-mark">?</span></span>`
+  : `<span class="rwd">${icon('exp')}${pips(q.p, 'lg')}</span>`;
+const dueRel = (q) => (q.days <= 0 ? 'Today' : q.days === 1 ? 'Tomorrow' : `${q.days} days left`);
+const dueLine = (q) => `<span class="dueline ${tone(q.days)}">${q.date}<small>${dueRel(q)}</small></span>`;
+
+const popA = (q) => `<div class="modal">${head(q)}
+  <div class="well"><div class="deed">${q.n}</div></div>
+  <div class="plates">
+    <div class="pl"><span class="lbl">Due</span>${dueLine(q)}</div>
+    <div class="pl"><span class="lbl">Reward</span>${reward(q)}</div>
+  </div></div>`;
+
+const popB = (q) => `<div class="modal">${head(q)}
+  <div class="top">
+    <div class="sock${q.side ? ' gift' : ''}">${q.side ? icon('gift') : icon('exp')}${q.side ? '' : pips(q.p, 'lg')}${q.side ? '<span class="lbl" style="margin:0">Unknown</span>' : ''}</div>
+    <div class="info"><div class="deed">${q.n}</div></div>
+  </div>
+  <div class="strip">${icon('cal')}${dueLine(q)}</div></div>`;
+
+const popC = (q) => `<div class="modal">${head(q)}
+  <div class="deed">${q.n}</div>
+  <div class="ledger">
+    <div class="line"><span class="lbl">Due</span><span class="v">${dueLine(q)}</span></div>
+    <div class="line"><span class="lbl">Reward</span><span class="v">${reward(q)}</span></div>
+  </div></div>`;
+
+const POPS = [
+  { k: 'a', tag: 'Option A', n: 'Plates', d: 'The deed sits in a sunk well; the due date and the reward are two plates beneath it. A side quest\'s reward plate is a gift with a question mark.', f: popA },
+  { k: 'b', tag: 'Option B', n: 'Socket', d: 'The reward is a lit socket like the item frames, with the deed beside it and the due date in a strip below. Gold glow for EXP, a dim gift for a side quest\'s hidden item.', f: popB },
+  { k: 'c', tag: 'Option C', n: 'Ledger', d: 'The deed big on top, then one sunk ledger with a line each for the due date and the reward. The quietest and shortest of the three.', f: popC },
+];
+document.getElementById('modals').innerHTML = POPS.map((o) => `<div class="col m-${o.k}">
+  <div class="tag">${o.tag}</div><h2>${o.n}</h2><p>${o.d}</p>
+  ${POP.map((q) => `<div class="phone mphone">${o.f(q)}</div>`).join('')}</div>`).join('');
+</script>
+</body>
+</html>

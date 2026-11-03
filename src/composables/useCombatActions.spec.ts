@@ -668,7 +668,7 @@ describe('useCombatActions', () => {
     expect(result.itemsDropped).toEqual([]);
   });
 
-  it('completeQuest grants the slot-1 weekly-curve EXP, logs quest-completed, and removes the quest', () => {
+  it('completeQuest grants the slot-1 weekly-curve EXP, logs quest-completed, and checks the quest off for today', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
     const { completeQuest } = useCombatActions();
@@ -683,7 +683,7 @@ describe('useCombatActions', () => {
     expect(expected).toBeLessThan(expToNextLevel(level)); // well under one level at level 1
     expect(result).toEqual({ amount: expected, item: null });
     expect(characterStore.character.exp).toBeCloseTo(exp + expected, 10);
-    expect(questStore.quests).toEqual([]);
+    expect(questStore.quests).toEqual([{ ...quest, doneDayKey: dailyPeriodKey(useDebugClockStore().now()) }]);
     expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-completed', description: 'Clean garage', amount: expected });
   });
 
@@ -704,7 +704,7 @@ describe('useCombatActions', () => {
     expect(characterStore.character.questWeek).toEqual({ weekKey: weeklyPeriodKey(useDebugClockStore().now()), completed: 7 });
   });
 
-  it('slot 12 and beyond pays nothing but still completes and clears the quest', () => {
+  it('slot 12 and beyond pays nothing but still completes the quest', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
     const { completeQuest } = useCombatActions();
@@ -715,7 +715,7 @@ describe('useCombatActions', () => {
 
     expect(result?.amount).toBe(0);
     expect(characterStore.character.exp).toBe(expBefore);
-    expect(questStore.quests).toEqual([]);
+    expect(questStore.quests[0].doneDayKey).toBeDefined();
   });
 
   it('a new calendar week starts back at slot 1', () => {
@@ -765,7 +765,7 @@ describe('useCombatActions', () => {
     expect(characterStore.character.questWeek).toBe(questWeek);
     expect(characterStore.character.ownedItemIds).toContain(itemId);
     expect(current.value?.id).toBe(itemId); // goes through the item-drop popup path
-    expect(questStore.quests).toEqual([]);
+    expect(questStore.quests[0].doneDayKey).toBeDefined();
     expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-completed', amount: 0, itemName: result?.item?.name });
     expect(characterStore.character.earnedRelicIds).toEqual([itemId]);
     dismiss();
@@ -817,6 +817,51 @@ describe('useCombatActions', () => {
     expect(availableRelics(characterStore.character, questStore.quests).map((i) => i.id)).toContain(itemId);
   });
 
+  it('completeQuest on an overdue regular quest pays half the next slot and takes none', () => {
+    const characterStore = useCharacterStore();
+    const questStore = useQuestStore();
+    const { completeQuest, failQuest } = useCombatActions();
+    characterStore.character = { ...characterStore.character, level: 20, exp: 0 };
+    const weekKey = weeklyPeriodKey(useDebugClockStore().now());
+    characterStore.character = { ...characterStore.character, questWeek: { weekKey, completed: 2 } };
+
+    const quest = questStore.addQuest('Late one', 'medium', '2026-02-01');
+    failQuest(quest.id);
+    const result = completeQuest(quest.id);
+
+    expect(result).toEqual({ amount: questSlotExp(20, 'medium', 2) / 2, item: null });
+    expect(characterStore.character.questWeek).toEqual({ weekKey, completed: 2 });
+    expect(questStore.quests[0]).toMatchObject({ overdue: true, doneDayKey: dailyPeriodKey(useDebugClockStore().now()) });
+  });
+
+  it('completeQuest on an overdue side quest pays half EXP and no relic', () => {
+    const characterStore = useCharacterStore();
+    const questStore = useQuestStore();
+    const { completeQuest, failQuest } = useCombatActions();
+    characterStore.character = { ...characterStore.character, level: 20, exp: 0 };
+
+    const quest = questStore.addQuest('Slay it', 'hard', '2026-02-01', 'side', 'ember-heart');
+    failQuest(quest.id);
+    const result = completeQuest(quest.id);
+
+    expect(result).toEqual({ amount: questSlotExp(20, 'hard', 0) / 2, item: null });
+    expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
+    expect(characterStore.character.earnedRelicIds ?? []).toEqual([]);
+  });
+
+  it('completeQuest is a no-op for a quest already checked off', () => {
+    const characterStore = useCharacterStore();
+    const questStore = useQuestStore();
+    const { completeQuest } = useCombatActions();
+
+    const quest = questStore.addQuest('Clean garage', 'medium', '2099-01-01');
+    completeQuest(quest.id);
+    const expAfterFirst = characterStore.character.exp;
+
+    expect(completeQuest(quest.id)).toBeNull();
+    expect(characterStore.character.exp).toBe(expAfterFirst);
+  });
+
   it('completeQuest is a no-op for an id that is not in the quest store', () => {
     const characterStore = useCharacterStore();
     const { completeQuest } = useCombatActions();
@@ -827,7 +872,7 @@ describe('useCombatActions', () => {
     expect(characterStore.character.exp).toBe(expBefore);
   });
 
-  it('failQuest damages the character via questMissDamage, logs quest-failed, and removes the quest', () => {
+  it('failQuest damages the character via questMissDamage, logs quest-failed, and flags the quest overdue', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
     const { failQuest } = useCombatActions();
@@ -839,7 +884,7 @@ describe('useCombatActions', () => {
     failQuest(quest.id);
 
     expect(characterStore.character.currentHealth).toBeLessThan(healthBefore);
-    expect(questStore.quests).toEqual([]);
+    expect(questStore.quests).toEqual([{ ...quest, overdue: true }]);
     expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-failed', description: 'Clean garage' });
   });
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Lock, Plus, ScrollText } from 'lucide-vue-next';
-import { dailyPeriodKey, questRewardTier, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
+import { dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
@@ -9,7 +9,6 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
 import Modal from '../ui/Modal.vue';
-import StatIcon from '../ui/StatIcon.vue';
 import QuestDetailModal from './QuestDetailModal.vue';
 import QuestForm from './QuestForm.vue';
 
@@ -30,20 +29,26 @@ const showAdd = ref(false);
 const detailId = ref<string | null>(null);
 const detailQuest = computed(() => questStore.quests.find((q) => q.id === detailId.value) ?? null);
 
-// Soonest due first; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
-const sortedQuests = computed(() => [...questStore.quests].sort((a, b) => a.dueDateKey.localeCompare(b.dueDateKey)));
+// Soonest due first, checked-off quests last; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
+const sortedQuests = computed(() =>
+  [...questStore.quests].sort((a, b) => Number(!!a.doneDayKey) - Number(!!b.doneDayKey) || a.dueDateKey.localeCompare(b.dueDateKey)),
+);
 
 function daysLeft(quest: Quest): number {
   return Math.round((Date.parse(`${quest.dueDateKey}T00:00:00Z`) - Date.parse(`${todayKey.value}T00:00:00Z`)) / MS_PER_DAY);
 }
 
 function urgency(quest: Quest): 'urgent' | 'soon' | 'calm' {
+  if (quest.doneDayKey) return 'calm';
+  if (quest.overdue) return 'urgent';
   const days = daysLeft(quest);
   if (days <= 0) return 'urgent';
   return days <= 2 ? 'soon' : 'calm';
 }
 
 function dueText(quest: Quest): string {
+  if (quest.doneDayKey) return 'Done';
+  if (quest.overdue) return 'Overdue';
   const days = daysLeft(quest);
   if (days < 0) return 'Overdue';
   if (days === 0) return 'Due today';
@@ -79,8 +84,22 @@ function onCheckOff(quest: Quest) {
       </div>
     </div>
     <ul v-else-if="questStore.quests.length">
-      <li v-for="quest in sortedQuests" :key="quest.id" class="quest-item" :class="[urgency(quest), { side: quest.kind === 'side' }]">
-        <label class="check-zone"><input type="checkbox" class="check" :aria-label="`Complete ${quest.description}`" @change="onCheckOff(quest)" /></label>
+      <li
+        v-for="quest in sortedQuests"
+        :key="quest.id"
+        class="quest-item"
+        :class="[urgency(quest), { side: quest.kind === 'side', done: !!quest.doneDayKey }]"
+      >
+        <label class="check-zone">
+          <input
+            type="checkbox"
+            class="check"
+            :checked="!!quest.doneDayKey"
+            :disabled="!!quest.doneDayKey"
+            :aria-label="`Complete ${quest.description}`"
+            @change="onCheckOff(quest)"
+          />
+        </label>
         <button type="button" class="body" @click="detailId = quest.id">
           <span class="description">{{ quest.description }}</span>
           <span class="meta">
@@ -90,14 +109,6 @@ function onCheckOff(quest: Quest) {
             <span class="due">{{ dueText(quest) }}</span>
           </span>
         </button>
-        <!-- A side quest's item stays hidden until it's earned. -->
-        <span v-if="quest.kind === 'side'" class="reward-exp">
-          <StatIcon name="gift" :size="20" /><span class="exp-label">+Item</span>
-        </span>
-        <!-- The exact EXP depends on the week's slot, so only the vague tier is offered, on hover. -->
-        <span v-else-if="quest.kind === 'regular'" class="reward-exp" :title="`${questRewardTier(quest.difficulty)} EXP`">
-          <StatIcon name="exp" :size="20" /><span class="exp-label">+EXP</span>
-        </span>
       </li>
     </ul>
     <p v-else class="section-empty">No quests yet. Tap +.</p>
@@ -314,22 +325,5 @@ function onCheckOff(quest: Quest) {
 
 .urgent .due {
   color: var(--damage-color);
-}
-
-/* Icon and label are centred in the row as one tight unit — line-height 1 matters: the inherited one is a fixed ~26px
-   (see style.css) and would make the label far taller than its text. */
-.reward-exp {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  width: 44px;
-  color: var(--icon-exp);
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  cursor: default;
 }
 </style>
