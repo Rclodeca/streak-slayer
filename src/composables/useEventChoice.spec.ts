@@ -2,10 +2,12 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createRng, ITEM_CATALOG } from '../game-engine';
+import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
+import { useQuestStore } from '../store/questStore';
 import { useEventChoice } from './useEventChoice';
 import { useItemDropQueue } from './useItemDropQueue';
 
@@ -151,5 +153,112 @@ describe('useEventChoice', () => {
 
     expect(characterStore.character.challenges?.[0].doneDayKey).toBeDefined();
     expect(characterStore.character.ownedItemIds).toContain('ember-heart');
+  });
+
+  describe('side-quest challenge card', () => {
+    /** Level 3 with the guarantee due, so the side-quest card is always rolled. */
+    function setupSide(overrides: Partial<Parameters<ReturnType<typeof useCharacterStore>['setCharacter']>[0]> = {}) {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({
+        ...characterStore.character,
+        level: 3,
+        pendingEventPicks: 1,
+        takenEventIds: [],
+        sideQuestPicksMissed: TUNING.SIDE_QUEST_GUARANTEE_LEVELS,
+        ...overrides,
+      });
+      useHabitStore().addHabit('Daily good', 'daily', 'medium', false, createRng(1));
+      const events = useEventChoice();
+      events.ensureChoices();
+      return { characterStore, events };
+    }
+
+    /** Drops the in-memory rolled options, as a reload would. */
+    function reload(events: ReturnType<typeof useEventChoice>) {
+      const characterStore = useCharacterStore();
+      const { pendingEventPicks } = characterStore.character;
+      characterStore.setCharacter({ ...characterStore.character, pendingEventPicks: 0 });
+      events.ensureChoices();
+      characterStore.setCharacter({ ...characterStore.character, pendingEventPicks });
+      events.ensureChoices();
+    }
+
+    it('names a drawn challenge on the rolled side-quest card and persists it', () => {
+      const { characterStore, events } = setupSide();
+      expect(events.choices.value.map((c) => c.id)).toContain('side-quest');
+      const id = characterStore.character.offeredChallengeId;
+      expect(id).toBeDefined();
+      expect(events.offeredChallenge.value?.id).toBe(id);
+      expect(events.offeredChallenge.value?.deed.length).toBeGreaterThan(0);
+    });
+
+    it('keeps the same challenge when the popup is reopened or the app reloads', () => {
+      const { characterStore, events } = setupSide();
+      const id = characterStore.character.offeredChallengeId;
+      expect(id).toBeDefined();
+      for (let i = 0; i < 5; i++) {
+        reload(events);
+        expect(events.choices.value.map((c) => c.id)).toContain('side-quest');
+        expect(characterStore.character.offeredChallengeId).toBe(id);
+      }
+    });
+
+    it('redraws when the persisted challenge can no longer be offered', () => {
+      const { characterStore, events } = setupSide({ offeredChallengeId: 'resist', challenges: [{ id: 'resist', relicId: 'ember-heart', takenDayKey: '2026-01-01', progress: 0 }] });
+      reload(events);
+      const id = characterStore.character.offeredChallengeId;
+      expect(id).toBeDefined();
+      expect(id).not.toBe('resist');
+    });
+
+    it('picking any other event clears the offered challenge', () => {
+      const { characterStore, events } = setupSide();
+      expect(characterStore.character.offeredChallengeId).toBeDefined();
+      events.choose('heal');
+      expect(characterStore.character.offeredChallengeId).toBeUndefined();
+      expect(events.offeredChallenge.value).toBeNull();
+    });
+
+    it('chooseSideQuest takes the challenge with a reserved relic, spends the pick and makes no quest', () => {
+      const { characterStore, events } = setupSide();
+      const id = characterStore.character.offeredChallengeId;
+
+      events.chooseSideQuest();
+
+      expect(characterStore.character.challenges).toHaveLength(1);
+      const [entry] = characterStore.character.challenges!;
+      expect(entry).toMatchObject({ id, progress: 0 });
+      expect(entry.doneDayKey).toBeUndefined();
+      expect(ITEM_CATALOG.find((i) => i.id === entry.relicId)?.rarity).toBe('relic');
+      expect(characterStore.character.pendingEventPicks).toBe(0);
+      expect(characterStore.character.takenEventIds).toEqual([]);
+      expect(characterStore.character.offeredChallengeId).toBeUndefined();
+      expect(useQuestStore().quests).toEqual([]);
+    });
+
+    it('resets the guarantee count when taken, even if the pick claims the last available relic', () => {
+      const relics = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
+      const [onlyRelic, ...rest] = relics;
+      const { characterStore, events } = setupSide({ earnedRelicIds: rest });
+
+      events.chooseSideQuest();
+
+      expect(characterStore.character.challenges?.[0].relicId).toBe(onlyRelic);
+      expect(characterStore.character.sideQuestPicksMissed).toBe(0);
+    });
+
+    it('a state challenge that is already true completes at once and pays out', () => {
+      const { characterStore, events } = setupSide({ offeredChallengeId: 'streak-all' });
+      const habit = useHabitStore().habits[0];
+      useHabitStore().updateHabit({ ...habit, streakCount: 5 });
+
+      events.chooseSideQuest();
+
+      const [entry] = characterStore.character.challenges!;
+      expect(entry.id).toBe('streak-all');
+      expect(entry.doneDayKey).toBeDefined();
+      expect(characterStore.character.ownedItemIds).toContain(entry.relicId);
+      useItemDropQueue().dismiss();
+    });
   });
 });

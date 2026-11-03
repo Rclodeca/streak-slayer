@@ -11,12 +11,13 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import RerollSkillRow from '../habits/RerollSkillRow.vue';
 import { sortByDamageType } from '../habits/habitDisplay';
+import { challengeIcon } from '../quests/challengeIcons';
 import ItemHero from '../ui/ItemHero.vue';
 import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON, EVENT_ICON } from '../ui/statIcons';
 
-const { pending, choices, revealed, ensureChoices, choose, chooseReroll, dismissReveal } = useEventChoice();
+const { pending, choices, revealed, offeredChallenge, ensureChoices, choose, chooseReroll, chooseSideQuest, dismissReveal } = useEventChoice();
 const { eventChoiceVisible } = useModalPriority();
 const habitStore = useHabitStore();
 const characterStore = useCharacterStore();
@@ -67,9 +68,8 @@ const subtitle = computed(() => {
 });
 
 function onPick(id: EventId) {
-  // The side-quest card names a challenge and takes it straight away; nothing to pick here yet.
-  if (id === 'side-quest') return;
-  if (id === 'reroll-skill') {
+  if (id === 'side-quest') chooseSideQuest();
+  else if (id === 'reroll-skill') {
     rerollPickId.value = null;
     step.value = 'reroll';
   }
@@ -98,12 +98,30 @@ function onPick(id: EventId) {
     <p class="subtitle" :class="{ count: step === 'choose' && !revealed }">{{ subtitle }}</p>
 
     <div v-if="step === 'choose'" class="cards">
-      <button v-for="event in choices" :key="event.id" type="button" class="card" @click="onPick(event.id)">
-        <StatIcon :name="EVENT_ICON[event.id]" :size="22" class="icon" />
-        <span class="card-text">
-          <strong class="card-title">{{ event.title }}</strong>
-          <span v-if="event.description" class="card-desc">{{ event.description }}</span>
-        </span>
+      <button
+        v-for="event in choices"
+        :key="event.id"
+        type="button"
+        class="card"
+        :class="{ side: event.id === 'side-quest' && offeredChallenge }"
+        @click="onPick(event.id)"
+      >
+        <template v-if="event.id === 'side-quest' && offeredChallenge">
+          <span class="side-socket"><component :is="challengeIcon(offeredChallenge.icon)" :size="22" /></span>
+          <span class="card-text">
+            <small class="side-caption">Side quest</small>
+            <strong class="card-title">{{ offeredChallenge.name }}</strong>
+            <span class="card-desc">{{ offeredChallenge.deed }}</span>
+          </span>
+          <span class="side-gift" role="img" aria-label="An unknown item"><StatIcon name="gift" :size="20" /><span class="mark">?</span></span>
+        </template>
+        <template v-else>
+          <StatIcon :name="EVENT_ICON[event.id]" :size="22" class="icon" />
+          <span class="card-text">
+            <strong class="card-title">{{ event.title }}</strong>
+            <span v-if="event.description" class="card-desc">{{ event.description }}</span>
+          </span>
+        </template>
       </button>
     </div>
 
@@ -230,6 +248,30 @@ function onPick(id: EventId) {
   color: var(--text);
   font-size: 0.85rem;
   line-height: 1.4;
+}
+
+/* Base layout only; the Pixel-cut look is in themes/ashen.scss. */
+.side-socket {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+}
+
+.side-caption {
+  color: var(--text);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.side-gift {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-left: auto;
+  flex: none;
 }
 
 .habit-group {
