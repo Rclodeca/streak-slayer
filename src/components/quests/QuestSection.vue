@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Lock, Plus, ScrollText } from 'lucide-vue-next';
-import { dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
+import { activeChallenges, dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
@@ -9,6 +9,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
 import Modal from '../ui/Modal.vue';
+import ChallengeList from './ChallengeList.vue';
 import QuestDetailModal from './QuestDetailModal.vue';
 import QuestForm from './QuestForm.vue';
 
@@ -25,6 +26,9 @@ const PIPS: Record<Difficulty, number> = { easy: 1, medium: 2, hard: 3 };
 const MS_PER_DAY = 86_400_000;
 
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
+// Main: the quests the player wrote. Side: the in-game challenges. Not remembered between visits.
+const tab = ref<'main' | 'side'>('main');
+const activeChallengeCount = computed(() => activeChallenges(characterStore.character).length);
 const showAdd = ref(false);
 const detailId = ref<string | null>(null);
 const detailQuest = computed(() => questStore.quests.find((q) => q.id === detailId.value) ?? null);
@@ -73,9 +77,15 @@ function onCheckOff(quest: Quest) {
   <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
       <h2><Lock v-if="!open" :size="16" class="section-icon lock-icon" /><ScrollText v-else :size="16" class="section-icon" />Quests</h2>
-      <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
+      <button v-if="open && tab === 'main'" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
     </div>
     <p class="section-caption">One-off tasks</p>
+    <div v-if="open" class="quest-tabs" role="tablist">
+      <button type="button" role="tab" class="quest-tab" :class="{ selected: tab === 'main' }" :aria-selected="tab === 'main'" @click="tab = 'main'">Main</button>
+      <button type="button" role="tab" class="quest-tab side" :class="{ selected: tab === 'side' }" :aria-selected="tab === 'side'" @click="tab = 'side'">
+        Side<span v-if="activeChallengeCount" class="tab-count">{{ activeChallengeCount }}</span>
+      </button>
+    </div>
     <div v-if="!open" class="lock-area">
       <div class="lock-ghost" aria-hidden="true"><i /><i /></div>
       <div class="lock-seal">
@@ -83,7 +93,7 @@ function onCheckOff(quest: Quest) {
         <p class="lock-text">Sealed until level {{ QUESTS_UNLOCK_LEVEL }}</p>
       </div>
     </div>
-    <ul v-else-if="questStore.quests.length">
+    <ul v-else-if="tab === 'main' && questStore.quests.length">
       <li
         v-for="quest in sortedQuests"
         :key="quest.id"
@@ -111,7 +121,8 @@ function onCheckOff(quest: Quest) {
         </button>
       </li>
     </ul>
-    <p v-else class="section-empty">No quests yet. Tap +.</p>
+    <p v-else-if="tab === 'main'" class="section-empty">No quests yet. Tap +.</p>
+    <ChallengeList v-else />
   </section>
 
   <Modal v-model="showAdd" title="New quest" max-width="480px">
@@ -260,6 +271,32 @@ function onCheckOff(quest: Quest) {
 
 .quest-section ul {
   margin-top: 0.75rem;
+}
+
+/* Base layout only; the Pixel-cut look is in themes/ashen.scss. */
+.quest-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.quest-tab {
+  flex: 1;
+  min-height: 44px;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.quest-tab.selected {
+  color: var(--text-h);
+  border-color: var(--accent-border);
+}
+
+.tab-count {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
 }
 
 .body {
