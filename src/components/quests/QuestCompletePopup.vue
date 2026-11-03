@@ -4,6 +4,7 @@ import { formatCompact } from '../../game-engine';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { BadgeCheck } from 'lucide-vue-next';
 import Modal from '../ui/Modal.vue';
+import StatIcon from '../ui/StatIcon.vue';
 
 const { current, dismiss } = useQuestCompleteQueue();
 const { questCompleteVisible } = useModalPriority();
@@ -21,7 +22,7 @@ const PIPS = { easy: 1, medium: 2, hard: 3 };
       <span class="pips" :title="current.difficulty">
         <span v-for="n in 3" :key="n" class="pip" :class="{ lit: n <= PIPS[current.difficulty] }" />
       </span>
-      <strong class="reward">+{{ formatCompact(current.amount) }} EXP</strong>
+      <strong class="reward"><StatIcon name="exp" :size="24" />+{{ formatCompact(current.amount) }} EXP</strong>
     </div>
     <button type="button" class="onward primary-button" @click="dismiss">Onward</button>
   </Modal>

@@ -1654,15 +1654,17 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include inset-focus;
   }
 
-  // Overdrive burns ember, the same fire as the check's halo.
+  // Overdrive on the skill sheet (docs/mockups/pixel-popups.html, 9): a
+  // lifted card with its name and charges on the left and its damage on the
+  // right. The charges keep the ember the check's halo burns in.
   .overdrive-button {
-    @include plain-label($label-lg);
-    padding: 0.7rem;
-    color: var(--text-h);
-    background: rgba(160, 60, 20, 0.4);
-    border: 1px solid rgba(224, 120, 58, 0.7);
-    @include pixel-corners(2px);
-    @include lip-press(rgba(90, 36, 12, 0.9));
+    @include plain-label($label-lg, 700);
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 0 14px;
+    color: var(--card-ink);
+    @include lifted-card;
+    @include lip-press(var(--card-lip));
     @include inset-focus;
   }
 
@@ -1671,30 +1673,42 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     cursor: not-allowed;
   }
 
+  .overdrive-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .overdrive-button.ready::after {
-    box-shadow: 0 0 14px 1px rgba(224, 120, 58, 0.55);
+    inset: 0 0 3px;
+    @include pixel-corners(3px);
+    box-shadow: inset 0 0 14px 1px rgba(224, 120, 58, 0.45);
   }
 
   .overdrive-button small {
-    color: var(--accent);
+    @include plain-label($label-lg, 800);
+    color: var(--dmg-physical);
     opacity: 1;
   }
 
-  // Charges are small ember dots: dim, then lit, then ash once spent.
+  // Charges are small squares: dim, then lit ember, then spent.
   .overdrive-button .charge {
-    border-radius: 50%;
-    border: 1px solid rgba(224, 120, 58, 0.45);
+    width: 9px;
+    height: 9px;
+    border: 0;
     opacity: 1;
+    background: #07090d;
+    box-shadow: inset 0 0 0 2px $ash-deep;
+    @include pixel-corners(2px);
   }
 
   .overdrive-button .charge.ready {
-    background: radial-gradient(circle, #ffe2c4 0, #{$ember} 45%, #7a2e10 85%);
-    border-color: #f2b48a;
-    box-shadow: 0 0 8px 1px rgba(224, 120, 58, 0.6);
+    background: $ember;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3);
   }
 
   .overdrive-button .charge.used {
-    border-color: $ash-deep;
+    box-shadow: inset 0 0 0 2px $ash-deep;
   }
 
   // ---------- Popups ----------
@@ -1792,6 +1806,86 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   button.card .card-desc {
     font-size: 1rem;
     line-height: 1.25;
+  }
+
+  // The reroll step (docs/mockups/pixel-popups.html, 4): the main list's skill
+  // cards, the damage type's colour down the left as a spine, and a square
+  // pick socket where the strike button would be.
+  .habit-group-title {
+    @include engraved($caps-xs, 0.24em);
+    margin: 0 2px 7px;
+    color: var(--text);
+  }
+
+  .habit-item.reroll-row {
+    width: 100%;
+    padding-left: 16px;
+    text-align: left;
+    color: var(--card-ink);
+    cursor: pointer;
+    @include inset-focus;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: var(--c);
+    }
+
+    &.selected {
+      --card-bg: #141a28;
+      border-color: transparent;
+      box-shadow:
+        inset 0 0 0 2px tone(moon-tint, 0.55),
+        inset 3px 3px 0 #0a0d14;
+    }
+
+    .pick {
+      width: 24px;
+      height: 24px;
+      clip-path: var(--px2);
+      background: #07090d;
+      box-shadow:
+        inset 0 0 0 2px #2a3140,
+        inset 3px 3px 0 #020305;
+    }
+
+    .pick i {
+      width: 10px;
+      height: 10px;
+      transform: none;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    &.selected .pick {
+      box-shadow:
+        inset 0 0 0 2px var(--moon-solid),
+        inset 3px 3px 0 #020305;
+    }
+
+    &.selected .pick i {
+      width: 10px;
+      height: 10px;
+      background: var(--moon);
+      box-shadow: none;
+    }
+
+    .damage {
+      @include plain-label($label-lg, 800);
+    }
+  }
+
+  // Nothing picked yet: the key sits flat and dark.
+  .ok.primary-button:disabled {
+    color: var(--spent-text);
+    background: var(--struck-face);
+    border-bottom-color: transparent;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06);
+    cursor: default;
+    transform: translateY(3px);
   }
 
   // The level-up pick's level, cut into a square brass plate (EventChoiceModal).
@@ -2096,9 +2190,20 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // Habit details: the hit worked out like a sum.
+  // The skill's own name is the title, in serif (docs/mockups/pixel-popups.html, 9).
+  .modal-content:has(.skill-sum) .modal-header h3 {
+    @include name-serif;
+    font-size: 1.25rem;
+    font-size-adjust: none;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
   .skill-meta {
     @include plain-label($label-md, 600);
-    gap: 10px;
+    justify-content: flex-start;
+    gap: 6px;
+    margin-top: -4px;
   }
 
   .skill-days-label span:first-child {
@@ -2124,12 +2229,18 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .rank-bar {
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid $line;
+    position: relative;
+    height: 8px;
+    background: #07090d;
+    border: 0;
+    box-shadow: inset 2px 2px 0 #020305;
 
     i {
-      background: linear-gradient(90deg, #7a6440, $brass);
-      box-shadow: 0 0 6px tone(brass, 0.4);
+      position: absolute;
+      inset: 0 auto 0 0;
+      height: auto;
+      background: $brass;
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3);
     }
   }
 
@@ -2152,6 +2263,22 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-weight: 500;
   }
 
+  // The sum is a sunk ledger, a row per line.
+  .skill-sum {
+    @include sunk-well;
+    gap: 0;
+    padding: 4px 12px;
+  }
+
+  .skill-sum :is(.sum-row, .sum-total) {
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .skill-sum .sum-row + .sum-row {
+    border-top: 1px solid $line-faint;
+  }
+
   .skill-sum dt small {
     font-size: 0.95em;
   }
@@ -2163,7 +2290,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .sum-total {
-    border-top-color: $line-mid;
+    margin-top: 0;
+    padding-top: 11px;
+    border-top-color: $line-faint;
   }
 
   .sum-total dt {
@@ -2413,40 +2542,126 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     animation: ashen-opal-shine 5.5s linear infinite;
   }
 
-  // Quest complete.
+  // Quest complete (docs/mockups/pixel-popups.html, 6): no box round the
+  // whole. The badge sits in a square brass plate (earned), the deed in
+  // serif, and the EXP in a sunk well in its own gold.
   .hero:has(> .seal) {
-    @include pixel-corners(3px);
-    background:
-      radial-gradient(circle at 50% 30%, rgba(230, 199, 127, 0.12), transparent 60%),
-      $well;
-    border-color: transparent;
+    gap: 0;
+    padding: 0.25rem 0 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .hero:has(> .seal)::before {
+    content: none;
   }
 
   .seal {
-    border-width: 1px;
+    position: relative;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    animation: none;
+  }
+
+  .hero:not(.skill-card) > .seal {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 14px;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      @include pixel-corners(3px);
+    }
+
+    &::before {
+      inset: 0;
+      background: linear-gradient(var(--brass), var(--brass-solid));
+    }
+
+    &::after {
+      inset: 4px;
+      background: var(--code-bg);
+      @include bevel(var(--sunk-hi), var(--sunk-lo));
+    }
+  }
+
+  .seal-icon {
+    position: relative;
+    z-index: 1;
+    width: 44px;
+    height: 44px;
+    color: $brass;
+    filter: none;
   }
 
   .deed {
     @include name-serif;
+    font-size: 1.25rem;
+    font-size-adjust: none;
+    line-height: 1.2;
+  }
+
+  .hero:has(> .seal) .pips {
+    margin-top: 4px;
+  }
+
+  .hero:has(> .seal) .pips .pip {
+    width: 9px;
+    height: 9px;
   }
 
   .hero:has(> .seal) .reward {
-    font-family: var(--heading);
-    font-size-adjust: none;
-    letter-spacing: 0.06em;
-    color: $brass;
+    @include sunk-well;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    align-self: stretch;
+    margin-top: 10px;
+    padding: 12px;
+    @include true-sans(1.75rem, 800);
+    letter-spacing: 0.02em;
+    color: var(--icon-exp);
+    text-shadow: none;
   }
 
-  // Boss skill card.
+  // Boss skill card: the icon in a big socket lit in the boss's red (grey
+  // gold when the skill failed), then its name and effect.
   .skill-card.hero:has(> .seal) {
-    background:
-      radial-gradient(circle at 50% 30%, rgba(200, 64, 47, 0.14), transparent 60%),
-      rgba(0, 0, 0, 0.3);
+    padding-top: 0.5rem;
+    background: none;
+  }
+
+  .skill-card > .seal {
+    width: 112px;
+    height: 112px;
+    @include socket(var(--damage-color), 2px, 5px);
+  }
+
+  .skill-card.failed > .seal {
+    @include socket(var(--icon-gold), 2px, 5px);
+  }
+
+  .skill-card .seal svg {
+    width: 52px;
+    height: 52px;
   }
 
   .skill-name {
-    @include engraved(1.35rem, 0.22em);
+    @include engraved(1.375rem, 0.14em);
+    margin-top: 0.6rem;
     font-weight: 700;
+  }
+
+  .skill-line {
+    @include name-serif;
+    font-size: 1.0625rem;
+    font-size-adjust: none;
   }
 
   // ---------- High scores: a wall of the fallen ----------
@@ -2543,11 +2758,41 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $ember;
   }
 
-  .revive-toast,
   .save-toast {
     @include pixel-corners(3px);
     background: #0e0d0b;
     border-color: $line-mid;
+  }
+
+  // The Phoenix toast (docs/mockups/pixel-popups.html, 10): a popup's chrome
+  // with the feather in a brass socket.
+  .revive-toast {
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 3px solid var(--card-lip);
+    @include pixel-panel;
+    border-bottom: 3px solid var(--card-lip);
+    box-shadow:
+      inset 2px 2px 0 var(--panel-hi),
+      inset -2px -2px 0 var(--panel-lo);
+  }
+
+  .revive-mark {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    color: $brass;
+    @include socket(var(--brass-solid), 2px, 4px);
+  }
+
+  .revive-text {
+    @include name-serif;
+    font-size: 0.97rem;
+    font-size-adjust: none;
+    line-height: 1.25;
+    color: var(--card-ink);
   }
 
   .save-toast.bad {
@@ -2662,18 +2907,78 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include plain-label($label-lg, 600);
   }
 
+  // Quests unlocked (docs/mockups/pixel-popups.html, 8): a square silver
+  // plate, since nothing is earned yet, over a ledger of the three rules.
   .emblem {
-    border-radius: 50%;
-    border-color: rgba(200, 169, 110, 0.55);
-    background: radial-gradient(circle, rgba(230, 199, 127, 0.2), transparent 70%);
-    box-shadow:
-      inset 0 0 0 4px rgba(0, 0, 0, 0.5),
-      inset 0 0 0 5px rgba(200, 169, 110, 0.18),
-      0 0 30px -10px rgba(230, 199, 127, 0.6);
+    position: relative;
+    width: 84px;
+    height: 84px;
+    border: 0;
+    background: none;
+    box-shadow: none;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      @include pixel-corners(3px);
+    }
+
+    &::before {
+      inset: 0;
+      background: linear-gradient(var(--button-fill), var(--button-lip));
+    }
+
+    &::after {
+      inset: 4px;
+      background: var(--code-bg);
+      @include bevel(var(--sunk-hi), var(--sunk-lo));
+    }
   }
 
   .emblem svg {
-    filter: drop-shadow(0 0 8px rgba(230, 199, 127, 0.6));
+    position: relative;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    color: var(--moon);
+    filter: none;
+  }
+
+  .modal-content .rule-list {
+    @include sunk-well;
+    margin: 0 0 1.25rem;
+    padding: 4px 8px;
+    border-top: 0;
+  }
+
+  .modal-content .rule-list li {
+    grid-template-columns: 34px 3.6rem 1fr;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 0;
+  }
+
+  .modal-content .rule-list li + li {
+    border-top: 1px solid $line-faint;
+  }
+
+  .modal-content .rule-list .rule-sock {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    @include socket(var(--card-hi), 2px, 4px);
+  }
+
+  .modal-content .rule-list .rule-sock svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .modal-content .rule-list > li > span:last-child {
+    @include plain-label(0.9rem, 500);
+    color: var(--text);
   }
 
   // ---------- The boss bar ----------

@@ -69,7 +69,7 @@ const card = computed(() => (current.value ? cardFor(current.value) : null));
 
 <template>
   <Modal :model-value="bossSkillVisible" title="Boss skill" max-width="380px" @update:model-value="dismiss">
-    <div v-if="card" :key="`${current?.skill}-${current?.outcome}`" class="hero skill-card">
+    <div v-if="card" :key="`${current?.skill}-${current?.outcome}`" class="hero skill-card" :class="{ failed: current?.outcome === 'failed' }">
       <div class="seal" aria-hidden="true">
         <StatIcon :name="card.icon" :size="40" />
       </div>

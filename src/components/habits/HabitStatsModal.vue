@@ -209,9 +209,11 @@ function removeHabit() {
       :disabled="!canOverdrive"
       @click="onOverdrive"
     >
-      Overdrive
-      <span class="charges" aria-hidden="true">
-        <span v-for="n in TUNING.OVERDRIVE_MAX_EXTRA_USES" :key="n" class="charge" :class="chargeState(n)" />
+      <span class="overdrive-label">
+        Overdrive
+        <span class="charges" aria-hidden="true">
+          <span v-for="n in TUNING.OVERDRIVE_MAX_EXTRA_USES" :key="n" class="charge" :class="chargeState(n)" />
+        </span>
       </span>
       <small>{{ formatCompact(overdriveDamage) }}</small>
     </button>

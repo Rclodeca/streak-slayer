@@ -19,7 +19,7 @@ defineProps<{ rules: readonly Rule[] }>();
 <template>
   <ul class="rule-list">
     <li v-for="rule in rules" :key="rule.title" :class="rule.tone">
-      <component :is="rule.icon" class="rule-icon" :size="14" :stroke-width="2" />
+      <span class="rule-sock"><component :is="rule.icon" class="rule-icon" :size="14" :stroke-width="2" /></span>
       <b>{{ rule.title }}</b>
       <span>{{ rule.text }}</span>
     </li>
