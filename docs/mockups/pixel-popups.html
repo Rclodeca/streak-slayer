@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut popups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The remaining popups in Pixel-cut (Moonlit): start screen, death, daily
+   update, reroll, boss skill, quest complete / failed, quests unlocked, skill
+   detail, revive toast. Same content and order as the Vue components, with
+   the chrome from pixel-forms / pixel-levelup. Everything is tappable. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 44px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 10px; min-height: 96px; font-size: 14.5px; }
+.sw { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; min-height: 30px; }
+.sw button { padding: 5px 10px; background: #26282e; border: 1px solid #3a3d46; color: #b8b6b0; font: 700 12px 'Alegreya Sans', sans-serif; cursor: pointer; }
+.sw button.on { background: #dbe2ee; color: #12141a; border-color: #dbe2ee; }
+button, input { font: inherit; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --good: #7fc17a;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --phys: #d0604f; --magic: #ab8dd8; --true: #f1e9d6; --heal: #92bf88;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --sunk: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b;
+  --lifted: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  position: relative; width: 390px; padding: 54px 10px 28px; background: radial-gradient(70% 30% at 50% 6%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone.modalp::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; }
+.phone > * { position: relative; }
+svg.i { width: 14px; height: 14px; flex: none; }
+.ic { display: inline-flex; }
+
+/* ---- Popup chrome (pixel-forms / pixel-levelup) ---- */
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 14px; }
+.mhead { display: flex; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; flex: 1; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.mhead.c { justify-content: center; }
+.mhead.c h3 { flex: none; }
+.mhead.red h3 { color: var(--bad); letter-spacing: .3em; }
+.close { width: 40px; height: 40px; margin-right: -4px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.06); border: 1px solid rgba(219,226,238,.25); color: var(--touch); }
+.close svg { width: 16px; height: 16px; }
+.lbl { display: block; margin: 14px 2px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.lbl:first-child { margin-top: 2px; }
+.well { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); }
+.sock { flex: none; display: grid; place-items: center; clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px var(--r, #2a3140), inset 4px 4px 0 #020305; }
+.sock svg { width: 20px; height: 20px; }
+.ink { color: var(--ink); }
+
+/* Silver key: the main button. --face/--base/--fg set the colour. */
+.cta { --lp: 3px; --face: #c8d0dd; --base: #7d8595; --fg: #12141a; --sh: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18);
+  position: relative; display: block; width: 100%; margin-top: 18px; height: calc(46px + var(--lp)); padding: 0 8px var(--lp); border: 0; background: none; cursor: pointer;
+  font: 700 16px 'Alegreya Sans', sans-serif; color: var(--fg); letter-spacing: .02em; -webkit-tap-highlight-color: transparent; }
+.cta::before, .cta::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.cta::before { top: var(--lp); bottom: 0; background: var(--base); }
+.cta::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: var(--sh); transition: top .07s, bottom .07s; }
+.cta > span { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; transition: transform .07s; }
+.cta:active::after { top: var(--lp); bottom: 0; }
+.cta:active > span { transform: translateY(var(--lp)); }
+.cta.bad { --face: #d4574a; --base: #6e2a24; --fg: #fff; --sh: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(0,0,0,.22); }
+.cta.good { --face: #7fc17a; --base: #3d6a3a; --fg: #12301a; --sh: inset 0 2px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(0,0,0,.18); }
+.cta[disabled] { --face: #1d2230; --base: #0a0c11; --fg: #5f6470; --sh: inset 0 2px 0 rgba(255,255,255,.06); cursor: default; }
+.cta[disabled]::after { top: var(--lp); bottom: 0; }
+.cta[disabled] > span { transform: translateY(var(--lp)); }
+.back { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 44px; margin-top: 6px; background: none; border: 0; color: var(--text); font: 700 14px 'Alegreya Sans', sans-serif; cursor: pointer; }
+.back svg { width: 16px; height: 16px; }
+
+/* Small toggle key ("I did this"): raised, presses down and lights silver when on */
+.tk { --lp: 3px; --face: #232a3a; --base: #0a0c11; --fg: var(--touch); position: relative; flex: none; height: calc(34px + var(--lp)); padding: 0 12px var(--lp); border: 0; background: none; cursor: pointer;
+  font: 700 13px 'Alegreya Sans', sans-serif; color: var(--fg); white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.tk::before, .tk::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.tk::before { top: var(--lp); bottom: 0; background: var(--base); }
+.tk::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.1), inset 2px 0 0 rgba(255,255,255,.05); transition: top .07s, bottom .07s; }
+.tk > span { position: relative; z-index: 1; display: inline-block; transition: transform .07s; }
+.tk.on { --face: #c8d0dd; --fg: #12141a; }
+.tk.on::after { top: var(--lp); bottom: 0; box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); }
+.tk.on > span { transform: translateY(var(--lp)); }
+
+/* Lifted card (as on the main screen), with a tone spine on the left */
+.lc { --tone: var(--bad); position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 8px 8px 16px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.lc::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--tone); }
+.lc.ok { --tone: var(--good); }
+.lc .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.lc .nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); overflow-wrap: anywhere; }
+.lc .mt { display: flex; align-items: center; gap: 8px; font: 700 12px 'Alegreya Sans', sans-serif; color: #7c808b; text-transform: capitalize; }
+.lc .side { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+.lc .out { font: 800 13px 'Alegreya Sans', sans-serif; color: var(--tone); }
+.list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+/* Rank pips (brass squares, in fours) and quest pips (brass circles) */
+.pp { display: flex; gap: 4px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+
+/* ================= 1 · Start screen ================= */
+.start { text-align: center; padding: 4px 4px 0; }
+.start .eyebrow { margin: 0; font-size: 14.5px; color: var(--text); }
+.start .title { margin: 6px 0 0; font: 700 27px/1.1 'Cinzel', serif; letter-spacing: .16em; text-indent: .16em; color: var(--ink); text-shadow: 0 2px 0 #05070a; }
+.start .rule { width: 56px; height: 4px; margin: 10px auto 0; background: var(--brass); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); box-shadow: inset 0 -2px 0 rgba(0,0,0,.3); }
+.stage { position: relative; height: 196px; margin: 12px -10px 0; overflow: hidden; background: #0c0f17; border-top: 3px solid var(--lip); border-bottom: 3px solid var(--lip); }
+.stage::before { content: ''; position: absolute; inset: 0; background: radial-gradient(closest-side at 50% 68%, rgba(255,255,255,.1), rgba(255,255,255,.03) 70%, transparent); }
+.stars { position: absolute; left: 0; top: 4px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 20px #3a4358, 120px 12px #2c3446, 230px 30px #3a4358, 300px 10px #4a5470, 352px 52px #2c3446, 200px 60px #2c3446, 70px 70px #232a39, 330px 80px #3a4358, 20px 50px #2c3446; }
+.plinth { position: absolute; left: 50%; bottom: 20px; width: 132px; height: 18px; margin-left: -66px; }
+.plinth::before { content: ''; position: absolute; inset: 0; clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: #1f2534; box-shadow: inset 0 3px 0 #3a4358, inset 0 6px 0 #283041, inset 0 -3px 0 #10141d; }
+.stage .hero { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 0 12px rgba(0,0,0,.8)); }
+.stage .hero.fated { filter: brightness(0) drop-shadow(0 0 10px rgba(216,180,106,.35)); opacity: .85; }
+.stage .fm { position: absolute; left: 0; right: 0; bottom: 78px; text-align: center; font: 700 40px 'Cinzel', serif; color: var(--brass); text-shadow: 0 2px 0 #05070a; }
+.turn { --lp: 3px; position: absolute; top: 50%; width: 46px; height: calc(46px + var(--lp)); margin-top: -26px; padding: 0 0 var(--lp); border: 0; background: none; color: var(--touch); cursor: pointer; display: grid; place-items: center; -webkit-tap-highlight-color: transparent; }
+.turn::before, .turn::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.turn::before { top: var(--lp); bottom: 0; background: #0a0c11; }
+.turn::after { top: 0; bottom: var(--lp); background: #232a3a; box-shadow: inset 0 2px 0 rgba(255,255,255,.1), inset 2px 0 0 rgba(255,255,255,.05); transition: top .07s, bottom .07s; }
+.turn svg { position: relative; z-index: 1; width: 22px; height: 22px; transition: transform .07s; }
+.turn:active::after { top: var(--lp); bottom: 0; } .turn:active svg { transform: translateY(var(--lp)); }
+.turn.l { left: 10px; } .turn.r { right: 10px; }
+.pname { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 12px 0 0; font: 600 12px 'Cinzel', serif; letter-spacing: .24em; text-indent: .24em; color: var(--ink); text-transform: uppercase; }
+.pname svg { width: 16px; height: 16px; }
+.dots { display: flex; justify-content: center; gap: 8px; margin: 9px 0 0; }
+.dots i { width: 6px; height: 6px; background: #2a3140; }
+.dots i.on { background: var(--touch); }
+.oath { margin-top: 16px; text-align: left; padding: 12px; clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); }
+.oath h2 { margin: 2px 0 0; text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-indent: .24em; text-transform: uppercase; color: var(--ink); }
+.oath .fell { margin: 6px 0 0; text-align: center; font-size: 14px; color: var(--text); }
+.name { width: 100%; height: 50px; padding: 0 14px; clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); border: 0; color: var(--ink); font: 600 17px 'Alegreya', Georgia, serif; outline: none; }
+.name::placeholder { color: var(--dim); font-weight: 500; }
+.name:focus { box-shadow: var(--sunk), inset 0 0 0 2px rgba(219,226,238,.5); }
+.rules { margin: 14px 0 0; padding: 4px 8px; list-style: none; }
+.rules li { display: grid; grid-template-columns: 34px 52px 1fr; align-items: center; gap: 8px; padding: 8px 0; }
+.rules li + li { border-top: 1px solid rgba(255,255,255,.05); }
+.rules .sock { width: 34px; height: 34px; }
+.rules .sock svg { width: 16px; height: 16px; }
+.rules b { font: 600 11px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+.rules span.tx { font-size: 14.5px; color: var(--text); }
+
+/* ================= 2 · Death ================= */
+.death { text-align: center; }
+.grave { position: relative; height: 140px; margin: 2px 0 0; overflow: hidden; background: #090b10; }
+.grave::before { content: ''; position: absolute; inset: 0; background: radial-gradient(closest-side at 50% 80%, rgba(212,87,74,.16), transparent); }
+.grave img { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); image-rendering: pixelated; filter: grayscale(1) brightness(.5);
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 92%); mask-image: linear-gradient(180deg, #000 30%, transparent 92%); }
+.death h2 { margin: 14px 0 0; font: 600 22px 'Alegreya', Georgia, serif; color: var(--ink); }
+.death .meta { margin: 2px 0 0; font-size: 14px; }
+.death .kept { margin: 18px 0 10px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-indent: .24em; text-transform: uppercase; color: var(--text); }
+.embers { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ember { display: grid; justify-items: center; gap: 6px; width: 52px; }
+.ember .sock { --r: #3a3322; width: 44px; height: 44px; }
+.ember .grp { display: grid; grid-template-columns: repeat(4, 4px); gap: 3px; }
+.ember .grp i { width: 4px; height: 4px; background: var(--brass); }
+.ember .sock.cold .grp i { opacity: .4; }
+.ember .num { font: 700 12px 'Cinzel', serif; color: var(--brass); }
+.ember .st { display: inline-flex; align-items: center; gap: 2px; min-height: 14px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.ember .st svg { width: 11px; height: 11px; }
+.ember.cold .st { color: var(--dim); font-weight: 500; }
+
+/* ================= 3 / 7 · Daily update, Deadline passed ================= */
+.grp-l { margin: 12px 2px 7px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.grp-l:first-of-type { margin-top: 2px; }
+.intro { margin: 2px 0 12px; padding: 10px 12px 10px 16px; position: relative; font-size: 14.5px; color: var(--text); clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); }
+.intro::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--bad); }
+
+/* ================= 4 · Reroll ================= */
+.sub { margin: 0 2px 12px; text-align: center; font-size: 14.5px; color: var(--text); }
+.rr { width: 100%; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+.rr .pick { flex: none; width: 24px; height: 24px; display: grid; place-items: center; clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px #2a3140, inset 3px 3px 0 #020305; }
+.rr .pick i { width: 10px; height: 10px; background: transparent; }
+.rr.sel { background: #141a28; box-shadow: inset 0 0 0 2px rgba(219,226,238,.55), inset 3px 3px 0 #0a0d14; }
+.rr.sel .pick { box-shadow: inset 0 0 0 2px #aeb8c8, inset 3px 3px 0 #020305; }
+.rr.sel .pick i { background: var(--touch); }
+.rr .dmg { flex: none; min-width: 44px; text-align: right; font: 800 15px 'Alegreya Sans', sans-serif; color: var(--c); }
+.rr .mt svg { width: 12px; height: 12px; }
+.rr .star { display: inline-flex; margin-left: 5px; vertical-align: -1px; color: #c8a96e; }
+.rr .star svg { width: 13px; height: 13px; }
+
+/* ================= 5 · Boss skill ================= */
+.bs { text-align: center; padding: 6px 0 0; }
+.bs .bsock { --r: #7a2e28; width: 112px; height: 112px; margin: 0 auto; clip-path: var(--px); background: radial-gradient(circle, rgba(212,87,74,.22), #07090d 72%); box-shadow: inset 0 0 0 2px var(--r), inset 5px 5px 0 #020305; display: grid; place-items: center; animation: rise .4s cubic-bezier(.2,.9,.3,1.2); }
+.bs .bsock svg { width: 52px; height: 52px; filter: drop-shadow(0 0 8px currentColor); }
+.bs .sn { margin: 14px 0 0; font: 700 22px 'Cinzel', serif; letter-spacing: .14em; text-indent: .14em; color: var(--ink); text-transform: uppercase; }
+.bs .sl { margin: 6px 0 0; font: 600 17px 'Alegreya', Georgia, serif; color: var(--ink); min-height: 24px; }
+.bs .sl.damage { color: var(--phys); font-weight: 700; } .bs .sl.heal { color: var(--heal); font-weight: 700; } .bs .sl.dim { color: var(--text); font-weight: 500; }
+.bs.failed .bsock { --r: #3a3322; background: #07090d; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.94); } }
+@media (prefers-reduced-motion: reduce) { .bs .bsock, .plate { animation: none; } }
+
+/* ================= 6 · Quest complete ================= */
+.qc { text-align: center; padding: 2px 0 0; }
+.plate { position: relative; width: 96px; height: 96px; margin: 2px auto 14px; display: grid; place-items: center; animation: rise .45s cubic-bezier(.2,.9,.3,1.2); }
+.plate::before, .plate::after { content: ''; position: absolute; clip-path: var(--px); }
+.plate::before { inset: 0; background: linear-gradient(#e6d3a1, #a58f58); }
+.plate::after { inset: 4px; background: #11141c; box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+.plate svg { position: relative; z-index: 1; width: 44px; height: 44px; color: var(--brass); }
+.qc .deed { margin: 0; font: 600 20px 'Alegreya', Georgia, serif; color: var(--ink); overflow-wrap: anywhere; }
+.qc .qpips { margin-top: 10px; }
+.qc .qpips i { width: 9px; height: 9px; }
+.exprow { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 14px; padding: 12px; }
+.exprow svg { width: 24px; height: 24px; }
+.exprow b { font: 800 28px 'Alegreya Sans', sans-serif; color: #d8b46a; letter-spacing: .02em; }
+
+/* ================= 8 · Quests unlocked ================= */
+.qu { text-align: center; }
+.qu .plate { width: 84px; height: 84px; }
+.qu .plate::before { background: linear-gradient(#c8d0dd, #7d8595); }
+.qu .plate svg { color: var(--touch); width: 36px; height: 36px; }
+.qu .tag { margin: 0 0 14px; font: 500 16px 'Alegreya', Georgia, serif; color: var(--text); }
+
+/* ================= 9 · Skill detail ================= */
+.sk-name { margin: 0; flex: 1; font: 600 20px 'Alegreya', Georgia, serif; color: var(--ink); }
+.sk-meta { display: flex; align-items: center; gap: 6px; margin: -2px 2px 12px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--text); }
+.sk-meta svg { width: 14px; height: 14px; }
+.rankb { padding: 10px 12px 12px; }
+.rankb .top { display: flex; align-items: center; justify-content: space-between; }
+.rankb .rl { font: 600 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.bar { height: 8px; margin-top: 9px; background: #07090d; box-shadow: inset 2px 2px 0 #020305; position: relative; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--brass); box-shadow: inset 0 2px 0 rgba(255,255,255,.3); }
+.rankb .cap { display: flex; justify-content: space-between; margin-top: 7px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.rankb .cap b { color: var(--brass); }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.day { --lp: 3px; position: relative; height: calc(41px + var(--lp)); padding: 0 0 var(--lp); border: 0; background: none; color: var(--touch); cursor: pointer; font: 700 14px 'Alegreya Sans', sans-serif; }
+.day::before, .day::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.day::before { top: var(--lp); bottom: 0; background: #0a0c11; }
+.day::after { top: 0; bottom: var(--lp); background: #232a3a; box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+.day span { position: relative; z-index: 1; display: inline-block; }
+.day.on { color: #12141a; } .day.on::after { top: var(--lp); bottom: 0; background: #c8d0dd; } .day.on span { transform: translateY(var(--lp)); }
+.dl { display: flex; justify-content: space-between; margin: 0 2px 8px; }
+.dl .lbl { margin: 0; }
+.dl span.n { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.sum { margin: 0; padding: 4px 12px; }
+.sum .r { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font: 600 14.5px 'Alegreya Sans', sans-serif; color: var(--text); }
+.sum .r + .r { border-top: 1px solid rgba(255,255,255,.05); }
+.sum .r dt, .sum .r dd { margin: 0; display: inline-flex; align-items: center; gap: 7px; }
+.sum .r dd { color: var(--ink); font-weight: 800; }
+.sum .r svg { width: 14px; height: 14px; }
+.sum .tot { padding: 11px 0 9px; }
+.sum .tot dt { font: 600 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.sum .tot dd { font-size: 24px; color: var(--c); }
+.od { --lp: 3px; position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; height: calc(48px + var(--lp)); padding: 0 14px var(--lp); border: 0; background: none; cursor: pointer; font: 700 15px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.od::before, .od::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.od::before { top: var(--lp); bottom: 0; background: #0a0c11; }
+.od::after { top: 0; bottom: var(--lp); background: var(--card); box-shadow: var(--lifted); }
+.od > * { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; }
+.od .ch { display: inline-flex; gap: 4px; }
+.od .ch i { width: 9px; height: 9px; clip-path: var(--px2); background: var(--brass); }
+.od .ch i.sp { background: #07090d; box-shadow: inset 0 0 0 2px #3a3322; }
+.od small { font: 800 14px 'Alegreya Sans', sans-serif; color: var(--phys); }
+.rm { display: block; width: 100%; height: 44px; margin-top: 10px; background: none; border: 0; color: color-mix(in srgb, var(--bad) 75%, #fff); font: 700 14px 'Alegreya Sans', sans-serif; cursor: pointer; }
+.rm.lock { color: var(--dim); }
+
+/* ================= 10 · Revive toast ================= */
+.toast { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); animation: drop .4s cubic-bezier(.2,.9,.3,1.1); }
+.toast .sock { --r: #a58f58; width: 40px; height: 40px; }
+.toast .sock svg { width: 20px; height: 20px; color: var(--brass); }
+.toast .t { font: 600 15.5px/1.25 'Alegreya', Georgia, serif; color: var(--ink); }
+@keyframes drop { from { opacity: 0; transform: translateY(-14px); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+.behind { height: 120px; margin-top: 14px; opacity: .5; background: repeating-linear-gradient(0deg, #141720 0 52px, transparent 52px 60px); clip-path: var(--px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · remaining popups</h1>
+  <p class="lede">Start screen, death, daily update, reroll, boss skill, quest complete and failed, plus three more I found: quests unlocked, the skill detail sheet and the Phoenix toast. Level up and the high score sheet are left out. Everything is tappable.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const LU = {"heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>","sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","magic":"<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\"/><path d=\"m14 7 3 3\"/><path d=\"M5 6v4\"/><path d=\"M19 14v4\"/><path d=\"M10 2v2\"/><path d=\"M7 8H3\"/><path d=\"M21 16h-4\"/><path d=\"M11 3H9\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","healing":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","crit":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\"/><line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\"/><line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\"/><line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>","droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\"/>","streak":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","skull":"<path d=\"m12.5 17-.5-1-.5 1h1z\"/><path d=\"M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><circle cx=\"9\" cy=\"12\" r=\"1\"/>","exp":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>","levelUp":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","gem":"<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\"/><path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\"/><path d=\"M2 9h20\"/>","dice":"<rect width=\"12\" height=\"12\" x=\"2\" y=\"10\" rx=\"2\" ry=\"2\"/><path d=\"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6\"/><path d=\"M6 18h.01\"/><path d=\"M10 14h.01\"/><path d=\"M15 6h.01\"/><path d=\"M18 9h.01\"/>","quest":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","bloodlust":"<path d=\"M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z\"/><path d=\"M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97\"/>","blind":"<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>","sever":"<path d=\"M18.715 13.186C18.29 11.858 17.384 10.607 16 9.5c-2-1.6-3.5-4-4-6.5a10.7 10.7 0 0 1-.884 2.586\"/><path d=\"m2 2 20 20\"/><path d=\"M8.795 8.797A11 11 0 0 1 8 9.5C6 11.1 5 13 5 15a7 7 0 0 0 13.222 3.208\"/>","sunder":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m14.5 9.5-5 5\"/><path d=\"m9.5 9.5 5 5\"/>","mend":"<path d=\"m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49\"/><path d=\"M15 15h6\"/><path d=\"M18 12v6\"/>","doom":"<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\"/><path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/>","undying":"<path d=\"M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8\"/>","empower":"<path d=\"M9 13a1 1 0 0 0-1-1H5.061a1 1 0 0 1-.75-1.811l6.836-6.835a1.207 1.207 0 0 1 1.707 0l6.835 6.835a1 1 0 0 1-.75 1.811H16a1 1 0 0 0-1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z\"/><path d=\"M9 20h6\"/>","ascend":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","skillFailed":"<path d=\"M10.268 21a2 2 0 0 0 3.464 0\"/><path d=\"M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742\"/><path d=\"m2 2 20 20\"/><path d=\"M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05\"/>","wounds":"<path d=\"M10 10.01h.01\"/><path d=\"M10 14.01h.01\"/><path d=\"M14 10.01h.01\"/><path d=\"M14 14.01h.01\"/><path d=\"M18 6v12\"/><path d=\"M6 6v12\"/><rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"/>","reflect":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","badgeCheck":"<path d=\"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z\"/><path d=\"m9 12 2 2 4-4\"/>","left":"<path d=\"m15 18-6-6 6-6\"/>","right":"<path d=\"m9 18 6-6-6-6\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","feather":"<path d=\"M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z\"/><path d=\"M16 8 2 22\"/><path d=\"M17.5 15H9\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>","bossHit":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>"};
+const SPR = '../../public/sprites/';
+const icon = (n, col) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${col ? ` style="color:${col}"` : ''}>${LU[n]}</svg>`;
+// The app's Moonlit icon colours.
+const C = { phys: '#d0604f', magic: '#ab8dd8', true: '#f1e9d6', heal: '#92bf88', streak: '#8d8475', exp: '#d8b46a', gold: '#c8a96e', steel: '#a8a092', violet: '#a58bd0', crit: '#d6a24f', health: '#c33a2e' };
+const pips = (n) => `<span class="qpips">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'lit' : ''}"></i>`).join('')}</span>`;
+const rankPips = (n) => `<span class="pp">${Array.from({ length: n }, () => '<i></i>').join('')}</span>`;
+const closeKey = `<span class="close">${icon('x')}</span>`;
+
+const SECTIONS = [];
+const add = (s) => SECTIONS.push(s);
+
+/* ---------- 1 · Start screen ---------- */
+add({
+  tag: '1', title: 'Start screen', modal: false,
+  note: 'The new-hero screen, unframed. Hero on a plinth under the stars, stone turn keys, square dots, the oath in a framed panel. Rules sit in one sunk ledger.',
+  switches: ['First run', 'After a death'],
+  init(el, ui) {
+    const PICKS = [
+      { k: 'warrior', n: 'Warrior', ic: 'sword', c: C.phys },
+      { k: 'cleric', n: 'Mage', ic: 'magic', c: C.magic },
+      { k: 'ranger', n: 'Ranger', ic: 'zap', c: C.true },
+      { k: 'fate', n: 'Fate', ic: 'dice', c: C.exp },
+    ];
+    const RULES = [['sword', 'Keep', C.phys, 'A habit kept strikes the boss.'], ['swords', 'Break', C.health, 'A habit broken, the boss strikes back.'], ['levelUp', 'Rise', C.exp, 'Each boss slain makes you stronger.']];
+    const st = { i: 0, fallen: false };
+    const draw = () => {
+      const p = PICKS[st.i], fate = p.k === 'fate';
+      el.innerHTML = `<div class="start">
+        <p class="eyebrow">${st.fallen ? 'The fire still burns.' : 'Every habit is a weapon.'}</p>
+        <h1 class="title" style="margin-top:6px;font-size:27px;letter-spacing:.16em">StreakSlayer</h1><div class="rule"></div>
+        <div class="stage"><span class="stars"></span><span class="plinth"></span>
+          <img class="hero ${fate ? 'fated' : ''}" src="${SPR}player/${fate ? 'warrior' : p.k}.png" alt="" />${fate ? '<span class="fm">?</span>' : ''}
+          <button class="turn l" type="button" data-t="-1" aria-label="Previous hero">${icon('left')}</button>
+          <button class="turn r" type="button" data-t="1" aria-label="Next hero">${icon('right')}</button></div>
+        <p class="pname">${icon(p.ic, p.c)}${p.n}</p>
+        <div class="dots">${PICKS.map((_, k) => `<i class="${k === st.i ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="oath"><h2>${st.fallen ? 'A new hero rises' : 'A new hero'}</h2>
+          ${st.fallen ? '<p class="fell">Aldric fell to Boss 9. Your habits remain.</p>' : ''}
+          <span class="lbl">Name</span><input class="name" placeholder="Hero" maxlength="20" />
+          <ul class="rules well">${RULES.map(([ic, t, c, x]) => `<li><span class="sock">${icon(ic, c)}</span><b>${t}</b><span class="tx">${x}</span></li>`).join('')}</ul>
+          <button class="cta" type="button"><span>${st.fallen ? 'Rise' : 'Begin'}</span></button></div></div>`;
+    };
+    el.addEventListener('click', (e) => { const t = e.target.closest('.turn'); if (t) { st.i = (st.i + +t.dataset.t + PICKS.length) % PICKS.length; draw(); } });
+    ui.onSwitch = (n) => { st.fallen = n === 1; draw(); };
+    draw();
+  },
+});
+
+/* ---------- 2 · Death ---------- */
+add({
+  tag: '2', title: 'Death screen', modal: true,
+  note: 'Same bones as now: you died, the hero fading grey, level and boss, then the embers. Each ember is a small socket holding that skill’s rank pips, with the streak under it. Cold = streak broke.',
+  init(el) {
+    const EM = [[6, 21], [5, 14], [4, 9], [3, 6], [2, 3], [1, 0], [0, 2]];
+    el.innerHTML = `<div class="modal death"><div class="mhead c red"><h3>You died</h3></div>
+      <div class="grave well"><img src="${SPR}player/warrior.png" alt="" /></div>
+      <h2>Level 14 Warrior</h2><p class="meta">Fell to Boss 9</p>
+      <p class="kept">Your skills keep their power</p>
+      <ul class="embers">${EM.map(([r, s]) => `<li class="ember ${s ? '' : 'cold'}"><span class="sock ${s ? '' : 'cold'}"><span class="grp">${Array.from({ length: r }, () => '<i></i>').join('') || '<i style="opacity:.25"></i>'}</span></span>
+        <span class="st">${s ? icon('streak', C.streak) + s : '—'}</span></li>`).join('')}</ul>
+      <button class="cta" type="button"><span>Rise again</span></button></div>`;
+  },
+});
+
+/* ---------- 3 · Daily update ---------- */
+add({
+  tag: '3', title: 'Day turn over', modal: true,
+  note: 'The daily update. Each card has a tone spine: red = strikes back, green = boss bleeds. “I did this” is a small key; press it and the card flips green and the main key turns to Claim.',
+  init(el) {
+    const items = [
+      { n: 'Meditate', meta: 'daily', k: 'miss', btn: 'I did this' },
+      { n: 'Read a chapter', meta: 'weekly', k: 'miss', btn: 'I did this' },
+      { n: 'Skip dessert', meta: 'daily', k: 'reward', btn: 'I gave in' },
+    ];
+    const over = items.map(() => false);
+    const draw = () => {
+      const strikes = (it, i) => (it.k === 'miss') !== over[i];
+      const group = (kind, label) => {
+        const idx = items.map((it, i) => [it, i]).filter(([it]) => it.k === kind);
+        return `<p class="grp-l">${label}</p><ul class="list">${idx.map(([it, i]) => { const s = strikes(it, i);
+          return `<li class="lc ${s ? '' : 'ok'}"><div class="nm"><span class="nt">${it.n}</span><span class="mt">${it.meta}</span></div>
+          <div class="side"><span class="out">${s ? 'Strikes back' : 'Boss bleeds'}</span><button class="tk ${over[i] ? 'on' : ''}" type="button" data-i="${i}"><span>${it.btn}</span></button></div></li>`; }).join('')}</ul>`;
+      };
+      const anyBlow = items.some((it, i) => strikes(it, i));
+      el.innerHTML = `<div class="modal"><div class="mhead c"><h3>Daily update</h3></div>
+        ${group('miss', 'Left undone')}${group('reward', 'Resisted')}
+        <button class="cta ${anyBlow ? 'bad' : 'good'}" type="button"><span>${anyBlow ? 'Take the blow' : 'Claim'}</span></button></div>`;
+    };
+    el.addEventListener('click', (e) => { const b = e.target.closest('.tk'); if (b) { over[+b.dataset.i] = !over[+b.dataset.i]; draw(); } });
+    draw();
+  },
+});
+
+/* ---------- 4 · Reroll ---------- */
+add({
+  tag: '4', title: 'Reroll habit', modal: true,
+  note: 'The reroll step of the level-up popup. Rows are the main-screen skill cards with the type colour as the spine; a square pick socket stands where the strike button would be. Pick one and the key reads “Reroll …”.',
+  init(el) {
+    const SK = [
+      ['Meditate', 'phys', 21, 6, '1.2k', true, 'daily'], ['Stretch', 'magic', 8, 3, '640', false, 'daily'],
+      ['Journal', 'true', 4, 2, '410', false, 'daily'], ['Drink water', 'heal', 0, 0, '220', false, 'daily'],
+      ['Call a friend', 'phys', 3, 1, '980', false, 'weekly'],
+    ];
+    let pick = null;
+    const row = (s, i) => { const [n, t, st, r, d, sp] = s;
+      return `<li><button class="lc rr ${pick === i ? 'sel' : ''}" type="button" data-i="${i}" style="--tone:${C[t]};--c:${C[t]}" aria-pressed="${pick === i}">
+        <span class="pick"><i></i></span>
+        <span class="nm"><span class="nt">${n}${sp ? `<span class="star">${icon('star', C.gold)}</span>` : ''}</span>
+          <span class="mt">${st >= 2 ? `<span class="streak">${icon('streak', C.streak)}${st}</span>` : ''}${rankPips(r)}</span></span>
+        <span class="dmg">${d}</span></button></li>`; };
+    const draw = () => {
+      const g = (label, k) => `<p class="grp-l">${label}</p><ul class="list">${SK.map((s, i) => [s, i]).filter(([s]) => s[6] === k).map(([s, i]) => row(s, i)).join('')}</ul>`;
+      el.innerHTML = `<div class="modal"><div class="mhead c"><h3>Level up!</h3></div>
+        <p class="sub">Pick a skill to re-roll. Its damage type changes; nothing else does.</p>
+        ${g('Daily', 'daily')}${g('Weekly', 'weekly')}
+        <button class="cta" type="button" ${pick === null ? 'disabled' : ''}><span>${pick === null ? 'Pick a skill' : `Reroll ${SK[pick][0]}`}</span></button>
+        <button class="back" type="button">${icon('left')}Back</button></div>`;
+    };
+    el.addEventListener('click', (e) => { const b = e.target.closest('.rr'); if (b) { const i = +b.dataset.i; pick = pick === i ? null : i; draw(); } });
+    draw();
+  },
+});
+
+/* ---------- 5 · Boss skill ---------- */
+add({
+  tag: '5', title: 'Boss skill', modal: true,
+  note: 'The card a boss skill pops up with. The icon sits in a big red-lit socket (grey-gold when it failed); name in caps, then the effect line. Switch skills to see each tone.',
+  switches: ['Ravage', 'Blind', 'Doom', 'Mend', 'Empower', 'Ascend', 'Resisted', 'Failed'],
+  init(el, ui) {
+    const SKS = [
+      { n: 'Ravage', ic: 'bossHit', c: C.phys, line: '−1.2k HP', tone: 'damage' },
+      { n: 'Blind', ic: 'blind', c: C.crit, line: 'No crits · 2 days' },
+      { n: 'Doom', ic: 'doom', c: C.violet, line: 'Half your HP · 3 days' },
+      { n: 'Mend', ic: 'mend', c: C.phys, line: 'Boss +860 HP', tone: 'heal' },
+      { n: 'Empower', ic: 'empower', c: C.phys, line: 'Armor doubled' },
+      { n: 'Ascend', ic: 'ascend', c: C.phys, line: 'All stats doubled' },
+      { n: 'Rend', ic: 'bossHit', c: C.phys, line: 'Resisted', tone: 'dim' },
+      { n: 'Failed', ic: 'skillFailed', c: C.gold, failed: true },
+    ];
+    const draw = (i) => { const s = SKS[i];
+      el.innerHTML = `<div class="modal"><div class="mhead"><h3>Boss skill</h3>${closeKey}</div>
+        <div class="bs ${s.failed ? 'failed' : ''}" key="${i}"><div class="bsock">${icon(s.ic, s.c)}</div><p class="sn">${s.n}</p>${s.line ? `<p class="sl ${s.tone || ''}">${s.line}</p>` : '<p class="sl"></p>'}</div>
+        <button class="cta" type="button"><span>OK</span></button></div>`; };
+    ui.onSwitch = draw; draw(0);
+  },
+});
+
+/* ---------- 6 · Quest complete ---------- */
+add({
+  tag: '6', title: 'Quest complete', modal: true,
+  note: 'Brass plate = earned. The deed, its difficulty pips, then the EXP in a sunk well in the EXP gold. Switch difficulty to see the reward scale.',
+  switches: ['Easy', 'Medium', 'Hard'],
+  init(el, ui) {
+    const D = [['Water the plants', 1, '30'], ['Book the dentist', 2, '80'], ['Clean the garage', 3, '160']];
+    const draw = (i) => { const [d, p, x] = D[i];
+      el.innerHTML = `<div class="modal"><div class="mhead"><h3>Quest complete</h3>${closeKey}</div>
+        <div class="qc"><div class="plate">${icon('badgeCheck')}</div><p class="deed">${d}</p>${pips(p)}
+          <div class="exprow well">${icon('exp', C.exp)}<b>+${x} EXP</b></div></div>
+        <button class="cta" type="button"><span>Onward</span></button></div>`; };
+    ui.onSwitch = draw; draw(2);
+  },
+});
+
+/* ---------- 7 · Quest failed ---------- */
+add({
+  tag: '7', title: 'Quest failed', modal: true,
+  note: 'Deadline passed. Same card as the daily update: red spine, “I did this” key. Press it and the card shows its reward instead of the blow. Intro kept as is, in a sunk well with a red edge.',
+  init(el) {
+    const Q = [{ n: 'Clean the garage', p: 3, due: 'Due Nov 1', r: '+160 EXP' }, { n: 'File the taxes', p: 1, due: 'Due Oct 30', r: '+30 EXP' }];
+    const over = Q.map(() => false);
+    const draw = () => {
+      const all = over.every(Boolean);
+      el.innerHTML = `<div class="modal"><div class="mhead c"><h3>Deadline passed</h3></div>
+        <p class="intro">The boss strikes for every deed left undone.</p>
+        <ul class="list">${Q.map((q, i) => `<li class="lc ${over[i] ? 'ok' : ''}"><div class="nm"><span class="nt">${q.n}</span><span class="mt">${pips(q.p)}<span style="text-transform:none">${q.due}</span></span></div>
+          <div class="side"><span class="out">${over[i] ? q.r : 'Strikes back'}</span><button class="tk ${over[i] ? 'on' : ''}" type="button" data-i="${i}"><span>I did this</span></button></div></li>`).join('')}</ul>
+        <button class="cta ${all ? 'good' : 'bad'}" type="button"><span>${all ? 'Claim' : 'Take the blow'}</span></button></div>`;
+    };
+    el.addEventListener('click', (e) => { const b = e.target.closest('.tk'); if (b) { over[+b.dataset.i] = !over[+b.dataset.i]; draw(); } });
+    draw();
+  },
+});
+
+/* ---------- 8 · Quests unlocked ---------- */
+add({
+  tag: '8', title: 'Quests unlocked', modal: true,
+  note: 'Found in the code, not on your list. Silver plate (not brass: nothing earned yet), then the same three-rule ledger as the start screen.',
+  init(el) {
+    const R = [['quest', 'Swear', C.steel, 'Name a deed and a deadline.'], ['gift', 'Keep', C.gold, 'Done in time, receive a reward.'], ['swords', 'Break', C.health, 'Miss the deadline, the boss strikes.']];
+    el.innerHTML = `<div class="modal qu"><div class="mhead c"><h3>Quests unlocked</h3></div>
+      <div class="plate">${icon('quest')}</div><p class="tag">Some deeds are sworn only once.</p>
+      <ul class="rules well" style="margin:0;text-align:left">${R.map(([ic, t, c, x]) => `<li><span class="sock">${icon(ic, c)}</span><b>${t}</b><span class="tx">${x}</span></li>`).join('')}</ul>
+      <button class="cta" type="button"><span>Onward</span></button></div>`;
+  },
+});
+
+/* ---------- 9 · Skill detail ---------- */
+add({
+  tag: '9', title: 'Skill detail', modal: true,
+  note: 'Found in the code: the sheet a skill opens (HabitStatsModal). Rank in a sunk well with a brass bar, day keys as in the add popup, damage as a sunk ledger with the total in the type colour, Overdrive as a lifted card.',
+  init(el) {
+    const days = [true, true, false, true, true, true, false];
+    const L = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const draw = () => {
+      el.innerHTML = `<div class="modal"><div class="mhead"><h2 class="sk-name">Meditate</h2>${closeKey}</div>
+        <p class="sk-meta">${icon('sword', C.phys)}<span>Physical</span><span>·</span><span>Medium</span></p>
+        <div class="rankb well"><div class="top"><span class="rl">Rank VI</span>${rankPips(6)}</div><div class="bar"><i style="width:62%"></i></div>
+          <div class="cap"><span>21 days</span><span><b>VII</b> at 28 days</span></div></div>
+        <div class="dl" style="margin-top:14px"><span class="lbl">Days</span><span class="n">${days.filter(Boolean).length} a week</span></div>
+        <div class="days">${L.map((l, i) => `<button class="day ${days[i] ? 'on' : ''}" type="button" data-i="${i}"><span>${l}</span></button>`).join('')}</div>
+        <dl class="sum well" style="margin-top:14px;--c:${C.phys}">
+          <div class="r"><dt>Base</dt><dd>420</dd></div>
+          <div class="r"><dt>${icon('streak', C.streak)}Streak</dt><dd>×1.35</dd></div>
+          <div class="r"><dt>${icon('star', C.gold)}Special</dt><dd>×1.5</dd></div>
+          <div class="r tot"><dt>Damage</dt><dd>1.2k</dd></div></dl>
+        <button class="od" type="button"><span>Overdrive<span class="ch"><i></i><i></i><i class="sp"></i></span></span><small>840</small></button>
+        <button class="rm" type="button">Remove habit</button></div>`;
+    };
+    el.addEventListener('click', (e) => { const b = e.target.closest('.day'); if (b) { days[+b.dataset.i] = !days[+b.dataset.i]; draw(); } });
+    draw();
+  },
+});
+
+/* ---------- 10 · Revive toast ---------- */
+add({
+  tag: '10', title: 'Phoenix revive', modal: false,
+  note: 'Found in the code: the toast when a Phoenix Feather saves you. Same framed chrome as a popup, brass socket, no emoji.',
+  init(el) {
+    el.style.minHeight = '0';
+    el.innerHTML = `<div class="toast"><span class="sock">${icon('feather')}</span><span class="t">Phoenix Feather consumed — revived at half health!</span></div><div class="behind"></div>`;
+  },
+});
+
+/* ---------- build ---------- */
+const grid = document.getElementById('grid');
+for (const s of SECTIONS) {
+  const col = document.createElement('div'); col.className = 'col';
+  col.innerHTML = `<div class="tag">${s.tag}</div><h2>${s.title}</h2><p>${s.note}</p><div class="sw"></div><div class="phone ${s.modal ? 'modalp' : ''}"></div>`;
+  grid.appendChild(col);
+  const phone = col.querySelector('.phone'), sw = col.querySelector('.sw');
+  const ui = { onSwitch: null };
+  s.init(phone, ui);
+  if (s.switches) {
+    s.switches.forEach((label, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (i === (s.tag === '6' ? 2 : 0)) b.classList.add('on');
+      b.addEventListener('click', () => { sw.querySelectorAll('button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); ui.onSwitch(i); });
+      sw.appendChild(b);
+    });
+  }
+}
+</script>
+</body>
+</html>
