@@ -119,6 +119,24 @@ const PERSONALITY_MULTIPLIER: Record<Exclude<Personality, 'balanced'>, number> =
 };
 
 /**
+ * What a brute/arcane boss's own attack multiplies by. The common tier stays
+ * 2x; the rare tiers are eased below their tier number (3/4/5) because the
+ * multiplier lands on top of the miss-damage ceiling, so a 5x could take most
+ * of a player's HP in one hit. The tier number itself still keys the resist
+ * caps for armored/warded, so this is separate from PERSONALITY_MULTIPLIER.
+ */
+const ATTACK_MULTIPLIER: Partial<Record<Personality, number>> = {
+  brute: 2,
+  brute3x: 2.5,
+  brute4x: 3,
+  brute5x: 3.5,
+  arcane: 2,
+  arcane3x: 2.5,
+  arcane4x: 3,
+  arcane5x: 3.5,
+};
+
+/**
  * Flavor name shown to the player instead of the raw `Personality` id (e.g.
  * `armored3x` reads as "Steel Bulwark", not "armored3x") — mirrors how
  * `ItemDef.rarity` is an internal tier id while `ItemDef.name` is the
@@ -296,8 +314,8 @@ export function generateBoss(
   // personality's attacks stay on the curve.
   const targetAttack = (missDamagePctForIndex(index) * baseMaxHealth) / TUNING.MISS_DAMAGE_FACTOR;
   const attackJitter = () => 1 + (rng() * 2 - 1) * 0.1;
-  const physicalMultiplier = emphasizedStat === 'physicalAttack' ? PERSONALITY_MULTIPLIER[personality as Exclude<Personality, 'balanced'>] : 1;
-  const magicMultiplier = emphasizedStat === 'magicAttack' ? PERSONALITY_MULTIPLIER[personality as Exclude<Personality, 'balanced'>] : 1;
+  const physicalMultiplier = emphasizedStat === 'physicalAttack' ? ATTACK_MULTIPLIER[personality] ?? 1 : 1;
+  const magicMultiplier = emphasizedStat === 'magicAttack' ? ATTACK_MULTIPLIER[personality] ?? 1 : 1;
 
   const boss: Boss = {
     index,
