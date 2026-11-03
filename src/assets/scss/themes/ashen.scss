@@ -1087,9 +1087,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // Add: a ghost plus in the section's colour. The tap area is 44px; the
   // drawn square is 30px. (docs/mockups/pixel-add-together.html) It is
   // dropped 1px so the square's top edge lines up with the top of the
-  // section's spine bar; a transform leaves the header's layout alone.
+  // section's spine bar, and 7px right (the tap area's inset around the
+  // square) so the square ends where the Daily/Weekly labels and the cards
+  // end; a transform leaves the header's layout alone.
   .add-button {
-    transform: translateY(1px);
+    transform: translate(7px, 1px);
     display: grid;
     place-items: center;
     flex-shrink: 0;
