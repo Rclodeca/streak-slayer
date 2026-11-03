@@ -135,6 +135,14 @@ describe('itemBonusPercent — drawbacks and enchanting', () => {
     expect(itemBonusPercent(character, 'health')).toBe(-10);
   });
 
+  it('adds a flat +10 to pen on an enchanted item instead of doubling it', () => {
+    const plain = makeCharacter({ equippedItemIds: ['serrated-ripper'] });
+    const enchanted = makeCharacter({ equippedItemIds: ['serrated-ripper'], doubledItemIds: ['serrated-ripper'] });
+    expect(itemBonusPercent(plain, 'armorPen')).toBe(20);
+    expect(itemBonusPercent(enchanted, 'armorPen')).toBe(20 + TUNING.ENCHANT_PEN_BONUS_PCT);
+    expect(itemBonusPercent(enchanted, 'physicalDamage')).toBe(48);
+  });
+
   it('doubles each item on the doubled list and no other', () => {
     const character = makeCharacter({ equippedItemIds: ['rusty-blade', 'steel-sword', 'plate-armor'], doubledItemIds: ['rusty-blade', 'steel-sword'] });
     expect(itemDoubleFactor(character, 'rusty-blade')).toBe(TUNING.DOUBLED_ITEM_MULTIPLIER);

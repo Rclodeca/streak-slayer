@@ -58,6 +58,7 @@ export type ItemEffectId =
   | 'wellspring';
 
 // A negative percent is a drawback (e.g. -10 max health); enchanting never doubles it.
+// Enchanting doubles positive bonuses, except pen, which gets a flat +10 points.
 export interface ItemBonus {
   stat: BoostableStat;
   percent?: number;
@@ -125,6 +126,12 @@ export function itemDoubleFactor(character: Pick<Character, 'doubledItemIds'>, i
   return character.doubledItemIds?.includes(itemId) ? TUNING.DOUBLED_ITEM_MULTIPLIER : 1;
 }
 
+/** A positive bonus `amount` of `stat` scaled by an enchant `factor`: pen gains a flat TUNING.ENCHANT_PEN_BONUS_PCT instead of multiplying, everything else multiplies. */
+function enchantedAmount(stat: BoostableStat, amount: number, factor: number): number {
+  if (factor <= 1) return amount;
+  return stat === 'armorPen' || stat === 'magicPen' ? amount + TUNING.ENCHANT_PEN_BONUS_PCT : amount * factor;
+}
+
 /** The character's doubled items that are still equipped (a stale id left by an older save doesn't count). */
 export function equippedDoubledItemIds(character: Pick<Character, 'doubledItemIds' | 'equippedItemIds'>): string[] {
   return (character.doubledItemIds ?? []).filter((id) => character.equippedItemIds.includes(id));
@@ -152,7 +159,7 @@ export function itemBonusPercent(character: Character, stat: BoostableStat): num
     const item = ITEM_CATALOG.find((candidate) => candidate.id === id);
     if (!item) continue;
     for (const bonus of item.bonuses) {
-      if (bonus.stat === stat && bonus.percent) total += bonus.percent > 0 ? bonus.percent * itemDoubleFactor(character, id) : bonus.percent;
+      if (bonus.stat === stat && bonus.percent) total += bonus.percent > 0 ? enchantedAmount(stat, bonus.percent, itemDoubleFactor(character, id)) : bonus.percent;
     }
   }
   return total;
@@ -223,7 +230,7 @@ export function describeItemBonusParts(
   const parts: { stat: BoostableStat; text: string; label: string }[] = [];
   for (const bonus of item.bonuses) {
     const label = STAT_LABEL[bonus.stat];
-    if (bonus.percent) parts.push({ stat: bonus.stat, text: signedAmount(bonus.percent > 0 ? bonus.percent * factor : bonus.percent, '%'), label });
+    if (bonus.percent) parts.push({ stat: bonus.stat, text: signedAmount(bonus.percent > 0 ? enchantedAmount(bonus.stat, bonus.percent, factor) : bonus.percent, '%'), label });
     if (bonus.flat) parts.push({ stat: bonus.stat, text: signedAmount(bonus.flat > 0 ? bonus.flat * factor : bonus.flat, ''), label });
   }
   return parts;

@@ -190,6 +190,8 @@ export const TUNING = {
   DOUBLE_ITEM_MIN_LEVEL: 10,
   DOUBLE_ITEM_MAX: 2,
   DOUBLED_ITEM_MULTIPLIER: 2,
+  // Enchanting doesn't double armorPen/magicPen (too strong) — it adds this many percentage points instead.
+  ENCHANT_PEN_BONUS_PCT: 10,
   BASE_CRIT_CHANCE: 0.01, // 1% base crit chance for the player (see leveling.ts effectiveCritChance)
   CRIT_MULTIPLIER: 2, // crit hits deal 2x damage
   // A flat reward bump for weekly habits — see weeklyBonusMultiplier in
