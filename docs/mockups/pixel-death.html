@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut death screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Death screen options in Pixel-cut (Moonlit). Shared chrome is copied from
+   pixel-popups.html. Copy stays: "You died", "Your skills keep their power",
+   "Rise again". Switch "Streaks kept / Some broke" on each option. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 44px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col > h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 10px; min-height: 96px; font-size: 14.5px; }
+.sw { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; min-height: 30px; }
+.sw button { padding: 5px 10px; background: #26282e; border: 1px solid #3a3d46; color: #b8b6b0; font: 700 12px 'Alegreya Sans', sans-serif; cursor: pointer; }
+.sw button.on { background: #dbe2ee; color: #12141a; border-color: #dbe2ee; }
+button, input { font: inherit; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --good: #7fc17a;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --phys: #d0604f; --magic: #ab8dd8; --true: #f1e9d6; --heal: #92bf88;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --sunk: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b;
+  --lifted: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  position: relative; width: 390px; padding: 54px 10px 28px; background: radial-gradient(70% 30% at 50% 6%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone.modalp::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; }
+.phone > * { position: relative; }
+svg.i { width: 14px; height: 14px; flex: none; }
+.ic { display: inline-flex; }
+
+/* ---- Popup chrome (pixel-forms / pixel-levelup) ---- */
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 14px; }
+.mhead { display: flex; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; flex: 1; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.mhead.c { justify-content: center; }
+.mhead.c h3 { flex: none; }
+.mhead.red h3 { color: var(--bad); letter-spacing: .3em; }
+.close { width: 40px; height: 40px; margin-right: -4px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.06); border: 1px solid rgba(219,226,238,.25); color: var(--touch); }
+.close svg { width: 16px; height: 16px; }
+.lbl { display: block; margin: 14px 2px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.lbl:first-child { margin-top: 2px; }
+.well { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); }
+.sock { flex: none; display: grid; place-items: center; clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px var(--r, #2a3140), inset 4px 4px 0 #020305; }
+.sock svg { width: 20px; height: 20px; }
+.ink { color: var(--ink); }
+
+/* Silver key: the main button. --face/--base/--fg set the colour. */
+.cta { --lp: 3px; --face: #c8d0dd; --base: #7d8595; --fg: #12141a; --sh: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18);
+  position: relative; display: block; width: 100%; margin-top: 18px; height: calc(46px + var(--lp)); padding: 0 8px var(--lp); border: 0; background: none; cursor: pointer;
+  font: 700 16px 'Alegreya Sans', sans-serif; color: var(--fg); letter-spacing: .02em; -webkit-tap-highlight-color: transparent; }
+.cta::before, .cta::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.cta::before { top: var(--lp); bottom: 0; background: var(--base); }
+.cta::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: var(--sh); transition: top .07s, bottom .07s; }
+.cta > span { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; transition: transform .07s; }
+.cta:active::after { top: var(--lp); bottom: 0; }
+.cta:active > span { transform: translateY(var(--lp)); }
+.cta.bad { --face: #d4574a; --base: #6e2a24; --fg: #fff; --sh: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(0,0,0,.22); }
+.cta.good { --face: #7fc17a; --base: #3d6a3a; --fg: #12301a; --sh: inset 0 2px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(0,0,0,.18); }
+.cta[disabled] { --face: #1d2230; --base: #0a0c11; --fg: #5f6470; --sh: inset 0 2px 0 rgba(255,255,255,.06); cursor: default; }
+.cta[disabled]::after { top: var(--lp); bottom: 0; }
+.cta[disabled] > span { transform: translateY(var(--lp)); }
+.back { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 44px; margin-top: 6px; background: none; border: 0; color: var(--text); font: 700 14px 'Alegreya Sans', sans-serif; cursor: pointer; }
+.back svg { width: 16px; height: 16px; }
+
+/* Small toggle key ("I did this"): raised, presses down and lights silver when on */
+.tk { --lp: 3px; --face: #232a3a; --base: #0a0c11; --fg: var(--touch); position: relative; flex: none; height: calc(34px + var(--lp)); padding: 0 12px var(--lp); border: 0; background: none; cursor: pointer;
+  font: 700 13px 'Alegreya Sans', sans-serif; color: var(--fg); white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.tk::before, .tk::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.tk::before { top: var(--lp); bottom: 0; background: var(--base); }
+.tk::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.1), inset 2px 0 0 rgba(255,255,255,.05); transition: top .07s, bottom .07s; }
+.tk > span { position: relative; z-index: 1; display: inline-block; transition: transform .07s; }
+.tk.on { --face: #c8d0dd; --fg: #12141a; }
+.tk.on::after { top: var(--lp); bottom: 0; box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); }
+.tk.on > span { transform: translateY(var(--lp)); }
+
+/* Lifted card (as on the main screen), with a tone spine on the left */
+.lc { --tone: var(--bad); position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 8px 8px 16px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.lc::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--tone); }
+.lc.ok { --tone: var(--good); }
+.lc .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.lc .nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); overflow-wrap: anywhere; }
+.lc .mt { display: flex; align-items: center; gap: 8px; font: 700 12px 'Alegreya Sans', sans-serif; color: #7c808b; text-transform: capitalize; }
+.lc .side { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+.lc .out { font: 800 13px 'Alegreya Sans', sans-serif; color: var(--tone); }
+.list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+/* Rank pips (brass squares, in fours) and quest pips (brass circles) */
+.pp { display: flex; gap: 4px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+
+
+.col > p { min-height: 78px; }
+
+/* shared death bits */
+.death { text-align: center; }
+.fall { image-rendering: pixelated; filter: grayscale(1) brightness(.5); -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 92%); mask-image: linear-gradient(180deg, #000 30%, transparent 92%); }
+.death h2 { margin: 14px 0 0; font: 600 22px 'Alegreya', Georgia, serif; color: var(--ink); }
+.death .meta { margin: 2px 0 0; font-size: 14px; }
+.kept { margin: 18px 2px 10px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.death .kept { text-align: center; text-indent: .24em; }
+.st { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.st svg { width: 12px; height: 12px; }
+.st.cold { color: var(--dim); font-weight: 500; }
+
+/* ===== A · Embers (current mock) ===== */
+.grave { position: relative; height: 140px; margin: 2px 0 0; overflow: hidden; background: #090b10; }
+.grave::before { content: ''; position: absolute; inset: 0; background: radial-gradient(closest-side at 50% 80%, rgba(212,87,74,.16), transparent); }
+.grave img { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); }
+.embers { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ember { display: grid; justify-items: center; gap: 6px; width: 52px; }
+.ember .sock { --r: #3a3322; width: 44px; height: 44px; }
+.ember .grp { display: grid; grid-template-columns: repeat(4, 4px); gap: 3px; }
+.ember .grp i { width: 4px; height: 4px; background: var(--brass); }
+.ember.cold .grp i { opacity: .4; }
+
+/* ===== B · Struck hero ===== */
+.hcard { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px; clip-path: var(--px); background: #11141c; border-bottom: 3px solid var(--lip); }
+.hcard .port { flex: none; width: 64px; height: 64px; display: grid; place-items: end center; overflow: hidden; clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px #2a1715, inset 4px 4px 0 #020305; }
+.hcard .port img { width: 60px; height: 60px; object-fit: contain; }
+.hcard .nm { flex: 1; text-align: left; }
+.hcard .nt { display: block; font: 600 18px 'Alegreya', Georgia, serif; color: #6f747f; text-decoration: line-through; text-decoration-color: rgba(212,87,74,.6); text-decoration-thickness: 2px; }
+.hcard .mt { display: block; margin-top: 2px; font: 700 12px 'Alegreya Sans', sans-serif; color: #5d616b; }
+.hcard .down { flex: none; min-width: 64px; height: 40px; margin-top: 3px; display: grid; place-items: center; clip-path: var(--px2); background: #1a1d24; color: #4f535c; font: 800 13px 'Alegreya Sans', sans-serif; letter-spacing: .04em; }
+.lc .ty { display: inline-flex; } .lc .ty svg { width: 12px; height: 12px; }
+.death .lc { text-align: left; }
+.lc.cold { --tone: #2a3140; }
+.lc.cold .nt { color: var(--text); }
+
+/* ===== C · Ledger ===== */
+.hd { display: flex; align-items: center; gap: 12px; padding: 10px; text-align: left; }
+.hd .port { flex: none; width: 76px; height: 76px; display: grid; place-items: end center; overflow: hidden; clip-path: var(--px2); background: radial-gradient(closest-side at 50% 85%, rgba(212,87,74,.18), #07090d); box-shadow: inset 0 0 0 2px #3a1d1a, inset 4px 4px 0 #020305; }
+.hd .port img { width: 72px; height: 72px; object-fit: contain; }
+.hd h2 { margin: 0; font: 600 20px 'Alegreya', Georgia, serif; color: var(--ink); }
+.hd .meta { margin: 2px 0 0; font-size: 14px; }
+.hd .meta b { color: var(--bad); font-weight: 700; }
+.ledger { margin: 0; padding: 2px 12px; list-style: none; }
+.ledger li { display: grid; grid-template-columns: 16px 1fr auto 44px; align-items: center; gap: 10px; min-height: 40px; }
+.ledger li + li { border-top: 1px solid rgba(255,255,255,.05); }
+.ledger .n { font: 600 15.5px 'Alegreya', Georgia, serif; color: var(--ink); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ledger .st { justify-content: flex-end; }
+.ledger li.cold .n { color: var(--text); }
+.ledger li.cold .pp i { opacity: .45; }
+
+/* ===== D · Stage ===== */
+.ds { margin: -54px -10px 0; padding: 54px 10px 0; text-align: center; }
+.dstage { position: relative; height: 270px; margin: 0 -10px; overflow: hidden; background: linear-gradient(#1a0c0d, #0c0f17 70%); border-bottom: 3px solid var(--lip); }
+.dstage::before { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 50% at 70% 60%, rgba(212,87,74,.22), transparent 70%); }
+.dstage .plinth { bottom: 18px; width: 110px; margin-left: 0; }
+.dstage .plinth.h { left: 22%; margin-left: -55px; }
+.dstage .plinth.b { left: 70%; margin-left: -55px; width: 130px; }
+.dstage .boss { position: absolute; left: 70%; bottom: 28px; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 0 14px rgba(212,87,74,.35)); }
+.dstage .hero { position: absolute; left: 22%; bottom: 26px; transform: translateX(-50%); }
+.dstage .dead { position: absolute; left: 0; right: 0; top: 24px; font: 700 30px 'Cinzel', serif; letter-spacing: .24em; text-indent: .24em; color: var(--bad); text-shadow: 0 3px 0 #05070a; }
+.dstage .who { position: absolute; left: 0; right: 0; top: 66px; font-size: 14px; color: var(--text); }
+.tally { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 0; }
+.tally .well { padding: 12px 8px 10px; }
+.tally b { display: flex; align-items: center; justify-content: center; gap: 6px; font: 800 30px 'Alegreya Sans', sans-serif; color: var(--brass); }
+.tally b svg { width: 20px; height: 20px; }
+.tally b.s { color: var(--ink); }
+.tally span { display: block; margin-top: 2px; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--text); }
+.ds .kept { margin: 16px 0 0; }
+.ds .cta { margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · death screen</h1>
+  <p class="lede">Four takes on the death popup. All keep “You died”, “Your skills keep their power” and “Rise again”. Use the switch above each phone to see it with a broken streak.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const LU = {"heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>","sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","magic":"<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\"/><path d=\"m14 7 3 3\"/><path d=\"M5 6v4\"/><path d=\"M19 14v4\"/><path d=\"M10 2v2\"/><path d=\"M7 8H3\"/><path d=\"M21 16h-4\"/><path d=\"M11 3H9\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","healing":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","crit":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\"/><line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\"/><line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\"/><line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>","droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\"/>","streak":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","skull":"<path d=\"m12.5 17-.5-1-.5 1h1z\"/><path d=\"M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><circle cx=\"9\" cy=\"12\" r=\"1\"/>","exp":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>","levelUp":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","gem":"<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\"/><path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\"/><path d=\"M2 9h20\"/>","dice":"<rect width=\"12\" height=\"12\" x=\"2\" y=\"10\" rx=\"2\" ry=\"2\"/><path d=\"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6\"/><path d=\"M6 18h.01\"/><path d=\"M10 14h.01\"/><path d=\"M15 6h.01\"/><path d=\"M18 9h.01\"/>","quest":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","bloodlust":"<path d=\"M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z\"/><path d=\"M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97\"/>","blind":"<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>","sever":"<path d=\"M18.715 13.186C18.29 11.858 17.384 10.607 16 9.5c-2-1.6-3.5-4-4-6.5a10.7 10.7 0 0 1-.884 2.586\"/><path d=\"m2 2 20 20\"/><path d=\"M8.795 8.797A11 11 0 0 1 8 9.5C6 11.1 5 13 5 15a7 7 0 0 0 13.222 3.208\"/>","sunder":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m14.5 9.5-5 5\"/><path d=\"m9.5 9.5 5 5\"/>","mend":"<path d=\"m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49\"/><path d=\"M15 15h6\"/><path d=\"M18 12v6\"/>","doom":"<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\"/><path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/>","undying":"<path d=\"M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8\"/>","empower":"<path d=\"M9 13a1 1 0 0 0-1-1H5.061a1 1 0 0 1-.75-1.811l6.836-6.835a1.207 1.207 0 0 1 1.707 0l6.835 6.835a1 1 0 0 1-.75 1.811H16a1 1 0 0 0-1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z\"/><path d=\"M9 20h6\"/>","ascend":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","skillFailed":"<path d=\"M10.268 21a2 2 0 0 0 3.464 0\"/><path d=\"M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742\"/><path d=\"m2 2 20 20\"/><path d=\"M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05\"/>","wounds":"<path d=\"M10 10.01h.01\"/><path d=\"M10 14.01h.01\"/><path d=\"M14 10.01h.01\"/><path d=\"M14 14.01h.01\"/><path d=\"M18 6v12\"/><path d=\"M6 6v12\"/><rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"/>","reflect":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","badgeCheck":"<path d=\"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z\"/><path d=\"m9 12 2 2 4-4\"/>","left":"<path d=\"m15 18-6-6 6-6\"/>","right":"<path d=\"m9 18 6-6-6-6\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","feather":"<path d=\"M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z\"/><path d=\"M16 8 2 22\"/><path d=\"M17.5 15H9\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>","bossHit":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>"};
+const SPR = '../../public/sprites/';
+const icon = (n, col) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${col ? ` style="color:${col}"` : ''}>${LU[n]}</svg>`;
+// The app's Moonlit icon colours.
+const C = { phys: '#d0604f', magic: '#ab8dd8', true: '#f1e9d6', heal: '#92bf88', streak: '#8d8475', exp: '#d8b46a', gold: '#c8a96e', steel: '#a8a092', violet: '#a58bd0', crit: '#d6a24f', health: '#c33a2e' };
+const pips = (n) => `<span class="qpips">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'lit' : ''}"></i>`).join('')}</span>`;
+const rankPips = (n) => `<span class="pp">${Array.from({ length: n }, () => '<i></i>').join('')}</span>`;
+const closeKey = `<span class="close">${icon('x')}</span>`;
+
+
+const SECTIONS = [];
+const add = (s) => SECTIONS.push(s);
+const SW = ['Streaks kept', 'Some broke'];
+// [name, type, rank, streak]; the "broke" view zeroes the streaks marked true.
+const SK = [['Meditate', 'phys', 6, 21], ['Stretch', 'magic', 5, 14, true], ['Journal', 'true', 4, 9], ['Drink water', 'heal', 3, 6], ['Call a friend', 'phys', 2, 3, true], ['Read a chapter', 'magic', 1, 2]];
+const skills = (broke) => SK.map(([n, t, r, s, b]) => ({ n, t, r, s: broke && b ? 0 : s }));
+const streak = (s) => s ? `<span class="st">${icon('streak', C.streak)}${s}</span>` : '<span class="st cold">—</span>';
+const TY = { phys: 'sword', magic: 'magic', true: 'zap', heal: 'healing' };
+
+/* ---------- A · Embers ---------- */
+add({
+  tag: 'A', title: 'Embers', modal: true, switches: SW,
+  note: 'The version from the popups mock, as a baseline. Hero fading grey in a sunk well, then one socket per skill holding its rank pips. No names; dim = streak broke.',
+  init(el, ui) {
+    const draw = (broke) => { el.innerHTML = `<div class="modal death"><div class="mhead c red"><h3>You died</h3></div>
+      <div class="grave well"><img class="fall" src="${SPR}player/warrior.png" alt="" /></div>
+      <h2>Level 14 Warrior</h2><p class="meta">Fell to Boss 9</p>
+      <p class="kept">Your skills keep their power</p>
+      <ul class="embers">${skills(broke).map((k) => `<li class="ember ${k.s ? '' : 'cold'}"><span class="sock"><span class="grp">${'<i></i>'.repeat(k.r)}</span></span>${streak(k.s)}</li>`).join('')}</ul>
+      <button class="cta" type="button"><span>Rise again</span></button></div>`; };
+    ui.onSwitch = (i) => draw(i === 1); draw(false);
+  },
+});
+
+/* ---------- B · Struck hero ---------- */
+add({
+  tag: 'B', title: 'Struck hero', modal: true, switches: SW,
+  note: 'Uses the main screen’s own language: the hero is a struck card (grey, flat, button down, name crossed), the skills below are still lit, lifted cards with names, pips and streak.',
+  init(el, ui) {
+    const draw = (broke) => { el.innerHTML = `<div class="modal death"><div class="mhead c red"><h3>You died</h3></div>
+      <div class="hcard"><span class="port"><img class="fall" src="${SPR}player/warrior.png" alt="" /></span>
+        <span class="nm"><span class="nt">Aldric</span><span class="mt">Level 14 Warrior · Boss 9</span></span><span class="down">Fallen</span></div>
+      <p class="kept">Your skills keep their power</p>
+      <ul class="list">${skills(broke).map((k) => `<li class="lc ${k.s ? '' : 'cold'}" style="--tone:${C[k.t]};min-height:52px"><div class="nm"><span class="nt">${k.n}</span><span class="mt">${rankPips(k.r)}</span></div>${streak(k.s)}</li>`).join('')}</ul>
+      <button class="cta" type="button"><span>Rise again</span></button></div>`; };
+    ui.onSwitch = (i) => draw(i === 1); draw(false);
+  },
+});
+
+/* ---------- C · Ledger ---------- */
+add({
+  tag: 'C', title: 'Ledger', modal: true, switches: SW,
+  note: 'Compact, like the daily update. Portrait socket beside level and boss, then one sunk ledger: type icon, name, rank pips, streak. Fits many skills without scrolling.',
+  init(el, ui) {
+    const draw = (broke) => { el.innerHTML = `<div class="modal"><div class="mhead c red"><h3>You died</h3></div>
+      <div class="hd well"><span class="port"><img class="fall" src="${SPR}player/warrior.png" alt="" /></span>
+        <div><h2>Aldric</h2><p class="meta">Level 14 Warrior</p><p class="meta">Fell to <b>Boss 9</b></p></div></div>
+      <p class="kept">Your skills keep their power</p>
+      <ul class="ledger well">${skills(broke).map((k) => `<li class="${k.s ? '' : 'cold'}">${icon(TY[k.t], C[k.t])}<span class="n">${k.n}</span>${rankPips(k.r)}${streak(k.s)}</li>`).join('')}</ul>
+      <button class="cta" type="button"><span>Rise again</span></button></div>`; };
+    ui.onSwitch = (i) => draw(i === 1); draw(false);
+  },
+});
+
+/* ---------- D · Stage ---------- */
+add({
+  tag: 'D', title: 'The boss stands', modal: false, switches: SW,
+  note: 'Full screen, no frame. The fight stage under a red sky: the boss on its plinth, your hero grey on theirs. Below, just two totals in sunk wells. Most dramatic, least detail.',
+  init(el, ui) {
+    const draw = (broke) => { const ks = skills(broke), ranks = ks.reduce((a, k) => a + k.r, 0), lit = ks.filter((k) => k.s).length;
+      el.innerHTML = `<div class="ds"><div class="dstage"><span class="stars"></span>
+        <span class="plinth h"></span><span class="plinth b"></span>
+        <img class="hero fall" src="${SPR}player/warrior.png" alt="" /><img class="boss" src="${SPR}bosses/hooded.png" alt="" />
+        <div class="dead">YOU DIED</div><div class="who">Aldric · Level 14 · Boss 9</div></div>
+        <p class="kept">Your skills keep their power</p>
+        <div class="tally"><div class="well"><b>${ranks}</b><span>Ranks</span></div><div class="well"><b class="s">${icon('streak', C.streak)}${lit}/${ks.length}</b><span>Streaks</span></div></div>
+        <button class="cta" type="button"><span>Rise again</span></button></div>`; };
+    ui.onSwitch = (i) => draw(i === 1); draw(false);
+  },
+});
+
+/* ---------- build ---------- */
+const grid = document.getElementById('grid');
+for (const s of SECTIONS) {
+  const col = document.createElement('div'); col.className = 'col';
+  col.innerHTML = `<div class="tag">${s.tag}</div><h2>${s.title}</h2><p>${s.note}</p><div class="sw"></div><div class="phone ${s.modal ? 'modalp' : ''}"></div>`;
+  grid.appendChild(col);
+  const phone = col.querySelector('.phone'), sw = col.querySelector('.sw');
+  const ui = { onSwitch: null };
+  s.init(phone, ui);
+  if (s.switches) {
+    s.switches.forEach((label, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (i === 0) b.classList.add('on');
+      b.addEventListener('click', () => { sw.querySelectorAll('button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); ui.onSwitch(i); });
+      sw.appendChild(b);
+    });
+  }
+}
+
+</script>
+</body>
+</html>
