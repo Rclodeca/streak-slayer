@@ -1494,6 +1494,17 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include brass-count;
   }
 
+  // No active side quests: greyed out, not brass, and not pressable.
+  .quest-tab.locked {
+    color: var(--spent-text);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .quest-tab .tab-lock {
+    margin: 0;
+  }
+
   .challenge-list {
     margin-top: 0;
   }

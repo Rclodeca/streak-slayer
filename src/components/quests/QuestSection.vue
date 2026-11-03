@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Lock, Plus, ScrollText } from 'lucide-vue-next';
 import { activeChallenges, dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
@@ -29,6 +29,11 @@ const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
 // Main: the quests the player wrote. Side: the in-game challenges. Not remembered between visits.
 const tab = ref<'main' | 'side'>('main');
 const activeChallengeCount = computed(() => activeChallenges(characterStore.character).length);
+// No active side quests: the Side tab greys out and locks, and a visit to it drops back to Main.
+const sideLocked = computed(() => activeChallengeCount.value === 0);
+watch(sideLocked, (locked) => {
+  if (locked) tab.value = 'main';
+});
 const showAdd = ref(false);
 const detailId = ref<string | null>(null);
 const detailQuest = computed(() => questStore.quests.find((q) => q.id === detailId.value) ?? null);
@@ -82,8 +87,16 @@ function onCheckOff(quest: Quest) {
     <p class="section-caption">One-off tasks</p>
     <div v-if="open" class="quest-tabs" role="tablist">
       <button type="button" role="tab" class="quest-tab" :class="{ selected: tab === 'main' }" :aria-selected="tab === 'main'" @click="tab = 'main'">Main</button>
-      <button type="button" role="tab" class="quest-tab side" :class="{ selected: tab === 'side' }" :aria-selected="tab === 'side'" @click="tab = 'side'">
-        Side<span v-if="activeChallengeCount" class="tab-count">{{ activeChallengeCount }}</span>
+      <button
+        type="button"
+        role="tab"
+        class="quest-tab side"
+        :class="{ selected: tab === 'side', locked: sideLocked }"
+        :aria-selected="tab === 'side'"
+        :disabled="sideLocked"
+        @click="tab = 'side'"
+      >
+        Side<Lock v-if="sideLocked" :size="12" class="tab-lock" aria-hidden="true" /><span v-else class="tab-count">{{ activeChallengeCount }}</span>
       </button>
     </div>
     <div v-if="!open" class="lock-area">
@@ -297,6 +310,15 @@ function onCheckOff(quest: Quest) {
 .tab-count {
   margin-left: 0.4rem;
   font-size: 0.75rem;
+}
+
+.quest-tab.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tab-lock {
+  margin-left: 0.4rem;
 }
 
 .body {
