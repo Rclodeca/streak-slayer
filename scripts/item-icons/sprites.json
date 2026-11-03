@@ -1,5 +1,14 @@
 {
   "bosses/balanced": {
+    "source": "starter-hero-rogue-dual-daggers-hood-leather-death-falling_20260217_212644.png",
+    "canvas": 192,
+    "size": 172.0,
+    "left": 21.5,
+    "bottom": 7.7,
+    "mirror": false,
+    "outline": false
+  },
+  "bosses/hooded": {
     "source": "wizard-cloak-dark-black-flowing-hooded_20260225_190428.png",
     "canvas": 192,
     "size": 180.5,

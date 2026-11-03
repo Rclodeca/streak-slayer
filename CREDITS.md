@@ -8,7 +8,8 @@ Every boss sprite, item icon and player hero comes from [FreePixel](https://free
 
 | File | FreePixel source |
 |---|---|
-| `bosses/balanced.png` | `wizard-cloak-dark-black-flowing-hooded_20260225_190428.png` |
+| `bosses/balanced.png` | `starter-hero-rogue-dual-daggers-hood-leather-death-falling_20260217_212644.png` |
+| `bosses/hooded.png` | `wizard-cloak-dark-black-flowing-hooded_20260225_190428.png` |
 | `bosses/tank.png` | `rpg-troll-chief-large-troll-062-v2-2026-03-03T17-02-45.png` |
 | `bosses/armored.png` | `celestial-paladin-radiant-shield-blessed-sword-plate-armor_20260217_155248.png` |
 | `bosses/armored3x.png` | `8bit-plate-armor-heavy-armor-005-2026-03-10T18-57-54.png` |
