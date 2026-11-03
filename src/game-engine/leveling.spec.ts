@@ -301,12 +301,12 @@ describe('effectiveStat — drawbacks and all damage', () => {
   }
 
   it('applies allDamage to the three damage stats only', () => {
-    const character = makeCharacter({ equippedItemIds: ['glass-crown'] }); // +40% all damage, -30% max health
-    expect(itemStatMultiplier(character, 'physicalDamage')).toBeCloseTo(1.4, 10);
-    expect(itemStatMultiplier(character, 'magicDamage')).toBeCloseTo(1.4, 10);
-    expect(itemStatMultiplier(character, 'trueDamage')).toBeCloseTo(1.4, 10);
+    const character = makeCharacter({ equippedItemIds: ['glass-crown'] }); // +55% all damage, -20% max health
+    expect(itemStatMultiplier(character, 'physicalDamage')).toBeCloseTo(1.55, 10);
+    expect(itemStatMultiplier(character, 'magicDamage')).toBeCloseTo(1.55, 10);
+    expect(itemStatMultiplier(character, 'trueDamage')).toBeCloseTo(1.55, 10);
     expect(itemStatMultiplier(character, 'healing')).toBe(1);
-    expect(effectiveStat(character, 'health')).toBeCloseTo(50 * 0.7, 10);
+    expect(effectiveStat(character, 'health')).toBeCloseTo(50 * 0.8, 10);
   });
 
   it('keeps max health positive with every health drawback equipped at once', () => {
