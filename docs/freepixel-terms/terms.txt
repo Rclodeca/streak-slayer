@@ -1,0 +1,56 @@
+Terms of Service
+
+Last updated: September 19, 2026
+
+1. Acceptance of Terms
+
+By accessing or using FreePixel, you agree to be bound by these Terms of Service. If you do not agree, please do not use the site.
+
+2. Description of Service
+
+FreePixel is a curated library of pixel art assets. We provide free asset packs for game developers and creative projects. There are no accounts and nothing is for sale on this site.
+
+3. Asset License
+
+Assets downloaded from FreePixel are provided under the following terms:
+
+- Use: Assets may be used in personal and commercial projects. No attribution required, though appreciated.
+
+- Restrictions: You may not resell, redistribute, or claim ownership of raw FreePixel assets. You may include them in a larger creative work (e.g., a game).
+
+4. Advertising
+
+FreePixel is supported by advertising served through Google AdSense, and by affiliate links on our Gear page. Ads and affiliate partners may use cookies as described in our Privacy Policy. Their presence does not affect what you pay — everything here stays free.
+
+5. Asset Creation & Quality
+
+Assets on FreePixel are created using a combination of tools and techniques, including generative technology. While we curate and quality-check all assets, content may occasionally contain imperfections. Assets are provided "as is" without warranty of fitness for any particular purpose.
+
+6. Prohibited Use
+
+You agree not to:
+
+- Use automated tools to scrape or bulk-download assets.
+
+- Mirror or rehost the FreePixel library, in whole or in part.
+
+- Place excessive automated load on the site or our asset delivery network.
+
+- Use FreePixel assets in illegal, hateful, or harmful projects.
+
+7. Availability
+
+We may block traffic that violates these terms or threatens the stability of the site. Collections may be added, changed, or withdrawn at any time without notice.
+
+8. Limitation of Liability
+
+FreePixel is provided "as is." We make no guarantees about uptime, asset availability, or content accuracy. We are not liable for any damages arising from your use of the service.
+
+9. Changes to Terms
+
+We may modify these terms at any time. Changes will be posted on this page with an updated revision date, and continued use of FreePixel after changes constitutes acceptance.
+
+10. Contact
+
+Questions about these terms? Reach us at hello@freepixel.art.
+

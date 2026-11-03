@@ -1,0 +1,60 @@
+FreePixel Asset License
+
+Free for personal and commercial use. No attribution required.
+
+The short version
+
+Every free asset on FreePixel — sprites, characters, tilesets, backgrounds, UI elements, and audio — is free to use in personal and commercial projects, including games you sell. No attribution is required, and there are no download limits, royalties, or fees.
+
+What you can do
+
+- Use assets in commercial games and apps sold on Steam, itch.io, the App Store, Google Play, or anywhere else.
+
+- Use assets in free games, game jams, prototypes, videos, streams, and educational projects.
+
+- Modify assets freely — recolor, resize, remix, animate, or combine them with your own art.
+
+- Use assets in client work and projects you are paid to build.
+
+- Use as many assets as you like, in as many projects as you like.
+
+What you cannot do
+
+- Resell or redistribute the raw asset files themselves (e.g., re-uploading them to another asset marketplace or bundling them as an asset pack).
+
+- Claim ownership or authorship of the original, unmodified artwork.
+
+- Use the assets in illegal, hateful, or harmful projects.
+
+Including assets inside a larger creative work — a game, video, or app — is always allowed; the restriction only covers redistributing the assets as assets.
+
+Credit-unlocked assets
+
+Assets unlocked with credits carry the same license, granted to the account holder who unlocked them: free for personal and commercial use, no attribution required, no redistribution of raw files.
+
+Frequently asked questions
+
+Can I use FreePixel assets in a commercial game?
+
+Yes. Every free asset on FreePixel may be used in commercial projects, including games you sell on Steam, itch.io, mobile app stores, or anywhere else. No payment or license fee is required.
+
+Do I need to credit FreePixel?
+
+No. Attribution is not required for any FreePixel asset. Credits are appreciated but always optional.
+
+Can I modify the assets?
+
+Yes. You can recolor, resize, animate, combine, or otherwise edit any asset to fit your project.
+
+What am I not allowed to do?
+
+You may not resell or redistribute the raw asset files themselves (for example, re-uploading them as an asset pack), and you may not claim ownership of the original artwork. Using them inside a larger creative work such as a game is always fine.
+
+Can I use FreePixel assets in game engines like Unity, Godot, or GameMaker?
+
+Yes. All assets are transparent PNGs (audio is MP3/OGG) and work in any engine — Unity, Godot, GameMaker, RPG Maker, Phaser, Defold, and others.
+
+Questions?
+
+The full legal terms live in our Terms of Service. If you are unsure whether your use case is covered, email hello@freepixel.art — we are happy to help.
+
