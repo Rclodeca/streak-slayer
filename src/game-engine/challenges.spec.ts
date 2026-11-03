@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import {
   activeChallenges,
+  applyChallengeEvent,
+  challengeProgress,
   CHALLENGE_DEFS,
   doneChallenges,
   drawChallenge,
   getChallengeDef,
   offerableChallenges,
+  recordBadCheck,
   takeChallenge,
 } from './challenges';
 import type { ChallengeEntry, ChallengeId } from './challenges';
 import { ITEM_CATALOG } from './items';
 import { createRng } from './rng';
-import type { Character } from './types';
+import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex } from './time';
+import type { Boss, Character, Habit, Quest } from './types';
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
   const starterStats = { physicalDamage: 10, magicDamage: 10, healing: 6, health: 50, trueDamage: 6 };
@@ -127,5 +131,292 @@ describe('activeChallenges / doneChallenges', () => {
     expect(doneChallenges(character).map((e) => e.id)).toEqual(['rank-up']);
     expect(activeChallenges(makeCharacter())).toEqual([]);
     expect(doneChallenges(makeCharacter())).toEqual([]);
+  });
+});
+
+// ---- events, day-end and progress text (Task 3) ----
+
+const ENDED = new Date('2026-11-10T20:00:00Z'); // the day that just ended
+const D = dailyPeriodKey(ENDED);
+const TODAY = addDaysToDayKey(D, 1);
+
+function makeHabit(overrides: Partial<Habit> = {}): Habit {
+  return {
+    id: 'h1',
+    name: 'Habit',
+    period: 'daily',
+    difficulty: 'easy',
+    damageType: 'physical',
+    isBad: false,
+    streakCount: 0,
+    lastCompletedPeriodKey: null,
+    lastCheckedPeriodKey: null,
+    ...overrides,
+  };
+}
+
+function makeBoss(overrides: Partial<Boss> = {}): Boss {
+  return { index: 4, health: 100, maxHealth: 100, ...overrides } as Boss;
+}
+
+function withEntry(id: ChallengeId, overrides: Partial<ChallengeEntry> = {}, character: Partial<Character> = {}): Character {
+  return makeCharacter({ challenges: [entry(id, { takenDayKey: '2026-11-01', ...overrides })], ...character });
+}
+
+function dayEnd(character: Character, habits: Habit[] = [], quests: Quest[] = [], ended = ENDED, todayKey = TODAY) {
+  return applyChallengeEvent(character, { type: 'day-end', endedDate: ended, habits, quests }, todayKey);
+}
+
+function only(result: { character: Character }): ChallengeEntry {
+  return result.character.challenges![0];
+}
+
+function quest(id: string): Quest {
+  return { id, kind: 'regular', description: id, difficulty: 'easy', dueDateKey: '2099-01-01' };
+}
+
+describe('applyChallengeEvent: counted challenges', () => {
+  it('counts each bad-habit resist and completes at 5, reporting it once', () => {
+    let character = withEntry('resist');
+    for (let i = 1; i <= 4; i++) {
+      const r = applyChallengeEvent(character, { type: 'bad-resisted' }, TODAY);
+      expect(r.completed).toEqual([]);
+      character = r.character;
+      expect(only(r).progress).toBe(i);
+    }
+    const last = applyChallengeEvent(character, { type: 'bad-resisted' }, TODAY);
+    expect(last.completed.map((e) => e.id)).toEqual(['resist']);
+    expect(only(last)).toMatchObject({ progress: 5, doneDayKey: TODAY });
+    // A done entry no longer reacts.
+    expect(applyChallengeEvent(last.character, { type: 'bad-resisted' }, TODAY).character).toBe(last.character);
+  });
+
+  it('counts landed crits toward Crit streak and bosses toward Twice slain', () => {
+    expect(only(applyChallengeEvent(withEntry('land-crits'), { type: 'crit-landed' }, TODAY)).progress).toBe(1);
+    const slain = (c: Character) => applyChallengeEvent(c, { type: 'boss-defeated', boss: makeBoss(), byTrueSkill: false, byCrit: false }, TODAY);
+    const one = slain(withEntry('slay-two'));
+    expect(only(one).progress).toBe(1);
+    expect(slain(one.character).completed.map((e) => e.id)).toEqual(['slay-two']);
+  });
+
+  it('counts a quest completed on time only when it was added on an earlier day', () => {
+    const done = (createdDayKey?: string) => applyChallengeEvent(withEntry('quest-run'), { type: 'quest-completed', createdDayKey }, TODAY);
+    expect(only(done(undefined)).progress).toBe(1);
+    expect(only(done(D)).progress).toBe(1);
+    expect(only(done(TODAY)).progress).toBe(0);
+  });
+});
+
+describe('applyChallengeEvent: one-shot challenges', () => {
+  const complete = (id: ChallengeId, event: Parameters<typeof applyChallengeEvent>[1]) => applyChallengeEvent(withEntry(id), event, TODAY).completed.map((e) => e.id);
+
+  it('Early riser needs a hard good skill checked before noon', () => {
+    const hard = makeHabit({ difficulty: 'hard' });
+    expect(complete('early-start', { type: 'habit-checked', habit: hard, hour: 11 })).toEqual(['early-start']);
+    expect(complete('early-start', { type: 'habit-checked', habit: hard, hour: 12 })).toEqual([]);
+    expect(complete('early-start', { type: 'habit-checked', habit: makeHabit({ difficulty: 'medium' }), hour: 6 })).toEqual([]);
+    expect(complete('early-start', { type: 'habit-checked', habit: makeHabit({ difficulty: 'hard', isBad: true }), hour: 6 })).toEqual([]);
+  });
+
+  it('completes Rank up, Enchanted and Epic find on their events', () => {
+    expect(complete('rank-up', { type: 'rank-up' })).toEqual(['rank-up']);
+    expect(complete('enchant', { type: 'enchanted' })).toEqual(['enchant']);
+    expect(complete('epic-find', { type: 'epic-dropped' })).toEqual(['epic-find']);
+    expect(complete('rank-up', { type: 'enchanted' })).toEqual([]);
+  });
+
+  it('completes True strike, Killing crit and Untouched from the boss kill', () => {
+    const kill = (byTrueSkill: boolean, byCrit: boolean, boss = makeBoss()) => ({ type: 'boss-defeated' as const, boss, byTrueSkill, byCrit });
+    expect(complete('true-kill', kill(true, false))).toEqual(['true-kill']);
+    expect(complete('true-kill', kill(false, true))).toEqual([]);
+    expect(complete('crit-kill', kill(false, true))).toEqual(['crit-kill']);
+    expect(complete('crit-kill', kill(true, false))).toEqual([]);
+    expect(complete('untouched', kill(false, false))).toEqual(['untouched']);
+    expect(complete('untouched', kill(false, false, makeBoss({ hurtPlayer: true })))).toEqual([]);
+  });
+});
+
+describe('applyChallengeEvent: Unbroken', () => {
+  const state = (habits: Habit[]) => applyChallengeEvent(withEntry('streak-all'), { type: 'state-changed', habits }, TODAY).completed.length === 1;
+
+  it('needs every daily, good and bad, at 3+, and at least one daily', () => {
+    expect(state([makeHabit({ streakCount: 3 }), makeHabit({ id: 'b', isBad: true, streakCount: 5 })])).toBe(true);
+    expect(state([makeHabit({ streakCount: 3 }), makeHabit({ id: 'b', isBad: true, streakCount: 2 })])).toBe(false);
+    expect(state([])).toBe(false);
+  });
+
+  it('ignores weeklies', () => {
+    expect(state([makeHabit({ streakCount: 3 }), makeHabit({ id: 'w', period: 'weekly', streakCount: 0 })])).toBe(true);
+    expect(state([makeHabit({ id: 'w', period: 'weekly', streakCount: 9 })])).toBe(false);
+  });
+});
+
+describe('applyChallengeEvent: additions count at the next rollover', () => {
+  const good = makeHabit({ id: 'g1' });
+  const bad = makeHabit({ id: 'b1', isBad: true });
+
+  it('queues an addition only for a challenge already taken, matching good vs bad', () => {
+    const none = applyChallengeEvent(makeCharacter(), { type: 'habit-added', habit: good }, TODAY);
+    expect(none.character.challenges).toBeUndefined();
+    const newGood = applyChallengeEvent(withEntry('new-good'), { type: 'habit-added', habit: good }, TODAY);
+    expect(only(newGood).pending).toEqual([{ id: 'g1', dayKey: TODAY }]);
+    expect(only(applyChallengeEvent(withEntry('new-good'), { type: 'habit-added', habit: bad }, TODAY)).pending).toBeUndefined();
+    expect(only(applyChallengeEvent(withEntry('new-bad'), { type: 'habit-added', habit: bad }, TODAY)).pending).toEqual([{ id: 'b1', dayKey: TODAY }]);
+    expect(only(applyChallengeEvent(withEntry('fresh-quests'), { type: 'quest-added', questId: 'q1' }, TODAY)).pending).toEqual([{ id: 'q1', dayKey: TODAY }]);
+  });
+
+  it('counts a surviving addition from an earlier day at day-end, and completes', () => {
+    const added = applyChallengeEvent(withEntry('new-good'), { type: 'habit-added', habit: good }, D).character;
+    const result = dayEnd(added, [good]);
+    expect(result.completed.map((e) => e.id)).toEqual(['new-good']);
+    expect(only(result).pending).toBeUndefined();
+  });
+
+  it('does not count an addition deleted before day-end, nor one added today', () => {
+    const added = applyChallengeEvent(withEntry('new-good'), { type: 'habit-added', habit: good }, D).character;
+    const deleted = dayEnd(added, []);
+    expect(only(deleted)).toMatchObject({ progress: 0 });
+    expect(only(deleted).pending ?? []).toEqual([]);
+
+    const addedToday = applyChallengeEvent(withEntry('new-good'), { type: 'habit-added', habit: good }, TODAY).character;
+    const kept = dayEnd(addedToday, [good]);
+    expect(only(kept).progress).toBe(0);
+    expect(only(kept).pending).toEqual([{ id: 'g1', dayKey: TODAY }]);
+  });
+
+  it('Fresh quests needs 3 survivors, counting a quest finished before the rollover', () => {
+    let character = withEntry('fresh-quests');
+    for (const id of ['q1', 'q2', 'q3']) character = applyChallengeEvent(character, { type: 'quest-added', questId: id }, D).character;
+    const two = dayEnd(character, [], [quest('q1'), quest('q2')]);
+    expect(only(two).progress).toBe(2);
+    expect(two.completed).toEqual([]);
+    const three = dayEnd(character, [], [quest('q1'), quest('q2'), { ...quest('q3'), doneDayKey: D }]);
+    expect(three.completed.map((e) => e.id)).toEqual(['fresh-quests']);
+  });
+
+  it('running the day-end twice does not double count', () => {
+    let character = withEntry('fresh-quests');
+    for (const id of ['q1', 'q2']) character = applyChallengeEvent(character, { type: 'quest-added', questId: id }, D).character;
+    const quests = [quest('q1'), quest('q2')];
+    const first = dayEnd(character, [], quests);
+    const second = dayEnd(first.character, [], quests);
+    expect(only(second).progress).toBe(2);
+  });
+});
+
+describe('applyChallengeEvent: day-end challenges', () => {
+  const doneToday = (overrides: Partial<Habit> = {}) => makeHabit({ lastCompletedPeriodKey: D, ...overrides });
+
+  it('Perfect day: every good daily due was checked, no bad habit', () => {
+    const habits = [doneToday({ id: 'a' }), doneToday({ id: 'b' }), makeHabit({ id: 'w', period: 'weekly' })];
+    expect(dayEnd(withEntry('perfect-day'), habits).completed.map((e) => e.id)).toEqual(['perfect-day']);
+  });
+
+  it('Perfect day fails on a missed daily, a bad-habit check that day, or no good dailies due', () => {
+    expect(dayEnd(withEntry('perfect-day'), [doneToday({ id: 'a' }), makeHabit({ id: 'b' })]).completed).toEqual([]);
+    expect(dayEnd(withEntry('perfect-day', {}, { lastBadCheckDayKey: D }), [doneToday()]).completed).toEqual([]);
+    expect(dayEnd(withEntry('perfect-day'), []).completed).toEqual([]);
+    expect(dayEnd(withEntry('perfect-day'), [makeHabit({ period: 'weekly', lastCompletedPeriodKey: D })]).completed).toEqual([]);
+  });
+
+  it('Perfect day ignores a habit created that day and a set-day habit resting that day', () => {
+    const habits = [doneToday({ id: 'a' }), makeHabit({ id: 'new', createdDayKey: D })];
+    expect(dayEnd(withEntry('perfect-day'), habits).completed).toHaveLength(1);
+    const rest = makeHabit({ id: 'rest', days: [(dayOfWeekIndex(ENDED) + 1) % 7] });
+    expect(dayEnd(withEntry('perfect-day'), [doneToday({ id: 'a' }), rest]).completed).toHaveLength(1);
+  });
+
+  it('nothing reacts to a day that ended before the challenge was taken', () => {
+    const result = dayEnd(withEntry('perfect-day', { takenDayKey: TODAY }), [doneToday()]);
+    expect(result.completed).toEqual([]);
+    expect(only(result).lastDayKey).toBeUndefined();
+  });
+
+  it('Perfect day may be completed by the day it was taken on', () => {
+    expect(dayEnd(withEntry('perfect-day', { takenDayKey: D }), [doneToday()]).completed).toHaveLength(1);
+  });
+
+  it('Clean slate counts clean days, and a bad check resets the run', () => {
+    const day = (n: number) => new Date(ENDED.getTime() + n * 86400000);
+    let character = withEntry('clean-days');
+    let result = dayEnd(character, [], [], day(0), addDaysToDayKey(D, 1));
+    expect(only(result).progress).toBe(1);
+    result = dayEnd(result.character, [], [], day(1), addDaysToDayKey(D, 2));
+    expect(only(result).progress).toBe(2);
+    character = { ...result.character, lastBadCheckDayKey: addDaysToDayKey(D, 2) };
+    result = dayEnd(character, [], [], day(2), addDaysToDayKey(D, 3));
+    expect(only(result).progress).toBe(0);
+    for (let n = 3; n <= 5; n++) result = dayEnd(result.character, [], [], day(n), addDaysToDayKey(D, n + 1));
+    expect(result.completed.map((e) => e.id)).toEqual(['clean-days']);
+  });
+
+  it('running a day-end twice for the same day leaves progress unchanged', () => {
+    const first = dayEnd(withEntry('clean-days'));
+    const second = dayEnd(first.character);
+    expect(only(first).progress).toBe(1);
+    expect(second.character).toBe(first.character);
+  });
+
+  it('Clean slate resets across a gap of days (no protection)', () => {
+    const entryAt = { progress: 2, lastDayKey: addDaysToDayKey(D, -2) };
+    const result = dayEnd(withEntry('clean-days', entryAt));
+    expect(only(result)).toMatchObject({ progress: 1, lastDayKey: D });
+  });
+});
+
+describe('applyChallengeEvent: no challenges', () => {
+  it('returns the character unchanged when challenges is undefined or empty', () => {
+    const bare = makeCharacter();
+    expect(applyChallengeEvent(bare, { type: 'rank-up' }, TODAY)).toEqual({ character: bare, completed: [] });
+    expect(applyChallengeEvent(bare, { type: 'rank-up' }, TODAY).character).toBe(bare);
+    const empty = makeCharacter({ challenges: [] });
+    expect(applyChallengeEvent(empty, { type: 'day-end', endedDate: ENDED, habits: [], quests: [] }, TODAY).character).toBe(empty);
+  });
+
+  it('returns the same character when no entry reacts', () => {
+    const character = withEntry('resist');
+    expect(applyChallengeEvent(character, { type: 'rank-up' }, TODAY).character).toBe(character);
+  });
+});
+
+describe('recordBadCheck', () => {
+  it('stamps the day, and returns the same character if already stamped', () => {
+    const stamped = recordBadCheck(makeCharacter(), D);
+    expect(stamped.lastBadCheckDayKey).toBe(D);
+    expect(recordBadCheck(stamped, D)).toBe(stamped);
+  });
+});
+
+describe('challengeProgress', () => {
+  const ctx = (habits: Habit[] = [], boss: Boss = makeBoss(), todayDate: Date = ENDED) => ({ habits, boss, todayDate });
+
+  it('gives a bar for counted challenges', () => {
+    expect(challengeProgress(entry('resist', { progress: 2 }), ctx())).toEqual({ kind: 'bar', cur: 2, max: 5 });
+    expect(challengeProgress(entry('slay-two', { progress: 1 }), ctx())).toEqual({ kind: 'bar', cur: 1, max: 2 });
+    expect(challengeProgress(entry('clean-days', { progress: 1 }), ctx())).toEqual({ kind: 'bar', cur: 1, max: 3 });
+  });
+
+  it('Fresh quests counts pending additions in its bar', () => {
+    const e = entry('fresh-quests', { progress: 1, pending: [{ id: 'q', dayKey: TODAY }] });
+    expect(challengeProgress(e, ctx())).toEqual({ kind: 'bar', cur: 2, max: 3 });
+  });
+
+  it('Perfect day reads "<n> of <m> done today"', () => {
+    const habits = [makeHabit({ id: 'a', lastCompletedPeriodKey: D }), makeHabit({ id: 'b' }), makeHabit({ id: 'c', isBad: true })];
+    expect(challengeProgress(entry('perfect-day'), ctx(habits))).toEqual({ kind: 'text', text: '1 of 2 done today' });
+  });
+
+  it('Unbroken reads "<n> of <m> at 3+"', () => {
+    const habits = [makeHabit({ id: 'a', streakCount: 4 }), makeHabit({ id: 'b', streakCount: 1 }), makeHabit({ id: 'w', period: 'weekly' })];
+    expect(challengeProgress(entry('streak-all'), ctx(habits))).toEqual({ kind: 'text', text: '1 of 2 at 3+' });
+  });
+
+  it('Untouched reads the boss number and whether it has struck', () => {
+    expect(challengeProgress(entry('untouched'), ctx([], makeBoss({ index: 12 })))).toEqual({ kind: 'text', text: 'Boss 12 · untouched so far' });
+    expect(challengeProgress(entry('untouched'), ctx([], makeBoss({ index: 12, hurtPlayer: true })))).toEqual({ kind: 'text', text: 'Boss 12 · struck' });
+  });
+
+  it('gives a plain line for the other one-shots', () => {
+    expect(challengeProgress(entry('rank-up'), ctx())).toEqual({ kind: 'text', text: 'Not yet' });
   });
 });

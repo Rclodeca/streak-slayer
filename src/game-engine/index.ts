@@ -156,14 +156,17 @@ export {
   spellweaveStacks,
 } from './itemEffects';
 
-export type { ChallengeDef } from './challenges';
+export type { ChallengeDef, ChallengeEntry, ChallengeEvent, ChallengeId, ChallengeProgress, PendingAddition } from './challenges';
 export {
   activeChallenges,
+  applyChallengeEvent,
+  challengeProgress,
   CHALLENGE_DEFS,
   doneChallenges,
   drawChallenge,
   getChallengeDef,
   offerableChallenges,
+  recordBadCheck,
   takeChallenge,
 } from './challenges';
 

@@ -2,9 +2,12 @@
 // level-up side-quest card. State lives on Character.challenges (per run), and
 // everything here is pure. Progress rules arrive with applyChallengeEvent.
 
+import { TUNING } from './constants/tuning';
+import { isDueOn } from './habits';
 import { availableRelics } from './items';
 import { pickRandom, type Rng } from './rng';
-import type { ChallengeEntry, ChallengeId, Character } from './types';
+import { dailyPeriodKey, daysBetweenDayKeys } from './time';
+import type { Boss, ChallengeEntry, ChallengeId, Character, Habit, Quest } from './types';
 
 export type { ChallengeEntry, ChallengeId, PendingAddition } from './types';
 
@@ -75,4 +78,199 @@ export function activeChallenges(character: Character): ChallengeEntry[] {
 
 export function doneChallenges(character: Character): ChallengeEntry[] {
   return (character.challenges ?? []).filter((e) => e.doneDayKey);
+}
+
+const C = TUNING.CHALLENGES;
+
+/** Something that happened in play that a challenge may care about. */
+export type ChallengeEvent =
+  | { type: 'habit-checked'; habit: Habit; hour: number } // a live good-habit tap; hour is the local hour 0-23
+  | { type: 'bad-resisted' } // a bad habit left unchecked through its period
+  | { type: 'crit-landed' }
+  | { type: 'rank-up' }
+  | { type: 'enchanted' }
+  | { type: 'epic-dropped' }
+  | { type: 'boss-defeated'; boss: Boss; byTrueSkill: boolean; byCrit: boolean } // boss = the slain boss
+  | { type: 'habit-added'; habit: Habit }
+  | { type: 'quest-added'; questId: string }
+  | { type: 'quest-completed'; createdDayKey?: string } // an on-time completion
+  | { type: 'state-changed'; habits: Habit[] } // evaluates Unbroken
+  | { type: 'day-end'; endedDate: Date; habits: Habit[]; quests: Quest[] };
+
+interface Ctx {
+  character: Character;
+  todayKey: string;
+}
+
+type Handler = (entry: ChallengeEntry, event: ChallengeEvent, ctx: Ctx) => ChallengeEntry;
+
+/** +1 progress each time `type` happens. */
+const counts =
+  (type: ChallengeEvent['type']): Handler =>
+  (entry, event) =>
+    event.type === type ? { ...entry, progress: entry.progress + 1 } : entry;
+
+/** Completes at once when `when` holds for the event. */
+const completesWhen =
+  (when: (event: ChallengeEvent) => boolean): Handler =>
+  (entry, event) =>
+    when(event) ? { ...entry, progress: 1 } : entry;
+
+const dailies = (habits: Habit[]) => habits.filter((h) => h.period === 'daily');
+
+function allDailiesStreaking(habits: Habit[]): boolean {
+  const daily = dailies(habits);
+  return daily.length > 0 && daily.every((h) => h.streakCount >= C.STREAK_EVERYTHING_MIN);
+}
+
+/**
+ * Additions (a new habit or quest) wait in `pending` and count at the next
+ * day rollover, and only if they still exist then — so add-then-delete can't
+ * farm them. `addedId` picks the id a matching add event queues; `liveIds`
+ * lists what exists at the day-end.
+ */
+function additionsCountAtRollover(
+  addedId: (event: ChallengeEvent) => string | undefined,
+  liveIds: (event: Extract<ChallengeEvent, { type: 'day-end' }>) => string[],
+): Handler {
+  return (entry, event, { todayKey }) => {
+    const added = addedId(event);
+    if (added !== undefined) {
+      if (entry.pending?.some((p) => p.id === added)) return entry;
+      return { ...entry, pending: [...(entry.pending ?? []), { id: added, dayKey: todayKey }] };
+    }
+    if (event.type !== 'day-end' || !entry.pending?.length) return entry;
+    const live = liveIds(event);
+    const waiting = entry.pending.filter((p) => live.includes(p.id));
+    const counted = waiting.filter((p) => p.dayKey < todayKey).length;
+    const rest = waiting.filter((p) => p.dayKey >= todayKey);
+    return { ...entry, progress: entry.progress + counted, pending: rest.length > 0 ? rest : undefined };
+  };
+}
+
+/**
+ * Runs a day-end check once per ended day `D`, never for a day before the
+ * challenge was taken and never twice. `check` returns the new progress.
+ */
+function onDayEnd(check: (entry: ChallengeEntry, day: string, ctx: Ctx, event: Extract<ChallengeEvent, { type: 'day-end' }>) => number): Handler {
+  return (entry, event, ctx) => {
+    if (event.type !== 'day-end') return entry;
+    const day = dailyPeriodKey(event.endedDate);
+    if (day < entry.takenDayKey) return entry;
+    if (entry.lastDayKey !== undefined && entry.lastDayKey >= day) return entry;
+    return { ...entry, progress: check(entry, day, ctx, event), lastDayKey: day };
+  };
+}
+
+const HANDLERS: Record<ChallengeId, Handler> = {
+  'perfect-day': onDayEnd((entry, day, { character }, event) => {
+    const due = dailies(event.habits).filter(
+      (h) => !h.isBad && isDueOn(h, event.endedDate) && !(h.createdDayKey !== undefined && h.createdDayKey >= day),
+    );
+    const perfect = due.length > 0 && due.every((h) => h.lastCompletedPeriodKey === day) && character.lastBadCheckDayKey !== day;
+    return perfect ? 1 : entry.progress;
+  }),
+  'clean-days': onDayEnd((entry, day, { character }) => {
+    // A gap of days is not backfilled and carries no protection: the run starts over.
+    const gap = entry.lastDayKey !== undefined && daysBetweenDayKeys(entry.lastDayKey, day) > 1;
+    const run = gap ? 0 : entry.progress;
+    return character.lastBadCheckDayKey === day ? 0 : run + 1;
+  }),
+  resist: counts('bad-resisted'),
+  'early-start': completesWhen(
+    (e) => e.type === 'habit-checked' && e.habit.difficulty === 'hard' && !e.habit.isBad && e.hour < C.EARLY_START_HOUR,
+  ),
+  'streak-all': (entry, event) => (event.type === 'state-changed' && allDailiesStreaking(event.habits) ? { ...entry, progress: 1 } : entry),
+  'new-good': additionsCountAtRollover(
+    (e) => (e.type === 'habit-added' && !e.habit.isBad ? e.habit.id : undefined),
+    (e) => e.habits.map((h) => h.id),
+  ),
+  'new-bad': additionsCountAtRollover(
+    (e) => (e.type === 'habit-added' && e.habit.isBad ? e.habit.id : undefined),
+    (e) => e.habits.map((h) => h.id),
+  ),
+  'fresh-quests': additionsCountAtRollover(
+    (e) => (e.type === 'quest-added' ? e.questId : undefined),
+    (e) => e.quests.map((q) => q.id),
+  ),
+  'rank-up': completesWhen((e) => e.type === 'rank-up'),
+  enchant: completesWhen((e) => e.type === 'enchanted'),
+  'epic-find': completesWhen((e) => e.type === 'epic-dropped'),
+  'true-kill': completesWhen((e) => e.type === 'boss-defeated' && e.byTrueSkill),
+  untouched: completesWhen((e) => e.type === 'boss-defeated' && !e.boss.hurtPlayer),
+  'crit-kill': completesWhen((e) => e.type === 'boss-defeated' && e.byCrit),
+  'quest-run': (entry, event, { todayKey }) =>
+    event.type === 'quest-completed' && (event.createdDayKey === undefined || event.createdDayKey < todayKey)
+      ? { ...entry, progress: entry.progress + 1 }
+      : entry,
+  'slay-two': counts('boss-defeated'),
+  'land-crits': counts('crit-landed'),
+};
+
+/**
+ * Feeds one event to every active challenge. A finished one gets
+ * `doneDayKey: todayKey` and is returned in `completed` for the caller to pay
+ * out. The same character back when nothing changed.
+ */
+export function applyChallengeEvent(
+  character: Character,
+  event: ChallengeEvent,
+  todayKey: string,
+): { character: Character; completed: ChallengeEntry[] } {
+  const entries = character.challenges;
+  if (!entries || entries.length === 0) return { character, completed: [] };
+  const ctx: Ctx = { character, todayKey };
+  const completed: ChallengeEntry[] = [];
+  const next = entries.map((entry) => {
+    if (entry.doneDayKey) return entry;
+    const updated = HANDLERS[entry.id](entry, event, ctx);
+    if (updated === entry) return entry;
+    const goal = getChallengeDef(entry.id).goal;
+    if (updated.progress < goal) return updated;
+    const done: ChallengeEntry = { ...updated, progress: goal, doneDayKey: todayKey };
+    completed.push(done);
+    return done;
+  });
+  if (next.every((entry, i) => entry === entries[i])) return { character, completed: [] };
+  return { character: { ...character, challenges: next }, completed };
+}
+
+/** Notes that a bad habit was checked off on `dayKey` (Perfect day and Clean slate read it at the day's end). */
+export function recordBadCheck(character: Character, dayKey: string): Character {
+  return character.lastBadCheckDayKey === dayKey ? character : { ...character, lastBadCheckDayKey: dayKey };
+}
+
+export type ChallengeProgress = { kind: 'bar'; cur: number; max: number } | { kind: 'text'; text: string };
+
+/** What a challenge card shows under its deed: a bar for counted ones, a short line for the rest. */
+export function challengeProgress(entry: ChallengeEntry, ctx: { habits: Habit[]; boss: Boss; todayDate: Date }): ChallengeProgress {
+  const def = getChallengeDef(entry.id);
+  if (def.goal > 1) {
+    // Fresh quests can show its additions still waiting for the rollover.
+    const waiting = entry.id === 'fresh-quests' ? (entry.pending?.length ?? 0) : 0;
+    return { kind: 'bar', cur: Math.min(def.goal, entry.progress + waiting), max: def.goal };
+  }
+  const today = dailyPeriodKey(ctx.todayDate);
+  switch (entry.id) {
+    case 'perfect-day': {
+      const due = dailies(ctx.habits).filter(
+        (h) => !h.isBad && isDueOn(h, ctx.todayDate) && !(h.createdDayKey !== undefined && h.createdDayKey >= today),
+      );
+      const done = due.filter((h) => h.lastCompletedPeriodKey === today).length;
+      return { kind: 'text', text: due.length === 0 ? 'Nothing due today' : `${done} of ${due.length} done today` };
+    }
+    case 'streak-all': {
+      const daily = dailies(ctx.habits);
+      if (daily.length === 0) return { kind: 'text', text: 'No daily skills' };
+      const streaking = daily.filter((h) => h.streakCount >= C.STREAK_EVERYTHING_MIN).length;
+      return { kind: 'text', text: `${streaking} of ${daily.length} at ${C.STREAK_EVERYTHING_MIN}+` };
+    }
+    case 'untouched':
+      return { kind: 'text', text: `Boss ${ctx.boss.index} · ${ctx.boss.hurtPlayer ? 'struck' : 'untouched so far'}` };
+    case 'new-good':
+    case 'new-bad':
+      return { kind: 'text', text: entry.pending?.length ? 'Counts at dawn' : 'Not yet' };
+    default:
+      return { kind: 'text', text: 'Not yet' };
+  }
 }

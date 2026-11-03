@@ -330,6 +330,7 @@ export interface Quest {
   rewardItemId?: string; // side quests only: the item granted on completion; dropped once the quest goes overdue
   overdue?: boolean; // the due date passed and the miss landed; the quest stays, and pays half EXP if still finished
   doneDayKey?: string; // dailyPeriodKey of the day it was checked off; it stays checked until the day turns, then is removed
+  createdDayKey?: string; // dailyPeriodKey of the day it was added; Fresh quests and Quest run read it (undefined on older saves)
 }
 
 /** Regular-quest completions in one calendar week — see questSlotExp in quests.ts. */
