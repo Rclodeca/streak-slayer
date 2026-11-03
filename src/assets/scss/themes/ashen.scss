@@ -10,7 +10,7 @@
 //   earned: ranks, level and victory; EXP and rewards keep their gold.
 // - Stepped pixel corners (clip-path), 2px bevels and a lip under what you
 //   press. No rounded box corners; only what is round by nature stays round
-//   (dots, rings, the platforms' ellipses, the death screen's embers).
+//   (dots, rings, the platforms' ellipses).
 // - Skills are cards struck by pressing their damage button; a struck skill
 //   goes grey and flat, so what's left stands out.
 // - Engraved caps are for titles and the tiny group labels. Names you read
@@ -3126,99 +3126,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     .boss-bar {
       padding-inline: max(18px, calc((100vw - 1216px) / 2));
     }
-  }
-
-  // ---------- "You died": a band of black across the screen ----------
-
-  .modal-backdrop:has(.death) {
-    background: rgba(0, 0, 0, 0.85);
-  }
-
-  .modal-content:has(.death) {
-    clip-path: none;
-    border: 0;
-    border-radius: 0;
-    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.96) 8%, rgba(0, 0, 0, 0.96) 92%, transparent);
-    box-shadow: none;
-  }
-
-  .modal-content:has(.death) .modal-scroll {
-    padding-block: 2.2rem 2rem;
-  }
-
-  .death .title {
-    margin: 0.25rem 0 1.4rem;
-    @include engraved(2.4rem, 0.1em);
-    font-weight: 500;
-    text-indent: 0.1em;
-    color: #a8231d;
-    text-shadow:
-      0 0 22px rgba(168, 35, 29, 0.55),
-      0 0 2px #000;
-  }
-
-  .death .fallen img {
-    filter: grayscale(1) brightness(0.45) contrast(1.1);
-  }
-
-  .death h2 {
-    @include engraved($caps-lg, 0.16em);
-    color: var(--text-h);
-  }
-
-  // The kept skills' header, between two fading rules.
-  .death .kept {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    @include engraved($caps-xs, 0.22em);
-    color: var(--text-h);
-  }
-
-  .death .kept::before,
-  .death .kept::after {
-    content: '';
-    flex: 1;
-    min-width: 0.75rem;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, $line-mid);
-  }
-
-  .death .kept::after {
-    transform: scaleX(-1);
-  }
-
-  // Each kept skill an ember still lit; a broken streak leaves it cold.
-  .death .gem::before {
-    inset: 4px;
-    border: 1px solid $brass-solid;
-    border-radius: 50%;
-    transform: none;
-    background: radial-gradient(circle, rgba(230, 150, 80, 0.45), rgba(60, 30, 15, 0.6) 75%);
-    box-shadow: 0 0 14px rgba(224, 120, 58, 0.45);
-  }
-
-  .death .ember.cold .gem::before {
-    opacity: 1;
-    border-color: #8a6d3c;
-    background: radial-gradient(circle, rgba(200, 169, 110, 0.25), rgba(30, 25, 20, 0.6) 75%);
-    box-shadow: 0 0 8px rgba(200, 169, 110, 0.25);
-  }
-
-  .death .numeral {
-    font-family: var(--heading);
-    font-size-adjust: none;
-    color: $brass;
-  }
-
-  .death .streak {
-    font-family: var(--heading);
-    font-size-adjust: none;
-    color: $ember;
-  }
-
-  .death .ember.cold .streak {
-    color: $ash-deep;
   }
 
   // ---------- Spotlight hints ----------

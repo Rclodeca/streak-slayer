@@ -12,6 +12,7 @@ import QuestSection from '../quests/QuestSection.vue';
 import ProgressSummary from './ProgressSummary.vue';
 import ActivityLog from '../ui/ActivityLog.vue';
 import DeathScreen from '../ui/DeathScreen.vue';
+import HoodedScene from '../ui/HoodedScene.vue';
 import ItemDropPopup from '../ui/ItemDropPopup.vue';
 import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
 import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
@@ -63,6 +64,7 @@ const showHighScores = ref(false);
       </div>
     </div>
     <DeathScreen />
+    <HoodedScene />
     <ItemDropPopup />
     <MissedSkillsPopup />
     <EventChoiceModal />

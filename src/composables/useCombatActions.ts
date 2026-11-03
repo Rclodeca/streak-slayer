@@ -74,6 +74,7 @@ import { useQuestStore } from '../store/questStore';
 import { useCelebration } from './useCelebration';
 import { useDeathScreen } from './useDeathScreen';
 import { useFallenHero } from './useFallenHero';
+import { useHoodedFigure } from './useHoodedFigure';
 import { useBossSkillCard } from './useBossSkillCard';
 import { playHit } from './useHitFeed';
 import { useItemDropQueue } from './useItemDropQueue';
@@ -104,6 +105,7 @@ export function useCombatActions() {
   const highScoreStore = useHighScoreStore();
   const { triggerDeath, dismiss: dismissDeathScreen } = useDeathScreen();
   const { recordFallen, clearFallen } = useFallenHero();
+  const { startScene } = useHoodedFigure();
   const { showReviveNotice } = useReviveNotice();
   const { enqueueDrops, clear: clearItemDrops } = useItemDropQueue();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
@@ -526,7 +528,9 @@ export function useCombatActions() {
   /**
    * Starts the run from the new-hero screen: a new run gets the picked hero
    * (Fate rolls one; see chooseHero), then the hero is named, which closes
-   * that screen.
+   * that screen. The hooded figure then speaks: his opening to the very first
+   * hero, a return line to any after a death (a past run on the board says so,
+   * which a reload can't lose).
    */
   function beginRun(name: string, pick: HeroPick): void {
     const heroClass = pick === 'fate' ? pickRandom(HERO_CLASSES, rng) : pick;
@@ -535,6 +539,7 @@ export function useCombatActions() {
     habitStore.setHabits(chosen.habits);
     characterStore.setName(name);
     clearFallen();
+    startScene(highScoreStore.topRuns.length > 0 ? 'back' : 'intro');
   }
 
   /**

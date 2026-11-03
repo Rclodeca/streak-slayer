@@ -21,6 +21,7 @@ import { useCelebration } from './useCelebration';
 import { useCombatActions } from './useCombatActions';
 import { useDeathScreen } from './useDeathScreen';
 import { useFallenHero } from './useFallenHero';
+import { useHoodedFigure } from './useHoodedFigure';
 import { setHitPlayer } from './useHitFeed';
 import type { Habit } from '../game-engine';
 import type { Hit } from './useHitFeed';
@@ -38,6 +39,7 @@ describe('useCombatActions', () => {
   // test so state triggered in one test can't leak into the next.
   afterEach(() => {
     useDeathScreen().dismiss();
+    useHoodedFigure().endScene();
     useReviveNotice().visible.value = false;
     useCelebration().clear();
     useBossSkillCard().clear();
@@ -506,6 +508,29 @@ describe('useCombatActions', () => {
     expect(heroClassFor(characterStore.character)).toBe('ranger');
     expect(characterStore.character.heroPending).toBe(false);
     expect(useFallenHero().fallen.value).toBeNull();
+  });
+
+  it('beginRun has the hooded figure open the very first run', () => {
+    const characterStore = useCharacterStore();
+    const { beginRun } = useCombatActions();
+    characterStore.character = createCharacter(createRng(5), 'warrior');
+
+    beginRun('Brand', 'warrior');
+
+    expect(useHoodedFigure().scene.value?.kind).toBe('intro');
+    expect(useHoodedFigure().scene.value?.lines).toHaveLength(3);
+  });
+
+  it('beginRun has him say one return line once a run has ended', () => {
+    const characterStore = useCharacterStore();
+    useHighScoreStore().topRuns = [{ bossIndex: 2 } as never];
+    const { beginRun } = useCombatActions();
+    characterStore.character = createCharacter(createRng(5), 'warrior');
+
+    beginRun('Brand', 'warrior');
+
+    expect(useHoodedFigure().scene.value?.kind).toBe('back');
+    expect(useHoodedFigure().scene.value?.lines).toHaveLength(1);
   });
 
   it('beginRun re-rolls the skills\' damage types for a different hero', () => {
