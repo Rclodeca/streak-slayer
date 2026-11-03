@@ -1,7 +1,7 @@
-// Focus mode preference: the pinned fight stage shrinks to a slim strip, so
-// the lists get the room. A UI setting, not game state: like themeStore it has
-// its own localStorage key, so it survives death resets and SaveState bumps.
-// It only changes the phone stage; the desktop banner ignores it.
+// Focus mode preference: the fight stage shrinks to a slim strip, so the lists
+// get the room (pinned on phones, scrolling away on desktop). A UI setting,
+// not game state: like themeStore it has its own localStorage key, so it
+// survives death resets and SaveState bumps.
 
 import { defineStore } from 'pinia';
 

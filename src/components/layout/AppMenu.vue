@@ -274,12 +274,6 @@ onBeforeUnmount(() => {
   margin-left: auto;
 }
 
-@media (min-width: 821px) {
-  .focus-item {
-    display: none;
-  }
-}
-
 .tick.on {
   opacity: 1;
   color: var(--accent-solid);

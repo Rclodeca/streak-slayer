@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { bossSkillMarks, effectiveStat, heroClassFor, PERSONALITY_NAME } from '../../game-engine';
+import { bossSkillMarks, effectiveStat, expToNextLevel, heroClassFor, PERSONALITY_NAME } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { setHitPlayer, useHitFeed } from '../../composables/useHitFeed';
 import { useScrolledPast } from '../../composables/useScrolledPast';
@@ -30,13 +30,16 @@ const focusMode = useFocusModeStore();
 const { phase, displayedBoss, heldLevel } = useCelebration();
 const boss = computed(() => displayedBoss.value ?? bossStore.boss);
 
-// On desktop the banner scrolls away with the page, and BossBar drops in once
-// the whole stage has gone (phones keep the stage pinned, so BossBar hides
-// itself there), carrying the hero's HP and level too (the level held back
-// like the hero panel's until a level-up's beat plays).
+// On desktop the banner scrolls away with the page, and BossBar (the Focus
+// strip, the two HP bars side by side) drops in once the whole stage has gone
+// (phones keep the stage pinned, so BossBar hides itself there). It carries
+// the hero's HP, level and EXP too (the level and EXP held back like the hero
+// panel's until a level-up's beat plays).
 const hero = computed(() => characterStore.character);
 const heroLevel = computed(() => heldLevel.value ?? hero.value.level);
 const heroMax = computed(() => effectiveStat(hero.value, 'health'));
+const heroExpMax = computed(() => expToNextLevel(heroLevel.value));
+const heroExp = computed(() => (heldLevel.value === null ? hero.value.exp : heroExpMax.value));
 const { shownHp } = useHitFeed();
 const bossHp = computed(() => shownHp(boss.value.index, boss.value.health, boss.value.maxHealth));
 const heroHp = computed(() => shownHp('hero', hero.value.currentHealth, heroMax.value));
@@ -107,12 +110,16 @@ onBeforeUnmount(() => {
         ref="bar"
         :sprite="PERSONALITY_SPRITE[boss.personality]"
         :name="PERSONALITY_NAME[boss.personality]"
+        :boss-index="boss.index"
         :current="bossHp"
         :max="boss.maxHealth"
         :hero-class="heroClassFor(hero)"
+        :hero-name="hero.name ?? 'Character'"
         :hero-current="heroHp"
         :hero-max="heroMax"
         :hero-level="heroLevel"
+        :hero-exp="heroExp"
+        :hero-exp-max="heroExpMax"
         :shown="scrolledPast"
         :phase="phase"
         :marks="bossSkillMarks(boss)"
@@ -195,67 +202,16 @@ onBeforeUnmount(() => {
     right: 1rem;
   }
 
-  /* Focus mode: a 76px strip. The hero stands left at half size, the boss
-     right at half size clear of the menu, and their names and bars run
-     between: the boss's name over its bar at the top, the hero's bar below.
-     The tap areas split across the middle. Art stays on the 2x grid: the base
-     build at half size is one device pixel per art pixel. */
+  /* Focus mode (below) is a 76px strip, which needs less air above it. The
+     hero's name and level wait for room: their bar is stacked under the boss's
+     here. */
   .fight-stage.focus {
     --stage-top: calc(4px + env(safe-area-inset-top, 0px));
   }
 
-  .fight-stage.focus .stage-inner {
-    height: 76px;
-    --split-yl: 38px;
-    --split-yr: 38px;
-    --split-ym: 38px;
-  }
-
-  .fight-stage.focus :deep(.boss-panel) {
-    --boss-w: calc(64 * var(--u));
-  }
-
-  .fight-stage.focus :deep(.boss-plat),
-  .fight-stage.focus :deep(.hero-plat),
-  .fight-stage.focus :deep(.stat-summary),
-  .fight-stage.focus :deep(.slain-name),
   .fight-stage.focus :deep(.hero-name),
   .fight-stage.focus :deep(.level-number) {
     display: none;
-  }
-
-  .fight-stage.focus :deep(.name-line::after) {
-    display: none;
-  }
-
-  .fight-stage.focus :deep(.boss-figure) {
-    top: 6px;
-    right: 64px;
-  }
-
-  .fight-stage.focus :deep(.hero-figure) {
-    left: 12px;
-    bottom: 8px;
-    width: calc(var(--hero-pw) * var(--u) / 2);
-  }
-
-  .fight-stage.focus :deep(.boss-block) {
-    top: 6px;
-    left: 80px;
-    gap: 3px;
-    width: calc(100% - 152px - 64 * var(--u));
-  }
-
-  .fight-stage.focus :deep(.hero-block) {
-    bottom: 12px;
-    left: 80px;
-    right: auto;
-    gap: 0;
-    width: calc(100% - 152px - 64 * var(--u));
-  }
-
-  .fight-stage.focus :deep(.slain-word) {
-    font-size: 1.1rem;
   }
 }
 
@@ -274,6 +230,103 @@ onBeforeUnmount(() => {
     --split-yr: 212px;
     --split-x2: max(var(--split-x), calc(7% + 450px));
     --split-ym: min(186px, calc(var(--hero-top, 999px) - 4px));
+  }
+}
+
+/* Focus mode: a 76px strip. The hero stands left at half size, the boss
+   right at half size clear of the menu (phones), and their names and bars run
+   between: the boss's name over its bar at the top, the hero's bar below.
+   The tap areas split across the middle. Art stays on the 2x grid: the base
+   build at half size is one device pixel per art pixel. Desktop and tablet
+   draw the same strip across the banner (scrolling away with it, BossBar
+   dropping in after), the two bars side by side like BossBar's. */
+.fight-stage.focus .stage-inner {
+  height: 76px;
+  --split-yl: 38px;
+  --split-yr: 38px;
+  --split-ym: 38px;
+}
+
+.fight-stage.focus :deep(.boss-panel) {
+  --boss-w: calc(64 * var(--u));
+}
+
+.fight-stage.focus :deep(.boss-plat),
+.fight-stage.focus :deep(.hero-plat),
+.fight-stage.focus :deep(.stat-summary),
+.fight-stage.focus :deep(.slain-name) {
+  display: none;
+}
+
+.fight-stage.focus :deep(.name-line::after) {
+  display: none;
+}
+
+.fight-stage.focus :deep(.boss-figure) {
+  top: 6px;
+  right: 64px;
+}
+
+.fight-stage.focus :deep(.hero-figure) {
+  left: 12px;
+  bottom: 8px;
+  width: calc(var(--hero-pw) * var(--u) / 2);
+}
+
+.fight-stage.focus :deep(.boss-block) {
+  top: 6px;
+  left: 80px;
+  gap: 3px;
+  width: calc(100% - 152px - 64 * var(--u));
+}
+
+.fight-stage.focus :deep(.hero-block) {
+  bottom: 12px;
+  left: 80px;
+  right: auto;
+  gap: 0;
+  width: calc(100% - 152px - 64 * var(--u));
+}
+
+.fight-stage.focus :deep(.slain-word) {
+  font-size: 1.1rem;
+}
+
+@media (min-width: 821px) {
+  /* The tap areas split down the middle, the boss on the right. */
+  .fight-stage.focus .stage-inner {
+    --split-x: 50%;
+    --split-x2: 50%;
+    --split-yl: 0px;
+    --split-yr: 76px;
+    --split-ym: 76px;
+  }
+
+  /* The boss stays clear of the menu in the stage's corner; the hero's bar
+     takes the left half, the boss's the right, one row, their names above. */
+  .fight-stage.focus :deep(.boss-figure) {
+    right: 64px;
+  }
+
+  .fight-stage.focus :deep(.hero-figure) {
+    left: 18px;
+  }
+
+  .fight-stage.focus :deep(.hero-block),
+  .fight-stage.focus :deep(.boss-block) {
+    top: 19px;
+    bottom: auto;
+    gap: 5px;
+  }
+
+  .fight-stage.focus :deep(.hero-block) {
+    left: 88px;
+    width: calc(50% - 95px);
+  }
+
+  .fight-stage.focus :deep(.boss-block) {
+    left: calc(50% + 7px);
+    width: calc(50% - 149px);
   }
 }
 </style>
