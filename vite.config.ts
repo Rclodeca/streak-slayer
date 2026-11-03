@@ -9,6 +9,11 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Sprites are plain <img> files under public/, which the default
+        // patterns skip; precache them so the art loads from cache and offline.
+        globPatterns: ['**/*.{js,css,html,png}'],
+      },
       manifest: {
         name: 'StreakSlayer',
         short_name: 'StreakSlayer',
