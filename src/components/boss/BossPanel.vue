@@ -17,6 +17,7 @@ import {
   reflectDaysLeft,
   undyingActive,
 } from '../../game-engine';
+import { TUNING } from '../../game-engine/constants/tuning';
 import { useCelebration } from '../../composables/useCelebration';
 import { useHitFeed } from '../../composables/useHitFeed';
 import { usePress } from '../../composables/usePress';
@@ -84,7 +85,14 @@ interface StatTile {
   label: string;
   value: string;
   note?: string;
+  // The player's pen % against this stat, shown as a pill when above 0.
+  pen?: { icon: StatIconName; pct: number };
 }
+
+const penPill = (icon: 'armorPen' | 'magicPen') => {
+  const pct = Math.min(itemBonusPercent(characterStore.character, icon), TUNING.ARMOR_MAGIC_PEN_CAP_PCT);
+  return pct > 0 ? { icon, pct } : undefined;
+};
 
 const pct = (n: number) => `${(n * 100).toFixed(0)}%`;
 
@@ -95,8 +103,8 @@ const statTiles = computed<StatTile[]>(() => {
     { icon: 'physical', label: 'Physical attack', value: formatCompact(physicalAttack.value) },
     { icon: 'magic', label: 'Magic attack', value: formatCompact(magicAttack.value) },
     ...(b.lifestealPct > 0 ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: pct(b.lifestealPct) }] : []),
-    { icon: 'armor', label: 'Armor', value: formatCompact(b.armor), note: `${armorReduction.value.toFixed(1)}% less damage` },
-    { icon: 'magicResist', label: 'Magic resist', value: formatCompact(b.magicResist), note: `${magicResistReduction.value.toFixed(1)}% less damage` },
+    { icon: 'armor', label: 'Armor', value: formatCompact(b.armor), note: `${armorReduction.value.toFixed(1)}% less damage`, pen: penPill('armorPen') },
+    { icon: 'magicResist', label: 'Magic resist', value: formatCompact(b.magicResist), note: `${magicResistReduction.value.toFixed(1)}% less damage`, pen: penPill('magicPen') },
   ];
 });
 
@@ -169,6 +177,7 @@ const skillTiles = computed<StatTile[]>(() => [
           <div class="ledger">
             <div v-for="stat in statTiles" :key="stat.label" class="stat-tile">
               <span class="tile-label"><StatIcon :name="stat.icon" />{{ stat.label }}</span>
+              <span v-if="stat.pen" class="pen-pill"><StatIcon :name="stat.pen.icon" :size="14" />{{ stat.pen.pct.toFixed(0) }}% pen</span>
               <span class="tile-value">{{ stat.value }}</span>
               <span v-if="stat.note" class="tile-note">{{ stat.note }}</span>
             </div>
@@ -192,7 +201,7 @@ const skillTiles = computed<StatTile[]>(() => [
 
       <p class="stat-note">
         Attack is what a missed medium daily deals. Easy ~0.67x, hard ~1.33x; a crit or missed weekly doubles it.
-        Armor and magic resist show the reduction your attacks face after your pen items.
+        Armor and magic resist show the reduction your attacks face, after the pen on your gear.
       </p>
     </Modal>
   </div>
@@ -458,6 +467,21 @@ const skillTiles = computed<StatTile[]>(() => [
 
 .ledger .tile-label {
   flex: 1;
+}
+
+/* Your pen against this stat: a good thing, so it reads green. */
+.pen-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.45rem;
+  margin-right: 0.3rem;
+  clip-path: var(--px2);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--heal-color) 14%, transparent);
+  color: var(--heal-color);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .tile-value {

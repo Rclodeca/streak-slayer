@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Resist vs pen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Boss popup ledger, Armor + Magic resist rows only. Boss has 556 of each;
+   the player has 25% armor pen and no magic pen, so the hits face 21.8% on
+   armor and 27.0% on resist. Four ways to say why the two differ. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 36px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 360px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+.modal {
+  --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --good: #7fc17a; --steel: #a8a092; --arcane: #8d9bd1;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid #05060a; padding: 12px; color: var(--text);
+}
+svg.i { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.arm { color: var(--steel); } .mr { color: var(--arcane); }
+
+.ledger { display: flex; flex-direction: column; padding: 2px 10px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; }
+.row { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; padding: 7px 0; }
+.row + .row { border-top: 1px solid rgba(219,226,238,.1); }
+.lab { flex: 1; display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
+.val { color: var(--ink); font-size: 15px; font-weight: 700; }
+.note { flex-basis: 100%; padding-left: 20px; font-size: 12px; color: var(--text); }
+.good { color: var(--good); }
+.dim { color: var(--dim); }
+s { color: var(--dim); text-decoration-thickness: 1px; }
+
+/* B: two columns */
+.head { display: flex; padding: 6px 0 2px; font: 600 9.5px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+.head span:first-child { flex: 1; }
+.head span + span, .row .c { width: 74px; text-align: right; }
+.row.cols { align-items: center; }
+.row .c { font-size: 14px; font-weight: 700; color: var(--ink); }
+.row .c.base { color: var(--dim); font-weight: 500; }
+
+/* D: pen pill */
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; clip-path: var(--px2); background: rgba(127,193,122,.12); color: #a9d6a5; font: 700 12px 'Alegreya Sans', sans-serif; }
+.foot { margin: 10px 2px 0; font-size: 12px; color: var(--dim); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+    <symbol id="shield-half" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 22V2"/></symbol>
+    <symbol id="shield-off" viewBox="0 0 24 24"><path d="M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"/><path d="M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"/><path d="m2 2 20 20"/></symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <h1>RESIST VS PEN</h1>
+  <p class="lede">Boss #N has 556 armor and 556 magic resist. You have 25% armor pen and no magic pen, so your hits face 21.8% on armor and 27.0% on resist. Pen is a good thing, so each option says so.</p>
+  <div class="grid">
+
+    <div class="col">
+      <div class="tag">A</div><h2>Effective stat</h2>
+      <p>The big number is what your hits actually face: 556 shrinks to 417 after pen. Original struck beside it.</p>
+      <div class="modal"><div class="ledger">
+        <div class="row"><span class="lab arm"><svg class="i"><use href="#shield"/></svg><span style="color:var(--text)">Armor</span></span><span class="val"><s>556</s> 417</span><span class="note">21.8% less damage · after your 25% pen</span></div>
+        <div class="row"><span class="lab mr"><svg class="i"><use href="#shield-half"/></svg><span style="color:var(--text)">Magic resist</span></span><span class="val">556</span><span class="note">27.0% less damage</span></div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="tag">B</div><h2>Two columns</h2>
+      <p>Boss stat on the left, what you face on the right. The gap is the pen, and it needs no words.</p>
+      <div class="modal"><div class="ledger">
+        <div class="head"><span></span><span>Boss</span><span>You face</span></div>
+        <div class="row cols"><span class="lab arm"><svg class="i"><use href="#shield"/></svg><span style="color:var(--text)">Armor</span></span><span class="c base">27.0%</span><span class="c good">21.8%</span></div>
+        <div class="row cols"><span class="lab mr"><svg class="i"><use href="#shield-half"/></svg><span style="color:var(--text)">Magic resist</span></span><span class="c base">27.0%</span><span class="c">27.0%</span></div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="tag">C</div><h2>Note says the pen</h2>
+      <p>Stat stays 556. The note shows the drop in green with your pen named, and only on the row that has pen.</p>
+      <div class="modal"><div class="ledger">
+        <div class="row"><span class="lab arm"><svg class="i"><use href="#shield"/></svg><span style="color:var(--text)">Armor</span></span><span class="val">556</span><span class="note">27.0% <span class="good">→ 21.8% less damage</span> (25% armor pen)</span></div>
+        <div class="row"><span class="lab mr"><svg class="i"><use href="#shield-half"/></svg><span style="color:var(--text)">Magic resist</span></span><span class="val">556</span><span class="note">27.0% less damage <span class="dim">(no magic pen)</span></span></div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="tag">D</div><h2>Pen pill</h2>
+      <p>Same as today, plus a small pill with the real pen icon on the row it applies to. Nothing shown when there is no pen.</p>
+      <div class="modal"><div class="ledger">
+        <div class="row"><span class="lab arm"><svg class="i"><use href="#shield"/></svg><span style="color:var(--text)">Armor</span></span><span class="pill"><svg class="i"><use href="#shield-off"/></svg>25% pen</span><span class="val">556</span><span class="note">21.8% less damage</span></div>
+        <div class="row"><span class="lab mr"><svg class="i"><use href="#shield-half"/></svg><span style="color:var(--text)">Magic resist</span></span><span class="val">556</span><span class="note">27.0% less damage</span></div>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
