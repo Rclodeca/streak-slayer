@@ -27,7 +27,7 @@ export const CHALLENGE_DEFS: readonly ChallengeDef[] = [
   { id: 'clean-days', name: 'Clean slate', deed: 'Go 3 days in a row without a bad habit.', goal: 3, icon: 'shield-check' },
   { id: 'resist', name: 'Hold the line', deed: 'Resist 5 bad habits.', goal: 5, icon: 'shield' },
   { id: 'early-start', name: 'Early riser', deed: 'Check off a hard skill before noon.', goal: 1, icon: 'sunrise' },
-  { id: 'streak-all', name: 'Unbroken', deed: 'Every daily skill on a 3-day streak at once.', goal: 1, icon: 'flame' },
+  { id: 'streak-all', name: 'Unbroken', deed: 'Every daily habit, good and bad, on a 3-day streak.', goal: 1, icon: 'flame' },
   { id: 'new-good', name: 'New discipline', deed: 'Add a good skill and keep it a day.', goal: 1, icon: 'plus' },
   { id: 'new-bad', name: 'Name the enemy', deed: 'Add a bad habit and keep it a day.', goal: 1, icon: 'skull' },
   { id: 'fresh-quests', name: 'Fresh quests', deed: 'Add 3 quests and keep them a day.', goal: 3, icon: 'scroll-text' },

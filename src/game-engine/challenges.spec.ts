@@ -53,6 +53,10 @@ describe('challenge catalog', () => {
     }
   });
 
+  it('words Unbroken to include bad habits, as its rule does', () => {
+    expect(getChallengeDef('streak-all').deed).toMatch(/good and bad/);
+  });
+
   it('looks a challenge up by id', () => {
     expect(getChallengeDef('resist').goal).toBe(5);
   });
