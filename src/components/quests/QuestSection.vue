@@ -200,7 +200,7 @@ function onCheckOff(quest: Quest) {
 
 .lock-area {
   position: relative;
-  margin-top: 0.75rem;
+  margin-top: 0;
 }
 
 .lock-ghost {

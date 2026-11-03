@@ -65,7 +65,7 @@ describe('HabitList', () => {
     addDaily();
     const wrapper = mountList();
     expect(wrapper.find('.resist-list').exists()).toBe(true);
-    expect(wrapper.find('.resist-list .section-caption').text()).toBe('Habits to break');
+    expect(wrapper.find('.resist-list .habit-group-caption').text()).toBe('Habits to break');
     expect(wrapper.find('.resist-list .section-empty').text()).toContain('Nothing to resist yet');
     expect(wrapper.find('.resist-list .habit-item').exists()).toBe(false);
   });
@@ -82,16 +82,19 @@ describe('HabitList', () => {
     expect(pledge().classList.contains('type-good')).toBe(true);
   });
 
-  it('marks only the weekly bad habits, and lists resting ones last', () => {
+  it('splits bad habits into Daily and Weekly, resting ones last in Daily', () => {
     const habitStore = useHabitStore();
     habitStore.addHabit('Snacking', 'daily', 'medium', true, createRng(1), [(today + 2) % 7]);
     habitStore.addHabit('Takeout', 'weekly', 'medium', true, createRng(2));
     habitStore.addHabit('Doomscroll', 'daily', 'medium', true, createRng(3));
     const wrapper = mountList();
-    expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Takeout', 'Snacking']);
-    const tags = wrapper.findAll('.resist-list .habit-item').map((row) => row.find('.period-tag').exists());
-    expect(tags).toEqual([false, true, false]);
-    expect(wrapper.find('.skill-list .period-tag').exists()).toBe(false);
+    expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Snacking', 'Takeout']);
+    const groups = wrapper.findAll('.resist-list .habit-group').map((group) => ({
+      label: group.find('.habit-group-label').text(),
+      names: group.findAll('.habit-item .name').map((el) => el.text()),
+    }));
+    expect(groups.map((g) => g.label)).toEqual(['Daily', 'Weekly']);
+    expect(groups.map((g) => g.names)).toEqual([['Doomscroll', 'Snacking'], ['Takeout']]);
   });
 
   it('a habit resting today stays in Daily after the due ones, greyed, with its next due day', () => {

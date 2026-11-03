@@ -16,8 +16,7 @@ import SkillSigil from './SkillSigil.vue';
 import StrikeButton from './StrikeButton.vue';
 import { WEEKDAY_SHORT } from './weekdays';
 
-// periodTag marks a weekly skill "Week", for lists that mix the periods (Resist).
-const props = defineProps<{ habit: Habit; periodTag?: boolean }>();
+const props = defineProps<{ habit: Habit }>();
 // The skill popup lives in HabitList, so it stays open when this row moves
 // down to the resting skills.
 defineEmits<{ open: [] }>();
@@ -106,7 +105,6 @@ function onStrike() {
     </span>
     <span class="meta">
       <span v-if="isResting" class="next-day">{{ nextDayLabel }}</span>
-      <span v-if="periodTag && habit.period === 'weekly'" class="period-tag">Week</span>
       <span class="streak" :style="streakStyle" :title="showStreak ? `${habit.streakCount} streak` : undefined">
         <template v-if="showStreak"><StatIcon name="streak" :size="12" />{{ habit.streakCount }}</template>
       </span>
@@ -204,11 +202,6 @@ function onStrike() {
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.7rem;
-}
-
-.period-tag {
-  font-size: 0.7rem;
-  color: var(--text);
 }
 
 /* The rank-up flare: one sweep across the row, and the new rank rising off

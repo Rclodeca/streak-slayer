@@ -1053,7 +1053,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     position: relative;
     height: 44px;
     min-height: 0;
-    margin-bottom: 4px;
+    margin-bottom: 0;
     padding: 0 2px;
   }
 
@@ -1086,10 +1086,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // Add: a ghost plus in the section's colour. The tap area is 44px; the
   // drawn square is 30px. (docs/mockups/pixel-add-together.html) It is
-  // dropped 9px so the square's top edge lines up with the top of the
-  // title's capitals; a transform leaves the header's layout alone.
+  // dropped 1px so the square's top edge lines up with the top of the
+  // section's spine bar; a transform leaves the header's layout alone.
   .add-button {
-    transform: translateY(9px);
+    transform: translateY(1px);
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -1121,15 +1121,16 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     }
   }
 
-  // What the section is, in a line under its title.
+  // What the section is, in a line under its title, in the same quiet grey
+  // as Skills' caption and reset labels.
   .section-caption {
-    margin: -12px 2px 10px;
+    margin: 2px 2px 2px;
     font-family: var(--sans);
     font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
-    color: var(--text);
+    color: var(--spent-text);
   }
 
   // A section with nothing in it says so: a quiet sunk well.
@@ -1172,19 +1173,35 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     align-items: baseline;
   }
 
-  // When the group rolls over: plain label, not engraved.
-  .habit-group-reset {
+  // Skills and Resist: the caption and each group's name share one line
+  // above its cards, both in the quiet spent grey, with no tick.
+  // (docs/mockups/pixel-group-labels.html)
+  .habit-group-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 4px 2px 2px;
     font-family: var(--sans);
+    color: var(--spent-text);
+  }
+
+  .habit-list-header + .habit-group-head,
+  .habit-list-header + .habit-group > .habit-group-head {
+    margin-top: 2px;
+  }
+
+  .habit-group-caption {
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .habit-group-label {
+    margin: 0 0 0 auto;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0;
     text-transform: none;
-    opacity: 1;
-    color: var(--spent-text);
-  }
-
-  .section-caption + .habit-group .habit-group-title {
-    margin-top: 6px;
+    white-space: nowrap;
   }
 
   :is(.habit-list, .quest-section) ul {
@@ -1271,11 +1288,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border: 0;
     @include plain-label($label-sm, 700);
     color: var(--struck-ink);
-  }
-
-  .habit-item .period-tag {
-    @include plain-label($label-sm, 700);
-    color: var(--spent-text);
   }
 
   .sigil.special {

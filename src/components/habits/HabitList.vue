@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Plus, Shield, Sword } from 'lucide-vue-next';
-import { isDueOn, msUntilRollover, periodKeyFor } from '../../game-engine';
+import { isDueOn, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
@@ -39,20 +39,6 @@ const showHint = computed(() => !habitStore.habits.length && !hintDismissed.valu
 const goodHabits = computed(() => habitStore.habits.filter((habit) => !habit.isBad));
 const badHabits = computed(() => habitStore.habits.filter((habit) => habit.isBad));
 
-// When each period rolls over, kept fresh once a minute.
-const clock = ref(debugClockStore.now());
-let clockTimer: ReturnType<typeof setInterval> | undefined;
-onMounted(() => {
-  clockTimer = setInterval(() => (clock.value = debugClockStore.now()), 60_000);
-});
-onUnmounted(() => clearInterval(clockTimer));
-
-function resetLabel(period: 'daily' | 'weekly'): string {
-  const hours = Math.max(1, Math.ceil(msUntilRollover(period, clock.value) / 3_600_000));
-  const left = period === 'weekly' && hours > 24 ? `${Math.ceil(hours / 24)}d` : `${hours}h`;
-  return period === 'weekly' ? `resets Mon · ${left}` : `resets ${left}`;
-}
-
 const dailyHabits = computed(() => sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'daily')));
 // Set-day skills resting today stay at the bottom of Daily, greyed out.
 const orderedDailyHabits = computed(() => {
@@ -63,13 +49,15 @@ const weeklyHabits = computed(() =>
   sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'weekly')),
 );
 
-// One flat list: daily, then weekly, then any resting today.
-const resistHabits = computed(() => {
+// Resist is split like Skills: daily (resting ones last, greyed), then weekly.
+const resistDailyHabits = computed(() => {
   const now = debugClockStore.now();
   const daily = sortByDamageType(badHabits.value.filter((habit) => habit.period === 'daily'));
-  const weekly = sortByDamageType(badHabits.value.filter((habit) => habit.period === 'weekly'));
-  return [...daily.filter((habit) => isDueOn(habit, now)), ...weekly, ...daily.filter((habit) => !isDueOn(habit, now))];
+  return [...daily.filter((habit) => isDueOn(habit, now)), ...daily.filter((habit) => !isDueOn(habit, now))];
 });
+const resistWeeklyHabits = computed(() =>
+  sortByDamageType(badHabits.value.filter((habit) => habit.period === 'weekly')),
+);
 
 // One popup for the whole list, by id, so it stays open when changing a
 // skill's days moves its row down to the resting ones.
@@ -147,12 +135,17 @@ function checkOffFromHint() {
       <h2><Sword :size="16" class="section-icon" />Skills</h2>
       <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="openAdd(false)"><Plus :size="16" /></button>
     </div>
-    <p class="section-caption">Habits to keep</p>
 
-    <p v-if="!goodHabits.length" class="section-empty">Nothing forged yet. Tap +.</p>
+    <template v-if="!goodHabits.length">
+      <div class="habit-group-head"><span class="habit-group-caption">Habits to keep</span></div>
+      <p class="section-empty">Nothing forged yet. Tap +.</p>
+    </template>
     <template v-else>
       <div class="habit-group">
-        <h3 class="habit-group-title">Daily<span class="habit-group-reset">{{ resetLabel('daily') }}</span></h3>
+        <div class="habit-group-head">
+          <span class="habit-group-caption">Habits to keep</span>
+          <h3 class="habit-group-label">Daily</h3>
+        </div>
         <ul v-if="orderedDailyHabits.length">
           <HabitListItem v-for="habit in orderedDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
@@ -160,7 +153,7 @@ function checkOffFromHint() {
       </div>
 
       <div class="habit-group">
-        <h3 class="habit-group-title">Weekly<span class="habit-group-reset">{{ resetLabel('weekly') }}</span></h3>
+        <div class="habit-group-head"><h3 class="habit-group-label">Weekly</h3></div>
         <ul v-if="weeklyHabits.length">
           <HabitListItem v-for="habit in weeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
@@ -174,11 +167,30 @@ function checkOffFromHint() {
       <h2><Shield :size="16" class="section-icon" />Resist</h2>
       <button type="button" class="add-button" aria-label="Add habit to resist" @click="openAdd(true)"><Plus :size="16" /></button>
     </div>
-    <p class="section-caption">Habits to break</p>
-    <p v-if="!resistHabits.length" class="section-empty">Nothing to resist yet. Tap +.</p>
-    <ul v-else>
-      <HabitListItem v-for="habit in resistHabits" :key="habit.id" :habit="habit" period-tag @open="openHabitId = habit.id" />
-    </ul>
+    <template v-if="!badHabits.length">
+      <div class="habit-group-head"><span class="habit-group-caption">Habits to break</span></div>
+      <p class="section-empty">Nothing to resist yet. Tap +.</p>
+    </template>
+    <template v-else>
+      <div class="habit-group">
+        <div class="habit-group-head">
+          <span class="habit-group-caption">Habits to break</span>
+          <h3 class="habit-group-label">Daily</h3>
+        </div>
+        <ul v-if="resistDailyHabits.length">
+          <HabitListItem v-for="habit in resistDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
+        </ul>
+        <p v-else class="habit-group-empty">No daily habits yet.</p>
+      </div>
+
+      <div class="habit-group">
+        <div class="habit-group-head"><h3 class="habit-group-label">Weekly</h3></div>
+        <ul v-if="resistWeeklyHabits.length">
+          <HabitListItem v-for="habit in resistWeeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
+        </ul>
+        <p v-else class="habit-group-empty">No weekly habits yet.</p>
+      </div>
+    </template>
   </section>
 
   <AddHabitModal v-model="showAddModal" :bad="addBad" />
@@ -238,23 +250,18 @@ function checkOffFromHint() {
   margin-top: 0.6rem;
 }
 
-.habit-group-title {
+.habit-group-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   margin: 0 0 0.3rem;
   font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--text);
 }
 
-.habit-group-reset {
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  opacity: 0.75;
+.habit-group-label {
+  margin: 0 0 0 auto;
+  font-size: inherit;
 }
 
 .habit-group-empty {
