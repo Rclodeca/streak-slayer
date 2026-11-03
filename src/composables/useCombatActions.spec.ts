@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
+import { availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -23,9 +23,8 @@ import { useDeathScreen } from './useDeathScreen';
 import { useFallenHero } from './useFallenHero';
 import { useHoodedFigure } from './useHoodedFigure';
 import { setHitPlayer } from './useHitFeed';
-import type { Habit } from '../game-engine';
+import type { Habit, Quest } from '../game-engine';
 import type { Hit } from './useHitFeed';
-import { useItemDropQueue } from './useItemDropQueue';
 import { useReviveNotice } from './useReviveNotice';
 
 describe('useCombatActions', () => {
@@ -715,7 +714,7 @@ describe('useCombatActions', () => {
 
     const expected = questSlotExp(level, 'medium', 0);
     expect(expected).toBeLessThan(expToNextLevel(level)); // well under one level at level 1
-    expect(result).toEqual({ amount: expected, item: null });
+    expect(result).toEqual({ amount: expected });
     expect(characterStore.character.exp).toBeCloseTo(exp + expected, 10);
     expect(questStore.quests).toEqual([{ ...quest, doneDayKey: dailyPeriodKey(useDebugClockStore().now()) }]);
     expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-completed', description: 'Clean garage', amount: expected });
@@ -780,62 +779,6 @@ describe('useCombatActions', () => {
     expect(result?.amount).toBe(questSlotExp(20, 'medium', 0));
   });
 
-  it('completing a side quest grants its item and no EXP, and leaves the weekly count alone', () => {
-    const characterStore = useCharacterStore();
-    const questStore = useQuestStore();
-    const activityLogStore = useActivityLogStore();
-    const { completeQuest } = useCombatActions();
-    const { current, dismiss } = useItemDropQueue();
-
-    const itemId = 'ember-heart';
-    const quest = questStore.addQuest('Slay it', 'hard', '2099-01-01', 'side', itemId);
-    const { exp, questWeek } = characterStore.character;
-
-    const result = completeQuest(quest.id);
-
-    expect(result?.amount).toBe(0);
-    expect(result?.item?.id).toBe(itemId);
-    expect(characterStore.character.exp).toBe(exp);
-    expect(characterStore.character.questWeek).toBe(questWeek);
-    expect(characterStore.character.ownedItemIds).toContain(itemId);
-    expect(current.value?.id).toBe(itemId); // goes through the item-drop popup path
-    expect(questStore.quests[0].doneDayKey).toBeDefined();
-    expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-completed', amount: 0, itemName: result?.item?.name });
-    expect(characterStore.character.earnedRelicIds).toEqual([itemId]);
-    dismiss();
-  });
-
-  it('a side quest from before relics still pays the item it promised', () => {
-    const characterStore = useCharacterStore();
-    const questStore = useQuestStore();
-    const { completeQuest } = useCombatActions();
-    const { dismiss } = useItemDropQueue();
-
-    const quest = questStore.addQuest('Old oath', 'easy', '2099-01-01', 'side', 'godslayer-greatblade');
-    const result = completeQuest(quest.id);
-
-    expect(result?.item?.id).toBe('godslayer-greatblade');
-    expect(characterStore.character.ownedItemIds).toContain('godslayer-greatblade');
-    expect(characterStore.character.earnedRelicIds ?? []).toEqual([]);
-    dismiss();
-  });
-
-  it('a pre-relic side quest whose promised item already dropped pays an available relic instead', () => {
-    const characterStore = useCharacterStore();
-    const questStore = useQuestStore();
-    const { completeQuest } = useCombatActions();
-    const { dismiss } = useItemDropQueue();
-    characterStore.setCharacter({ ...characterStore.character, ownedItemIds: ['godslayer-greatblade'], equippedItemIds: ['godslayer-greatblade'] });
-
-    const quest = questStore.addQuest('Old oath', 'easy', '2099-01-01', 'side', 'godslayer-greatblade');
-    const result = completeQuest(quest.id);
-
-    expect(result?.item?.rarity).toBe('relic');
-    expect(characterStore.character.ownedItemIds).toContain(result?.item?.id);
-    expect(characterStore.character.earnedRelicIds).toEqual([result?.item?.id]);
-    dismiss();
-  });
-
   it('completeQuest on an overdue regular quest pays half the next slot and takes none', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
@@ -848,24 +791,43 @@ describe('useCombatActions', () => {
     failQuest(quest.id);
     const result = completeQuest(quest.id);
 
-    expect(result).toEqual({ amount: questSlotExp(20, 'medium', 2) / 2, item: null });
+    expect(result).toEqual({ amount: questSlotExp(20, 'medium', 2) / 2 });
     expect(characterStore.character.questWeek).toEqual({ weekKey, completed: 2 });
     expect(questStore.quests[0]).toMatchObject({ overdue: true, doneDayKey: dailyPeriodKey(useDebugClockStore().now()) });
   });
 
-  it('completeQuest on an overdue side quest pays half EXP and no relic', () => {
+  it('an old side quest, once migrated, pays like a regular quest: half EXP and no slot when overdue', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
-    const { completeQuest, failQuest } = useCombatActions();
+    const { completeQuest } = useCombatActions();
     characterStore.character = { ...characterStore.character, level: 20, exp: 0 };
+    questStore.initFromSave([
+      { id: 'old', kind: 'side', description: 'Slay it', difficulty: 'hard', dueDateKey: '2026-02-01', overdue: true, rewardItemId: 'ember-heart' },
+    ] as unknown as Quest[]);
 
-    const quest = questStore.addQuest('Slay it', 'hard', '2026-02-01', 'side', 'ember-heart');
-    failQuest(quest.id);
-    const result = completeQuest(quest.id);
+    const result = completeQuest('old');
 
-    expect(result).toEqual({ amount: questSlotExp(20, 'hard', 0) / 2, item: null });
+    expect(result).toEqual({ amount: questSlotExp(20, 'hard', 0) / 2 });
+    expect(characterStore.character.questWeek).toBeUndefined();
     expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
     expect(characterStore.character.earnedRelicIds ?? []).toEqual([]);
+  });
+
+  it('an old on-time side quest, once migrated, pays the next slot and takes it', () => {
+    const characterStore = useCharacterStore();
+    const questStore = useQuestStore();
+    const { completeQuest } = useCombatActions();
+    characterStore.character = { ...characterStore.character, level: 20, exp: 0 };
+    questStore.initFromSave([
+      { id: 'old', kind: 'side', description: 'Slay it', difficulty: 'medium', dueDateKey: '2099-01-01', rewardItemId: 'ember-heart' },
+    ] as unknown as Quest[]);
+
+    const result = completeQuest('old');
+
+    expect(result).toEqual({ amount: questSlotExp(20, 'medium', 0) });
+    expect(characterStore.character.questWeek?.completed).toBe(1);
+    // Its relic is back in the pool: nothing promises it.
+    expect(availableRelics(characterStore.character).map((i) => i.id)).toContain('ember-heart');
   });
 
   it('completeQuest is a no-op for a quest already checked off', () => {

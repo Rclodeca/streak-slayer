@@ -27,7 +27,6 @@ import type { Boss, Quest } from './types';
 function makeQuest(overrides: Partial<Quest> = {}): Quest {
   return {
     id: 'quest-id',
-    kind: 'regular',
     description: 'Test quest',
     difficulty: 'medium',
     dueDateKey: '2026-01-10',
@@ -186,10 +185,8 @@ describe('questMissDamage', () => {
     expect(questMissDamage(quest, leansPhysical, roll)).toBeCloseTo(bossMissDamage(100) * TUNING.WEEKLY_MISS_MULTIPLIER, 10);
   });
 
-  it('uses the CURRENT boss and is identical for side quests', () => {
+  it('uses the CURRENT boss', () => {
     const quest = makeQuest({ difficulty: 'medium' });
-    const boss = makeBoss({ physicalAttack: 100, magicAttack: 100 });
-    expect(questMissDamage({ ...quest, kind: 'side', rewardItemId: 'x' }, boss, createRng(1))).toBe(questMissDamage(quest, boss, createRng(1)));
     const weakBoss = makeBoss({ physicalAttack: 10, magicAttack: 10 });
     const strongBoss = makeBoss({ physicalAttack: 1000, magicAttack: 1000 });
     expect(questMissDamage(quest, strongBoss, createRng(1))).toBeGreaterThan(questMissDamage(quest, weakBoss, createRng(1)));
@@ -197,21 +194,21 @@ describe('questMissDamage', () => {
 });
 
 describe('createQuest', () => {
-  it('builds a regular Quest with the given fields and a generated id', () => {
+  it('builds a Quest with the given fields and a generated id, and no kind or reward', () => {
     const quest = createQuest('Clean garage', 'hard', '2026-02-01');
-    expect(quest).toMatchObject({ kind: 'regular', description: 'Clean garage', difficulty: 'hard', dueDateKey: '2026-02-01' });
-    expect(quest.rewardItemId).toBeUndefined();
+    expect(quest).toMatchObject({ description: 'Clean garage', difficulty: 'hard', dueDateKey: '2026-02-01' });
+    expect('kind' in quest).toBe(false);
+    expect('rewardItemId' in quest).toBe(false);
     expect(quest.id).toBeTruthy();
   });
 
-  it('builds a side quest carrying its reward item', () => {
-    const quest = createQuest('Slay it', 'medium', '2026-02-01', 'side', 'dragons-heart');
-    expect(quest).toMatchObject({ kind: 'side', rewardItemId: 'dragons-heart' });
+  it('carries the day it was created on when given one', () => {
+    expect(createQuest('Clean garage', 'hard', '2026-02-01', '2026-01-30').createdDayKey).toBe('2026-01-30');
+    expect('createdDayKey' in createQuest('Clean garage', 'hard', '2026-02-01')).toBe(false);
   });
 
-  it('rejects a quest without a due date, regular or side', () => {
+  it('rejects a quest without a due date', () => {
     expect(() => createQuest('No date', 'easy', '')).toThrow();
-    expect(() => createQuest('No date', 'easy', '', 'side', 'dragons-heart')).toThrow();
   });
 
   it('generates different ids for two quests', () => {
@@ -222,17 +219,34 @@ describe('createQuest', () => {
 });
 
 describe('migrateQuest', () => {
-  it('backfills kind and drops bossIndexAtOffer, keeping the due date', () => {
+  it('drops bossIndexAtOffer from a pre-v2 quest, keeping the due date', () => {
     const old = { id: 'q', description: 'Old', difficulty: 'easy' as const, dueDateKey: '2026-01-01', bossIndexAtOffer: 4 };
     const migrated = migrateQuest(old);
-    expect(migrated).toEqual({ id: 'q', kind: 'regular', description: 'Old', difficulty: 'easy', dueDateKey: '2026-01-01' });
+    expect(migrated).toEqual({ id: 'q', description: 'Old', difficulty: 'easy', dueDateKey: '2026-01-01' });
     expect('bossIndexAtOffer' in migrated).toBe(false);
   });
 
-  it('is idempotent and leaves a side quest alone', () => {
-    const side = createQuest('Slay it', 'medium', '2026-02-01', 'side', 'dragons-heart');
-    expect(migrateQuest(side)).toEqual(side);
-    expect(migrateQuest(migrateQuest(side))).toEqual(side);
+  it('turns an old side quest into a regular one, keeping its overdue and done state', () => {
+    const side = {
+      id: 'q',
+      kind: 'side',
+      description: 'Slay it',
+      difficulty: 'medium' as const,
+      dueDateKey: '2026-01-01',
+      rewardItemId: 'dragons-heart',
+      overdue: true,
+      doneDayKey: '2026-01-05',
+    };
+    const migrated = migrateQuest(side);
+    expect(migrated).toEqual({ id: 'q', description: 'Slay it', difficulty: 'medium', dueDateKey: '2026-01-01', overdue: true, doneDayKey: '2026-01-05' });
+    expect('kind' in migrated).toBe(false);
+    expect('rewardItemId' in migrated).toBe(false);
+  });
+
+  it('is idempotent', () => {
+    const migrated = migrateQuest({ id: 'q', kind: 'regular', description: 'A', difficulty: 'easy', dueDateKey: '2026-01-01', rewardItemId: 'x' });
+    expect(migrateQuest(migrated)).toEqual(migrated);
+    expect(migrateQuest(migrateQuest(migrated))).toEqual(migrated);
   });
 });
 

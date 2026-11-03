@@ -14,7 +14,6 @@ import {
   applyRerollSkillEvent,
   applySpecialEvent,
   applyUltEvent,
-  availableRelics,
   consumeEventPick,
   createRng,
   dailyPeriodKey,
@@ -24,7 +23,7 @@ import {
   recordSideQuestOffer,
   rollEventChoices,
 } from '../game-engine';
-import type { Difficulty, EventDef, EventId, ItemDef } from '../game-engine';
+import type { EventDef, EventId, ItemDef } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -122,17 +121,9 @@ export function useEventChoice() {
     finish('reroll-skill');
   }
 
-  /** Creates the side quest, promising it one of the currently available relics at random. */
-  function chooseSideQuest(description: string, difficulty: Difficulty, dueDateKey: string) {
-    const rewards = availableRelics(characterStore.character);
-    const reward = rewards[Math.floor(rng() * rewards.length)];
-    questStore.addQuest(description, difficulty, dueDateKey, 'side', reward?.id);
-    finish('side-quest');
-  }
-
   function dismissReveal() {
     revealed.value = null;
   }
 
-  return { pending, choices, revealed, ensureChoices, choose, chooseReroll, chooseSideQuest, dismissReveal };
+  return { pending, choices, revealed, ensureChoices, choose, chooseReroll, dismissReveal };
 }

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { dailyPeriodKey, ITEM_CATALOG } from '../game-engine';
+import { dailyPeriodKey } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -38,8 +38,6 @@ describe('useQuestMissGate', () => {
         description: 'Clean garage',
         dueDateKey: '2026-01-01',
         difficulty: 'medium',
-        kind: 'regular',
-        rewardText: 'EXP',
       },
     ]);
   });
@@ -110,24 +108,5 @@ describe('useQuestMissGate', () => {
 
     acknowledge();
     expect(isOverridden(quest.id)).toBe(false);
-  });
-
-  it('acknowledge grants a side quest its item (and no EXP) when overridden', () => {
-    const characterStore = useCharacterStore();
-    const questStore = useQuestStore();
-    useBossStore();
-
-    const itemId = 'ember-heart';
-    const quest = questStore.addQuest('Slay it', 'medium', '2026-01-01', 'side', itemId);
-    const expBefore = characterStore.character.exp;
-
-    const { queueMiss, toggleOverride, acknowledge } = useQuestMissGate();
-    queueMiss(quest);
-    expect(useQuestMissGate().misses.value[0].rewardText).toBe(ITEM_CATALOG.find((i) => i.id === itemId)!.name);
-    toggleOverride(quest.id);
-    acknowledge();
-
-    expect(characterStore.character.ownedItemIds).toContain(itemId);
-    expect(characterStore.character.exp).toBe(expBefore);
   });
 });

@@ -1,13 +1,11 @@
 // @vitest-environment jsdom
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { availableRelics, createRng } from '../game-engine';
-import { TUNING } from '../game-engine/constants/tuning';
+import { createRng } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
-import { useQuestStore } from '../store/questStore';
 import { useEventChoice } from './useEventChoice';
 import { useItemDropQueue } from './useItemDropQueue';
 
@@ -112,53 +110,6 @@ describe('useEventChoice', () => {
     expect(events.revealed.value?.id).toBe('rusty-blade');
     events.dismissReveal();
     expect(events.revealed.value).toBeNull();
-  });
-
-  it('side-quest creates a side quest promised an available relic and spends the pick', () => {
-    const { characterStore, events } = setup(1, 1);
-    const relics = availableRelics(characterStore.character).map((i) => i.id);
-    events.chooseSideQuest('Clean garage', 'hard', '2099-01-01');
-
-    const quests = useQuestStore().quests;
-    expect(quests).toHaveLength(1);
-    expect(quests[0]).toMatchObject({ kind: 'side', difficulty: 'hard', dueDateKey: '2099-01-01' });
-    expect(relics).toContain(quests[0].rewardItemId);
-    expect(characterStore.character.pendingEventPicks).toBe(0);
-    expect(characterStore.character.takenEventIds).toEqual([]);
-  });
-
-  it('a second side quest is promised a different relic, never the same one', () => {
-    const { characterStore, events } = setup(1, 2);
-    events.chooseSideQuest('One', 'easy', '2099-01-01');
-    characterStore.setCharacter({ ...characterStore.character, pendingEventPicks: 1 });
-    events.ensureChoices();
-    events.chooseSideQuest('Two', 'easy', '2099-01-01');
-
-    const rewards = useQuestStore().quests.map((q) => q.rewardItemId);
-    expect(new Set(rewards).size).toBe(2);
-  });
-
-  it('resets the guarantee count when side-quest is offered, even if the pick claims the last available relic', () => {
-    const characterStore = useCharacterStore();
-    const habitStore = useHabitStore();
-    habitStore.addHabit('Daily good', 'daily', 'medium', false, createRng(1));
-    const [onlyItem, ...rest] = availableRelics({ ...characterStore.character, level: 3 }).map((i) => i.id);
-    characterStore.setCharacter({
-      ...characterStore.character,
-      level: 3,
-      pendingEventPicks: 1,
-      takenEventIds: [],
-      earnedRelicIds: rest,
-      sideQuestPicksMissed: TUNING.SIDE_QUEST_GUARANTEE_LEVELS,
-    });
-    const events = useEventChoice();
-    events.ensureChoices();
-    expect(events.choices.value.map((c) => c.id)).toContain('side-quest');
-
-    events.chooseSideQuest('Slay it', 'easy', '2099-01-01');
-
-    expect(useQuestStore().quests[0].rewardItemId).toBe(onlyItem);
-    expect(characterStore.character.sideQuestPicksMissed).toBe(0);
   });
 
   it('counts a pick where side-quest was eligible but not offered, toward the guarantee', () => {

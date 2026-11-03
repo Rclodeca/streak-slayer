@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng, dailyPeriodKey, dayOfWeekIndex, ITEM_CATALOG, periodKeyFor } from '../game-engine';
+import { createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -318,23 +318,8 @@ describe('useDailyRollover — quests', () => {
     useDailyRollover(now);
 
     expect(useQuestMissGate().misses.value).toEqual([
-      { questId: quest.id, description: 'Clean garage', dueDateKey: yesterday, difficulty: 'medium', kind: 'regular', rewardText: 'EXP' },
+      { questId: quest.id, description: 'Clean garage', dueDateKey: yesterday, difficulty: 'medium' },
     ]);
-  });
-
-  it('queues a miss for a past-due side quest too, offering its item as the override reward', () => {
-    const questStore = useQuestStore();
-    useCharacterStore();
-    const now = new Date();
-    const yesterday = dailyPeriodKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
-    const itemId = 'ember-heart';
-    const quest = questStore.addQuest('Slay it', 'hard', yesterday, 'side', itemId);
-
-    useDailyRollover(now);
-
-    const [miss] = useQuestMissGate().misses.value;
-    expect(miss).toMatchObject({ questId: quest.id, kind: 'side' });
-    expect(miss.rewardText).toBe(ITEM_CATALOG.find((i) => i.id === itemId)!.name);
   });
 
   it('does not queue a miss again for a quest already overdue', () => {

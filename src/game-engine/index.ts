@@ -15,7 +15,6 @@ export type {
   Period,
   Personality,
   Quest,
-  QuestKind,
   QuestWeek,
   StatusEffect,
   CritBoostStatusEffect,

@@ -20,15 +20,30 @@ describe('questStore', () => {
 
   it('initFromSave hydrates from a saved list', () => {
     const store = useQuestStore();
-    const saved: Quest[] = [{ id: 'q1', kind: 'side', description: 'Test', difficulty: 'easy', dueDateKey: '2026-01-01', rewardItemId: 'dragons-heart' }];
+    const saved: Quest[] = [{ id: 'q1', description: 'Test', difficulty: 'easy', dueDateKey: '2026-01-01' }];
     store.initFromSave(saved);
     expect(store.quests).toEqual(saved);
+  });
+
+  it('initFromSave loads an old side quest as a regular one, overdue and done included', () => {
+    const store = useQuestStore();
+    const sides = [
+      { id: 'a', kind: 'side', description: 'Open', difficulty: 'easy', dueDateKey: '2099-01-01', rewardItemId: 'dragons-heart' },
+      { id: 'b', kind: 'side', description: 'Late', difficulty: 'hard', dueDateKey: '2026-01-01', overdue: true },
+      { id: 'c', kind: 'side', description: 'Done', difficulty: 'medium', dueDateKey: '2026-01-01', doneDayKey: '2026-01-02', rewardItemId: 'ember-heart' },
+    ] as unknown as Quest[];
+    store.initFromSave(sides);
+    expect(store.quests).toEqual([
+      { id: 'a', description: 'Open', difficulty: 'easy', dueDateKey: '2099-01-01' },
+      { id: 'b', description: 'Late', difficulty: 'hard', dueDateKey: '2026-01-01', overdue: true },
+      { id: 'c', description: 'Done', difficulty: 'medium', dueDateKey: '2026-01-01', doneDayKey: '2026-01-02' },
+    ]);
   });
 
   it('initFromSave migrates a pre-v2 quest to a regular quest without bossIndexAtOffer', () => {
     const store = useQuestStore();
     store.initFromSave([{ id: 'q1', description: 'Old', difficulty: 'easy', dueDateKey: '2026-01-01', bossIndexAtOffer: 3 } as unknown as Quest]);
-    expect(store.quests).toEqual([{ id: 'q1', kind: 'regular', description: 'Old', difficulty: 'easy', dueDateKey: '2026-01-01' }]);
+    expect(store.quests).toEqual([{ id: 'q1', description: 'Old', difficulty: 'easy', dueDateKey: '2026-01-01' }]);
   });
 
   it('initFromSave stays empty when given null (old save with no quests field)', () => {
@@ -41,13 +56,12 @@ describe('questStore', () => {
     const store = useQuestStore();
     const quest = store.addQuest('Clean garage', 'hard', '2026-02-01');
     expect(store.quests).toEqual([quest]);
-    expect(quest).toMatchObject({ kind: 'regular', description: 'Clean garage', difficulty: 'hard', dueDateKey: '2026-02-01' });
+    expect(quest).toMatchObject({ description: 'Clean garage', difficulty: 'hard', dueDateKey: '2026-02-01' });
   });
 
-  it('addQuest can create a side quest with a reward item', () => {
+  it('addQuest records the day the quest was created when given one', () => {
     const store = useQuestStore();
-    const quest = store.addQuest('Slay it', 'medium', '2026-02-01', 'side', 'dragons-heart');
-    expect(quest).toMatchObject({ kind: 'side', rewardItemId: 'dragons-heart' });
+    expect(store.addQuest('Clean garage', 'hard', '2026-02-01', '2026-01-30').createdDayKey).toBe('2026-01-30');
   });
 
   it('removeQuest removes by id and leaves others untouched', () => {
@@ -65,12 +79,11 @@ describe('questStore', () => {
     expect(store.quests).toEqual([{ ...quest, doneDayKey: '2026-01-30' }]);
   });
 
-  it('markOverdue flags the quest and a side quest forfeits its relic', () => {
+  it('markOverdue flags the quest', () => {
     const store = useQuestStore();
-    const quest = store.addQuest('Slay it', 'medium', '2026-02-01', 'side', 'dragons-heart');
+    const quest = store.addQuest('Slay it', 'medium', '2026-02-01');
     store.markOverdue(quest.id);
-    expect(store.quests[0]).toMatchObject({ id: quest.id, kind: 'side', overdue: true });
-    expect(store.quests[0].rewardItemId).toBeUndefined();
+    expect(store.quests[0]).toMatchObject({ id: quest.id, overdue: true });
   });
 
   it('clearDone removes only quests checked off before today', () => {

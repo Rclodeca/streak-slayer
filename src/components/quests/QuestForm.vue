@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { dailyPeriodKey } from '../../game-engine';
-import type { Difficulty, QuestKind } from '../../game-engine';
+import type { Difficulty } from '../../game-engine';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import StatIcon from '../ui/StatIcon.vue';
 
-const props = withDefaults(defineProps<{ kind?: QuestKind }>(), { kind: 'regular' });
 const emit = defineEmits<{ submit: [description: string, difficulty: Difficulty, dueDateKey: string] }>();
 
 const debugClockStore = useDebugClockStore();
@@ -55,7 +54,7 @@ function onSubmit() {
 
 <template>
   <form class="quest-form" @submit.prevent="onSubmit">
-    <p class="intro">{{ props.kind === 'side' ? 'A rare deed. Sworn once.' : 'A deed, sworn once.' }}</p>
+    <p class="intro">A deed, sworn once.</p>
 
     <label class="field">
       <span class="field-label">Deed</span>
@@ -68,9 +67,9 @@ function onSubmit() {
         <label v-for="opt in difficultyOptions" :key="opt.value" class="card" :class="{ selected: difficulty === opt.value }">
           <input v-model="difficulty" type="radio" name="quest-difficulty" :value="opt.value" />
           <span class="card-title">{{ opt.label }}</span>
-          <!-- The EXP icon beside the pips: more pips, more EXP. A side quest pays an item instead. -->
+          <!-- The EXP icon beside the pips: more pips, more EXP. -->
           <span class="reward" aria-hidden="true">
-            <StatIcon v-if="props.kind === 'regular'" name="exp" :size="15" />
+            <StatIcon name="exp" :size="15" />
             <span class="pips">
               <span v-for="n in 3" :key="n" class="pip" :class="{ lit: n <= opt.pips }" />
             </span>
@@ -97,7 +96,7 @@ function onSubmit() {
       <p v-if="dueLabel" class="due-summary">Due {{ dueLabel }}</p>
     </fieldset>
 
-    <button type="submit" class="submit">{{ props.kind === 'side' ? 'Accept quest' : 'Add quest' }}</button>
+    <button type="submit" class="submit">Add quest</button>
   </form>
 </template>
 

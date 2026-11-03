@@ -129,7 +129,7 @@ describe('store persistence smoke test', () => {
     expect(['physical', 'magic', 'healing', 'trueDamage']).toContain(parsed.habits[0].damageType);
     expect(parsed.habits[0].id).toBe(legacyHabit.id);
     expect('sideOnlyItemIds' in parsed.character).toBe(false);
-    expect(parsed.quests).toEqual([{ id: 'q', kind: 'regular', description: 'Old', difficulty: 'easy', dueDateKey: '2099-01-01' }]);
+    expect(parsed.quests).toEqual([{ id: 'q', description: 'Old', difficulty: 'easy', dueDateKey: '2099-01-01' }]);
 
     // Reloading keeps the migrated habit type (it is not re-rolled again).
     const migratedType = parsed.habits[0].damageType;

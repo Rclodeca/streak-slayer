@@ -88,7 +88,7 @@ function onCheckOff(quest: Quest) {
         v-for="quest in sortedQuests"
         :key="quest.id"
         class="quest-item"
-        :class="[urgency(quest), { side: quest.kind === 'side', done: !!quest.doneDayKey }]"
+        :class="[urgency(quest), { done: !!quest.doneDayKey }]"
       >
         <label class="check-zone">
           <input
@@ -115,7 +115,7 @@ function onCheckOff(quest: Quest) {
   </section>
 
   <Modal v-model="showAdd" title="New quest" max-width="480px">
-    <QuestForm kind="regular" @submit="onAdd" />
+    <QuestForm @submit="onAdd" />
   </Modal>
 
   <QuestDetailModal :quest="detailQuest" @close="detailId = null" />
@@ -260,17 +260,6 @@ function onCheckOff(quest: Quest) {
 
 .quest-section ul {
   margin-top: 0.75rem;
-}
-
-.quest-item.side {
-  --tone: var(--side-quest-color);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--side-quest-color) 10%, transparent), var(--code-bg) 60%);
-  box-shadow: 0 0 14px -8px var(--side-quest-color);
-}
-
-.quest-item.side.urgent {
-  --tone: var(--damage-color);
-  box-shadow: 0 0 14px -8px var(--damage-color);
 }
 
 .body {

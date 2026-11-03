@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Calendar, Gift } from 'lucide-vue-next';
+import { Calendar } from 'lucide-vue-next';
 import { dailyPeriodKey, daysBetweenDayKeys } from '../../game-engine';
 import type { Quest } from '../../game-engine';
 import { useDebugClockStore } from '../../store/debugClockStore';
@@ -33,9 +33,6 @@ const dueText = computed(() => {
 
 const tone = computed(() => (props.quest?.overdue || daysLeft.value <= 0 ? 'urgent' : daysLeft.value <= 2 ? 'soon' : 'calm'));
 
-// A side quest's item stays hidden until it's earned; once overdue its relic is forfeit and it pays half EXP like any other.
-const mystery = computed(() => props.quest?.kind === 'side' && !props.quest.overdue);
-
 // Two-tap confirm, as on a habit: the first tap only asks.
 const confirmingRemove = ref(false);
 watch(
@@ -54,8 +51,8 @@ function removeQuest() {
 </script>
 
 <template>
-  <Modal :model-value="quest !== null" :title="quest?.kind === 'side' ? 'Side quest' : 'Quest'" max-width="420px" @update:model-value="emit('close')">
-    <div v-if="quest" class="quest-detail" :class="{ side: quest.kind === 'side' }">
+  <Modal :model-value="quest !== null" title="Quest" max-width="420px" @update:model-value="emit('close')">
+    <div v-if="quest" class="quest-detail">
       <div class="deed-well">
         <p class="deed">{{ quest.description }}</p>
       </div>
@@ -69,8 +66,7 @@ function removeQuest() {
         </div>
         <div class="plate">
           <span class="plate-label">Reward</span>
-          <span v-if="mystery" class="reward gift" title="An unknown item"><Gift :size="20" /><span class="mark">?</span></span>
-          <span v-else class="reward" :title="quest.overdue ? 'Half EXP' : 'EXP'">
+          <span class="reward" :title="quest.overdue ? 'Half EXP' : 'EXP'">
             <StatIcon name="exp" :size="20" />
             <span class="pips">
               <span v-for="n in 3" :key="n" class="pip" :class="{ lit: n <= PIPS[quest.difficulty] }" />

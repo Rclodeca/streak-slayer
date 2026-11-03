@@ -411,7 +411,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // Ember, not gold: gold is Ashen's own chrome and blended into common.
   --rarity-relic: #ec8338;
   --soon-color: #d49a46;
-  --side-quest-color: var(--moon-solid);
   --overdrive-color: #{$ember};
   --portrait-border: #{tone(moon-tint, 0.22)};
 
@@ -1219,7 +1218,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .habit-item,
   .quest-item,
-  .quest-item:is(.side, .urgent) {
+  .quest-item.urgent {
     --card-bg: var(--card);
     min-height: 52px;
     background: var(--card-bg);
@@ -1343,7 +1342,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // ---------- Quests ----------
 
   .quest-item,
-  .quest-item:is(.side, .urgent) {
+  .quest-item.urgent {
     gap: 6px;
     padding: 4px 8px 4px 4px;
   }
@@ -1384,20 +1383,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     gap: 3px;
   }
 
-  // A side quest wears a folded brass corner (docs/mockups/pixel-quests.html).
   .quest-item {
     position: relative;
-  }
-
-  .quest-item.side::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
-    background: linear-gradient(225deg, $brass 50%, transparent 50%);
-    pointer-events: none;
   }
 
   // Overdue: the due words burn red.
@@ -1425,10 +1412,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-decoration-color: rgba(219, 226, 238, 0.3);
   }
 
-  .quest-item.done.side::after {
-    opacity: 0.4;
-  }
-
   .quest-item .check:disabled {
     cursor: default;
   }
@@ -1445,13 +1428,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-size: 1.3rem;
     line-height: 1.2;
     color: var(--card-ink);
-  }
-
-  .quest-detail.side .deed-well {
-    box-shadow:
-      inset 2px 2px 0 var(--sunk-hi),
-      inset -2px -2px 0 var(--sunk-lo),
-      inset 4px 0 0 $brass;
   }
 
   .quest-detail .plate {
@@ -2083,7 +2059,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-color: var(--tone);
   }
 
-  li.card .side,
   .miss-side {
     gap: 0;
   }

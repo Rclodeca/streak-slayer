@@ -172,7 +172,7 @@ function only(result: { character: Character }): ChallengeEntry {
 }
 
 function quest(id: string): Quest {
-  return { id, kind: 'regular', description: id, difficulty: 'easy', dueDateKey: '2099-01-01' };
+  return { id, description: id, difficulty: 'easy', dueDateKey: '2099-01-01' };
 }
 
 describe('applyChallengeEvent: counted challenges', () => {

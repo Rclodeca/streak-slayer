@@ -100,7 +100,7 @@ export interface Character {
   // on the character, so a death starts a fresh count along with everything
   // else in the run.
   questWeek?: QuestWeek;
-  // Relics already paid out by a side quest this run (see availableRelics) —
+  // Relics already paid out by a challenge this run (see availableRelics) —
   // kept even if the relic is later dropped, so it is never offered again
   // this run. undefined = none; a death starts a fresh run with none.
   earnedRelicIds?: string[];
@@ -318,16 +318,11 @@ export interface Habit {
   createdDayKey?: string; // dailyPeriodKey of the day it was added; undefined (older saves) means it can be removed any time
 }
 
-/** 'regular' quests pay EXP from the weekly curve; 'side' quests (offered by an event) pay an item and no EXP. */
-export type QuestKind = 'regular' | 'side';
-
 export interface Quest {
   id: string;
-  kind: QuestKind; // a save from before side quests has none; migrateQuest backfills 'regular'
   description: string; // free-text one-time task, player-authored
   difficulty: Difficulty;
   dueDateKey: string; // YYYY-MM-DD — same format as dailyPeriodKey; required for every quest
-  rewardItemId?: string; // side quests only: the item granted on completion; dropped once the quest goes overdue
   overdue?: boolean; // the due date passed and the miss landed; the quest stays, and pays half EXP if still finished
   doneDayKey?: string; // dailyPeriodKey of the day it was checked off; it stays checked until the day turns, then is removed
   createdDayKey?: string; // dailyPeriodKey of the day it was added; Fresh quests and Quest run read it (undefined on older saves)

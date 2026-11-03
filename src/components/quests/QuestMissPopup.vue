@@ -37,7 +37,7 @@ const allRedeemed = computed(() => misses.value.length > 0 && misses.value.every
         </div>
         <div class="miss-side">
           <span class="outcome">
-            <template v-if="isOverridden(miss.questId)">{{ miss.rewardText }}</template>
+            <template v-if="isOverridden(miss.questId)">EXP</template>
             <template v-else>Strikes back</template>
           </span>
           <label class="redeem">

@@ -3,21 +3,21 @@
 
 import { defineStore } from 'pinia';
 import { createQuest, migrateQuest } from '../game-engine';
-import type { Difficulty, Quest, QuestKind } from '../game-engine';
+import type { Difficulty, Quest } from '../game-engine';
 
 export const useQuestStore = defineStore('quest', {
   state: () => ({
     quests: [] as Quest[],
   }),
   actions: {
-    /** Hydrates from a save slice (migrating quests saved before quests v2), or bootstraps an empty quest list. */
+    /** Hydrates from a save slice (migrating older quests: v1 shape, old side quests), or bootstraps an empty quest list. */
     initFromSave(saved: Quest[] | null) {
       this.quests = (saved ?? []).map(migrateQuest);
     },
 
     /** Creates a new quest via the engine and adds it to the list. */
-    addQuest(description: string, difficulty: Difficulty, dueDateKey: string, kind: QuestKind = 'regular', rewardItemId?: string): Quest {
-      const quest = createQuest(description, difficulty, dueDateKey, kind, rewardItemId);
+    addQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string): Quest {
+      const quest = createQuest(description, difficulty, dueDateKey, createdDayKey);
       this.quests.push(quest);
       return quest;
     },
@@ -27,14 +27,9 @@ export const useQuestStore = defineStore('quest', {
       this.quests = this.quests.map((quest) => (quest.id === id ? { ...quest, doneDayKey: dayKey } : quest));
     },
 
-    /** Flags a quest overdue once its miss has landed; a side quest forfeits its relic, which returns to the pool. */
+    /** Flags a quest overdue once its miss has landed. */
     markOverdue(id: string) {
-      this.quests = this.quests.map((quest) => {
-        if (quest.id !== id) return quest;
-        const overdue: Quest = { ...quest, overdue: true };
-        delete overdue.rewardItemId;
-        return overdue;
-      });
+      this.quests = this.quests.map((quest) => (quest.id === id ? { ...quest, overdue: true } : quest));
     },
 
     /** Removes every quest checked off on a day before `todayKey`. */

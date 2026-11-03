@@ -3,7 +3,7 @@ import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { hasItemEffect } from './items';
 import { expToNextLevel } from './leveling';
 import type { Rng } from './rng';
-import type { Boss, Character, Difficulty, Quest, QuestKind, QuestWeek } from './types';
+import type { Boss, Character, Difficulty, Quest, QuestWeek } from './types';
 
 /** The player level at which the quests section opens, each run. */
 export const QUESTS_UNLOCK_LEVEL = 3;
@@ -82,7 +82,7 @@ export function questRewardExp(character: Character, difficulty: Difficulty, com
   return hasItemEffect(character, 'quill-of-oaths') ? exp * TUNING.ITEM_EFFECTS.QUILL_EXP_MULTIPLIER : exp;
 }
 
-/** EXP for finishing an overdue quest: the next slot's pay at `QUEST_OVERDUE_EXP_FRACTION`, for a side quest too (its relic is forfeit). */
+/** EXP for finishing an overdue quest: the next slot's pay at `QUEST_OVERDUE_EXP_FRACTION`. */
 export function questOverdueExp(character: Character, difficulty: Difficulty, completedThisWeek: number): number {
   return questRewardExp(character, difficulty, completedThisWeek) * TUNING.QUEST_OVERDUE_EXP_FRACTION;
 }
@@ -106,8 +106,7 @@ export function recordQuestCompletion(questWeek: QuestWeek | undefined, weekKey:
  * boss — consistent with missHabit, which always uses live boss state for
  * damage. Deliberately simpler than a full missHabit resolution: no crit
  * roll, no player armor/magicResist mitigation, no boss lifesteal — quests
- * are a flatter, simpler risk mechanic than habits by design. Identical for
- * regular and side quests.
+ * are a flatter, simpler risk mechanic than habits by design.
  */
 export function questMissDamage(quest: Quest, boss: Boss, rng: Rng): number {
   const attackType: 'physical' | 'magic' = rng() < (boss.physicalShare ?? 0.5) ? 'physical' : 'magic';
@@ -115,26 +114,27 @@ export function questMissDamage(quest: Quest, boss: Boss, rng: Rng): number {
   return attack * TUNING.MISS_DAMAGE_FACTOR * TUNING.WEEKLY_MISS_MULTIPLIER * (DIFFICULTY_WEIGHT[quest.difficulty] / 1.5);
 }
 
-/** Builds a new Quest record with a generated id. */
-export function createQuest(
-  description: string,
-  difficulty: Difficulty,
-  dueDateKey: string,
-  kind: QuestKind = 'regular',
-  rewardItemId?: string,
-): Quest {
+/** Builds a new Quest record with a generated id; `createdDayKey` is the day it was added. */
+export function createQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string): Quest {
   if (!dueDateKey) throw new Error('A quest needs a due date');
-  const quest: Quest = { id: crypto.randomUUID(), kind, description, difficulty, dueDateKey };
-  if (rewardItemId !== undefined) quest.rewardItemId = rewardItemId;
+  const quest: Quest = { id: crypto.randomUUID(), description, difficulty, dueDateKey };
+  if (createdDayKey !== undefined) quest.createdDayKey = createdDayKey;
   return quest;
 }
 
+/** A quest as saved by an older version, which may carry fields since removed. */
+type SavedQuest = Quest & { kind?: string; rewardItemId?: string; bossIndexAtOffer?: number };
+
 /**
- * Brings a quest saved before quests v2 up to the current shape: backfills
- * `kind: 'regular'` and drops the removed `bossIndexAtOffer`. Idempotent.
+ * Brings a saved quest up to the current shape: drops the removed `kind`
+ * (an old side quest becomes a regular quest, its relic back in the pool),
+ * `rewardItemId` and `bossIndexAtOffer`. Everything else, overdue and done
+ * state included, is kept. Idempotent.
  */
-export function migrateQuest(quest: Omit<Quest, 'kind'> & { kind?: QuestKind; bossIndexAtOffer?: number }): Quest {
-  const migrated: Quest & { bossIndexAtOffer?: number } = { ...quest, kind: quest.kind ?? 'regular' };
+export function migrateQuest(quest: SavedQuest): Quest {
+  const migrated: SavedQuest = { ...quest };
+  delete migrated.kind;
+  delete migrated.rewardItemId;
   delete migrated.bossIndexAtOffer;
   return migrated;
 }

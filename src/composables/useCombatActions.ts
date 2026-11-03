@@ -29,7 +29,6 @@
 
 import {
   addExpAndResolveLevelUps,
-  availableRelics,
   chooseHero,
   completeHabit,
   createRng,
@@ -107,7 +106,7 @@ export function useCombatActions() {
   const { recordFallen, clearFallen } = useFallenHero();
   const { startScene } = useHoodedFigure();
   const { showReviveNotice } = useReviveNotice();
-  const { enqueueDrops, clear: clearItemDrops } = useItemDropQueue();
+  const { clear: clearItemDrops } = useItemDropQueue();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
   const { showBossSkill, clear: clearBossSkills } = useBossSkillCard();
   const undoCheck = useUndoCheck();
@@ -550,31 +549,16 @@ export function useCombatActions() {
    *
    * Regular: grants the weekly-curve EXP for the next slot (questRewardExp, at
    * the level held right now), bumps this calendar week's completion count,
-   * and resolves any level-ups. Side: grants its reward item through the item
-   * drop popup and nothing else — no EXP, and the weekly count is untouched.
-   * An overdue quest (its miss already landed) pays half the next slot's EXP
-   * instead — a side quest too, its relic being forfeit — and takes no slot.
+   * and resolves any level-ups. An overdue quest (its miss already landed)
+   * pays half the next slot's EXP instead and takes no slot.
    * Either way it logs a quest-completed entry and keeps the quest, checked
    * off for today (the rollover removes it). Returns what was paid out (null
    * for an unknown or already checked id) so the caller can celebrate it.
    */
-  function completeQuest(questId: string): { amount: number; item: ItemDef | null } | null {
+  function completeQuest(questId: string): { amount: number } | null {
     const quest = questStore.quests.find((q) => q.id === questId);
     if (!quest || quest.doneDayKey) return null;
     const dayKey = dailyPeriodKey(debugClockStore.now());
-
-    if (quest.kind === 'side' && !quest.overdue) {
-      // A side quest from before relics may promise an item that has since
-      // dropped from a boss (nothing kept it out of the drop pool anymore);
-      // pay an available relic instead so the deed is never unrewarded.
-      const promised = quest.rewardItemId ? characterStore.grantItem(quest.rewardItemId) : null;
-      const fallback = promised ? [] : availableRelics(characterStore.character);
-      const item = promised ?? (fallback.length > 0 ? characterStore.grantItem(fallback[Math.floor(rng() * fallback.length)].id) : null);
-      if (item) enqueueDrops([item]);
-      activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount: 0, itemName: item?.name });
-      questStore.markDone(questId, dayKey);
-      return { amount: 0, item };
-    }
 
     const weekKey = weeklyPeriodKey(debugClockStore.now());
     const beforeLevelUp = characterStore.character;
@@ -589,7 +573,7 @@ export function useCombatActions() {
 
     activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount });
     questStore.markDone(questId, dayKey);
-    return { amount, item: null };
+    return { amount };
   }
 
   /**

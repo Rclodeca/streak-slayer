@@ -11,13 +11,12 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import RerollSkillRow from '../habits/RerollSkillRow.vue';
 import { sortByDamageType } from '../habits/habitDisplay';
-import QuestForm from '../quests/QuestForm.vue';
 import ItemHero from '../ui/ItemHero.vue';
 import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON, EVENT_ICON } from '../ui/statIcons';
 
-const { pending, choices, revealed, ensureChoices, choose, chooseReroll, chooseSideQuest, dismissReveal } = useEventChoice();
+const { pending, choices, revealed, ensureChoices, choose, chooseReroll, dismissReveal } = useEventChoice();
 const { eventChoiceVisible } = useModalPriority();
 const habitStore = useHabitStore();
 const characterStore = useCharacterStore();
@@ -38,7 +37,7 @@ const statGains = computed(() =>
 
 watchEffect(ensureChoices);
 
-const step = ref<'choose' | 'reroll' | 'quest'>('choose');
+const step = ref<'choose' | 'reroll'>('choose');
 watch(choices, () => {
   step.value = 'choose';
 });
@@ -64,13 +63,13 @@ const enchantFactor = TUNING.DOUBLED_ITEM_MULTIPLIER;
 const subtitle = computed(() => {
   if (revealed.value) return '';
   if (step.value === 'reroll') return 'Pick a skill to re-roll. Its damage type changes; nothing else does.';
-  if (step.value === 'quest') return 'Name your deed';
   return pending.value > 1 ? `Choose 1 event · ${pending.value} picks waiting` : 'Choose 1 event';
 });
 
 function onPick(id: EventId) {
-  if (id === 'side-quest') step.value = 'quest';
-  else if (id === 'reroll-skill') {
+  // The side-quest card names a challenge and takes it straight away; nothing to pick here yet.
+  if (id === 'side-quest') return;
+  if (id === 'reroll-skill') {
     rerollPickId.value = null;
     step.value = 'reroll';
   }
@@ -129,10 +128,6 @@ function onPick(id: EventId) {
       <button type="button" class="back" @click="step = 'choose'">← Back</button>
     </template>
 
-    <template v-else>
-      <QuestForm kind="side" @submit="chooseSideQuest" />
-      <button type="button" class="back" @click="step = 'choose'">← Back</button>
-    </template>
     </template>
   </Modal>
 </template>

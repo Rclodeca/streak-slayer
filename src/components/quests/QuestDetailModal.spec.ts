@@ -27,10 +27,11 @@ describe('QuestDetailModal', () => {
     return mount(Host, { global: { plugins: [pinia] }, attachTo: document.body });
   }
 
-  it('shows a side quest\'s reward as a mystery', () => {
-    const quest = useQuestStore().addQuest('Slay it', 'hard', addDaysToDayKey(today(), 4), 'side', 'ember-heart');
+  it('has no side or mystery-reward variant', () => {
+    const quest = useQuestStore().addQuest('Slay it', 'hard', addDaysToDayKey(today(), 4));
     mountPopup(quest.id);
-    expect(q('.reward.gift')).not.toBeNull();
+    expect(q('.quest-detail.side')).toBeNull();
+    expect(q('.reward.gift')).toBeNull();
     expect(q('.quest-detail')?.textContent).not.toMatch(/small|medium|large/i);
   });
 
@@ -42,9 +43,9 @@ describe('QuestDetailModal', () => {
     expect(q('.due-line')?.textContent).toContain('2 days left');
   });
 
-  it('labels an overdue quest Overdue, with half EXP — a side quest too', () => {
+  it('labels an overdue quest Overdue, with half EXP', () => {
     const store = useQuestStore();
-    const quest = store.addQuest('Slay it', 'hard', addDaysToDayKey(today(), -1), 'side', 'ember-heart');
+    const quest = store.addQuest('Slay it', 'hard', addDaysToDayKey(today(), -1));
     store.markOverdue(quest.id);
     mountPopup(quest.id);
     expect(q('.due-line')?.textContent).toContain('Overdue');
