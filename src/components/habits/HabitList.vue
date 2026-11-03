@@ -157,7 +157,6 @@ function checkOffFromHint() {
         <ul v-if="weeklyHabits.length">
           <HabitListItem v-for="habit in weeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
-        <p v-else class="habit-group-empty">No weekly habits yet.</p>
       </div>
     </template>
   </section>
@@ -188,7 +187,6 @@ function checkOffFromHint() {
         <ul v-if="resistWeeklyHabits.length">
           <HabitListItem v-for="habit in resistWeeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
-        <p v-else class="habit-group-empty">No weekly habits yet.</p>
       </div>
     </template>
   </section>
