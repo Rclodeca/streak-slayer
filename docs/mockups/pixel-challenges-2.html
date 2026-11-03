@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut challenges, round 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Round 2 of pixel-challenges.html: the way into side quests, now inside the Quests section
+   (QuestSection.vue: header with icon-only +, "One-off tasks" caption, Plain cards soonest first).
+   Picked so far: Rim for the level-up card, Cards for the popup. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 680px; }
+.band { text-align: center; font: 600 12px 'Cinzel', serif; letter-spacing: .3em; color: #ece8de; margin: 42px 0 8px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.08); text-transform: uppercase; }
+.bandnote { text-align: center; margin: 0 auto 20px; max-width: 640px; font-size: 15px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; text-transform: uppercase; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 12px; min-height: 84px; font-size: 15px; }
+.col .phone + .phone { margin-top: 18px; }
+button { font: inherit; color: inherit; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --rim: #7c6a3f; --gift: #c8a96e; --soon: #d49a46; --bad: #d4574a;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-name: #5b606b;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --sunk: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b;
+  --lifted: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  position: relative; width: 390px; padding: 22px 0 30px; background: radial-gradient(70% 22% at 72% 4%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+svg.i { width: 14px; height: 14px; flex: none; }
+
+/* ---------- Quests section, as built ---------- */
+.sec { --sp: var(--brass); position: relative; margin: 0 12px 0 18px; padding-left: 14px; }
+.sec::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 6px; width: 3px; background: var(--sp); opacity: .5; }
+.shead { position: relative; display: flex; align-items: center; gap: 8px; height: 44px; margin-bottom: 4px; padding: 0 2px; }
+.shead::before { content: ''; position: absolute; left: -17px; top: 50%; width: 9px; height: 9px; margin-top: -5px; background: var(--sp); box-shadow: 0 0 0 3px var(--bg); }
+.shead h2 { flex: 1; display: flex; align-items: center; gap: 8px; margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.shead h2 svg { width: 16px; height: 16px; color: var(--brass); }
+.add { width: 44px; height: 40px; display: grid; place-items: center; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); }
+.add svg { width: 16px; height: 16px; }
+.cap { margin: 0 2px 9px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); text-transform: uppercase; }
+.q { position: relative; display: flex; align-items: center; gap: 6px; min-height: 56px; padding: 6px 10px 6px 4px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; }
+.qchk i { width: 20px; height: 20px; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); }
+.body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.qn { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qm { display: flex; align-items: center; gap: 7px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qm em { font-style: normal; }
+.pips { display: inline-flex; gap: 3px; }
+.pips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.pips i.lit { background: var(--brass); }
+.q.soon .due { color: var(--soon); }
+.q.urgent .due { color: color-mix(in srgb, var(--bad) 72%, #fff); }
+
+/* brass bits shared by the options (the Rim look from the level-up card) */
+.cnt { min-width: 20px; height: 20px; padding: 0 5px; display: inline-grid; place-items: center; clip-path: var(--px2); background: var(--brass); color: #14161c; font: 800 11.5px/1 'Alegreya Sans', sans-serif; }
+
+/* A · Header key: a brass key beside the + */
+.sidekey { position: relative; height: 40px; padding: 0 10px 0 9px; display: inline-flex; align-items: center; gap: 6px; clip-path: var(--px2); background: rgba(210,187,133,.09); border: 1px solid rgba(210,187,133,.55); color: var(--brass); font: 700 13px 'Alegreya Sans', sans-serif; }
+.sidekey svg { width: 16px; height: 16px; }
+
+/* B · Rim row: one brass-rimmed row closing the list */
+.rimrow { --lp: 3px; position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: calc(58px + var(--lp)); margin-top: 12px; padding: 6px 12px calc(6px + var(--lp)) 8px; border: 0; background: none; text-align: left; cursor: pointer; }
+.rimrow::before, .rimrow::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px); }
+.rimrow::before { top: var(--lp); bottom: 0; background: var(--lip); }
+.rimrow::after { top: 0; bottom: var(--lp); background: var(--card); box-shadow: var(--lifted), inset 0 0 0 3px var(--rim); }
+.rimrow > * { position: relative; z-index: 1; }
+.rimrow:active::after { top: var(--lp); bottom: 0; } .rimrow:active > * { transform: translateY(var(--lp)); }
+.sock { flex: none; width: 42px; height: 42px; display: grid; place-items: center; clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px var(--rim), inset 4px 4px 0 #020305; color: var(--brass); }
+.sock svg { width: 20px; height: 20px; }
+.rimrow .tx { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.rimrow .ti { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.rimrow .de { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.rimrow .de b { color: var(--brass); }
+.chev { color: var(--touch); } .chev svg { width: 18px; height: 18px; }
+
+/* C · Tabs: two sunk tabs under the header swap the list; the side tab is brass */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 10px; clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); }
+.tab { height: 40px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; clip-path: var(--px2); background: none; font: 600 10.5px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); cursor: pointer; }
+.tab svg { width: 14px; height: 14px; }
+.tab.on { background: var(--card); box-shadow: var(--lifted); color: var(--ink); }
+.tab.side { color: color-mix(in srgb, var(--brass) 70%, #000); }
+.tab.side.on { color: var(--brass); box-shadow: var(--lifted), inset 0 0 0 2px var(--rim); }
+.tab .cnt { margin-left: 2px; }
+/* challenge cards inline (the Cards popup's card) */
+.c { display: flex; align-items: center; gap: 12px; padding: 10px 12px 12px 10px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.c .sock { align-self: flex-start; box-shadow: inset 0 0 0 2px #2a3140, inset 4px 4px 0 #020305; color: #94a3b8; }
+.c .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.c .ti { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.c .de { font: 500 13.5px/1.3 'Alegreya Sans', sans-serif; color: var(--text); }
+.c .gf { align-self: flex-start; display: inline-flex; align-items: center; gap: 2px; color: var(--gift); font: 700 15px 'Alegreya', serif; }
+.c .gf svg { width: 18px; height: 18px; }
+.prog { position: relative; height: 14px; clip-path: var(--px2); background: #090b10; box-shadow: var(--sunk); }
+.prog b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: var(--brass); box-shadow: inset 0 2px 0 #ecdcb0, inset 0 -2px 0 #8d7a4a; }
+.prog span { position: absolute; right: 5px; top: 0; bottom: 0; display: flex; align-items: center; font: 800 11px/1 'Alegreya Sans', sans-serif; color: var(--ink); text-shadow: 0 0 3px #000, 0 0 2px #000; }
+.live { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--brass); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · challenges, round 2</h1>
+  <p class="lede">The way into side quests, inside the Quests section. Real quests stay as they are; the side quests are one brass thing you open. Picked so far: Rim for the level-up card, Cards for the side-quest list. Every active card shows the hidden prize as a gift with a question mark.</p>
+
+  <div class="band">The way in</div>
+  <div class="grid" id="btn"></div>
+</div>
+<script>
+const LU = {"scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","flag":"<path d=\"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","calendar-check":"<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"m9 16 2 2 4-4\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","chevrons-up":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","gem":"<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\"/><path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\"/><path d=\"M2 9h20\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>"};
+const icon = (n) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LU[n]}</svg>`;
+const pips = (n) => `<span class="pips">${[1, 2, 3].map((k) => `<i class="${k <= n ? 'lit' : ''}"></i>`).join('')}</span>`;
+
+const QUESTS = [
+  { n: 'Pay the electric bill', p: 1, due: 'Due today', t: 'urgent' },
+  { n: 'Call the dentist', p: 1, due: '2 days left', t: 'soon' },
+  { n: 'Finish the tax return', p: 3, due: '6 days left', t: 'calm' },
+];
+const qcard = (q) => `<li class="q ${q.t}"><span class="qchk"><i></i></span><span class="body"><span class="qn">${q.n}</span><span class="qm">${pips(q.p)}<em class="due">${q.due}</em></span></span></li>`;
+const list = `<ul>${QUESTS.map(qcard).join('')}</ul>`;
+const head = (extra = '') => `<div class="shead"><h2>${icon('scroll-text')}Quests</h2>${extra}<span class="add">${icon('plus')}</span></div>`;
+const section = (inner) => `<div class="phone"><section class="sec">${inner}</section></div>`;
+
+const ACTIVE = [
+  { ic: 'calendar-check', n: 'Perfect day', d: 'Check off every skill in one day.', cur: 4, max: 6 },
+  { ic: 'shield-check', n: 'Hold the line', d: 'Resist 5 bad habits.', cur: 2, max: 5 },
+  { ic: 'swords', n: 'Untouched', d: 'Kill a boss without taking a hit.', live: 'Boss 12 · untouched so far' },
+];
+const prog = (c) => c.live ? `<span class="live">${c.live}</span>` : `<div class="prog"><b style="width:calc(${(c.cur / c.max) * 100}% - 4px)"></b><span>${c.cur} / ${c.max}</span></div>`;
+const ccard = (c) => `<li class="c"><span class="sock">${icon(c.ic)}</span><span class="tx"><strong class="ti">${c.n}</strong><span class="de">${c.d}</span>${prog(c)}</span><span class="gf">${icon('gift')}?</span></li>`;
+
+const A = section(`${head(`<span class="sidekey">${icon('flag')}Side<span class="cnt">3</span></span>`)}<p class="cap">One-off tasks</p>${list}`);
+const B = section(`${head()}<p class="cap">One-off tasks</p>${list}
+  <button class="rimrow" type="button"><span class="sock">${icon('flag')}</span><span class="tx"><strong class="ti">Side quests</strong><span class="de"><b>3</b> underway</span></span><span class="chev">${icon('chevron-right')}</span></button>`);
+const tabs = (side) => `<div class="tabs"><button class="tab${side ? '' : ' on'}" type="button">${icon('scroll-text')}Main</button><button class="tab side${side ? ' on' : ''}" type="button">${icon('flag')}Side<span class="cnt">3</span></button></div>`;
+const C1 = section(`${head()}${tabs(false)}${list}`);
+const C2 = section(`<div class="shead"><h2>${icon('scroll-text')}Quests</h2></div>${tabs(true)}<ul>${ACTIVE.map(ccard).join('')}</ul>`);
+
+document.getElementById('btn').innerHTML = [
+  { tag: 'Option A', n: 'Header key', d: 'A brass "Side" key with the count, beside the +. Opens the Cards popup. The smallest change: one control, in the place you already look for quests.', f: A },
+  { tag: 'Option B', n: 'Rim row', d: 'One brass-rimmed row closes the quest list, the same rim as the level-up card, so it reads as "the side-quest thing". Taps open the Cards popup. Never mixed in with the real quests; it sits after them.', f: B },
+  { tag: 'Option C', n: 'Tabs', d: 'Two tabs under the header swap the list in place: your quests, or your side quests. No popup at all. The + hides on the Side tab, since side quests only come from level-ups.', f: C1 + C2 },
+].map((o) => `<div class="col"><div class="tag">${o.tag}</div><h2>${o.n}</h2><p>${o.d}</p>${o.f}</div>`).join('');
+</script>
+</body>
+</html>

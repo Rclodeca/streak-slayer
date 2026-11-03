@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut challenges</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Side quests become challenges. Three things to pick: the level-up card, the button that opens
+   the challenges, and the challenges popup. Pixel-cut (Moonlit), real Lucide icons. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 680px; }
+.band { text-align: center; font: 600 12px 'Cinzel', serif; letter-spacing: .3em; color: #ece8de; margin: 42px 0 8px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.08); text-transform: uppercase; }
+.bandnote { text-align: center; margin: 0 auto 20px; max-width: 640px; font-size: 15px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; text-transform: uppercase; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 12px; min-height: 84px; font-size: 15px; }
+button { font: inherit; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+.phone {
+  --bg: #07080c; --frame: #141720; --well: #0d1017; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --gift: #c8a96e; --good: #7fc17a;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --lip: #05060a;
+  --done: #3c4352; --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-name: #5b606b;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --sunk: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b;
+  --lifted: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  position: relative; width: 390px; background: radial-gradient(70% 22% at 72% 4%, #1c2230, transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+svg.i { width: 14px; height: 14px; flex: none; }
+
+/* ---------- Popup chrome (as in pixel-forms / pixel-levelup) ---------- */
+.mphone { min-height: 700px; padding: 54px 10px 28px; }
+.mphone::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; z-index: 0; }
+.mphone > * { position: relative; z-index: 1; }
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 16px; }
+.mhead { display: flex; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; flex: 1; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--brass); }
+.mhead .ct { margin-right: 10px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--text); }
+.close { width: 40px; height: 40px; margin-right: -4px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(219,226,238,.06); border: 1px solid rgba(219,226,238,.25); color: var(--touch); }
+.close svg { width: 16px; height: 16px; }
+.lbl { display: block; margin: 0 0 7px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+
+/* ================= 1 · Level-up cards ================= */
+.lphone { min-height: 0; padding: 54px 10px 28px; }
+.sub { margin: 4px 2px 10px; text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.cards { display: grid; gap: 9px; }
+.ev { --lp: 3px; position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: calc(72px + var(--lp)); padding: 8px 12px calc(8px + var(--lp)) 10px; text-align: left; border: 0; background: none; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent; }
+.ev::before, .ev::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px); }
+.ev::before { top: var(--lp); bottom: 0; background: var(--lip); }
+.ev::after { top: 0; bottom: var(--lp); background: var(--card); box-shadow: var(--lifted); transition: top .07s, bottom .07s; }
+.ev > * { position: relative; z-index: 1; transition: transform .07s; }
+.ev:active::after, .ev.down::after { top: var(--lp); bottom: 0; }
+.ev:active > *, .ev.down > * { transform: translateY(var(--lp)); }
+.ev.down::after { background: #151a27; }
+.sock { flex: none; width: 46px; height: 46px; display: grid; place-items: center; clip-path: var(--px2); background: #07090d; box-shadow: inset 0 0 0 2px #2a3140, inset 4px 4px 0 #020305; }
+.sock svg { width: 22px; height: 22px; }
+.tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.cap { font: 600 9.5px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--brass); }
+.ti { font: 600 17.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.de { font: 500 13.5px/1.3 'Alegreya Sans', sans-serif; color: var(--text); }
+/* A · Caption: the card is the usual card; a brass caption above the title says it's a side quest */
+/* B · Rim: brass rim round the card, a brass-ringed socket, and a gift with a question mark at the right edge */
+.o-b .ev.side::after { box-shadow: var(--lifted), inset 0 0 0 3px #7c6a3f; }
+.o-b .ev.side .sock { box-shadow: inset 0 0 0 2px #7c6a3f, inset 4px 4px 0 #020305; }
+.o-b .ev.side .gf { flex: none; display: inline-flex; align-items: center; gap: 3px; color: var(--gift); font: 700 16px 'Alegreya', serif; }
+.o-b .ev.side .gf svg { width: 20px; height: 20px; }
+
+/* ================= 2 · The button ================= */
+.sphone { height: 600px; }
+.stage { position: relative; height: 150px; background: #0c0f17; border-bottom: 3px solid var(--lip); box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); overflow: hidden; }
+.stage .horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 50px; background: conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px, #0f131d; }
+.stage .who { position: absolute; left: 18px; top: 26px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+.stage .who small { display: block; margin-top: 5px; font: 700 12px 'Alegreya Sans', sans-serif; letter-spacing: .04em; color: var(--brass); text-transform: none; }
+.tbtn { position: absolute; top: 14px; width: 44px; height: 44px; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); }
+.tbtn svg { width: 18px; height: 18px; }
+.tbtn.menu { right: 12px; }
+.tbtn.chal { right: 62px; color: var(--brass); border-color: rgba(210,187,133,.5); background: rgba(210,187,133,.09); }
+.badge { position: absolute; z-index: 3; min-width: 17px; height: 17px; padding: 0 4px; display: grid; place-items: center; background: var(--brass); color: #14161c; font: 800 11px/1 'Alegreya Sans', sans-serif; clip-path: var(--px2); box-shadow: 0 0 0 2px var(--bg); }
+.dot { position: absolute; z-index: 3; width: 10px; height: 10px; background: var(--brass); box-shadow: 0 0 0 2px var(--bg); }
+.sec { margin: 12px 12px 0; }
+.shead { display: flex; align-items: center; height: 36px; padding: 0 2px; }
+.shead h3 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.row { display: flex; align-items: center; gap: 10px; min-height: 52px; margin-bottom: 7px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.row .nt { flex: 1; font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.row .pb { width: 58px; height: 34px; clip-path: var(--px2); background: #5b6a8c; box-shadow: inset 0 3px 0 #8195bf, inset 0 -3px 0 #333c52; }
+/* the open menu panel */
+.panel { position: absolute; z-index: 6; right: 12px; top: 64px; width: 214px; clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 6px; }
+.panel .mi { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; font: 600 15px 'Alegreya', serif; color: var(--ink); }
+.panel .mi svg { width: 17px; height: 17px; color: var(--touch); }
+.panel .mi.hot svg { color: var(--brass); }
+.panel .mi .n { margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px; display: grid; place-items: center; clip-path: var(--px2); background: var(--brass); color: #14161c; font: 800 12px/1 'Alegreya Sans', sans-serif; }
+.panel .mi.off { color: var(--dim); } .panel .mi.off svg { color: var(--dim); }
+.panel hr { border: 0; border-top: 1px solid rgba(255,255,255,.07); margin: 3px 4px; }
+.tabpill { position: absolute; z-index: 6; left: 50%; bottom: 18px; transform: translateX(-50%); height: 48px; padding: 0 18px 0 14px; display: flex; align-items: center; gap: 9px;
+  clip-path: var(--px); background: #1d1a12; box-shadow: inset 0 0 0 3px #7c6a3f, 0 8px 18px rgba(0,0,0,.6); border-bottom: 3px solid var(--lip); color: var(--brass); font: 700 14px 'Alegreya Sans', sans-serif; letter-spacing: .02em; white-space: nowrap; }
+.tabpill svg { width: 18px; height: 18px; }
+.tabpill em { font-style: normal; min-width: 22px; height: 22px; padding: 0 6px; display: grid; place-items: center; clip-path: var(--px2); background: var(--brass); color: #14161c; font: 800 12px/1 'Alegreya Sans', sans-serif; }
+
+/* ================= 3 · The challenges popup ================= */
+.prog { position: relative; height: 14px; clip-path: var(--px2); background: #090b10; box-shadow: var(--sunk); }
+.prog b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: var(--brass); box-shadow: inset 0 2px 0 #ecdcb0, inset 0 -2px 0 #8d7a4a; }
+.prog span { position: absolute; right: 5px; top: 0; bottom: 0; display: flex; align-items: center; font: 800 11px/1 'Alegreya Sans', sans-serif; color: var(--ink); text-shadow: 0 0 3px #000, 0 0 2px #000; }
+.live { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--brass); }
+.relic { font: 700 13px 'Alegreya', serif; color: var(--ink); }
+.empty { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--dim); }
+.coll { display: flex; gap: 4px; margin: 0 0 12px; }
+.coll i { flex: 1; height: 10px; clip-path: var(--px2); background: #090b10; box-shadow: var(--sunk); }
+.coll i.lit { background: var(--brass); box-shadow: inset 0 2px 0 #ecdcb0, inset 0 -2px 0 #8d7a4a; }
+
+/* M-A · Cards: the same raised cards as quests, a socket, name, one line of what to do, progress under */
+.m-a ul { display: flex; flex-direction: column; gap: 8px; }
+.m-a .c { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 12px 12px 10px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.m-a .c .sock { align-self: flex-start; }
+.m-a .c .tx { gap: 6px; }
+.m-a .c .ti { font-size: 16.5px; }
+.m-a .c.done { background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.m-a .c.done .ti { color: var(--s-name); text-decoration: line-through; text-decoration-color: rgba(219,226,238,.3); }
+.m-a .c.done .de { opacity: .5; }
+.m-a .c.done .sock svg { opacity: .45; }
+.m-a .c.done .rl { display: flex; align-items: center; gap: 6px; }
+.m-a .c.done .rl svg { width: 15px; height: 15px; color: var(--brass); }
+.m-a .gap { margin: 14px 2px 8px; }
+
+/* M-B · Sockets: the relic each challenge will pay sits in a hidden socket on the left, progress on the right */
+.m-b .shelf { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); padding: 11px 12px 12px; margin-bottom: 12px; }
+.m-b .shelf .lbl { display: flex; justify-content: space-between; margin-bottom: 9px; }
+.m-b .shelf .lbl b { color: var(--brass); font-weight: 600; }
+.m-b .shelf .coll { margin: 0; }
+.m-b ul { display: flex; flex-direction: column; gap: 8px; }
+.m-b .c { display: flex; gap: 12px; align-items: center; padding: 10px 12px 12px 10px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.m-b .rs { flex: none; position: relative; width: 56px; height: 56px; display: grid; place-items: center; clip-path: var(--px); background: radial-gradient(circle, rgba(200,169,110,.2), #07090d 75%); box-shadow: inset 0 0 0 2px #6d5f3e, inset 4px 4px 0 #020305; }
+.m-b .rs svg { width: 24px; height: 24px; color: var(--gift); }
+.m-b .rs .q { position: absolute; font: 700 19px 'Alegreya', serif; color: #1b1c20; }
+.m-b .c .tx { gap: 5px; }
+.m-b .c .ti { font-size: 16.5px; }
+.m-b .c.done { background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.m-b .c.done .rs { background: radial-gradient(circle, rgba(210,187,133,.28), #07090d 75%); box-shadow: inset 0 0 0 2px var(--brass), inset 4px 4px 0 #020305; }
+.m-b .c.done .rs svg { color: var(--brass); }
+
+/* M-C · Ledger: one sunk ledger with a line per challenge, the number at the right */
+.m-c .ledger { clip-path: var(--px); background: var(--well); box-shadow: var(--sunk); padding: 2px 14px; margin-bottom: 14px; }
+.m-c .line { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 6px 0; }
+.m-c .line + .line { border-top: 1px solid rgba(255,255,255,.05); }
+.m-c .line > svg { width: 20px; height: 20px; color: var(--touch); flex: none; }
+.m-c .line .tx { gap: 1px; }
+.m-c .line .ti { font-size: 16px; }
+.m-c .line .de { font-size: 12.5px; }
+.m-c .line .v { flex: none; min-width: 52px; text-align: right; font: 700 17px 'Alegreya', serif; color: var(--brass); }
+.m-c .line .v small { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.m-c .line.done .ti { color: var(--s-name); text-decoration: line-through; text-decoration-color: rgba(219,226,238,.3); }
+.m-c .line.done > svg { color: var(--s-name); }
+.m-c .line.done .v { color: var(--text); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · challenges</h1>
+  <p class="lede">Side quests as optional in-game challenges. Picking one at level-up takes the challenge shown on the card; a relic is reserved and stays hidden until you earn it. No due date, no miss damage. Challenges live behind their own button, so the main screen stays for real life. Tap anything pressable.</p>
+
+  <div class="band">1 · The level-up card</div>
+  <p class="bandnote">The third card is the side quest. It names the challenge you'd be taking on, so there's no second pick. Same three cards as now.</p>
+  <div class="grid" id="lvl"></div>
+
+  <div class="band">2 · The button</div>
+  <p class="bandnote">Where you open your challenges from. A brass count shows when one is ready to earn; nothing here is a task you have to do.</p>
+  <div class="grid" id="btn"></div>
+
+  <div class="band">3 · The challenges popup</div>
+  <p class="bandnote">Four active challenges in different states, one finished, and 4 of the 15 relics earned. The "no hit" one tracks the current boss live. Real challenges only, worded plainly.</p>
+  <div class="grid" id="pop"></div>
+</div>
+<script>
+const LU = {"menu":"<path d=\"M4 5h16\"/><path d=\"M4 12h16\"/><path d=\"M4 19h16\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","trophy":"<path d=\"M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978\"/><path d=\"M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978\"/><path d=\"M18 9h1.5a1 1 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z\"/><path d=\"M6 9H4.5a1 1 0 0 1 0-5H6\"/>","flag":"<path d=\"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","target":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","calendar-check":"<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"m9 16 2 2 4-4\"/>","chevrons-up":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","gem":"<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\"/><path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\"/><path d=\"M2 9h20\"/>","hammer":"<path d=\"m15 12-9.373 9.373a1 1 0 0 1-3.001-3L12 9\"/><path d=\"m18 15 4-4\"/><path d=\"m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172v-.344a2 2 0 0 0-.586-1.414l-1.657-1.657A6 6 0 0 0 12.516 3H9l1.243 1.243A6 6 0 0 1 12 8.485V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","sunrise":"<path d=\"M12 2v8\"/><path d=\"m4.93 10.93 1.41 1.41\"/><path d=\"M2 18h2\"/><path d=\"M20 18h2\"/><path d=\"m19.07 10.93-1.41 1.41\"/><path d=\"M22 22H2\"/><path d=\"m8 6 4-4 4 4\"/><path d=\"M16 18a4 4 0 0 0-8 0\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","crown":"<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\"/><path d=\"M5 21h14\"/>","eye-off":"<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>"};
+const icon = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LU[n]}</svg>`;
+const col = (c, n) => `<span style="color:${c};display:inline-flex">${icon(n)}</span>`;
+
+/* ---------- 1 · Level-up cards ---------- */
+const OTHER = [
+  ['<span style="color:#fbbf24;display:inline-flex">' + icon('star') + '</span>', 'Gain a Special', 'A random daily skill permanently deals ×1.5 damage.'],
+  ['<span style="color:#22c55e;display:inline-flex">' + icon('shield-check') + '</span>', 'Restore health', 'Heal 10% of your max health.'],
+];
+const SIDE = { ic: 'calendar-check', t: 'Perfect day', d: 'Check off every skill in a single day. Earns a rare and powerful item.' };
+const evCard = ([ic, t, d]) => `<button class="ev" type="button"><span class="sock">${ic}</span><span class="tx"><strong class="ti">${t}</strong><span class="de">${d}</span></span></button>`;
+const sideA = `<button class="ev side" type="button"><span class="sock"><span style="color:#94a3b8;display:inline-flex">${icon(SIDE.ic)}</span></span><span class="tx"><span class="cap">Side quest</span><strong class="ti">${SIDE.t}</strong><span class="de">${SIDE.d}</span></span></button>`;
+const sideB = `<button class="ev side" type="button"><span class="sock"><span style="color:var(--brass);display:inline-flex">${icon(SIDE.ic)}</span></span><span class="tx"><span class="cap">Side quest</span><strong class="ti">${SIDE.t}</strong><span class="de">Check off every skill in a single day.</span></span><span class="gf">${icon('gift')}?</span></button>`;
+const lvlPhone = (side) => `<div class="phone lphone"><div class="modal"><div class="mhead"><h3 style="text-align:center;color:var(--ink)">Level up!</h3></div>
+  <p class="sub">Choose 1 event</p><div class="cards">${evCard(OTHER[0])}${evCard(OTHER[1])}${side}</div></div></div>`;
+document.getElementById('lvl').innerHTML = [
+  { k: 'a', tag: 'Option A', n: 'Caption', d: 'The usual card, with a small brass "Side quest" caption above the challenge name so you can tell it from the rest at a glance. The reward stays a promise in the last line.', s: sideA },
+  { k: 'b', tag: 'Option B', n: 'Rim', d: 'A brass rim round the whole card, a brass icon, and a gift with a question mark on the right, so the hidden prize reads as the lure. The line shrinks to just the deed.', s: sideB },
+].map((o) => `<div class="col o-${o.k}"><div class="tag">${o.tag}</div><h2>${o.n}</h2><p>${o.d}</p>${lvlPhone(o.s)}</div>`).join('');
+document.querySelectorAll('.ev').forEach((b) => b.addEventListener('click', () => b.classList.toggle('down')));
+
+/* ---------- 2 · The button ---------- */
+const stage = (extra = '') => `<div class="stage"><div class="horizon"></div><div class="who">Boss 12<small>266 / 648</small></div>
+  <span class="tbtn menu">${icon('menu')}</span>${extra}</div>`;
+const skills = `<div class="sec"><div class="shead"><h3>Skills</h3></div>
+  ${['Morning run', 'Read 20 pages', 'Stretch', 'Journal'].map((n) => `<div class="row"><span class="nt">${n}</span><span class="pb"></span></div>`).join('')}</div>`;
+const btnA = `<div class="phone sphone">${stage()}<span class="dot" style="right:8px;top:10px"></span>${skills}
+  <div class="panel">
+    <div class="mi hot">${icon('flag')}Challenges<span class="n">2</span></div><hr>
+    <div class="mi off">${icon('x')}Undo</div>
+    <div class="mi">${icon('trophy')}High scores</div>
+    <div class="mi">${icon('scroll-text')}Show log</div></div></div>`;
+const btnB = `<div class="phone sphone">${stage(`<span class="tbtn chal">${icon('flag')}</span><span class="badge" style="right:56px;top:8px">2</span>`)}${skills}</div>`;
+const btnC = `<div class="phone sphone">${stage()}${skills}<div class="tabpill">${icon('flag')}Challenges<em>2</em></div></div>`;
+document.getElementById('btn').innerHTML = [
+  { k: 'a', tag: 'Option A', n: 'Menu row', d: 'A "Challenges" row at the top of the existing menu, with a count. A brass dot on the menu button says something is waiting. Nothing new on the main screen; costs one extra tap.', f: btnA },
+  { k: 'b', tag: 'Option B', n: 'Stage button', d: 'A second button beside the menu, brass so it reads as the game side. One tap to open. Adds one control to the pinned header on phones.', f: btnB },
+  { k: 'c', tag: 'Option C', n: 'Floating pill', d: 'A brass pill at the bottom, within thumb reach. The most visible and the quickest, but it sits over the real-life lists you scroll.', f: btnC },
+].map((o) => `<div class="col"><div class="tag">${o.tag}</div><h2>${o.n}</h2><p>${o.d}</p>${o.f}</div>`).join('');
+
+/* ---------- 3 · The popup ---------- */
+const ACTIVE = [
+  { ic: 'calendar-check', n: 'Perfect day', d: 'Check off every skill in one day.', cur: 4, max: 6, unit: 'today' },
+  { ic: 'shield-check', n: 'Hold the line', d: 'Resist 5 bad habits.', cur: 2, max: 5 },
+  { ic: 'swords', n: 'Untouched', d: 'Kill a boss without taking a hit.', live: 'Boss 12 · untouched so far' },
+  { ic: 'plus', n: 'Fresh quests', d: 'Add 3 new quests.', cur: 1, max: 3 },
+];
+const DONE = { ic: 'chevrons-up', n: 'Rank up', d: 'Rank up a skill.', relic: 'Ember Heart' };
+const head = `<div class="mhead"><h3>Challenges</h3><span class="ct">1 of 5 earned</span><span class="close">${icon('x')}</span></div>`;
+const prog = (c) => c.live ? `<span class="live">${c.live}</span>` : `<div class="prog"><b style="width:calc(${(c.cur / c.max) * 100}% - 4px)"></b><span>${c.cur} / ${c.max}</span></div>`;
+const coll = (n) => `<div class="coll">${Array.from({ length: 15 }, (_, k) => `<i class="${k < n ? 'lit' : ''}"></i>`).join('')}</div>`;
+
+const popA = `<div class="modal">${head}<ul>${ACTIVE.map((c) => `<li class="c"><span class="sock" style="color:#94a3b8">${icon(c.ic)}</span><span class="tx"><strong class="ti">${c.n}</strong><span class="de">${c.d}</span>${prog(c)}</span></li>`).join('')}</ul>
+  <span class="lbl gap">Earned</span><ul><li class="c done"><span class="sock" style="color:#94a3b8">${icon(DONE.ic)}</span><span class="tx"><strong class="ti">${DONE.n}</strong><span class="de">${DONE.d}</span><span class="rl relic">${icon('gem')}${DONE.relic}</span></span></li></ul></div>`;
+
+const popB = `<div class="modal">${head}<div class="shelf"><span class="lbl"><span>Relics</span><b>4 / 15</b></span>${coll(4)}</div><ul>
+  ${ACTIVE.map((c) => `<li class="c"><span class="rs">${icon('gift')}<span class="q">?</span></span><span class="tx"><strong class="ti">${c.n}</strong><span class="de">${c.d}</span>${prog(c)}</span></li>`).join('')}
+  <li class="c done"><span class="rs">${icon('gem')}</span><span class="tx"><strong class="ti">${DONE.n}</strong><span class="de">${DONE.d}</span><span class="relic">${DONE.relic}</span></span></li></ul></div>`;
+
+const val = (c) => c.live ? `<span class="v" style="font-size:13px">Untouched</span>` : `<span class="v">${c.cur}<small> / ${c.max}</small></span>`;
+const popC = `<div class="modal">${head}${coll(4)}<span class="lbl">Active</span><div class="ledger">
+  ${ACTIVE.map((c) => `<div class="line">${icon(c.ic)}<span class="tx"><strong class="ti">${c.n}</strong><span class="de">${c.d}</span></span>${val(c)}</div>`).join('')}</div>
+  <span class="lbl">Earned</span><div class="ledger"><div class="line done">${icon(DONE.ic)}<span class="tx"><strong class="ti">${DONE.n}</strong><span class="de">${DONE.d}</span></span><span class="v">${DONE.relic}</span></div></div></div>`;
+document.getElementById('pop').innerHTML = [
+  { k: 'a', tag: 'Option A', n: 'Cards', d: 'The same raised cards as quests: icon socket, name, one line of what to do, a brass progress bar. Earned ones sink and show the relic name at the bottom.', f: popA },
+  { k: 'b', tag: 'Option B', n: 'Sockets', d: 'Each challenge shows its hidden prize as a "?" socket on the left, and a shelf of 15 relic slots at the top shows the run\'s collection. Earning one lights its socket brass.', f: popB },
+  { k: 'c', tag: 'Option C', n: 'Ledger', d: 'One sunk ledger, a line per challenge, the count at the right. The 15-slot strip stays on top. The quietest and shortest; no progress bars.', f: popC },
+].map((o) => `<div class="col m-${o.k}"><div class="tag">${o.tag}</div><h2>${o.n}</h2><p>${o.d}</p><div class="phone mphone">${o.f}</div></div>`).join('');
+</script>
+</body>
+</html>
