@@ -7,7 +7,6 @@ import { useScrolledPast } from '../../composables/useScrolledPast';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useFocusModeStore } from '../../store/focusModeStore';
-import { useStageEdgeStore } from '../../store/stageEdgeStore';
 import BossBar from '../boss/BossBar.vue';
 import BossPanel from '../boss/BossPanel.vue';
 import { PERSONALITY_SPRITE } from '../boss/bossSprites';
@@ -25,12 +24,12 @@ import { STAGE_SCENES } from './stage/scenes';
 // fighters at half size with only their names and bars. The page's menu rides
 // in the stage's corner through the default slot, so it stays with the stage.
 // Behind it all, the boss's own place (StageScene): a day scene turns the stage's
-// names and stats to dark ink, and the plinths take the scene's stone.
+// names and stats to dark ink, and the plinths take the scene's stone. The Focus
+// strip keeps the plain night instead: no scene.
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const focusMode = useFocusModeStore();
-const stageEdge = useStageEdgeStore();
 
 // The slain boss stays up while a kill plays out, as on the stage.
 const { phase, displayedBoss, heldLevel } = useCelebration();
@@ -110,10 +109,13 @@ onBeforeUnmount(() => {
   <section
     ref="stage"
     class="fight-stage"
-    :class="{ focus: focusMode.on, 'day-stage': scene.day, 'pixel-edge': stageEdge.edge === 'pixel' }"
+    :class="{
+      focus: focusMode.on,
+      'day-stage': scene.day && !focusMode.on,
+    }"
     :style="plinth"
   >
-    <div class="stage-bg" aria-hidden="true"><StageScene :personality="boss.personality" /></div>
+    <div class="stage-bg" aria-hidden="true"><StageScene v-if="!focusMode.on" :personality="boss.personality" /></div>
     <div ref="inner" class="stage-inner" :style="blockEdges">
       <BossPanel />
       <CharacterPanel />

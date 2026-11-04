@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERSONALITY_NAME } from '../../../game-engine';
 import type { Personality } from '../../../game-engine';
-import { createPainter, ditherFoot, rgba } from './painter';
+import { createPainter, rgba } from './painter';
 import type { Fit } from './painter';
 import { STAGE_SCENES } from './scenes';
 import { sceneMotion } from './sceneFx';
@@ -56,17 +56,5 @@ describe('stage scenes', () => {
         expect(m.buf.length).toBe(stage.cols * stage.rows);
       }
     }
-  });
-
-  it('dissolves the foot into the page, thicker toward the bottom', () => {
-    const g = createPainter(195, 121, STAGES[0].fit);
-    STAGE_SCENES.balanced.paint(g);
-    ditherFoot(g, 6, '#e9dfc8');
-    const page = rgba('#e9dfc8');
-    const share = (y0: number, y1: number) => g.buf.subarray(y0 * 195, y1 * 195).reduce((n, v) => n + (v === page ? 1 : 0), 0) / ((y1 - y0) * 195);
-    expect(share(0, 115)).toBe(0);
-    expect(share(115, 118)).toBeGreaterThan(0);
-    expect(share(118, 121)).toBeGreaterThan(share(115, 118));
-    expect(share(118, 121)).toBeGreaterThan(0.5);
   });
 });

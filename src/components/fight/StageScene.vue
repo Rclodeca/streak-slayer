@@ -1,25 +1,21 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { Personality } from '../../game-engine';
-import { useStageEdgeStore } from '../../store/stageEdgeStore';
 import { useThemeStore } from '../../store/themeStore';
-import { createPainter, ditherFoot, FRAME_W } from './stage/painter';
+import { createPainter, FRAME_W } from './stage/painter';
 import type { Fit } from './stage/painter';
 import { STAGE_SCENES } from './stage/scenes';
 import { sceneMotion } from './stage/sceneFx';
 
 // The boss's place behind the fight (stage/scenes.ts), on two canvases: the scene,
-// painted whenever the boss, the stage's size or its edge changes, and its motion,
+// painted whenever the boss or the stage's size changes, and its motion,
 // stepped about 12 times a second. An art pixel is 2 CSS px on a phone and 3 on the
 // desktop banner, whose sprites are drawn half again as large. The scene's frame is
 // fitted to the stage by where the plinths stand (in the Focus strip, which has
-// none, by the sprites), so each fighter keeps its backdrop at any width. With the
-// Pixel edge the stage's backdrop reaches past its bottom edge (the theme's CSS)
-// and the scene's foot dissolves into the page there.
+// none, by the sprites), so each fighter keeps its backdrop at any width.
 
 const props = defineProps<{ personality: Personality }>();
 
-const stageEdge = useStageEdgeStore();
 const themeStore = useThemeStore();
 const root = ref<HTMLElement | null>(null);
 const art = ref<HTMLCanvasElement | null>(null);
@@ -31,7 +27,6 @@ const FRAME_BOSS_X = 143;
 const FRAME_HERO_X = 37;
 const FRAME_PLINTH_TOP = 65;
 const FRAME_SPRITE_FOOT = 71;
-const FADE_ROWS = 6;
 const STEP_MS = 83;
 
 /** An element's box in the stage's own coordinates, ignoring transforms (a boss
@@ -68,13 +63,6 @@ function fitFrame(stage: HTMLElement, px: number): Fit {
   return { dxL: 0, dxR: Math.round(stage.clientWidth / px) - FRAME_W, oy: 0 };
 }
 
-// The page's own background (the stage keeps the dark palette inside it), for the
-// Pixel edge to dissolve into.
-function pageColor() {
-  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-  return /^#[0-9a-f]{6}$/i.test(bg) ? bg : '#07080c';
-}
-
 const matches = (query: string) => typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
 
 let painting = 0;
@@ -94,10 +82,9 @@ function paint() {
   const cols = Math.ceil(el.clientWidth / px), rows = Math.ceil(el.clientHeight / px);
   if (!ctx || !fxCtx || !cols || !rows) return;
 
-  const fit = fitFrame(stage, px), scene = STAGE_SCENES[props.personality], pixelEdge = stageEdge.edge === 'pixel';
+  const fit = fitFrame(stage, px), scene = STAGE_SCENES[props.personality];
   const g = createPainter(cols, rows, fit);
   const data = scene.paint(g) ?? {};
-  if (pixelEdge) ditherFoot(g, FADE_ROWS, pageColor());
   for (const c of [canvas, layer]) {
     c.width = cols;
     c.height = rows;
@@ -106,16 +93,14 @@ function paint() {
   }
   ctx.putImageData(new ImageData(new Uint8ClampedArray(g.buf.buffer), cols, rows), 0, 0);
 
-  // The motion: its own layer, kept off the dissolving foot.
+  // The motion: its own layer.
   const m = createPainter(cols, rows, fit), image = new ImageData(new Uint8ClampedArray(m.buf.buffer), cols, rows);
   const draw = sceneMotion(scene.fx, m, data, 100);
-  const clearFrom = pixelEdge ? (rows - FADE_ROWS) * cols : m.buf.length;
   let t = 0;
   step = () => {
     t++;
     m.buf.fill(0);
     draw(t);
-    m.buf.fill(0, clearFrom);
     fxCtx.putImageData(image, 0, 0);
   };
   step();
@@ -141,7 +126,7 @@ function loop() {
   looping = requestAnimationFrame(tick);
 }
 
-watch(() => [props.personality, stageEdge.edge, themeStore.theme], schedule);
+watch(() => [props.personality, themeStore.theme], schedule);
 
 onMounted(() => {
   if (typeof ResizeObserver !== 'undefined' && root.value) {

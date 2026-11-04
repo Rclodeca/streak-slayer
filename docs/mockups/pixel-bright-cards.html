@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Bright card colour</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 36px 24px; justify-content: center; align-items: flex-start; }
+.col { width: 366px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 44px; font-size: 15px; }
+
+.phone {
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --page: #fff; --ink: #141a24; --brass: #a87400; --streak-i: #8a6f4a;
+  --phys: #ee6a4e; --magic: #8b63e6; --heal: #3fae5c; --true: #3d4452;
+  /* open card (overridden per option) */
+  --card: #f3f5f8; --hi: #fff; --lo: #dfe3e9; --lip: #d5dae1;
+  /* struck card */
+  --s-card: #f1f3f6; --s-hi: #e4e7ec; --s-lo: #fafbfc; --s-face: #e1e5ea; --s-base: #cdd2d9; --s-name: #a3aab5;
+  width: 366px; padding: 14px 12px 16px; background: var(--page); border-radius: 30px; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: #5a6372;
+}
+.cap { font: 600 12px 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); padding: 6px 2px 10px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.row { --face: color-mix(in srgb, var(--c) 82%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15);
+  --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] { --btn-c: #fff; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--btn-c); text-shadow: var(--btn-ts); }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--btn-sh); }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; }
+.press svg { width: 13px; height: 13px; }
+.row.on { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-name); --btn-ts: none; background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt { color: var(--s-name); }
+.row.on .streak, .row.on .pp { opacity: .45; }
+
+/* ---------- options ---------- */
+/* B: white card, slate outline */
+.o-b { --card: #fff; --hi: #fff; --lo: #fff; --lip: #aab3c0; }
+.o-b .row { box-shadow: inset 0 0 0 2px #d5dae1; }
+.o-b .row.on { box-shadow: inset 0 0 0 2px #e4e7ec; --s-card: #fafbfc; }
+/* C: pale blue */
+.o-c { --card: #e6edf8; --hi: #f6f9fe; --lo: #cbd7ea; --lip: #aebcd4; }
+/* D: warm paper */
+.o-d { --card: #f8f1df; --hi: #fffaf0; --lo: #e6dcc3; --lip: #cfc2a0; --s-card: #f2eee3; --s-hi: #e6e0d0; --s-lo: #faf7ef; --s-face: #e4dfd0; --s-base: #d0c9b6; --s-name: #aaa38f; }
+/* E: tinted by type */
+.o-e .row:not(.on) { --card: color-mix(in srgb, var(--c) 14%, #fff); --hi: color-mix(in srgb, var(--c) 6%, #fff); --lo: color-mix(in srgb, var(--c) 28%, #fff); --lip: color-mix(in srgb, var(--c) 50%, #fff); }
+/* F: white cards on a grey page */
+.o-f { --page: #e9edf2; --card: #fff; --hi: #fff; --lo: #e3e7ed; --lip: #c9d0da; --s-card: #dde2e9; --s-hi: #cfd5de; --s-lo: #eceff3; --s-face: #cdd3dc; --s-base: #b9c1cc; }
+/* G: white card with a type-colour edge band */
+.o-g { --card: #fff; --hi: #fff; --lo: #fff; --lip: #d5dae1; }
+.o-g .row:not(.on) { padding-left: 16px; box-shadow: inset 7px 0 0 var(--c), inset 0 0 0 2px #e4e8ee; }
+.o-g .row.on { --s-card: #f6f7f9; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>BRIGHT — SKILL CARD COLOUR</h1>
+  <p class="lede">The type colour now lives in the button. Six ways to colour the card around it. A is today's grey.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+const icon = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LU[n]}</svg>`;
+const TI = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+const skills = [
+  { n: 'Stretch', t: 'heal', d: '141', s: 12, r: 2, on: true },
+  { n: 'Morning run', t: 'phys', d: '1.1K', s: 23, r: 8 },
+  { n: 'Read 20 pages', t: 'magic', d: '288', s: 9, r: 3 },
+  { n: 'Call family', t: 'heal', d: '180', s: 4, r: 1 },
+  { n: 'Meditate', t: 'true', d: '74', s: 0, r: 0 },
+];
+const row = (h) => `<li class="row${h.on ? ' on' : ''}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="streak">${h.s >= 3 ? `<span style="color:var(--streak-i);display:inline-flex">${icon('streak')}</span>` + h.s : ''}</span>
+  <button class="press" type="button">${icon(TI[h.t])}<b>${h.d}</b></button></li>`;
+const opts = [
+  ['A', 'a', 'Cool grey (today)', 'The grey you don\'t like, for reference.'],
+  ['B', 'b', 'White, slate outline', 'No fill at all. The card is just a crisp outline on the white page, so the coloured button is the only colour.'],
+  ['C', 'c', 'Pale blue', 'A cool tint toward the navy of the main button. Reads as a tool, not a grey.'],
+  ['D', 'd', 'Warm paper', 'A cream card on the white page. Warmer, closer to Parchment but still bright.'],
+  ['E', 'e', 'Tinted by type', 'Each card takes a faint wash of its type colour (red, violet, green, slate), the button stays strong.'],
+  ['F', 'f', 'White cards, grey page', 'Flip it: the page goes light grey and the cards are white, like most phone apps.'],
+  ['G', 'g', 'White, type-colour edge', 'White card with a type-coloured band down the left, matching the gold band on quest tickets.'],
+];
+document.getElementById('grid').innerHTML = opts.map(([k, c, t, d]) => `<div class="col"><div class="tag">OPTION ${k}</div><h2>${t}</h2><p>${d}</p>
+  <div class="phone o-${c}"><div class="cap">Daily</div><ul>${skills.map(row).join('')}</ul></div></div>`).join('');
+</script>
+</body>
+</html>

@@ -73,16 +73,6 @@ export function createPainter(cols: number, rows: number, fit: Fit): Painter {
   };
 }
 
-/** The bottom `n` rows dissolve into `page` in a 4x4 dither, thickest at the foot. */
-export function ditherFoot(g: Painter, n: number, page: string) {
-  const rows = g.buf.length / g.W, v = rgba(page);
-  for (let k = 0; k < n; k++) {
-    const y = rows - n + k;
-    if (y < 0) continue;
-    for (let x = 0; x < g.W; x++) if (dz(x, y) < (k + 1) / (n + 1)) g.buf[y * g.W + x] = v;
-  }
-}
-
 // ---------------- noise and dither ----------------
 
 export type Rng = () => number;

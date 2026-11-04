@@ -1,10 +1,12 @@
-// Bright — a white page with colour on the cards, a second light theme on
-// trial next to Parchment (docs/mockups/pixel-light-apps.html, option F1;
-// pixel-light-bright.html, RA and QD). An open skill is filled with its damage
-// type's colour and carries a white key; Resist cards are gunmetal; quests are
-// white tickets with a gold band. Struck cards go plain grey, so the colour
-// shows only what's left. The fight stage keeps Moonlit's palette, as under
-// Parchment. The shared rules are in ashen.scss; the card fills are here.
+// Bright — a white page and white popups with grey cards, a second light
+// theme on trial next to Parchment (docs/mockups/pixel-light-apps.html, option
+// F1; pixel-light-bright.html, RA and QD; pixel-bright-item-popup.html, grey A
+// and banner D). An open skill is a grey card with a button in its
+// damage type's colour; Resist cards are gunmetal; quests are grey cards
+// with a yellow side; items sit in charcoal sockets. Struck cards go pale, so
+// the colour shows only what's left; the item popup's find sits on a night-sky
+// banner. The fight stage keeps Moonlit's palette, as under Parchment.
+// The shared rules are in ashen.scss; the card fills are here.
 
 @use 'ashen';
 @use 'moonlit';
@@ -16,13 +18,13 @@ $ticket-gold: #ebc35a;
   color-scheme: light;
   --bg: #ffffff;
   --bg-rgb: 255 255 255;
-  --text: #5a6372;
+  --text: #4f5866; // dark enough to hold on the grey cards
   --text-h: #141a24;
   --border: #d5dae1;
   --code-bg: #eef1f5;
-  --frame: #f3f5f8;
-  --frame-rgb: 243 245 248;
-  --panel-fill: #f3f5f8;
+  --frame: #fff; // popups and panels are white, like the page
+  --frame-rgb: 255 255 255;
+  --panel-fill: #fff;
   --ash-rgb: 70 82 100; // structure lines: cool slate
   --ash-mark: #9aa3b0;
   --ash-deep: #8b93a1;
@@ -41,6 +43,11 @@ $ticket-gold: #ebc35a;
   --button-fill-hover: #2a4570;
   --button-line: rgba(255, 255, 255, 0.2);
   --button-text: #fff;
+  // The secondary buttons (Cancel, Back, Replace): white with a grey line, so
+  // they don't pass for the grey cards.
+  --soft-fill: #fff;
+  --soft-fill-hover: #eef1f5;
+  --soft-line: #b4bcc8;
   --stage-light:
     radial-gradient(ellipse 45% 55% at 68% 55%, rgba(215, 205, 185, 0.15), transparent 72%),
     radial-gradient(ellipse 90% 30% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
@@ -53,12 +60,13 @@ $ticket-gold: #ebc35a;
   --bar-rgb: 255 255 255;
   --plate: #eef1f5;
 
-  // Cards: open ones are pale grey with a bevel (skills, Resist and quests
-  // take their own fills below); struck ones sink flat and grey.
-  --card: #f3f5f8;
-  --card-hi: #ffffff;
-  --card-lo: #dfe3e9;
-  --card-lip: #d5dae1;
+  // Cards: open ones are a clear grey with a bevel on the white page and
+  // popups (docs/mockups/pixel-bright-item-popup.html, A); Resist and quests
+  // take their own fills below. Struck ones go pale and flat.
+  --card: #dce1e8;
+  --card-hi: #eaedf1;
+  --card-lo: #c2c9d3;
+  --card-lip: #a6afbc;
   --card-ink: #141a24;
   --struck-card: #f1f3f6;
   --struck-hi: #e4e7ec;
@@ -72,24 +80,31 @@ $ticket-gold: #ebc35a;
   --resting-face: #e1e5ea;
   --panel-hi: #ffffff;
   --panel-lo: #dfe3e9;
-  --sunk-hi: #d5dae1;
+  --sunk-hi: #c3cad4;
   --sunk-lo: #ffffff;
   --button-lip: #0f1d33;
-  --stone-face: #eef1f5;
-  --stone-lip: #c8ced6;
-  --field: #f6f8fa;
-  --field-line: #c3cad4;
-  --field-shadow: #dfe3e9;
+  --stone-face: #dce1e8; // stone buttons (Drop): the cards' grey, so they show on white
+  --stone-lip: #a6afbc;
+  // Sunken is one rule: darker than what it sits on, so the fields share the
+  // wells' tint (it darkens a white popup and a grey card alike).
+  --field: var(--well);
+  --field-line: #aeb7c4;
+  --field-shadow: #cdd3dc;
   --check-bg: #fff;
   --selected-card: #e9eef6;
   --selected-shadow: #cfd6e1;
   --brass-on-face: #f2d58a;
   --on-brass: #fff;
-  --well: rgba(20, 30, 50, 0.06);
+  --well: rgba(20, 30, 50, 0.11);
   --on-true-damage: #fff;
   --on-crimson: #fff;
-  --input-fill: #f6f8fa;
+  --input-fill: var(--well);
   --tint-to: #000;
+  // The item sockets: charcoal, a little lighter than the other themes' black.
+  --socket-core: #2c323d;
+  --socket-edge: #1d2129;
+  --socket-shade: #13161c;
+  --socket-lift: #2a2f39;
 
   // The game's own colours, darker so they read as text on white. The skill
   // cards use brighter fills (below).
@@ -118,7 +133,7 @@ $ticket-gold: #ebc35a;
   --fx-boss-cut: #c33a2e;
   --hp-trail: rgba(240, 222, 190, 0.75);
   --exp-color: #b07d12;
-  --rarity-common: #7d8594;
+  --rarity-common: #6b7381; // darker, so "Common" reads on the grey
   --rarity-uncommon: #2f8a46;
   --rarity-rare: #2f68c0;
   --rarity-epic: #6f4fc0;
@@ -134,38 +149,146 @@ $ticket-gold: #ebc35a;
   @include ashen.derived-tokens;
 }
 
-// ---------- Skills: filled with their type's colour, a white key ----------
-// The row's --c reads these fills (it is var(--dmg-...) on the row itself).
+// ---------- Items: vivid rarity, in the sockets ----------
+// A brighter tone of each rarity: the item sockets' rim and inner glow.
+$vivid: (
+  common: #a9b2bf,
+  uncommon: #46c46c,
+  rare: #4d90f2,
+  epic: #9d76f2,
+  relic: #f28c3c,
+);
+
+@each $name, $c in $vivid {
+  #{$bright} .rarity-#{$name} {
+    --rarity-vivid: #{$c};
+  }
+}
+
+#{$bright} :is(.gear-icon, .icon-frame) {
+  --socket-rim: var(--rarity-vivid);
+  --socket-glow: color-mix(in srgb, var(--rarity-vivid) 30%, transparent);
+}
+
+// The find (the title, "Spoils of" and the item), and the level-up's title,
+// level and gains, on a strip of the fight
+// stage's night with a few stars, as if it just fell from the boss
+// (docs/mockups/pixel-bright-item-popup.html, banner D). It takes the night
+// palette, so its text, stat icons and rarity label come out light.
+#{$bright} :is(.modal-content:has(:is(.found, .level-banner)) .modal-header, .found, .level-banner) {
+  @include moonlit.palette;
+  @include ashen.derived-tokens;
+}
+
+#{$bright} .modal-content:has(:is(.found, .level-banner)) .modal-header {
+  margin: -1rem -1.25rem 0;
+  padding: 1rem 1.25rem 0.75rem;
+  background: #0c1019;
+}
+
+#{$bright} :is(.found, .level-banner) {
+  position: relative;
+  overflow: hidden;
+  margin: 0 -1.25rem;
+  padding: 0.25rem 1.25rem 1.25rem;
+  background: linear-gradient(180deg, #0c1019, #1b2436 70%, #252f44);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+
+  > * {
+    position: relative;
+  }
+
+  .gains {
+    margin-bottom: 0;
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: none;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 2px;
+    box-shadow:
+      30px 40px #cfd8e6,
+      92px 22px #8d99ad,
+      150px 70px #cfd8e6,
+      250px 30px #8d99ad,
+      320px 58px #cfd8e6,
+      300px 150px #8d99ad,
+      46px 170px #8d99ad,
+      340px 210px #cfd8e6,
+      22px 250px #cfd8e6;
+  }
+}
+
+// ---------- Skills: a grey card, the type's colour in the button ----------
+// The row's --c reads these fills (it is var(--dmg-...) on the row itself), and
+// StrikeButton builds its face from --c.
 #{$bright} .skill-list .habit-item:not(.struck, .resting) {
   --dmg-physical: #ee6a4e;
   --dmg-magic: #8b63e6;
   --dmg-healing: #3fae5c;
   --dmg-true: #3d4452;
-  --card-bg: var(--c);
-  --card-hi: color-mix(in srgb, var(--c) 70%, #fff);
-  --card-lo: color-mix(in srgb, var(--c) 82%, #000);
-  --card-lip: color-mix(in srgb, var(--c) 58%, #000);
-  --card-ink: #fff;
-  --text-h: #fff; // the streak count
-  --text: #fff;
-  --icon-streak: #fff;
-  --brass: rgba(255, 255, 255, 0.9); // the rank pips
+  box-shadow:
+    inset 2px 2px 0 var(--card-hi),
+    inset -2px -2px 0 var(--card-lo);
 }
 
-#{$bright} .skill-list .habit-item:not(.struck, .resting) .sigil.special {
+// Drop is the stone way out; it takes the same white face as the soft buttons.
+// (--stone-face stays grey for the choice keys.)
+#{$bright} .drop-button {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--soft-line);
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: var(--soft-fill-hover);
+    }
+  }
+}
+
+#{$bright} .level-banner {
+  margin-bottom: 1rem;
+}
+
+// ---------- Level-up cards: a clean gold rim, light sunken icon tiles ----------
+// The side card's rim was a muddy brown on grey; it takes the quests' gold.
+#{$bright} .cards > button.card.side {
+  box-shadow:
+    inset 2px 2px 0 var(--card-hi),
+    inset -2px -2px 0 var(--card-lo),
+    inset 0 0 0 2px $ticket-gold;
+}
+
+// The icon tiles are filled with their own icon's colour (violet for the dice,
+// gold for the target) with a white icon and a darker rim.
+#{$bright} button.card .icon {
   color: #fff;
+  background: var(--k);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--k) 70%, #000);
 }
 
-#{$bright} .skill-list .habit-item:not(.struck, .resting) .sigil.ult {
-  color: #ffe7a3;
+#{$bright} button.card .side-socket {
+  color: #fff;
+  background: var(--brass);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brass) 70%, #000);
 }
 
-#{$bright} .skill-list .habit-item:not(.struck, .resting) .strike.open {
-  --face: #fff;
-  --base: color-mix(in srgb, var(--c) 45%, #000);
-  --ink: var(--c);
-  --ink-shadow: none;
-  --bevel: inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+#{$bright} button.card :is(.icon, .side-socket) svg {
+  width: 25px;
+  height: 25px;
+}
+
+// ---------- Log: a grey card, like the skills ----------
+#{$bright} .activity-log {
+  background: var(--card);
+  border-bottom: 3px solid var(--card-lip);
+  box-shadow:
+    inset 2px 2px 0 var(--card-hi),
+    inset -2px -2px 0 var(--card-lo);
 }
 
 // ---------- Resist: gunmetal, the darkest thing on the page ----------
@@ -190,14 +313,13 @@ $ticket-gold: #ebc35a;
   --sunk-lo: #4a515b;
 }
 
-// ---------- Quests: white tickets with a gold band and edge ----------
+// ---------- Quests: grey cards like the skills, with a yellow side ----------
 #{$bright} .quest-section .quest-item:not(.done) {
-  --card-bg: #fff;
-  --card-lip: #d9a520;
   padding-left: 10px;
   box-shadow:
     inset 7px 0 0 $ticket-gold,
-    inset 0 0 0 2px $ticket-gold;
+    inset 2px 2px 0 var(--card-hi),
+    inset -2px -2px 0 var(--card-lo);
 }
 
 #{$bright} .quest-tab.selected:not(.side) {

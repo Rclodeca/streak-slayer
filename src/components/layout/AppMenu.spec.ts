@@ -5,7 +5,6 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { STORAGE_KEY, useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
-import { STORAGE_KEY as EDGE_KEY, useStageEdgeStore } from '../../store/stageEdgeStore';
 import { STORAGE_KEY as THEME_KEY, useThemeStore } from '../../store/themeStore';
 import AppMenu from './AppMenu.vue';
 
@@ -23,8 +22,7 @@ describe('AppMenu', () => {
     const panel = document.body.querySelector('.menu-panel')!;
     expect(panel.textContent).toContain('High Scores');
     expect(panel.textContent).toContain('Theme');
-    // The stage edge's two choices come first.
-    const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')].slice(2);
+    const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')];
     expect(options().map((o) => o.textContent?.trim())).toEqual(['System', 'Light', 'Bright', 'Dark']);
     expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'false', 'true']);
 
@@ -47,27 +45,6 @@ describe('AppMenu', () => {
     expect(useThemeStore().preference).toBe('system');
     expect(localStorage.getItem(THEME_KEY)).toBe('system');
     expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false', 'false']);
-  });
-
-  it('picks the stage edge, keeping the menu open', async () => {
-    const wrapper = mount(AppMenu, { attachTo: document.body });
-    await wrapper.find('.menu-button').trigger('click');
-    const panel = document.body.querySelector('.menu-panel')!;
-    expect(panel.textContent).toContain('Stage edge');
-    const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')].slice(0, 2);
-    expect(options().map((o) => o.textContent?.trim())).toEqual(['Hard', 'Pixel']);
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false']);
-
-    options()[1].click(); // Pixel
-    await wrapper.vm.$nextTick();
-    expect(useStageEdgeStore().edge).toBe('pixel');
-    expect(localStorage.getItem(EDGE_KEY)).toBe('pixel');
-    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'true']);
-
-    options()[0].click(); // Hard
-    await wrapper.vm.$nextTick();
-    expect(useStageEdgeStore().edge).toBe('hard');
   });
 
   it('flips Focus mode from the menu, and keeps the menu open', async () => {

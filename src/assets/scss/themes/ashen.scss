@@ -331,11 +331,19 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 @mixin socket($c, $rim: 2px, $depth: 4px, $glow: null) {
   border: 0;
   @include pixel-corners(3px);
-  background: radial-gradient(circle, color-mix(in srgb, #{$c} 20%, #07090d), #05060a 72%);
+  // The hole's shades are near-black, and the rim a dark tone of $c with no
+  // inner glow, unless a theme says otherwise (Bright lightens the hole and
+  // gives item sockets a vivid rim and glow).
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, #{$c} 20%, var(--socket-core, #07090d)),
+    var(--socket-edge, #05060a) 72%
+  );
   $shadows: (
-    inset 0 0 0 $rim color-mix(in srgb, #{$c} 60%, #000),
-    inset $depth $depth 0 #020305,
-    inset (-$depth) (-$depth) 0 color-mix(in srgb, #{$c} 30%, #0b0d12)
+    inset 0 0 0 $rim var(--socket-rim, color-mix(in srgb, #{$c} 60%, #000)),
+    inset $depth $depth 0 var(--socket-shade, #020305),
+    inset (-$depth) (-$depth) 0 color-mix(in srgb, #{$c} 30%, var(--socket-lift, #0b0d12)),
+    inset 0 0 ($depth * 3) var(--socket-glow, transparent)
   );
   @if $glow {
     $shadows: append($shadows, $glow, comma);
@@ -510,13 +518,38 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     overflow: hidden;
   }
 
-  .fight-stage.pixel-edge {
-    border-bottom-color: transparent;
-    box-shadow: none;
-  }
+  // The Focus strip has no scene: the plain night, square stars over a dithered
+  // horizon, as the stage was before the scenes.
+  .fight-stage.focus .stage-bg {
+    // Stars: 2px squares, placed by share of the width.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      $stars: (10% 22%, 31% 8%, 59% 18%, 77% 5%, 90% 38%, 51% 46%, 23% 58%, 67% 62%, 85% 52%, 5% 44%);
+      $layers: ();
+      @each $x, $y in $stars {
+        $layers: append($layers, linear-gradient(#3a4358, #3a4358) $x $y / 2px 2px no-repeat, comma);
+      }
+      background: $layers;
+    }
 
-  .fight-stage.pixel-edge .stage-bg {
-    bottom: -15px;
+    // The horizon: a 4px dither of two stones, darker along its top edge.
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 37%;
+      background:
+        conic-gradient(#0b0e15 25%, transparent 0 50%, #0b0e15 0 75%, transparent 0) 0 0 / 4px 4px repeat-x,
+        conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px;
+      background-size:
+        4px 8px,
+        4px 4px;
+      background-clip: content-box, border-box;
+    }
   }
 
   // Phones: the boss steps left a little, clear of the menu button.

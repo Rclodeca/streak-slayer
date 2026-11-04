@@ -42,8 +42,11 @@ const isCurrentEquipped = computed(
     @update:model-value="dismiss"
   >
     <template v-if="current">
-      <p v-if="droppedBy" class="dropped-by">Spoils of the <span class="dropped-by-name">{{ droppedBy }}</span></p>
-      <ItemHero :item="current" />
+      <!-- The find itself; Bright sets it on a night-sky banner. -->
+      <div class="found" :class="`rarity-${current.rarity}`">
+        <p v-if="droppedBy" class="dropped-by">Spoils of the <span class="dropped-by-name">{{ droppedBy }}</span></p>
+        <ItemHero :item="current" />
+      </div>
 
       <template v-if="!isCurrentEquipped">
         <p class="replace-label">Replace</p>

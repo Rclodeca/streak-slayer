@@ -5,7 +5,6 @@ import { exportSaveFile } from '../../composables/useSaveFileTransfer';
 import { useUndoCheck } from '../../composables/useUndoCheck';
 import { useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
-import { STAGE_EDGES, useStageEdgeStore } from '../../store/stageEdgeStore';
 import { applySaveFile, readSaveFile } from '../../store/saveFile';
 import type { SaveFile, SaveFileSummary } from '../../store/saveFile';
 import { THEME_CHOICES, useThemeStore } from '../../store/themeStore';
@@ -13,10 +12,10 @@ import type { ThemePreference } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
 // Top-right menu: Undo, High Scores, Focus mode, Show log, save export/import,
-// the stage's edge (Hard or Pixel) and the theme picker (it hides itself if there
-// is only one theme). Picking an edge or a theme, or flipping Focus mode / Show
-// log, keeps the menu open so the change can be seen and flipped back; anything else, a tap outside (which does
-// nothing else), or Escape closes it.
+// and the theme picker (it hides itself if there is only one theme). Picking a
+// theme, or flipping Focus mode / Show log, keeps the menu open so the change can
+// be seen and flipped back; anything else, a tap outside (which does nothing
+// else), or Escape closes it.
 // The panel is teleported to <body> and placed under the button: the button
 // rides inside the pinned stage, and on a phone the panel was being cut off
 // where the stage's layer ends, so it lives above the whole page instead.
@@ -25,7 +24,6 @@ const emit = defineEmits<{ 'high-scores': [] }>();
 const themeStore = useThemeStore();
 const focusMode = useFocusModeStore();
 const logVisible = useLogVisibleStore();
-const stageEdge = useStageEdgeStore();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
@@ -170,19 +168,6 @@ onBeforeUnmount(() => {
         <span class="menu-label">Save</span>
         <button type="button" class="menu-item" role="menuitem" @click="exportSave"><Upload :size="15" />Export</button>
         <button type="button" class="menu-item" role="menuitem" @click="pickImport"><Download :size="15" />Import</button>
-        <div class="menu-divider" role="separator" />
-        <span class="menu-label">Stage edge</span>
-        <button
-          v-for="option in STAGE_EDGES"
-          :key="option.id"
-          type="button"
-          class="menu-item"
-          role="menuitemradio"
-          :aria-checked="stageEdge.edge === option.id"
-          @click="stageEdge.setEdge(option.id)"
-        >
-          <Check :size="15" class="tick" :class="{ on: stageEdge.edge === option.id }" />{{ option.label }}
-        </button>
         <!-- Hidden if there's only one theme to pick. -->
         <template v-if="THEME_CHOICES.length > 1">
           <div class="menu-divider" role="separator" />
