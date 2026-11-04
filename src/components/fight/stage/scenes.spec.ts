@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERSONALITY_NAME } from '../../../game-engine';
 import type { Personality } from '../../../game-engine';
-import { createPainter, rgba } from './painter';
+import { createPainter } from './painter';
 import type { Fit } from './painter';
 import { STAGE_SCENES } from './scenes';
 import { sceneMotion } from './sceneFx';
