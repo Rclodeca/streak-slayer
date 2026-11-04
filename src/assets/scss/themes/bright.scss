@@ -1,11 +1,11 @@
-// Bright — a white page and white popups with grey cards, a second light
+// Bright — a soft grey page and popups with white cards, a second light
 // theme on trial next to Parchment (docs/mockups/pixel-light-apps.html, option
-// F1; pixel-light-bright.html, RA and QD; pixel-bright-item-popup.html, grey A
-// and banner D). An open skill is a grey card with a button in its
-// damage type's colour; Resist cards are gunmetal; quests are grey cards;
-// items sit in charcoal sockets. Struck cards go pale, so
-// the colour shows only what's left; the item popup's find sits on a night-sky
-// banner. The fight stage keeps Moonlit's palette, as under Parchment.
+// F1; pixel-light-bright.html, RA and QD; pixel-bright-item-popup.html, banner
+// D; pixel-bright-card-colours.html, C). An open skill is a white card with a
+// button in its damage type's colour; Resist cards are gunmetal; quests are
+// white cards; items sit in charcoal sockets. Struck cards sink to a flat grey,
+// so the colour shows only what's left; the item popup's find sits on a
+// night-sky banner. The fight stage keeps Moonlit's palette, as under Parchment.
 // The shared rules are in ashen.scss; the card fills are here.
 
 @use 'ashen';
@@ -16,15 +16,15 @@ $ticket-gold: #ebc35a;
 
 #{$bright} {
   color-scheme: light;
-  --bg: #ffffff;
-  --bg-rgb: 255 255 255;
+  --bg: #eef1f5;
+  --bg-rgb: 238 241 245;
   --text: #4f5866; // dark enough to hold on the grey cards
   --text-h: #141a24;
   --border: #d5dae1;
-  --code-bg: #eef1f5;
-  --frame: #fff; // popups and panels are white, like the page
-  --frame-rgb: 255 255 255;
-  --panel-fill: #fff;
+  --code-bg: #e3e7ec;
+  --frame: #eef1f5; // popups and panels are the page's grey
+  --frame-rgb: 238 241 245;
+  --panel-fill: #eef1f5;
   --ash-rgb: 70 82 100; // structure lines: cool slate
   --ash-mark: #9aa3b0;
   --ash-deep: #8b93a1;
@@ -44,9 +44,9 @@ $ticket-gold: #ebc35a;
   --button-line: rgba(255, 255, 255, 0.2);
   --button-text: #fff;
   // The secondary buttons (Cancel, Back, Replace): white with a grey line, so
-  // they don't pass for the grey cards.
+  // they don't pass for the cards, which have no line.
   --soft-fill: #fff;
-  --soft-fill-hover: #eef1f5;
+  --soft-fill-hover: #f6f8fa;
   --soft-line: #b4bcc8;
   --stage-light:
     radial-gradient(ellipse 45% 55% at 68% 55%, rgba(215, 205, 185, 0.15), transparent 72%),
@@ -58,32 +58,32 @@ $ticket-gold: #ebc35a;
   --spent-text: #a3aab5;
   --day-on-rgb: 180 192 210;
   --bar-rgb: 255 255 255;
-  --plate: #eef1f5;
+  --plate: #fff;
 
-  // Cards: open ones are a clear grey with a bevel on the white page and
-  // popups (docs/mockups/pixel-bright-item-popup.html, A); Resist and quests
-  // take their own fills below. Struck ones go pale and flat.
-  --card: #dce1e8;
-  --card-hi: #eaedf1;
-  --card-lo: #c2c9d3;
-  --card-lip: #a6afbc;
+  // Cards: open ones are white with a faint bevel and a grey lip on the grey
+  // page and popups (docs/mockups/pixel-bright-card-colours.html, C); Resist
+  // takes its own fill below. Struck ones sink to a flat grey.
+  --card: #fff;
+  --card-hi: #fff;
+  --card-lo: #f1f3f6;
+  --card-lip: #cfd5de;
   --card-ink: #141a24;
-  --struck-card: #f1f3f6;
-  --struck-hi: #e4e7ec;
-  --struck-lo: #fafbfc;
-  --struck-face: #e1e5ea;
-  --struck-lip: #cdd2d9;
-  --struck-ink: #a3aab5;
-  --quiet-card: #f3f5f8;
-  --quiet-hi: #ffffff;
-  --quiet-lo: #dfe3e9;
+  --struck-card: #e4e8ed;
+  --struck-hi: #e4e8ed;
+  --struck-lo: #e4e8ed;
+  --struck-face: #d6dbe2;
+  --struck-lip: #c9cfd8;
+  --struck-ink: #9aa2ae;
+  --quiet-card: #fff;
+  --quiet-hi: #fff;
+  --quiet-lo: #f1f3f6;
   --resting-face: #e1e5ea;
   --panel-hi: #ffffff;
   --panel-lo: #dfe3e9;
   --sunk-hi: #c3cad4;
   --sunk-lo: #ffffff;
   --button-lip: #0f1d33;
-  --stone-face: #dce1e8; // stone buttons (Drop): the cards' grey, so they show on white
+  --stone-face: #dce1e8; // stone buttons (the choice keys): darker than the grey popup
   --stone-lip: #a6afbc;
   // Sunken is one rule: darker than what it sits on, so the fields share the
   // wells' tint (it darkens a white popup and a grey card alike).
@@ -224,7 +224,7 @@ $vivid: (
   }
 }
 
-// ---------- Skills: a grey card, the type's colour in the button ----------
+// ---------- Skills: a white card, the type's colour in the button ----------
 // The row's --c reads these fills (it is var(--dmg-...) on the row itself), and
 // StrikeButton builds its face from --c.
 #{$bright} .skill-list .habit-item:not(.struck, .resting) {
@@ -263,6 +263,14 @@ $vivid: (
     inset 0 0 0 2px $ticket-gold;
 }
 
+// The shared hover lightens the card, which does nothing to white; it greys a
+// touch instead.
+@media (hover: hover) {
+  #{$bright} .cards > button.card:hover {
+    background: var(--soft-fill-hover);
+  }
+}
+
 // The icon tiles are filled with their own icon's colour (violet for the dice,
 // gold for the target) with a white icon and a darker rim.
 #{$bright} button.card .icon {
@@ -282,7 +290,7 @@ $vivid: (
   height: 25px;
 }
 
-// ---------- Log: a grey card, like the skills ----------
+// ---------- Log: a white card, like the skills ----------
 #{$bright} .activity-log {
   background: var(--card);
   border-bottom: 3px solid var(--card-lip);
@@ -313,7 +321,7 @@ $vivid: (
   --sunk-lo: #4a515b;
 }
 
-// ---------- Quests: grey cards like the skills ----------
+// ---------- Quests: white cards like the skills ----------
 #{$bright} .quest-tab.selected:not(.side) {
   background: #fff;
   color: #8a5a00;

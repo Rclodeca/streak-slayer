@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bright card colours</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 system-ui, sans-serif; }
+.page { padding: 24px 16px 60px; }
+h1 { text-align: center; font: 600 15px Georgia, serif; letter-spacing: .3em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 24px; max-width: 680px; }
+.opt { margin: 0 auto 48px; max-width: 830px; }
+.opt h2 { font: 600 14px Georgia, serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; }
+.opt p { margin: 0 0 12px; }
+.pair { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+iframe { width: 390px; height: 844px; border: 0; border-radius: 28px; background: #fff; box-shadow: 0 18px 44px rgba(0,0,0,.5); flex: none; }
+nav { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; justify-content: center; padding: 8px; background: #1b1c20; }
+nav a { color: #ece8de; text-decoration: none; padding: 6px 12px; border: 1px solid #444; border-radius: 6px; font-size: 14px; }
+</style>
+</head>
+<body>
+<nav id="nav"></nav>
+<div class="page">
+  <h1>BRIGHT — CARD COLOUR</h1>
+  <p class="lede">The real app, Bright theme, seeded save. Each option: the full main page (left, scroll inside) and the player popup (right). A is today's grey.</p>
+  <div id="opts"></div>
+</div>
+<script>
+const SEED = {"streak-slayer:theme:v1": "bright", "streak-slayer:hints:v1": "{\"checkGood\":true,\"checkBad\":true}", "streak-slayer:highscore:runstart:v1": "2026-11-03", "streak-slayer:save:v5": "{\"schemaVersion\": 5, \"character\": {\"level\": 5, \"exp\": 0, \"starterStats\": {\"physicalDamage\": 471.7047393407709, \"magicDamage\": 208.95668353102144, \"healing\": 139.59748852297588, \"health\": 1308.5534256202861, \"trueDamage\": 276.70592742025576}, \"currentHealth\": 1308.5534256202861, \"ownedItemIds\": [\"executioners-axe\", \"stormcaller-staff\", \"hexed-ring\", \"ember-heart\"], \"equippedItemIds\": [\"executioners-axe\", \"stormcaller-staff\", \"hexed-ring\", \"ember-heart\"], \"critChance\": 0.01, \"takenEventIds\": [], \"pendingEventPicks\": 0, \"questsUnlocked\": true, \"heroPending\": false, \"damagePoolRebalanceApplied\": true, \"healingRebalanceApplied\": true, \"rankRebalanceApplied\": true, \"healBoostApplied\": true, \"healthGrowthBumpApplied\": true, \"healBaseCutApplied\": true, \"bossAttackEaseApplied\": true, \"name\": \"Ryn\"}, \"boss\": {\"index\": 1, \"personality\": \"arcane3x\", \"maxHealth\": 615.781560284403, \"health\": 615.781560284403, \"physicalAttack\": 453.93570159109794, \"magicAttack\": 1134.1954550801224, \"armor\": 205.8157327251731, \"magicResist\": 169.27640208175848, \"lifestealPct\": 0.05, \"difficultyModifier\": 0.9031072802316437, \"physicalShare\": 0.3}, \"habits\": [{\"id\": \"h1\", \"name\": \"Stretch\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"healing\", \"isBad\": false, \"streakCount\": 12, \"rank\": 2, \"lastCompletedPeriodKey\": \"2026-11-03\", \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h2\", \"name\": \"Morning run\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"physical\", \"isBad\": false, \"streakCount\": 23, \"rank\": 8, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\", \"isSpecial\": true}, {\"id\": \"h3\", \"name\": \"Pushups\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"physical\", \"isBad\": false, \"streakCount\": 4, \"rank\": 1, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h4\", \"name\": \"Read 20 pages\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"magic\", \"isBad\": false, \"streakCount\": 9, \"rank\": 3, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h5\", \"name\": \"Meditate\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"trueDamage\", \"isBad\": false, \"streakCount\": 0, \"rank\": 0, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h6\", \"name\": \"Swim\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"physical\", \"isBad\": false, \"streakCount\": 5, \"rank\": 1, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\", \"days\": [3]}, {\"id\": \"h7\", \"name\": \"Call family\", \"period\": \"weekly\", \"difficulty\": \"medium\", \"damageType\": \"healing\", \"isBad\": false, \"streakCount\": 0, \"rank\": 0, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-W45\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h8\", \"name\": \"Long hike\", \"period\": \"weekly\", \"difficulty\": \"medium\", \"damageType\": \"physical\", \"isBad\": false, \"streakCount\": 6, \"rank\": 5, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-W45\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h9\", \"name\": \"Doomscroll\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"physical\", \"isBad\": true, \"streakCount\": 9, \"rank\": 1, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h10\", \"name\": \"Late snacking\", \"period\": \"daily\", \"difficulty\": \"medium\", \"damageType\": \"magic\", \"isBad\": true, \"streakCount\": 3, \"rank\": 0, \"lastCompletedPeriodKey\": \"2026-11-03\", \"lastCheckedPeriodKey\": \"2026-11-03\", \"createdDayKey\": \"2026-10-01\"}, {\"id\": \"h11\", \"name\": \"Takeout\", \"period\": \"weekly\", \"difficulty\": \"medium\", \"damageType\": \"magic\", \"isBad\": true, \"streakCount\": 3, \"rank\": 0, \"lastCompletedPeriodKey\": null, \"lastCheckedPeriodKey\": \"2026-W45\", \"createdDayKey\": \"2026-10-01\"}], \"activityLog\": [], \"quests\": [{\"id\": \"q1\", \"description\": \"Call the dentist\", \"difficulty\": \"easy\", \"dueDateKey\": \"2026-11-05\", \"createdDayKey\": \"2026-11-03\"}, {\"id\": \"q2\", \"description\": \"Clear out the attic\", \"difficulty\": \"medium\", \"dueDateKey\": \"2026-11-07\", \"createdDayKey\": \"2026-11-03\", \"doneDayKey\": \"2026-11-03\"}, {\"id\": \"q3\", \"description\": \"Finish the tax return\", \"difficulty\": \"hard\", \"dueDateKey\": \"2026-11-09\", \"createdDayKey\": \"2026-11-03\"}]}"};
+for (const [k, v] of Object.entries(SEED)) localStorage.setItem(k, v);
+const B = "html:root[data-theme='bright']";
+const OPTS = [
+  ['A', 'Light grey (today)', 'For reference.', ''],
+  ['B', 'White, lifted', 'White cards with a thin grey outline and a grey lip underneath, so they still sit up off the white page.', `
+${B} { --card:#fff; --card-hi:#fff; --card-lo:#eef1f4; --card-lip:#c9d0d9; --struck-card:#f3f5f7; --struck-hi:#f3f5f7; --struck-lo:#f3f5f7; --struck-face:#e6e9ed; --struck-lip:#e1e5ea; --stone-face:#eef1f5; --stone-lip:#c9d0d9; }
+${B} :is(.habit-list .habit-item:not(.struck,.resting), .quest-item, .gear-row:not(.empty), .activity-log, .cards > button.card) { box-shadow: inset 0 0 0 1.5px #d3d9e1, inset 0 -2px 0 #eef1f4 !important; }`],
+  ['C', 'Grey page, white cards', 'Flip it, like most phone apps: the page and popups go a soft grey, the cards are plain white.', `
+${B} { --bg:#eef1f5; --bg-rgb:238 241 245; --frame:#eef1f5; --frame-rgb:238 241 245; --panel-fill:#eef1f5; --card:#fff; --card-hi:#fff; --card-lo:#f1f3f6; --card-lip:#cfd5de; --struck-card:#e4e8ed; --struck-hi:#e4e8ed; --struck-lo:#e4e8ed; --struck-face:#d6dbe2; --struck-lip:#c9cfd8; --struck-ink:#9aa2ae; --quiet-card:#fff; --soft-fill:#fff; --plate:#fff; }
+${B} body, ${B} #app { background:#eef1f5; }`],
+  ['D', 'Washed by type', 'Each skill card takes a faint wash of its type colour; quests, gear and the log go a near-white.', `
+${B} { --card:#f4f6f9; --card-hi:#fff; --card-lo:#e3e7ec; --card-lip:#c9d0d9; --struck-card:#f3f5f7; --struck-hi:#f3f5f7; --struck-lo:#f3f5f7; }
+${B} .skill-list .habit-item:not(.struck,.resting) { --card: color-mix(in srgb, var(--c) 15%, #fff); --card-hi: color-mix(in srgb, var(--c) 6%, #fff); --card-lo: color-mix(in srgb, var(--c) 26%, #fff); --card-lip: color-mix(in srgb, var(--c) 45%, #fff); }`],
+  ['E', 'Full type colour', 'The whole skill card is its type colour with white words; the button goes white. Quests, gear and the log are white with an outline.', `
+${B} { --card:#fff; --card-hi:#fff; --card-lo:#eef1f4; --card-lip:#c9d0d9; --struck-card:#f3f5f7; --struck-hi:#f3f5f7; --struck-lo:#f3f5f7; }
+${B} :is(.quest-item, .gear-row:not(.empty), .activity-log) { box-shadow: inset 0 0 0 1.5px #d3d9e1 !important; }
+${B} .skill-list .habit-item:not(.struck,.resting) { --card: var(--c); --card-hi: color-mix(in srgb, var(--c) 80%, #fff); --card-lo: color-mix(in srgb, var(--c) 82%, #000); --card-lip: color-mix(in srgb, var(--c) 55%, #000); --card-ink:#fff; --icon-streak:#fff; --brass:#fff; --text-h:#fff; --text:#fff; }
+${B} .skill-list .habit-item:not(.struck,.resting) :is(.streak, .name) { color:#fff; }
+${B} .skill-list .habit-item:not(.struck,.resting) .strike { --face:#fff; --base: color-mix(in srgb, var(--c) 45%, #000); --ink: color-mix(in srgb, var(--c) 80%, #000); --ink-shadow:none; }`],
+  ['F', 'Ice blue', 'A cool pale blue, leaning toward the navy buttons, so cards read as tinted rather than grey.', `
+${B} { --card:#e3ebf7; --card-hi:#f1f5fc; --card-lo:#c8d5e9; --card-lip:#a8b9d3; --struck-card:#f3f6fa; --struck-hi:#e8edf4; --struck-lo:#fafbfd; --stone-face:#e3ebf7; --stone-lip:#a8b9d3; }`],
+];
+const nav = document.getElementById('nav'), root = document.getElementById('opts');
+const URL_APP = '/streak-slayer/';
+function inject(win, css) {
+  const s = win.document.createElement('style'); s.textContent = '.skip-day, .preview { display: none !important; }' + css; win.document.head.appendChild(s);
+  win.document.documentElement.dataset.theme = 'bright';
+}
+async function until(fn, ms = 8000) { const t = Date.now(); while (Date.now() - t < ms) { const v = fn(); if (v) return v; await new Promise(r => setTimeout(r, 100)); } }
+for (const [k, title, desc, css] of OPTS) {
+  nav.insertAdjacentHTML('beforeend', `<a href="#o-${k}">${k}</a>`);
+  root.insertAdjacentHTML('beforeend', `<section class="opt" id="o-${k}"><h2>${k} · ${title}</h2><p>${desc}</p><div class="pair">
+    <iframe data-k="${k}" data-mode="main" src="${URL_APP}"></iframe><iframe data-k="${k}" data-mode="hero" src="${URL_APP}"></iframe></div></section>`);
+}
+for (const f of document.querySelectorAll('iframe')) {
+  f.addEventListener('load', async () => {
+    const css = OPTS.find(o => o[0] === f.dataset.k)[3];
+    const w = f.contentWindow;
+    await until(() => w.document.querySelector('.tap-hero'));
+    inject(w, css);
+    // dismiss any start-of-day popups
+    for (let i = 0; i < 4; i++) { const b = w.document.querySelector('.modal-content .primary, .modal-content button.button'); if (!b) break; b.click(); await new Promise(r => setTimeout(r, 300)); }
+    if (f.dataset.mode === 'hero') w.document.querySelector('.tap-hero').click();
+  });
+}
+</script>
+</body>
+</html>
