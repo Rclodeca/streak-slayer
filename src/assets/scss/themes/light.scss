@@ -3,9 +3,11 @@
 // F1; pixel-light-bright.html, RA and QD; pixel-bright-item-popup.html, banner
 // D; pixel-bright-card-colours.html, C). An open skill is a white card with a
 // button in its damage type's colour; Resist cards are gunmetal; quests are
-// white cards; items sit in charcoal sockets. Struck cards sink to a flat grey,
+// white cards. Struck cards sink to a flat grey,
 // so the colour shows only what's left; the item popup's find sits on a
-// night-sky banner. The fight stage keeps Moonlit's palette.
+// night-sky banner. The fight stage keeps Moonlit's palette, and the popups
+// (all but the new habit and new quest forms) take Dusk, a lighter Moonlit
+// (docs/mockups/pixel-light-player-modal.html, A).
 // The shared rules are in ashen.scss; the card fills are here.
 
 @use 'ashen';
@@ -100,11 +102,6 @@ $ticket-gold: #ebc35a;
   --on-crimson: #fff;
   --input-fill: var(--well);
   --tint-to: #000;
-  // The item sockets: charcoal, a little lighter than the other themes' black.
-  --socket-core: #2c323d;
-  --socket-edge: #1d2129;
-  --socket-shade: #13161c;
-  --socket-lift: #2a2f39;
 
   // The game's own colours, darker so they read as text on white. The skill
   // cards use brighter fills (below).
@@ -149,25 +146,54 @@ $ticket-gold: #ebc35a;
   @include ashen.derived-tokens;
 }
 
-// ---------- Items: vivid rarity, in the sockets ----------
-// A brighter tone of each rarity: the item sockets' rim and inner glow.
-$vivid: (
-  common: #a9b2bf,
-  uncommon: #46c46c,
-  rare: #4d90f2,
-  epic: #9d76f2,
-  relic: #f28c3c,
-);
-
-@each $name, $c in $vivid {
-  #{$light} .rarity-#{$name} {
-    --rarity-vivid: #{$c};
-  }
-}
-
-#{$light} :is(.gear-icon, .icon-frame) {
-  --socket-rim: var(--rarity-vivid);
-  --socket-glow: color-mix(in srgb, var(--rarity-vivid) 30%, transparent);
+// ---------- Popups: Dusk, a lighter Moonlit ----------
+// Every popup but the new habit and new quest forms
+// (docs/mockups/pixel-light-player-modal.html, A): Moonlit's palette with its
+// stone lifted a step, so a popup isn't a black hole in the grey page.
+#{$light} .modal-content:not(:has(.add-habit-form, .quest-form)) {
+  @include moonlit.palette;
+  @include ashen.derived-tokens;
+  --bg: #181c26;
+  --bg-rgb: 24 28 38;
+  --text: #b7bdc8;
+  --text-h: #f3f5f8;
+  --border: #3c4354;
+  --code-bg: #222734;
+  --frame: #262c3a;
+  --frame-rgb: 38 44 58;
+  --panel-fill: #262c3a;
+  --panel-hi: #394154;
+  --panel-lo: #161a23;
+  --brass: #e0c98f;
+  --check-done: #4a5266;
+  --check-done-line: #66708a;
+  --spent-text: #7c8494;
+  --card: #333b4f;
+  --card-hi: #4a5470;
+  --card-lo: #1e2330;
+  --card-lip: #141821;
+  --card-ink: #f3f5f8;
+  --struck-card: #1d212b;
+  --struck-hi: #272c38;
+  --struck-lo: #12151c;
+  --struck-face: #2b303c;
+  --struck-lip: #191c24;
+  --quiet-card: #2a3040;
+  --quiet-hi: #343b4d;
+  --quiet-lo: #1a1e28;
+  --resting-face: #2b303c;
+  --sunk-hi: #12151c;
+  --sunk-lo: #353d50;
+  --stone-face: #363e52;
+  --stone-lip: #141821;
+  --field: #181c25;
+  --field-line: #3c4456;
+  --field-shadow: #0e1016;
+  --selected-card: #2a3346;
+  --selected-shadow: #181d28;
+  // Text that sets no colour of its own (the quest popup's Due and Reward)
+  // would inherit the page's dark grey; it takes the popup's.
+  color: var(--text);
 }
 
 // The find (the title, "Spoils of" and the item), and the level-up's title,
@@ -237,57 +263,8 @@ $vivid: (
     inset -2px -2px 0 var(--card-lo);
 }
 
-// Drop is the stone way out; it takes the same white face as the soft buttons.
-// (--stone-face stays grey for the choice keys.)
-#{$light} .drop-button {
-  background: #fff;
-  box-shadow: inset 0 0 0 1px var(--soft-line);
-
-  @media (hover: hover) {
-    &:hover:not(:disabled) {
-      background: var(--soft-fill-hover);
-    }
-  }
-}
-
 #{$light} .level-banner {
   margin-bottom: 1rem;
-}
-
-// ---------- Level-up cards: a clean gold rim, light sunken icon tiles ----------
-// The side card's rim was a muddy brown on grey; it takes the quests' gold.
-#{$light} .cards > button.card.side {
-  box-shadow:
-    inset 2px 2px 0 var(--card-hi),
-    inset -2px -2px 0 var(--card-lo),
-    inset 0 0 0 2px $ticket-gold;
-}
-
-// The shared hover lightens the card, which does nothing to white; it greys a
-// touch instead.
-@media (hover: hover) {
-  #{$light} .cards > button.card:hover {
-    background: var(--soft-fill-hover);
-  }
-}
-
-// The icon tiles are filled with their own icon's colour (violet for the dice,
-// gold for the target) with a white icon and a darker rim.
-#{$light} button.card .icon {
-  color: #fff;
-  background: var(--k);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--k) 70%, #000);
-}
-
-#{$light} button.card .side-socket {
-  color: #fff;
-  background: var(--brass);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brass) 70%, #000);
-}
-
-#{$light} button.card :is(.icon, .side-socket) svg {
-  width: 25px;
-  height: 25px;
 }
 
 // ---------- Log: a white card, like the skills ----------
@@ -322,8 +299,32 @@ $vivid: (
 }
 
 // ---------- Quests: white cards like the skills ----------
-#{$light} .quest-tab.selected:not(.side) {
+#{$light} .quest-tab:is(.selected, .side.selected) {
   background: #fff;
   color: #8a5a00;
   box-shadow: inset 0 0 0 2px $ticket-gold;
+}
+
+// The tab that waits reads as grey text on the grey well, not a ghost.
+#{$light} .quest-tab:not(.selected, .side, .locked) {
+  color: var(--text);
+}
+
+// ---------- Side quests: white cards, a brass tile for the icon ----------
+// The dark sockets are Moonlit's; here the icon sits on a brass tile with a
+// white glyph, as the level-up's side card did.
+#{$light} .challenge .challenge-socket {
+  color: #fff;
+  background: var(--brass-solid);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brass-solid) 70%, #000);
+}
+
+// The count sits on a light well, so no black halo.
+#{$light} .challenge .challenge-count {
+  color: var(--card-ink);
+  text-shadow: none;
+}
+
+#{$light} .challenge.done .challenge-relic {
+  color: var(--brass);
 }

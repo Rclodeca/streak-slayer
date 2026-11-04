@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Light player popup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Light theme, the whole player popup recoloured: no white, a lighter take on
+   the dark (Moonlit) popup. Dark first for reference, then three lighter steps,
+   each over the light theme's grey page. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 30px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 400px; max-width: 100%; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p.d { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+/* the light theme's page behind the popup, dimmed */
+.backdrop { padding: 12px; background: #eef1f5; position: relative; }
+.backdrop::before { content: ''; position: absolute; inset: 0; background: rgba(20, 26, 36, .38); }
+.backdrop.dark { background: #07080c; }
+
+.sheet {
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  position: relative; width: 100%; background: var(--frame); color: var(--text); clip-path: var(--px);
+  box-shadow: inset 2px 2px 0 var(--frame-hi), inset -2px -2px 0 var(--frame-lo);
+  padding: 18px 16px 18px;
+}
+.head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.title { font: 600 15px 'Cinzel', serif; letter-spacing: .3em; color: var(--ink); text-transform: uppercase; margin: 0; }
+.close { width: 32px; height: 32px; display: grid; place-items: center; color: var(--text); }
+.close svg { width: 18px; height: 18px; }
+
+.herorow { display: flex; gap: 12px; align-items: center; }
+.fig { width: 92px; height: 92px; flex: none; clip-path: var(--px); background: var(--well); display: grid; place-items: center; overflow: hidden;
+  box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.fig img { width: 120px; image-rendering: pixelated; margin-top: 8px; }
+.bars { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+.lv { font: 700 14px 'Alegreya Sans'; color: var(--brass); }
+.bar { position: relative; height: 14px; background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi); }
+.bar i { display: block; height: 100%; }
+.bar.hp i { background: #a82a20; box-shadow: inset 0 2px 0 rgba(255,255,255,.18); }
+.bar.xp i { background: #c9a24a; box-shadow: inset 0 2px 0 rgba(255,255,255,.22); }
+.bar b { position: absolute; inset: 0; display: grid; place-items: center; font: 700 10.5px 'Alegreya Sans'; color: #fff; text-shadow: 0 1px 0 #000; }
+
+.effects { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; font: 700 12.5px 'Alegreya Sans'; clip-path: var(--px); }
+.chip.boon { background: color-mix(in srgb, #92bf88 22%, transparent); color: var(--boon); }
+.chip.bane { background: color-mix(in srgb, #d0604f 22%, transparent); color: var(--bane); }
+.chip svg { width: 13px; height: 13px; }
+
+.lbl { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; color: var(--text); text-transform: uppercase; margin: 20px 2px 8px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px 8px 8px; clip-path: var(--px);
+  background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.row.empty { align-items: center; min-height: 60px; padding-left: 14px; background: var(--well); border: 0;
+  box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); color: var(--spent); font: 600 14px 'Alegreya Sans'; }
+.gt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
+.gt .nm { font: 600 16px 'Alegreya', serif; color: var(--ink); }
+.gt .rar { font: 600 12.5px 'Alegreya Sans'; color: var(--rt); }
+.gt .bons { display: flex; flex-wrap: wrap; gap: 0 10px; }
+.gt .fx { font: 700 13px 'Alegreya Sans'; color: var(--rt); margin-top: 1px; }
+.bon { display: inline-flex; align-items: center; gap: 3px; font: 700 13px 'Alegreya Sans'; color: var(--ink); }
+.bon i { font-style: normal; font-weight: 500; color: var(--text); }
+.bon svg { width: 13px; height: 13px; }
+
+.sock { position: relative; flex: none; width: 64px; height: 64px; clip-path: var(--px); overflow: hidden;
+  background: radial-gradient(circle, color-mix(in srgb, var(--rv) 24%, #0a0c11), #05060a 72%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rv) 70%, #000), inset 4px 4px 0 #020305, inset -4px -4px 0 color-mix(in srgb, var(--rv) 30%, #0b0d12); }
+.sock img { position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; transform: translate(-50%, -50%); image-rendering: pixelated;
+  --rim: color-mix(in srgb, var(--rv) 45%, #000);
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)) drop-shadow(0 0 6px color-mix(in srgb, var(--rv) 45%, transparent)); }
+
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; clip-path: var(--px); background: var(--well);
+  box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.tile .tl { display: inline-flex; align-items: center; gap: 4px; font: 600 12.5px 'Alegreya Sans'; color: var(--text); }
+.tile .tl svg { width: 13px; height: 13px; }
+.tile .tv { font: 800 18px 'Alegreya Sans'; color: var(--ink); }
+.tile .tv em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--boon); margin-left: 4px; }
+.tile .tn { font: 500 12px 'Alegreya Sans'; color: var(--text); }
+
+/* rarity: --rv the vivid tone (socket), --rt the text tone */
+.c { --rv: #a9b2bf; --rt: #b4bcc8; }
+.u { --rv: #46c46c; --rt: #7fd294; }
+.r { --rv: #4d90f2; --rt: #85b2f5; }
+.e { --rv: #9d76f2; --rt: #b89cf4; }
+.x { --rv: #f28c3c; --rt: #f4a56a; }
+
+/* ---------- palettes ---------- */
+/* Dark: Moonlit, as built */
+.p0 { --frame: #141720; --frame-hi: #232937; --frame-lo: #0b0d12;
+  --card: #1b2030; --card-hi: #333c52; --card-lo: #0c0f15; --lip: #05060a;
+  --well: rgba(0,0,0,.22); --sunk-hi: #05070a; --sunk-lo: #1a1f2b;
+  --ink: #f0f3f7; --text: #a9adb6; --spent: #6a6f7a; --brass: #d2bb85; --boon: #92bf88; --bane: #e07a6a; }
+/* A: Dusk — a step lighter, still clearly a dark popup */
+.p1 { --frame: #262c3a; --frame-hi: #394154; --frame-lo: #161a23;
+  --card: #333b4f; --card-hi: #4a5470; --card-lo: #1e2330; --lip: #141821;
+  --well: rgba(0,0,0,.22); --sunk-hi: #12151c; --sunk-lo: #353d50;
+  --ink: #f3f5f8; --text: #b7bdc8; --spent: #7c8494; --brass: #e0c98f; --boon: #9fd096; --bane: #ec8676; }
+/* B: Storm — mid slate */
+.p2 { --frame: #3a4252; --frame-hi: #4f5869; --frame-lo: #252a35;
+  --card: #4a5468; --card-hi: #626d85; --card-lo: #333a4a; --lip: #242934;
+  --well: rgba(10,14,22,.26); --sunk-hi: #242a36; --sunk-lo: #4e586a;
+  --ink: #f6f7f9; --text: #c8cdd6; --spent: #8d95a4; --brass: #ebd49a; --boon: #a8dc9e; --bane: #f4917f; }
+/* C: Pewter — the lightest that still takes light text */
+.p3 { --frame: #4e5768; --frame-hi: #667083; --frame-lo: #363d4b;
+  --card: #606b80; --card-hi: #7a869c; --card-lo: #475064; --lip: #343b49;
+  --well: rgba(10,14,22,.24); --sunk-hi: #343b49; --sunk-lo: #667186;
+  --ink: #fafbfc; --text: #dde1e7; --spent: #a2a9b6; --brass: #f2dda6; --boon: #b8e8ad; --bane: #ffa08e; }
+.p3 .gt .rar, .p3 .gt .fx { text-shadow: 0 1px 0 rgba(0,0,0,.25); }
+/* icon colours on the dark popups */
+.sheet { --i-magic: #ab8dd8; --i-crit: #d6a24f; --i-health: #e5705c; --i-physical: #d0604f; --i-armor: #b8c0cc; --i-healing: #92bf88; --i-true: #f1e9d6; }
+.p3 { --i-magic: #c4abef; --i-crit: #f0c16a; --i-health: #ff8f7c; --i-physical: #f08a77; --i-armor: #dbe1ea; --i-healing: #b8e8ad; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>LIGHT — PLAYER POPUP</h1>
+  <p class="lede">The whole player popup without white: the dark popup, lifted. Dark (Moonlit) first for reference, then three lighter steps, each over the light theme's grey page. Item sockets stay dark in every one.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const HEART = '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  armor: SHIELD,
+  health: HEART,
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  healing: HEART + '<path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  true: '<path d="M12 2 4 12l8 10 8-10z"/>',
+};
+const icon = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--i-${n})">${LU[n]}</svg>`;
+const bon = (s, v, l) => `<span class="bon">${icon(s)}${v} <i>${l}</i></span>`;
+const SP = '../../public/sprites/';
+
+const GEAR = [
+  { n: 'Leather Vest', r: 'c', rn: 'Common', img: 'padded-vest', b: [['health', '+3%', 'Max health']] },
+  { n: 'Hexed Ring', r: 'u', rn: 'Uncommon', img: 'hexed-ring', b: [['magic', '+16%', 'Magic damage'], ['health', '−5%', 'Max health']] },
+  { n: "Executioner's Axe", r: 'r', rn: 'Rare', img: 'executioners-axe', b: [['physical', '+26%', 'Physical damage'], ['armor', '+150', 'Armor']] },
+  { n: "Voidcaller's Scepter", r: 'e', rn: 'Epic', img: 'voidcallers-scepter', b: [['magic', '+55%', 'Magic damage'], ['crit', '+8%', 'Crit chance']], fx: 'Magic crits deal 3× damage.' },
+  { n: 'Ember Heart', r: 'x', rn: 'Relic', img: 'ember-heart', b: [['health', '+20%', 'Max health'], ['healing', '+22%', 'Healing']], fx: 'Heal 5% of max HP each day.' },
+];
+const TILES = [
+  ['health', 'Max health', '4.8K', '+1.1K'], ['physical', 'Physical', '612', '+128'], ['magic', 'Magic', '904', '+402'],
+  ['true', 'True', '40'], ['healing', 'Healing', '310', '+56'], ['crit', 'Crit chance', '23%', '+8%'],
+  ['armor', 'Armor', '150', null, '13.0% less damage'],
+];
+
+const popup = (p) => `<div class="backdrop${p === 'p0' ? ' dark' : ''}"><div class="sheet ${p}">
+  <div class="head"><p class="title">Aldric</p><span class="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+  <div class="herorow"><span class="fig"><img src="${SP}player/warrior.png" alt=""></span>
+    <span class="bars"><span class="lv">Level 14</span>
+      <span class="bar hp"><i style="width:72%"></i><b>3.4K / 4.8K</b></span>
+      <span class="bar xp"><i style="width:40%"></i><b>320 / 800</b></span></span></div>
+  <div class="effects"><span class="chip boon">${icon('crit')}+10% crit · 2d</span><span class="chip bane">${icon('health')}Wounds · 1d</span></div>
+  <p class="lbl">Equipment</p>
+  <ul>${GEAR.map((g) => `<li class="row ${g.r}"><span class="sock"><img src="${SP}items/${g.img}.png" alt=""></span>
+    <span class="gt"><span class="nm">${g.n}</span><span class="rar">${g.rn}</span><span class="bons">${g.b.map((b) => bon(...b)).join('')}</span>${g.fx ? `<span class="fx">${g.fx}</span>` : ''}</span></li>`).join('')}
+    <li class="row empty">Empty slot</li></ul>
+  <p class="lbl">Stats</p>
+  <div class="tiles">${TILES.map(([i, l, v, g, n]) => `<div class="tile"><span class="tl">${icon(i)}${l}</span><span class="tv">${v}${g ? `<em>${g}</em>` : ''}</span>${n ? `<span class="tn">${n}</span>` : ''}</div>`).join('')}</div>
+</div></div>`;
+
+const OPTS = [
+  ['NOW · DARK', 'p0', 'Moonlit', 'The dark theme\'s popup, for reference.'],
+  ['OPTION A', 'p1', 'Dusk', 'One step lighter than dark. Still reads as a night popup, but it no longer looks like a hole cut in the grey page.'],
+  ['OPTION B', 'p2', 'Storm', 'Mid slate. Clearly lighter than dark and sits comfortably on the grey page; sockets and stat wells still have depth.'],
+  ['OPTION C', 'p3', 'Pewter', 'The lightest that still takes light text. Closest to the page\'s grey; colours brightened a touch to hold up.'],
+];
+document.getElementById('grid').innerHTML = OPTS.map(([k, p, t, d]) =>
+  `<div class="col"><div class="tag">${k}</div><h2>${t}</h2><p class="d">${d}</p>${popup(p)}</div>`).join('');
+</script>
+</body>
+</html>
