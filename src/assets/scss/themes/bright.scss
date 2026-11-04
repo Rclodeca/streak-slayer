@@ -2,8 +2,8 @@
 // theme on trial next to Parchment (docs/mockups/pixel-light-apps.html, option
 // F1; pixel-light-bright.html, RA and QD; pixel-bright-item-popup.html, grey A
 // and banner D). An open skill is a grey card with a button in its
-// damage type's colour; Resist cards are gunmetal; quests are grey cards
-// with a yellow side; items sit in charcoal sockets. Struck cards go pale, so
+// damage type's colour; Resist cards are gunmetal; quests are grey cards;
+// items sit in charcoal sockets. Struck cards go pale, so
 // the colour shows only what's left; the item popup's find sits on a night-sky
 // banner. The fight stage keeps Moonlit's palette, as under Parchment.
 // The shared rules are in ashen.scss; the card fills are here.
@@ -313,15 +313,7 @@ $vivid: (
   --sunk-lo: #4a515b;
 }
 
-// ---------- Quests: grey cards like the skills, with a yellow side ----------
-#{$bright} .quest-section .quest-item:not(.done) {
-  padding-left: 10px;
-  box-shadow:
-    inset 7px 0 0 $ticket-gold,
-    inset 2px 2px 0 var(--card-hi),
-    inset -2px -2px 0 var(--card-lo);
-}
-
+// ---------- Quests: grey cards like the skills ----------
 #{$bright} .quest-tab.selected:not(.side) {
   background: #fff;
   color: #8a5a00;
