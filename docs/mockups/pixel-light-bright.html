@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, light theme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Pixel-cut main screen. The question here: how the sections separate. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --done: #3c4352; --done-line: #566074; --streak-i: #8d8475;
+  /* open card */
+  --card: #171b25; --hi: #283041; --lo: #0d1017; --card-lip: #05060a; --resist-card: #141720;
+  /* struck card (Now) */
+  --s-card: #12151d; --s-hi: #1c2230; --s-lo: #0a0c12; --s-face: #232836; --s-base: #1a1d26; --s-name: var(--spent);
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding-bottom: 28px; background: var(--bg); border: 1px solid var(--edge); border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+button { font: inherit; }
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+
+.top { position: relative; background: var(--bg); }
+.menu { position: absolute; right: 14px; top: 14px; z-index: 3; width: 40px; height: 40px; clip-path: var(--px2); background: var(--add-bg); border: 1px solid var(--add-line); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+.stage { position: relative; height: 228px; }
+.stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none; background: linear-gradient(180deg, transparent, var(--sky-mid) 55%, var(--sky-end) 100%); }
+.stars { position: absolute; left: 0; top: -40px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 60px var(--star-b), 120px 30px var(--star-a), 230px 52px var(--star-b), 300px 18px var(--star-c), 352px 96px var(--star-a), 200px 120px var(--star-a), 90px 150px var(--star-a), 260px 170px var(--star-a), 330px 140px var(--star-b), 20px 110px var(--star-a); }
+.horizon { position: absolute; left: 0; right: 0; top: 150px; height: 78px;
+  background: conic-gradient(var(--hz-a) 25%, var(--hz-b) 0 50%, var(--hz-a) 0 75%, var(--hz-b) 0) 0 0 / 4px 4px, var(--hz-b); }
+.horizon::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: conic-gradient(var(--hz-edge) 25%, transparent 0 50%, var(--hz-edge) 0 75%, transparent 0) 0 0 / 4px 4px; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--bg)); }
+.plinth { position: absolute; height: 18px; z-index: 0; }
+.plinth::before { content: ''; position: absolute; inset: 0; clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: var(--pl-a); box-shadow: inset 0 3px 0 var(--pl-top), inset 0 6px 0 var(--pl-mid), inset 0 -3px 0 var(--pl-bot); }
+.plinth::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: -6px; height: 6px; background: var(--pl-sh); }
+.plinth.b { right: 22px; top: 146px; width: 136px; }
+.plinth.h { left: 14px; top: 208px; width: 120px; }
+.boss { position: absolute; right: 26px; top: 30px; width: 128px; z-index: 1; image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 #2a1a10) drop-shadow(-2px 0 0 #2a1a10) drop-shadow(0 2px 0 #2a1a10) drop-shadow(0 -2px 0 #2a1a10); }
+.hero { position: absolute; left: 18px; top: 110px; width: 112px; z-index: 1; image-rendering: pixelated; transform: scaleX(-1);
+  filter: drop-shadow(2px 0 0 #0b0d12) drop-shadow(-2px 0 0 #0b0d12) drop-shadow(0 2px 0 #0b0d12); }
+.unit { position: absolute; z-index: 2; }
+.unit.b { left: 16px; top: 16px; width: 196px; }
+.unit.h { left: 150px; top: 170px; width: 226px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 5px; text-transform: uppercase; }
+.uname small { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.bnum { font: 700 11.5px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.uname .cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); }
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26; box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: #d9a93c; z-index: 1; }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: #d2bb85; z-index: 1; }
+.bar .mk.fired { background: #4a4f5c; }
+.bar span:not(.mk) { position: absolute; right: 6px; top: 0; z-index: 2; font: 700 11px/16px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.8); }
+.stats { display: flex; gap: 8px; margin-top: 6px; font: 700 11.5px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.stats svg { width: 12px; height: 12px; }
+
+.sec { margin: 18px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 2px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: var(--add-bg); border: 1px solid var(--add-line); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 12px 2px 7px; text-transform: uppercase; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Card */
+.row { --face: color-mix(in srgb, var(--c) 82%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15);
+  --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] { --btn-c: #1e1c18; --btn-ts: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.tagw { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--dim); }
+.next { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); opacity: .7; }
+
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--btn-c); text-shadow: var(--btn-ts); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--btn-sh); transition: top .07s, bottom .07s; }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.press svg { width: 13px; height: 13px; }
+.press .ic-done { display: none; }
+.press:active::after, .on .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .on .press > * { transform: translateY(var(--lip)); }
+
+/* Struck */
+.phone .row.on { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt, .row.on .qn { color: var(--s-name); }
+.row.on .streak, .row.on .pp, .row.on .reward { opacity: .45; }
+
+/* Resting (set days off today): stays in Daily, greyed like a struck skill, can't be pressed */
+.row.resting { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.resting .nt { color: var(--s-name); font-weight: 600; }
+.row.resting .pp { opacity: .45; }
+.row.resting .next { color: var(--s-name); opacity: 1; }
+.resting .press { pointer-events: none; }
+.resting .press::after { top: var(--lip); bottom: 0; }
+.resting .press > * { transform: translateY(var(--lip)); }
+
+/* Resist: ghost Give in key (thin red outline, no lip); given in it sinks into a well */
+.resist .row:not(.on) { --btn-c: var(--r-ink); --btn-ts: none; background: var(--resist-card); }
+.resist .nt { color: var(--text); font-weight: 500; }
+.resist .press { min-width: 96px; font-size: 14px; }
+.resist .press span { position: relative; z-index: 1; }
+.resist .press::before { display: none; }
+.resist .press::after { top: 0; bottom: var(--lip); background: transparent; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bad) 50%, transparent); }
+.resist .press:active::after { top: 0; bottom: var(--lip); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.resist .press:active > * { transform: none; }
+.resist .row.on .press::after { top: 0; bottom: var(--lip); background: var(--plate); box-shadow: inset 2px 2px 0 var(--plate-lo), inset -2px -2px 0 var(--plate-hi); }
+.resist .row.on .press > * { transform: none; }
+.resist .press svg { width: 16px; height: 16px; }
+.plate { display: inline-flex; align-items: center; gap: 3px; height: 26px; padding: 0 7px; clip-path: var(--px2); background: var(--plate);
+  box-shadow: inset 2px 2px 0 var(--plate-lo), inset -2px -2px 0 var(--plate-hi); font: 700 13px 'Alegreya Sans', sans-serif; color: var(--c); }
+.plate svg { width: 12px; height: 12px; }
+.resist .row.on .plate { color: var(--s-num); opacity: .7; }
+.resist .row.on .plate b { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.resist .row.on .press { --btn-c: var(--s-num); }
+
+/* Quests */
+.quest { padding-left: 4px; gap: 6px; }
+.quest .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.quest .qn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.qm em { font-style: normal; }
+.quest.soon .qm em { color: var(--exp); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+.quest.side .reward { color: var(--side); }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qchk input { position: absolute; opacity: 0; pointer-events: none; }
+.qchk i { width: 20px; height: 20px; display: grid; place-items: center; clip-path: var(--px2); background: var(--chk); border: 2px solid var(--touch); }
+.qchk svg { width: 14px; height: 14px; opacity: 0; color: var(--touch); }
+.quest.on .qchk i { background: var(--done); border-color: var(--done-line); }
+.quest.on .qchk svg { opacity: 1; }
+
+/* Log */
+.log { margin: 22px 12px 0; padding: 12px 14px 6px; background: var(--frame); clip-path: var(--px); box-shadow: inset 2px 2px 0 var(--log-hi), inset -2px -2px 0 var(--log-lo); }
+.log h2 { margin: 0 0 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.log ul { gap: 0; }
+.log li { display: block; padding: 7px 0; border-top: 1px solid var(--hair); font-size: 14px; color: var(--text); }
+.log li:first-child { border-top: 0; }
+.log li > svg:first-child { width: 14px; height: 14px; margin-right: 3px; vertical-align: -2px; }
+.log .d { color: var(--phys); font-weight: 700; } .log .x { color: var(--exp); font-weight: 700; }
+.chip { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; padding: 1px 6px; background: var(--chip); font-size: 12px; font-weight: 700; color: var(--ink); }
+.chip svg { width: 11px; height: 11px; }
+
+
+/* Sections: title, group labels */
+.sec { --sp: var(--touch); position: relative; margin: 30px 12px 0 18px; padding-left: 14px; }
+.sec.resist { --sp: var(--bad); }
+.sec.quests { --sp: var(--brass); }
+.sec::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 6px; width: 3px; background: var(--sp); opacity: .5; }
+.shead { position: relative; height: 44px; min-height: 0; margin-bottom: 4px; }
+.shead::before { content: ''; position: absolute; left: -17px; top: 50%; width: 9px; height: 9px; margin-top: -5px; background: var(--sp); box-shadow: 0 0 0 3px var(--bg); }
+.ht { display: flex; align-items: center; gap: 8px; }
+.hr { display: flex; align-items: center; gap: 10px; }
+.hi { display: inline-flex; color: var(--sp); }
+.hi svg { width: 16px; height: 16px; }
+.group { position: relative; display: flex; align-items: center; gap: 8px; margin: 16px 2px 8px; }
+.group::before { content: ''; position: absolute; left: -14px; width: 8px; height: 2px; background: var(--sp); opacity: .7; }
+.shead + .group, .shead + ul { margin-top: 0; }
+.cnt { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.cnt b { color: var(--ink); font-weight: 700; }
+.group .cnt { margin-left: auto; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.shead .cnt { display: none; }
+
+/* ================= Themes ================= */
+/* Moonlit, as built (reference) */
+.phone.dark {
+  --sky-mid: #0c0f17; --sky-end: #0f131d; --hz-a: #141926; --hz-b: #0f131d; --hz-edge: #0b0e15;
+  --star-a: #2c3446; --star-b: #3a4358; --star-c: #4a5470;
+  --pl-a: #1f2534; --pl-top: #3a4358; --pl-mid: #283041; --pl-bot: #10141d; --pl-sh: rgba(0,0,0,.45);
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --edge: #000; --glow: #1c2230; --dim: #5f6470; --bar-bg: rgba(0,0,0,.5); --hero-fx: drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.9);
+  --add-bg: rgba(219,226,238,.08); --add-line: rgba(219,226,238,.35); --chk: rgba(0,0,0,.4); --side: #c8a96e; --plat: rgba(150,165,200,.16);
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --ink: #f0f3f7; --resist-card: #161a24;
+  --s-num: #5b606b; --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-face: #1b1f28; --s-base: #111319; --s-name: #5b606b;
+  --r-face: #1d2230; --r-base: color-mix(in srgb, var(--bad) 55%, #000); --r-ink: color-mix(in srgb, var(--bad) 72%, #fff); --r-sh: rgba(255,255,255,.08);
+  --plate: #0b0d13; --plate-hi: #1a1f2b; --plate-lo: #040508;
+  --log-hi: #232937; --log-lo: #0b0d12; --hair: rgba(255,255,255,.04); --chip: rgba(255,255,255,.05);
+}
+.dark .row[data-t='true'], .lt .row[data-t='true'] { }
+
+/* shared light bits */
+.lt { --btn-text: #fff; }
+.lt .row[data-t='true'] { --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35); }
+.lt .row.on[data-t='true'] { --btn-c: var(--s-num); --btn-ts: none; }
+.lt .bar span { color: #fff; }
+
+/* Shared: a white or grey page, a stage that fades into it */
+.lt-f1 .horizon::after, .lt-f2 .horizon::after, .lt-g1 .horizon::after { background: linear-gradient(180deg, transparent 30%, var(--page)); }
+.lt-f1, .lt-f2, .lt-f3 { --page: #ffffff; }
+.lt-f1 .row.on, .lt-f1 .row.resting, .lt-f2 .row.on, .lt-f2 .row.resting, .lt-f3 .row.on, .lt-f3 .row.resting { --card-lip: #dde1e7; }
+.lt-f1 .top, .lt-f2 .top { --star-a: transparent; --star-b: transparent; --star-c: transparent; }
+
+/* F1 · Bright: white page, each skill card filled with its type's colour, white keys */
+.phone.lt-f1 {
+  --bg: #ffffff; --frame: #f3f5f8; --edge: #d5dae1; --ink: #141a24; --text: #5a6372; --touch: #1d3557;
+  --brass: #a87400; --exp: #c98a00; --bad: #e04a3a; --phys: #ee6a4e; --magic: #8b63e6; --heal: #3fae5c; --true: #3d4452;
+  --spent: #a3aab5; --done: #e3e6ea; --done-line: #b9c0ca; --streak-i: #a87400; --side: #a87400; --dim: #8b93a1;
+  --add-bg: #eef3fb; --add-line: #b9c8de; --chk: #fff;
+  --card: #f3f5f8; --hi: #fff; --lo: #dfe3e9; --card-lip: #d5dae1; --resist-card: #fdeeec;
+  --s-num: #a9b0ba; --s-card: #f1f3f6; --s-hi: #e4e7ec; --s-lo: #fafbfc; --s-face: #e1e5ea; --s-base: #cdd2d9; --s-name: #a3aab5;
+  --r-ink: #c8382a; --plate: #f7dcd8; --plate-hi: #fff7f6; --plate-lo: #e9bdb6;
+  --log-hi: #fff; --log-lo: #dfe3e9; --hair: rgba(20,30,50,.07); --chip: rgba(20,30,50,.06);
+}
+.lt-f1 .skills .row:not(.on):not(.resting) {
+  --card: var(--c); --hi: color-mix(in srgb, var(--c) 70%, #fff); --lo: color-mix(in srgb, var(--c) 82%, #000); --card-lip: color-mix(in srgb, var(--c) 58%, #000);
+  --ink: #fff; --brass: rgba(255,255,255,.9); --streak-i: #fff;
+  --face: #fff; --base: color-mix(in srgb, var(--c) 45%, #000); --btn-c: var(--c); --btn-ts: none; --btn-sh: inset 0 -2px 0 rgba(0,0,0,.08);
+}
+.lt-f1 .resist .row:not(.on) { --hi: #fff; --lo: #f6d9d4; --card-lip: #f0c6bf; }
+.lt-f1 .quests .row:not(.on) { --card: #fff4d4; --hi: #fffbee; --lo: #f3e0a8; --card-lip: #ebcd7e; }
+.lt-f1 .top {
+  --bg: #bfe0fa; --sky-mid: #dff0fd; --sky-end: #f2f9fe; --hz-a: #cfe6c4; --hz-b: #dcedd3; --hz-edge: #b5d4a8;
+  --pl-a: #e8ecf1; --pl-top: #ffffff; --pl-mid: #f2f4f7; --pl-bot: #c0c8d2; --pl-sh: rgba(30,60,90,.16);
+  --well: #23304a; --well-hi: #56658a; --well-lo: #111827; --ink: #10213a; --text: #3b4e66; --touch: #1d3557;
+  --add-bg: rgba(255,255,255,.6); --add-line: rgba(29,53,87,.35); }
+
+/* F2 · Pastel: white page, soft type-tinted cards, solid colour keys */
+.phone.lt-f2 {
+  --bg: #ffffff; --frame: #f5f4f9; --edge: #dad7e6; --ink: #1b1a2a; --text: #5d5b70; --touch: #3a3470;
+  --brass: #a87400; --exp: #c98a00; --bad: #e04a3a; --phys: #ec6447; --magic: #8460e0; --heal: #36a656; --true: #4f5768;
+  --spent: #a8a6b6; --done: #e6e5ee; --done-line: #bdbacb; --streak-i: #a87400; --side: #a87400; --dim: #8d8ba0;
+  --add-bg: #f1effa; --add-line: #c4bde6; --chk: #fff;
+  --card: #f5f4f9; --hi: #fff; --lo: #e3e1ec; --card-lip: #d8d5e4; --resist-card: #fdeeec;
+  --s-num: #aeacbb; --s-card: #f3f3f6; --s-hi: #e6e6ec; --s-lo: #fbfbfd; --s-face: #e3e3ea; --s-base: #cfcfd9; --s-name: #a8a6b6;
+  --r-ink: #c8382a; --plate: #f9e1dd; --plate-hi: #fffafa; --plate-lo: #ecc3bc;
+  --log-hi: #fff; --log-lo: #e3e1ec; --hair: rgba(30,20,60,.07); --chip: rgba(30,20,60,.06);
+}
+.lt-f2 .skills .row:not(.on):not(.resting) {
+  --card: color-mix(in srgb, var(--c) 15%, #fff); --hi: color-mix(in srgb, var(--c) 5%, #fff); --lo: color-mix(in srgb, var(--c) 28%, #fff); --card-lip: color-mix(in srgb, var(--c) 40%, #fff);
+}
+.lt-f2 .resist .row:not(.on) { --hi: #fff; --lo: #f6d9d4; --card-lip: #f0c6bf; }
+.lt-f2 .quests .row:not(.on) { --card: #e6f1fc; --hi: #f6faff; --lo: #c8def5; --card-lip: #a9c9ec; }
+.lt-f2 .top {
+  --bg: #d8d0f4; --sky-mid: #eee2f4; --sky-end: #fcefe9; --hz-a: #dcebdc; --hz-b: #e7f2e6; --hz-edge: #c8dfca;
+  --pl-a: #efeaf7; --pl-top: #ffffff; --pl-mid: #f6f2fb; --pl-bot: #c8bedc; --pl-sh: rgba(80,60,120,.16);
+  --well: #2e2a48; --well-hi: #5f5a86; --well-lo: #17142a; --ink: #1d1a33; --text: #4b4766; --touch: #2e2a5a;
+  --add-bg: rgba(255,255,255,.6); --add-line: rgba(46,42,90,.3); }
+
+/* F3 · Bold: white page, each section its own deep colour (indigo, wine, teal), white text */
+.phone.lt-f3 {
+  --bg: #ffffff; --frame: #f2f3f9; --edge: #d3d6e6; --ink: #141833; --text: #575c78; --touch: #2f3a94;
+  --brass: #a87400; --exp: #c98a00; --bad: #d8412f; --phys: #e5604a; --magic: #7c5ad8; --heal: #2f9a52; --true: #3d4452;
+  --spent: #a5a8b8; --done: #e3e5ee; --done-line: #b9bdd0; --streak-i: #a87400; --side: #a87400; --dim: #8c90a6;
+  --add-bg: #eef0fb; --add-line: #a9b0e4; --chk: #fff;
+  --card: #f2f3f9; --hi: #fff; --lo: #dfe1ec; --card-lip: #d3d6e6; --resist-card: #f2f3f9;
+  --s-num: #a9acbc; --s-card: #f0f1f6; --s-hi: #e2e4ec; --s-lo: #fafbfd; --s-face: #e0e2ea; --s-base: #cccfda; --s-name: #a5a8b8;
+  --r-ink: #c8382a; --plate: #e6e8f0; --plate-hi: #fff; --plate-lo: #c6cad8;
+  --log-hi: #fff; --log-lo: #dfe1ec; --hair: rgba(20,25,60,.07); --chip: rgba(20,25,60,.06);
+}
+.lt-f3 .skills .row:not(.on):not(.resting) {
+  --card: #2f3a94; --hi: #4753b5; --lo: #222a73; --card-lip: #181e5c;
+  --ink: #fff; --brass: #f5c84c; --streak-i: #f5c84c;
+  --phys: #ff7d62; --magic: #b597ff; --heal: #6fd388; --true: #f3ecdc;
+}
+.lt-f3 .skills .row[data-t='true']:not(.on):not(.resting) { --btn-c: #1e1c18; --btn-ts: none; }
+.lt-f3 .resist .row:not(.on) {
+  --resist-card: #6b2236; --hi: #86324c; --lo: #4f1828; --card-lip: #3a101c;
+  --ink: #fff; --text: #f6dfe4; --brass: #f5c84c; --streak-i: #f5c84c; --dim: #d9a8b4;
+  --bad: #ff8a7a; --r-ink: #ffd2cb; --phys: #ff9b85; --magic: #c9b0ff;
+  --plate: #4f1828; --plate-lo: #36101b; --plate-hi: #7e2c44;
+}
+.lt-f3 .quests .row:not(.on) {
+  --card: #146f6c; --hi: #24908b; --lo: #0d5452; --card-lip: #083f3d;
+  --ink: #fff; --text: #c9ecea; --brass: #f5c84c; --exp: #ffd36b; --touch: #fff; --chk: rgba(0,0,0,.18);
+}
+.lt-f3 .sec.skills { --sp: #2f3a94; }
+.lt-f3 .sec.quests { --sp: #146f6c; }
+.lt-f3 .top {
+  --bg: #121747; --sky-mid: #1b2262; --sky-end: #232c74; --hz-a: #1f2768; --hz-b: #1a215c; --hz-edge: #141a4e;
+  --star-a: #3c4590; --star-b: #545eb4; --star-c: #7880d0;
+  --pl-a: #2c3580; --pl-top: #4a55a8; --pl-mid: #36409a; --pl-bot: #151b4d; --pl-sh: rgba(0,0,0,.35);
+  --well: #0b0f33; --well-hi: #2a3170; --well-lo: #05071c; --ink: #fff; --text: #c3c8f0; --touch: #fff; --brass: #f5c84c;
+  --add-bg: rgba(255,255,255,.1); --add-line: rgba(255,255,255,.4); --phys: #ff7d62; --magic: #b597ff; --heal: #6fd388; --true: #f3ecdc; }
+
+/* G1 · Brushed steel: light grey metal page, metal-plate cards with rivets, steel-blue touch */
+.phone.lt-g1 {
+  --page: #dce0e5;
+  --bg: #dce0e5; --frame: #cdd2d8; --edge: #8e98a4; --ink: #151a21; --text: #48515d; --touch: #24508a;
+  --brass: #7d6421; --exp: #9c6f16; --bad: #b8372b; --phys: #c0452f; --magic: #6b4cbc; --heal: #2b7d44; --true: #3f4754;
+  --spent: #8a929d; --done: #c3c9d0; --done-line: #9aa3ae; --streak-i: #6e665a; --side: #8a6a28; --dim: #7f8894;
+  --add-bg: #eaeef3; --add-line: #8193ab; --chk: #f4f6f8;
+  --card: linear-gradient(180deg, #f6f8fa 0%, #e4e8ed 55%, #d3d9e0 100%); --hi: #ffffff; --lo: #a3acb7; --card-lip: #87919e;
+  --resist-card: linear-gradient(180deg, #f3eeee 0%, #e6dddd 55%, #d9cdcd 100%);
+  --s-num: #87909b; --s-card: #c8ced5; --s-hi: #b1b8c1; --s-lo: #dfe3e8; --s-face: #bdc4cc; --s-base: #a9b1bb; --s-name: #838c97;
+  --r-ink: #a2291d; --plate: #c8ced5; --plate-hi: #eef1f4; --plate-lo: #9ea7b2;
+  --log-hi: #eef1f4; --log-lo: #a3acb7; --hair: rgba(15,22,34,.1); --chip: rgba(15,22,34,.08);
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.22) 0 1px, transparent 1px 3px, rgba(0,0,0,.025) 3px 4px), var(--bg);
+}
+.lt-g1 .row::before, .lt-g1 .row::after { content: ''; position: absolute; top: 5px; width: 3px; height: 3px; background: #8c96a3; box-shadow: 0 1px 0 #fff; }
+.lt-g1 .row::before { left: 5px; }
+.lt-g1 .row::after { left: 5px; top: auto; bottom: 5px; }
+.lt-g1 .row.on::before, .lt-g1 .row.on::after, .lt-g1 .row.resting::before, .lt-g1 .row.resting::after { background: #9ea6b0; box-shadow: none; }
+.lt-g1 .top {
+  --bg: #8696a8; --sky-mid: #a3afbd; --sky-end: #bac3ce; --hz-a: #9aa5b2; --hz-b: #a8b2bd; --hz-edge: #8a96a4;
+  --star-a: rgba(255,255,255,.25); --star-b: rgba(255,255,255,.35); --star-c: rgba(255,255,255,.5);
+  --pl-a: #b5bec8; --pl-top: #eaeef2; --pl-mid: #cbd2da; --pl-bot: #7c8897; --pl-sh: rgba(20,30,45,.28);
+  --well: #1e252e; --well-hi: #4f5a68; --well-lo: #0d1116; --ink: #0d1218; --text: #1f2935; --touch: #0f2442; --brass: #5e4a12;
+  --add-bg: rgba(255,255,255,.35); --add-line: rgba(15,36,66,.4); }
+
+/* G2 · Gunmetal: light grey page, dark gunmetal cards that sink into the page when struck */
+.phone.lt-g2 {
+  --bg: #d7dbe0; --frame: #c9ced4; --edge: #2c3138; --ink: #14181d; --text: #49515c; --touch: #20262e;
+  --brass: #7d6421; --exp: #9c6f16; --bad: #b8372b; --phys: #c0452f; --magic: #6b4cbc; --heal: #2b7d44; --true: #3f4754;
+  --spent: #858d97; --done: #c0c5cc; --done-line: #9aa1aa; --streak-i: #6e665a; --side: #8a6a28; --dim: #7f8792;
+  --add-bg: #e6e9ed; --add-line: #6d7682; --chk: #f1f3f5;
+  --card: #383e47; --hi: #4d545f; --lo: #262a31; --card-lip: #1b1e23; --resist-card: #42343a;
+  --s-num: #868e98; --s-card: #c4c9cf; --s-hi: #afb5bd; --s-lo: #dadde2; --s-face: #b8bec5; --s-base: #a6adb5; --s-name: #7f8792;
+  --r-ink: #a2291d; --plate: #bfc5cc; --plate-hi: #e5e8ec; --plate-lo: #9aa1aa;
+  --log-hi: #e3e6ea; --log-lo: #a3a9b1; --hair: rgba(15,22,34,.1); --chip: rgba(15,22,34,.08);
+}
+.lt-g2 .row:not(.on):not(.resting) {
+  --ink: #f1f3f5; --text: #b5bcc6; --brass: #d2bb85; --streak-i: #b8ad98; --dim: #8b939e;
+  --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6; --bad: #e0675a; --r-ink: #f2a59b; --exp: #e0b04a;
+  --touch: #e6ebf2; --chk: rgba(0,0,0,.3); --plate: #2a2e34; --plate-hi: #4a515b; --plate-lo: #1a1d21;
+}
+.lt-g2 .row[data-t='true']:not(.on):not(.resting) { --btn-c: #1e1c18; --btn-ts: none; }
+.lt-g2 .resist .row:not(.on) { --hi: #554248; --lo: #2c2125; --card-lip: #21181b; }
+.lt-g2 .row.on, .lt-g2 .row.resting { --card-lip: #a9b0b8; }
+
+/* Dark stage over the lists (Moonlit) */
+.lt-dark .top {
+  --sky-mid: #0c0f17; --sky-end: #0f131d; --hz-a: #141926; --hz-b: #0f131d; --hz-edge: #0b0e15;
+  --star-a: #2c3446; --star-b: #3a4358; --star-c: #4a5470;
+  --pl-a: #1f2534; --pl-top: #3a4358; --pl-mid: #283041; --pl-bot: #10141d; --pl-sh: rgba(0,0,0,.45);
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --bg: #07080c; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --brass: #d2bb85; --exp: #d9a93c;
+  --add-bg: rgba(219,226,238,.08); --add-line: rgba(219,226,238,.35); --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a;
+  border-bottom: 3px solid #2c3138; }
+
+
+
+/* ================= Bright: Resist and Quests options ================= */
+.page { max-width: 2140px; margin: 0 auto; }
+.panel-row { display: flex; flex-wrap: wrap; gap: 36px 26px; justify-content: center; align-items: flex-start; margin-bottom: 54px; }
+.phone.slice { padding: 14px 0 22px; border-radius: 22px; }
+.slice .sec { margin-top: 6px; }
+.slice .sec + .sec { margin-top: 26px; }
+.rowlabel { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .3em; color: #ece8de; margin: 30px 0 18px; }
+
+/* Quests tabs, as built */
+.lt-f1 { --quiet-tray: #eef1f5; --tray-lo: #d5dae1; --tray-hi: #ffffff; --tab-off: #9aa2ae; --tab-on-bg: #fff4d4; --tab-on: #3a2a00; --tab-on-sh: inset 2px 2px 0 #fffbee, inset -2px -2px 0 #ebcd7e; }
+.tabs { display: flex; margin: 4px 0 10px; padding: 3px; clip-path: var(--px); background: var(--quiet-tray); box-shadow: inset 2px 2px 0 var(--tray-lo), inset -2px -2px 0 var(--tray-hi); }
+.tab { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border: 0; background: none; font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--tab-off); }
+.tab svg { width: 12px; height: 12px; }
+.tab.act { clip-path: var(--px2); background: var(--tab-on-bg); color: var(--tab-on); box-shadow: var(--tab-on-sh); }
+
+/* ---------- Resist ---------- */
+/* Gunmetal card (RA, RB, RC) */
+.ra .resist .row:not(.on), .rb .resist .row:not(.on), .rc .resist .row:not(.on) {
+  --resist-card: #383e47; --hi: #4d545f; --lo: #262a31; --card-lip: #1b1e23;
+  --ink: #f1f3f5; --text: #e3e7ec; --brass: #d2bb85; --streak-i: #b8ad98; --dim: #8b939e;
+  --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --bad: #e0675a; --r-ink: #f2a59b;
+  --plate: #2a2e34; --plate-hi: #4a515b; --plate-lo: #1a1d21;
+}
+/* RA given in: a plain grey well, no rose */
+.ra .resist .row.on { --plate: #e4e7ec; --plate-hi: #fafbfc; --plate-lo: #c9ced6; }
+/* RB: a red edge and a red-black lip */
+.rb .resist .row:not(.on) { --card-lip: #5a1a15; box-shadow: inset 6px 0 0 #d4574a, inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); padding-left: 16px; }
+/* RC: the whole list sits in a gunmetal tray; given-in cards sink into it */
+.rc .rwrap { padding: 9px 8px 10px; clip-path: var(--px); background: #23272d; box-shadow: inset 2px 2px 0 #15181c, inset -2px -2px 0 #3a4048; }
+.rc .rwrap { --s-card: #2c3137; --s-hi: #1d2025; --s-lo: #383e46; --s-name: #737b86; --s-num: #737b86; --plate: #1d2025; --plate-hi: #3a4048; --plate-lo: #121417; }
+.rc .rwrap .row.on { --card-lip: #15181c; }
+/* RD: crimson fill, like the Skills cards but blood, not coral */
+.rd .resist .row:not(.on) {
+  --resist-card: #a8243a; --hi: #c84c60; --lo: #7d1528; --card-lip: #560c1a;
+  --ink: #fff; --text: #fff; --brass: #ffd36b; --streak-i: #ffd36b; --dim: #f3c0c8;
+  --phys: #ffb3a3; --magic: #e2d2ff; --bad: #ffffff; --r-ink: #ffffff;
+  --plate: #7d1528; --plate-hi: #c84c60; --plate-lo: #560c1a;
+}
+.rd .resist .row:not(.on) .streak { color: #fff; }
+
+/* ---------- Quests ---------- */
+/* QA: gold fill */
+.qa { --tab-on-bg: #f2b23a; --tab-on: #3a2700; --tab-on-sh: inset 2px 2px 0 #f8cf78, inset -2px -2px 0 #c98b14; }
+.qa .quests .row:not(.on) { --card: #f2b23a; --hi: #f8cf78; --lo: #c98b14; --card-lip: #9c6a06;
+  --ink: #3a2700; --text: #6b4a00; --brass: #5a3d00; --exp: #9c2a12; --touch: #3a2700; --chk: #fff7e3; }
+/* QB: sky fill */
+.qb { --tab-on-bg: #3b8fe0; --tab-on: #fff; --tab-on-sh: inset 2px 2px 0 #6eaeea, inset -2px -2px 0 #2a6fb5; }
+.qb .quests .row:not(.on) { --card: #3b8fe0; --hi: #6eaeea; --lo: #2a6fb5; --card-lip: #1d5592;
+  --ink: #fff; --text: #dbeafb; --brass: #ffe08a; --exp: #ffe08a; --touch: #fff; --chk: rgba(0,0,0,.15); }
+/* QC: gunmetal, to match RA */
+.qc { --tab-on-bg: #383e47; --tab-on: #f1f3f5; --tab-on-sh: inset 2px 2px 0 #4d545f, inset -2px -2px 0 #262a31; }
+.qc .quests .row:not(.on) { --card: #383e47; --hi: #4d545f; --lo: #262a31; --card-lip: #1b1e23;
+  --ink: #f1f3f5; --text: #b5bcc6; --brass: #d2bb85; --exp: #e0b04a; --touch: #e6ebf2; --chk: rgba(0,0,0,.3); }
+/* QD: white ticket with a gold band and gold edge */
+.qd { --tab-on-bg: #fff; --tab-on: #8a5a00; --tab-on-sh: inset 0 0 0 2px #ebc35a; }
+.qd .quests .row:not(.on) { --card: #fff; --hi: #fff; --lo: #f3e2b0; --card-lip: #d9a520;
+  box-shadow: inset 7px 0 0 #ebc35a, inset 0 0 0 2px #ebc35a; padding-left: 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · Bright, Resist and Quests</h1>
+  <p class="lede">The Bright skills stay as they are. Here are four new takes each for Resist and Quests, next to Bright as it is now. You can pick the two separately, and RA and QC pair naturally. Tap a Give in key or a checkbox to strike it.</p>
+  <div id="grid"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  heartMinus: '<path d="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: 'var(--streak-i)', exp: '#d8b46a', quest: '#a8a092' };
+const icon = (name, color = COLOR[name] || 'currentColor', cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+// HabitList order: healing, physical, magic, true. Rank (0-8) is never lost.
+const daily = [
+  { n: 'Stretch',       t: 'heal',  d: '141', s: 12, r: 2, on: true },
+  { n: 'Morning run',   t: 'phys',  d: '1.1K', s: 23, r: 8 },
+  { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+  { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 3 },
+  { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+];
+const resting = [
+  { n: 'Swim',          t: 'phys',  d: '230', s: 5,  r: 1, next: 'Thu' },
+];
+const weekly = [
+  { n: 'Call family',   t: 'heal',  d: '180', s: 0,  r: 0 },
+  { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 5 },
+];
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0, on: true },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+const quests = [
+  { n: 'Call the dentist',      p: 1, due: '2 days left', soon: true },
+  { n: 'Clear out the attic',   p: 2, due: '4 days left', side: true, on: true },
+  { n: 'Finish the tax return', p: 3, due: '6 days left' },
+];
+
+const row = (h, cls = '') => `<li class="row${h.on ? ' on' : ''}${cls}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.next ? `<span class="next">${h.next}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${h.s >= 3 ? icon('streak') + h.s : ''}</span></span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor', 'ic-type')}${icon('check', 'currentColor', 'ic-done')}<b>${h.d}</b></button>
+</li>`;
+
+const rrow = (h) => `<li class="row${h.on ? ' on' : ''}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.week ? '<span class="tagw">Week</span>' : ''}<span class="plate">${icon(TYPE_ICON[h.t], 'currentColor')}<b>${h.d}</b></span><span class="streak">${h.on || h.s < 3 ? '' : icon('streak') + h.s}</span></span>
+  <button class="press" type="button" aria-label="Give in to ${h.n}">${icon('heartMinus', 'currentColor')}<span>Give in</span></button>
+</li>`;
+
+const quest = (q) => `<li class="row quest${q.soon ? ' soon' : ''}${q.side ? ' side' : ''}${q.on ? ' on' : ''}">
+  <label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"${q.on ? ' checked' : ''}><i>${icon('check', 'currentColor')}</i></label>
+  <span class="body"><span class="qn">${q.n}</span>
+    <span class="qm"><span class="qpips">${[1, 2, 3].map((n) => `<i class="${n <= q.p ? 'lit' : ''}"></i>`).join('')}</span><em>${q.due}</em></span></span>
+</li>`;
+
+const cnt = (list) => `<span class="cnt"><b>${list.filter((x) => x.on).length}</b>/${list.length}</span>`;
+const head = (title, ic, count, add) => `<div class="shead"><span class="ht"><span class="hi">${icon(ic, 'currentColor')}</span><h2>${title}</h2></span><span class="hr">${count}${add ? `<button class="add" type="button">+ ${add}</button>` : ''}</span></div>`;
+const grp = (title, list) => `<div class="group"><span>${title}</span>${cnt(list)}</div>`;
+
+const screen = (cls) => `<div class="phone ${cls}">
+  <div class="top"><div class="stage">
+    <span class="stars"></span><span class="horizon"></span>
+    <span class="menu">${icon('menu', 'currentColor')}</span>
+    <span class="plinth b"></span><img class="boss" src="../../public/sprites/bosses/balanced.png" alt="">
+    <span class="plinth h"></span><img class="hero" src="../../public/sprites/player/warrior.png" alt="">
+    <div class="unit b"><div class="uname"><span><span class="bnum">#9</span> Drifter</span><span class="cue"></span></div>
+      <div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>
+      <div class="stats"><span>${icon('physical')}61</span><span>${icon('magic')}58</span><span>${icon('armor')}213</span><span>${icon('magicResist')}221</span><span>${icon('crit')}1%</span></div></div>
+    <div class="unit h"><div class="uname"><span>Ryn <small>14</small></span><span class="cue"></span></div>
+      <div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>
+      <div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div></div>
+  </div></div>
+
+  <section class="sec skills">
+    ${head('Skills', 'physical', cnt(daily.concat(weekly)), 'New habit')}
+    ${grp('Daily', daily)}
+    <ul>${daily.map((h) => row(h)).join('')}${resting.map((h) => row(h, ' resting')).join('')}</ul>
+    ${grp('Weekly', weekly)}
+    <ul>${weekly.map((h) => row(h)).join('')}</ul>
+  </section>
+
+  <section class="sec resist">
+    ${head('Resist', 'armor', cnt(resist), '')}
+    <ul>${resist.map(rrow).join('')}</ul>
+  </section>
+
+  <section class="sec quests">
+    ${head('Quests', 'quest', cnt(quests), 'New task')}
+    <ul>${quests.map(quest).join('')}</ul>
+  </section>
+
+  <section class="log"><h2>Log</h2><ul>
+    <li>${icon('physical')}Used "Read 20 pages" — dealt <span class="d">288</span> damage</li>
+    <li>${icon('physical')}Used "Morning run" — dealt <span class="d">1.1K</span> damage <span class="chip">${icon('crit')}Crit</span></li>
+    <li>${icon('magic')}Missed "Pushups" — took <span class="d">58</span> damage</li>
+    <li>${icon('quest')}Completed quest "Book the car service" — gained <span class="x">+120</span> EXP</li>
+  </ul></section>
+</div>`;
+
+const tailSkills = `<section class="sec skills">${grp('Weekly', weekly)}<ul>${weekly.map((h) => row(h)).join('')}</ul></section>`;
+const resistSlice = (cls) => `<div class="phone slice lt lt-f1 ${cls}">${tailSkills}
+  <section class="sec resist">${head('Resist', 'armor', cnt(resist), '')}<div class="rwrap"><ul>${resist.map(rrow).join('')}</ul></div></section></div>`;
+const tabs = `<div class="tabs"><button class="tab act" type="button">Main</button><button class="tab" type="button">Side ${icon('lock', 'currentColor')}</button></div>`;
+const questSlice = (cls) => `<div class="phone slice lt lt-f1 ${cls}">
+  <section class="sec quests">${head('Quests', 'quest', cnt(quests), 'New task')}<div class="qwrap">${tabs}<ul>${quests.map(quest).join('')}</ul></div></section></div>`;
+const R = [
+  { cls: '',   tag: 'NOW', n: 'Rose', d: 'Bright as it is: pale rose cards.' },
+  { cls: 'ra', tag: 'RA', n: 'Gunmetal', d: 'Dark gunmetal cards with light names and the pale-red ghost key. The darkest thing on the page, so the danger reads at once.' },
+  { cls: 'rb', tag: 'RB', n: 'Gunmetal, red edge', d: 'Gunmetal with a red band down the left and a red-black lip.' },
+  { cls: 'rc', tag: 'RC', n: 'Gunmetal tray', d: 'The list sits in one dark tray, and given-in cards sink into it instead of turning grey.' },
+  { cls: 'rd', tag: 'RD', n: 'Crimson', d: 'Filled like the Skills cards but in deep blood red, with a white ghost key.' },
+];
+const Q = [
+  { cls: '',   tag: 'NOW', n: 'Butter', d: 'Bright as it is: butter-yellow cards.' },
+  { cls: 'qa', tag: 'QA', n: 'Gold', d: 'Solid gold fill with dark brown text, the same fill as Skills. The active tab is gold too.' },
+  { cls: 'qb', tag: 'QB', n: 'Sky', d: 'Solid sky blue with white text: a colour no skill uses, so quests stand apart.' },
+  { cls: 'qc', tag: 'QC', n: 'Gunmetal', d: 'Gunmetal like RA, so everything that is not a skill is dark.' },
+  { cls: 'qd', tag: 'QD', n: 'Ticket', d: 'White cards with a gold band and edge, like a ticket or a notice.' },
+];
+const col = (o, panel) => `<div class="col"><div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>${panel(o.cls)}</div>`;
+document.getElementById('grid').innerHTML =
+  `<div class="rowlabel">RESIST</div><div class="panel-row">${R.map((o) => col(o, resistSlice)).join('')}</div>` +
+  `<div class="rowlabel">QUESTS</div><div class="panel-row">${Q.map((o) => col(o, questSlice)).join('')}</div>`;
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.qchk input')) e.target.closest('.row').classList.toggle('on', e.target.checked);
+});
+
+</script>
+</body>
+</html>

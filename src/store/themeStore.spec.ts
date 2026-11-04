@@ -25,17 +25,18 @@ describe('themeStore', () => {
     expect(useThemeStore().theme).toBe('moonlit');
   });
 
-  it('calls the themes Dark and Light, and offers System too', () => {
+  it('calls the themes Dark, Light and Bright, and offers System too', () => {
     expect(THEMES).toEqual([
       { id: 'moonlit', label: 'Dark' },
       { id: 'parchment', label: 'Light' },
+      { id: 'bright', label: 'Bright' },
     ]);
-    expect(THEME_CHOICES.map((c) => c.label)).toEqual(['System', 'Light', 'Dark']);
+    expect(THEME_CHOICES.map((c) => c.label)).toEqual(['System', 'Light', 'Bright', 'Dark']);
   });
 
-  it('loads a saved Parchment choice', () => {
-    localStorage.setItem(STORAGE_KEY, 'parchment');
-    expect(useThemeStore().theme).toBe('parchment');
+  it.each(['parchment', 'bright'])('loads a saved %s choice', (theme) => {
+    localStorage.setItem(STORAGE_KEY, theme);
+    expect(useThemeStore().theme).toBe(theme);
   });
 
   it.each(['crypt', 'hellforge', 'minimalist'])('loads a saved %s choice as Moonlit', (old) => {

@@ -1,0 +1,207 @@
+// Bright — a white page with colour on the cards, a second light theme on
+// trial next to Parchment (docs/mockups/pixel-light-apps.html, option F1;
+// pixel-light-bright.html, RA and QD). An open skill is filled with its damage
+// type's colour and carries a white key; Resist cards are gunmetal; quests are
+// white tickets with a gold band. Struck cards go plain grey, so the colour
+// shows only what's left. The fight stage keeps Moonlit's palette, as under
+// Parchment. The shared rules are in ashen.scss; the card fills are here.
+
+@use 'ashen';
+@use 'moonlit';
+
+$bright: ":root[data-theme='bright']";
+$ticket-gold: #ebc35a;
+
+#{$bright} {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-rgb: 255 255 255;
+  --text: #5a6372;
+  --text-h: #141a24;
+  --border: #d5dae1;
+  --code-bg: #eef1f5;
+  --frame: #f3f5f8;
+  --frame-rgb: 243 245 248;
+  --panel-fill: #f3f5f8;
+  --ash-rgb: 70 82 100; // structure lines: cool slate
+  --ash-mark: #9aa3b0;
+  --ash-deep: #8b93a1;
+  --moon: #1d3557; // what you touch is deep navy here
+  --moon-solid: #3a4f70;
+  --moon-tint-rgb: 29 53 87;
+  --moon-glow-rgb: 60 90 140;
+  --brass: #a87400;
+  --brass-rgb: 168 116 0;
+  --brass-solid: #b8860b;
+  --check-done: #e3e6ea;
+  --check-done-line: #b9c0ca;
+  --page-glow: rgba(220, 235, 255, 0.35);
+  // The main button: navy with white text.
+  --button-fill: #1d3557;
+  --button-fill-hover: #2a4570;
+  --button-line: rgba(255, 255, 255, 0.2);
+  --button-text: #fff;
+  --stage-light:
+    radial-gradient(ellipse 45% 55% at 68% 55%, rgba(215, 205, 185, 0.15), transparent 72%),
+    radial-gradient(ellipse 90% 30% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
+  --boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
+    drop-shadow(0 -2px 0 #2a120c) drop-shadow(0 0 12px rgba(224, 120, 58, 0.35)) brightness(1.06);
+  --hero-sprite-filter: none; // the hero stands as drawn on the boss's scene
+
+  --spent-text: #a3aab5;
+  --day-on-rgb: 180 192 210;
+  --bar-rgb: 255 255 255;
+  --plate: #eef1f5;
+
+  // Cards: open ones are pale grey with a bevel (skills, Resist and quests
+  // take their own fills below); struck ones sink flat and grey.
+  --card: #f3f5f8;
+  --card-hi: #ffffff;
+  --card-lo: #dfe3e9;
+  --card-lip: #d5dae1;
+  --card-ink: #141a24;
+  --struck-card: #f1f3f6;
+  --struck-hi: #e4e7ec;
+  --struck-lo: #fafbfc;
+  --struck-face: #e1e5ea;
+  --struck-lip: #cdd2d9;
+  --struck-ink: #a3aab5;
+  --quiet-card: #f3f5f8;
+  --quiet-hi: #ffffff;
+  --quiet-lo: #dfe3e9;
+  --resting-face: #e1e5ea;
+  --panel-hi: #ffffff;
+  --panel-lo: #dfe3e9;
+  --sunk-hi: #d5dae1;
+  --sunk-lo: #ffffff;
+  --button-lip: #0f1d33;
+  --stone-face: #eef1f5;
+  --stone-lip: #c8ced6;
+  --field: #f6f8fa;
+  --field-line: #c3cad4;
+  --field-shadow: #dfe3e9;
+  --check-bg: #fff;
+  --selected-card: #e9eef6;
+  --selected-shadow: #cfd6e1;
+  --brass-on-face: #f2d58a;
+  --on-brass: #fff;
+  --well: rgba(20, 30, 50, 0.06);
+  --on-true-damage: #fff;
+  --on-crimson: #fff;
+  --input-fill: #f6f8fa;
+  --tint-to: #000;
+
+  // The game's own colours, darker so they read as text on white. The skill
+  // cards use brighter fills (below).
+  --damage-color: #c8382a;
+  --heal-color: #2f8a46;
+  --stat-color: #3d4452;
+  --true-damage-color: #3d4452;
+  --exp-skill-color: #a87400;
+  --dmg-physical: #c8442d;
+  --dmg-magic: #6f4fc0;
+  --dmg-healing: #2f8a46;
+  --dmg-true: #3d4452;
+  --icon-health: #c0392b;
+  --icon-lifesteal: #b0342c;
+  --icon-crit: #b07d12;
+  --icon-steel: #6b7280;
+  --icon-arcane: #4f63b0;
+  --icon-violet: #6f4fc0;
+  --icon-streak: #8a6f4a;
+  --icon-exp: #b07d12;
+  --icon-gold: #a87400;
+  --icon-gift: #a87400;
+  --hp-color: #a82a20;
+  --fx-lifesteal: #d9566a;
+  --fx-reflect: #c4bcac;
+  --fx-boss-cut: #c33a2e;
+  --hp-trail: rgba(240, 222, 190, 0.75);
+  --exp-color: #b07d12;
+  --rarity-common: #7d8594;
+  --rarity-uncommon: #2f8a46;
+  --rarity-rare: #2f68c0;
+  --rarity-epic: #6f4fc0;
+  --rarity-relic: #c4631c;
+  --soon-color: #b8741c;
+  --overdrive-color: #c4631c;
+}
+
+// The night stage, as under Parchment: Moonlit's palette, and the tokens
+// built from it, inside the pinned stage, the boss bar and the hooded scenes.
+#{$bright} :is(.fight-stage, .boss-bar, .scene-layer, .death-layer) {
+  @include moonlit.palette;
+  @include ashen.derived-tokens;
+}
+
+// ---------- Skills: filled with their type's colour, a white key ----------
+// The row's --c reads these fills (it is var(--dmg-...) on the row itself).
+#{$bright} .skill-list .habit-item:not(.struck, .resting) {
+  --dmg-physical: #ee6a4e;
+  --dmg-magic: #8b63e6;
+  --dmg-healing: #3fae5c;
+  --dmg-true: #3d4452;
+  --card-bg: var(--c);
+  --card-hi: color-mix(in srgb, var(--c) 70%, #fff);
+  --card-lo: color-mix(in srgb, var(--c) 82%, #000);
+  --card-lip: color-mix(in srgb, var(--c) 58%, #000);
+  --card-ink: #fff;
+  --text-h: #fff; // the streak count
+  --text: #fff;
+  --icon-streak: #fff;
+  --brass: rgba(255, 255, 255, 0.9); // the rank pips
+}
+
+#{$bright} .skill-list .habit-item:not(.struck, .resting) .sigil.special {
+  color: #fff;
+}
+
+#{$bright} .skill-list .habit-item:not(.struck, .resting) .sigil.ult {
+  color: #ffe7a3;
+}
+
+#{$bright} .skill-list .habit-item:not(.struck, .resting) .strike.open {
+  --face: #fff;
+  --base: color-mix(in srgb, var(--c) 45%, #000);
+  --ink: var(--c);
+  --ink-shadow: none;
+  --bevel: inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+}
+
+// ---------- Resist: gunmetal, the darkest thing on the page ----------
+// Given in, a card goes the same plain grey as a struck skill.
+#{$bright} .resist-list .habit-item:not(.struck, .resting) {
+  --dmg-physical: #e5705c;
+  --dmg-magic: #a98be0;
+  --dmg-healing: #7fc17a;
+  --dmg-true: #f1e9d6;
+  --card-bg: #383e47;
+  --card-hi: #4d545f;
+  --card-lo: #262a31;
+  --card-lip: #1b1e23;
+  --text-h: #f1f3f5;
+  --text: #e3e7ec; // the name
+  --icon-streak: #b8ad98;
+  --brass: #d2bb85;
+  --damage-color: #e0675a; // the Give in key's outline and words
+  --tint-to: #fff;
+  --well: #2a2e34; // the reward plate
+  --sunk-hi: #1a1d21;
+  --sunk-lo: #4a515b;
+}
+
+// ---------- Quests: white tickets with a gold band and edge ----------
+#{$bright} .quest-section .quest-item:not(.done) {
+  --card-bg: #fff;
+  --card-lip: #d9a520;
+  padding-left: 10px;
+  box-shadow:
+    inset 7px 0 0 $ticket-gold,
+    inset 0 0 0 2px $ticket-gold;
+}
+
+#{$bright} .quest-tab.selected:not(.side) {
+  background: #fff;
+  color: #8a5a00;
+  box-shadow: inset 0 0 0 2px $ticket-gold;
+}

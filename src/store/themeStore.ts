@@ -3,26 +3,30 @@
 // any SaveState schema bump. The active theme is stamped on
 // `<html data-theme="...">`, which is what the theme's CSS keys off — see
 // assets/scss/themes/. Moonlit (the dark theme, Pixel-cut) is the default;
-// Parchment is its light twin. The player picks Light, Dark or System; System
-// follows the device's own setting (prefers-color-scheme), live, which a phone
-// browser, an installed web app and a Capacitor web view all report. The
+// Parchment is its light twin, and Bright a second light look on trial (a
+// white page, colour on the cards). The player picks Light, Bright, Dark or
+// System; System follows the device's own setting (prefers-color-scheme),
+// live, which a phone browser, an installed web app and a Capacitor web view
+// all report, and its light is Parchment. The
 // retired themes (Crypt, Hellforge, Minimalist) live on in git tag ashen-classic.
 
 import { defineStore } from 'pinia';
 
-export type Theme = 'moonlit' | 'parchment';
+export type Theme = 'moonlit' | 'parchment' | 'bright';
 export type ThemePreference = Theme | 'system';
 
 /** The themes that exist: each one has a palette in assets/scss/themes/. */
 export const THEMES: { id: Theme; label: string }[] = [
   { id: 'moonlit', label: 'Dark' },
   { id: 'parchment', label: 'Light' },
+  { id: 'bright', label: 'Bright' },
 ];
 
 /** What the menu offers, in order. */
 export const THEME_CHOICES: { id: ThemePreference; label: string }[] = [
   { id: 'system', label: 'System' },
   { id: 'parchment', label: 'Light' },
+  { id: 'bright', label: 'Bright' },
   { id: 'moonlit', label: 'Dark' },
 ];
 

@@ -1,9 +1,9 @@
 // Pixel-cut — the Moonlit look: blue-black stone cut with the same hard
 // pixel edges as the art (docs/superpowers/specs/2026-11-01-pixel-cut-design.md,
 // docs/mockups/pixel-done.html option A). Its palettes are in
-// moonlit.scss and parchment.scss. The old Ashen look, with the Crypt, Hellforge
-// and Minimalist themes, lives on in git tag ashen-classic. Imported once,
-// through index.scss.
+// moonlit.scss, parchment.scss and bright.scss. The old Ashen look, with the
+// Crypt, Hellforge and Minimalist themes, lives on in git tag ashen-classic.
+// Imported once, through index.scss.
 //
 // The rules that keep it scannable:
 // - Silver means touch: buttons, checks, inputs and choices. Brass means
@@ -33,10 +33,11 @@
   @return string.unquote('rgb(var(--#{$name}-rgb) / #{math.div(math.round($alpha * 255), 255)})');
 }
 
-// Both themes (Moonlit, Parchment) share every rule; only the palette differs.
+// The themes (Moonlit, Parchment, Bright) share every rule; only the palette
+// differs, apart from Bright's card fills, which live in bright.scss.
 // `:is()` takes its argument's specificity, so this is as strong as one
 // `:root[data-theme]` selector, as the scoped-style note above relies on.
-$ashen: ":root:is([data-theme='moonlit'], [data-theme='parchment'])";
+$ashen: ":root:is([data-theme='moonlit'], [data-theme='parchment'], [data-theme='bright'])";
 
 // Structure: frames, rules and dividers, in ash.
 $line: tone(ash, 0.2);
