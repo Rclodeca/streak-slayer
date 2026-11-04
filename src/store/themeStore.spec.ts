@@ -25,18 +25,22 @@ describe('themeStore', () => {
     expect(useThemeStore().theme).toBe('moonlit');
   });
 
-  it('calls the themes Dark, Light and Bright, and offers System too', () => {
+  it('calls the themes Dark and Light, and offers System too', () => {
     expect(THEMES).toEqual([
       { id: 'moonlit', label: 'Dark' },
-      { id: 'parchment', label: 'Light' },
-      { id: 'bright', label: 'Bright' },
+      { id: 'light', label: 'Light' },
     ]);
-    expect(THEME_CHOICES.map((c) => c.label)).toEqual(['System', 'Light', 'Bright', 'Dark']);
+    expect(THEME_CHOICES.map((c) => c.label)).toEqual(['System', 'Light', 'Dark']);
   });
 
-  it.each(['parchment', 'bright'])('loads a saved %s choice', (theme) => {
-    localStorage.setItem(STORAGE_KEY, theme);
-    expect(useThemeStore().theme).toBe(theme);
+  it('loads a saved Light choice', () => {
+    localStorage.setItem(STORAGE_KEY, 'light');
+    expect(useThemeStore().theme).toBe('light');
+  });
+
+  it.each(['parchment', 'bright'])('loads a saved %s choice as Light', (old) => {
+    localStorage.setItem(STORAGE_KEY, old);
+    expect(useThemeStore().theme).toBe('light');
   });
 
   it.each(['crypt', 'hellforge', 'minimalist'])('loads a saved %s choice as Moonlit', (old) => {
@@ -51,10 +55,10 @@ describe('themeStore', () => {
 
   it('setTheme persists the choice and stamps it on <html>', () => {
     const store = useThemeStore();
-    store.setTheme('parchment');
-    expect(store.theme).toBe('parchment');
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('parchment');
-    expect(document.documentElement.dataset.theme).toBe('parchment');
+    store.setTheme('light');
+    expect(store.theme).toBe('light');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('light');
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 
   it('applyTheme stamps the theme without persisting it', () => {
@@ -93,7 +97,7 @@ describe('themeStore', () => {
       expect(useThemeStore().theme).toBe('moonlit');
       setActivePinia(createPinia());
       dark = false;
-      expect(useThemeStore().theme).toBe('parchment');
+      expect(useThemeStore().theme).toBe('light');
     });
 
     it('persists System and stamps the device theme on <html>', () => {
@@ -101,7 +105,7 @@ describe('themeStore', () => {
       const store = useThemeStore();
       store.setTheme('system');
       expect(localStorage.getItem(STORAGE_KEY)).toBe('system');
-      expect(document.documentElement.dataset.theme).toBe('parchment');
+      expect(document.documentElement.dataset.theme).toBe('light');
     });
 
     it('follows the device when it flips, but only under System', () => {
@@ -110,8 +114,8 @@ describe('themeStore', () => {
       store.followSystem();
       dark = false;
       listener!();
-      expect(store.theme).toBe('parchment');
-      expect(document.documentElement.dataset.theme).toBe('parchment');
+      expect(store.theme).toBe('light');
+      expect(document.documentElement.dataset.theme).toBe('light');
 
       store.setTheme('moonlit');
       dark = true;

@@ -23,28 +23,22 @@ describe('AppMenu', () => {
     expect(panel.textContent).toContain('High Scores');
     expect(panel.textContent).toContain('Theme');
     const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')];
-    expect(options().map((o) => o.textContent?.trim())).toEqual(['System', 'Light', 'Bright', 'Dark']);
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'false', 'true']);
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['System', 'Light', 'Dark']);
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true']);
 
     options()[1].click(); // Light
     await wrapper.vm.$nextTick();
-    expect(useThemeStore().theme).toBe('parchment');
-    expect(localStorage.getItem(THEME_KEY)).toBe('parchment');
-    expect(document.documentElement.dataset.theme).toBe('parchment');
+    expect(useThemeStore().theme).toBe('light');
+    expect(localStorage.getItem(THEME_KEY)).toBe('light');
+    expect(document.documentElement.dataset.theme).toBe('light');
     expect(document.body.querySelector('.menu-panel')).not.toBeNull();
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false', 'false']);
-
-    options()[2].click(); // Bright
-    await wrapper.vm.$nextTick();
-    expect(useThemeStore().theme).toBe('bright');
-    expect(document.documentElement.dataset.theme).toBe('bright');
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true', 'false']);
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
 
     options()[0].click(); // System
     await wrapper.vm.$nextTick();
     expect(useThemeStore().preference).toBe('system');
     expect(localStorage.getItem(THEME_KEY)).toBe('system');
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false', 'false']);
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
   });
 
   it('flips Focus mode from the menu, and keeps the menu open', async () => {

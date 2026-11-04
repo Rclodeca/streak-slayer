@@ -1,20 +1,20 @@
-// Bright — a soft grey page and popups with white cards, a second light
-// theme on trial next to Parchment (docs/mockups/pixel-light-apps.html, option
+// Light — a soft grey page and popups with white cards, the light theme
+// (docs/mockups/pixel-light-apps.html, option
 // F1; pixel-light-bright.html, RA and QD; pixel-bright-item-popup.html, banner
 // D; pixel-bright-card-colours.html, C). An open skill is a white card with a
 // button in its damage type's colour; Resist cards are gunmetal; quests are
 // white cards; items sit in charcoal sockets. Struck cards sink to a flat grey,
 // so the colour shows only what's left; the item popup's find sits on a
-// night-sky banner. The fight stage keeps Moonlit's palette, as under Parchment.
+// night-sky banner. The fight stage keeps Moonlit's palette.
 // The shared rules are in ashen.scss; the card fills are here.
 
 @use 'ashen';
 @use 'moonlit';
 
-$bright: ":root[data-theme='bright']";
+$light: ":root[data-theme='light']";
 $ticket-gold: #ebc35a;
 
-#{$bright} {
+#{$light} {
   color-scheme: light;
   --bg: #eef1f5;
   --bg-rgb: 238 241 245;
@@ -142,9 +142,9 @@ $ticket-gold: #ebc35a;
   --overdrive-color: #c4631c;
 }
 
-// The night stage, as under Parchment: Moonlit's palette, and the tokens
+// The night stage: Moonlit's palette, and the tokens
 // built from it, inside the pinned stage, the boss bar and the hooded scenes.
-#{$bright} :is(.fight-stage, .boss-bar, .scene-layer, .death-layer) {
+#{$light} :is(.fight-stage, .boss-bar, .scene-layer, .death-layer) {
   @include moonlit.palette;
   @include ashen.derived-tokens;
 }
@@ -160,12 +160,12 @@ $vivid: (
 );
 
 @each $name, $c in $vivid {
-  #{$bright} .rarity-#{$name} {
+  #{$light} .rarity-#{$name} {
     --rarity-vivid: #{$c};
   }
 }
 
-#{$bright} :is(.gear-icon, .icon-frame) {
+#{$light} :is(.gear-icon, .icon-frame) {
   --socket-rim: var(--rarity-vivid);
   --socket-glow: color-mix(in srgb, var(--rarity-vivid) 30%, transparent);
 }
@@ -175,18 +175,18 @@ $vivid: (
 // stage's night with a few stars, as if it just fell from the boss
 // (docs/mockups/pixel-bright-item-popup.html, banner D). It takes the night
 // palette, so its text, stat icons and rarity label come out light.
-#{$bright} :is(.modal-content:has(:is(.found, .level-banner)) .modal-header, .found, .level-banner) {
+#{$light} :is(.modal-content:has(:is(.found, .level-banner)) .modal-header, .found, .level-banner) {
   @include moonlit.palette;
   @include ashen.derived-tokens;
 }
 
-#{$bright} .modal-content:has(:is(.found, .level-banner)) .modal-header {
+#{$light} .modal-content:has(:is(.found, .level-banner)) .modal-header {
   margin: -1rem -1.25rem 0;
   padding: 1rem 1.25rem 0.75rem;
   background: #0c1019;
 }
 
-#{$bright} :is(.found, .level-banner) {
+#{$light} :is(.found, .level-banner) {
   position: relative;
   overflow: hidden;
   margin: 0 -1.25rem;
@@ -227,7 +227,7 @@ $vivid: (
 // ---------- Skills: a white card, the type's colour in the button ----------
 // The row's --c reads these fills (it is var(--dmg-...) on the row itself), and
 // StrikeButton builds its face from --c.
-#{$bright} .skill-list .habit-item:not(.struck, .resting) {
+#{$light} .skill-list .habit-item:not(.struck, .resting) {
   --dmg-physical: #ee6a4e;
   --dmg-magic: #8b63e6;
   --dmg-healing: #3fae5c;
@@ -239,7 +239,7 @@ $vivid: (
 
 // Drop is the stone way out; it takes the same white face as the soft buttons.
 // (--stone-face stays grey for the choice keys.)
-#{$bright} .drop-button {
+#{$light} .drop-button {
   background: #fff;
   box-shadow: inset 0 0 0 1px var(--soft-line);
 
@@ -250,13 +250,13 @@ $vivid: (
   }
 }
 
-#{$bright} .level-banner {
+#{$light} .level-banner {
   margin-bottom: 1rem;
 }
 
 // ---------- Level-up cards: a clean gold rim, light sunken icon tiles ----------
 // The side card's rim was a muddy brown on grey; it takes the quests' gold.
-#{$bright} .cards > button.card.side {
+#{$light} .cards > button.card.side {
   box-shadow:
     inset 2px 2px 0 var(--card-hi),
     inset -2px -2px 0 var(--card-lo),
@@ -266,32 +266,32 @@ $vivid: (
 // The shared hover lightens the card, which does nothing to white; it greys a
 // touch instead.
 @media (hover: hover) {
-  #{$bright} .cards > button.card:hover {
+  #{$light} .cards > button.card:hover {
     background: var(--soft-fill-hover);
   }
 }
 
 // The icon tiles are filled with their own icon's colour (violet for the dice,
 // gold for the target) with a white icon and a darker rim.
-#{$bright} button.card .icon {
+#{$light} button.card .icon {
   color: #fff;
   background: var(--k);
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--k) 70%, #000);
 }
 
-#{$bright} button.card .side-socket {
+#{$light} button.card .side-socket {
   color: #fff;
   background: var(--brass);
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brass) 70%, #000);
 }
 
-#{$bright} button.card :is(.icon, .side-socket) svg {
+#{$light} button.card :is(.icon, .side-socket) svg {
   width: 25px;
   height: 25px;
 }
 
 // ---------- Log: a white card, like the skills ----------
-#{$bright} .activity-log {
+#{$light} .activity-log {
   background: var(--card);
   border-bottom: 3px solid var(--card-lip);
   box-shadow:
@@ -301,7 +301,7 @@ $vivid: (
 
 // ---------- Resist: gunmetal, the darkest thing on the page ----------
 // Given in, a card goes the same plain grey as a struck skill.
-#{$bright} .resist-list .habit-item:not(.struck, .resting) {
+#{$light} .resist-list .habit-item:not(.struck, .resting) {
   --dmg-physical: #e5705c;
   --dmg-magic: #a98be0;
   --dmg-healing: #7fc17a;
@@ -322,7 +322,7 @@ $vivid: (
 }
 
 // ---------- Quests: white cards like the skills ----------
-#{$bright} .quest-tab.selected:not(.side) {
+#{$light} .quest-tab.selected:not(.side) {
   background: #fff;
   color: #8a5a00;
   box-shadow: inset 0 0 0 2px $ticket-gold;

@@ -1,7 +1,7 @@
 // Pixel-cut — the Moonlit look: blue-black stone cut with the same hard
 // pixel edges as the art (docs/superpowers/specs/2026-11-01-pixel-cut-design.md,
 // docs/mockups/pixel-done.html option A). Its palettes are in
-// moonlit.scss, parchment.scss and bright.scss. The old Ashen look, with the
+// moonlit.scss and light.scss. The old Ashen look, with the
 // Crypt, Hellforge and Minimalist themes, lives on in git tag ashen-classic.
 // Imported once, through index.scss.
 //
@@ -33,11 +33,11 @@
   @return string.unquote('rgb(var(--#{$name}-rgb) / #{math.div(math.round($alpha * 255), 255)})');
 }
 
-// The themes (Moonlit, Parchment, Bright) share every rule; only the palette
-// differs, apart from Bright's card fills, which live in bright.scss.
+// The themes (Moonlit, Light) share every rule; only the palette
+// differs, apart from Light's card fills, which live in light.scss.
 // `:is()` takes its argument's specificity, so this is as strong as one
 // `:root[data-theme]` selector, as the scoped-style note above relies on.
-$ashen: ":root:is([data-theme='moonlit'], [data-theme='parchment'], [data-theme='bright'])";
+$ashen: ":root:is([data-theme='moonlit'], [data-theme='light'])";
 
 // Structure: frames, rules and dividers, in ash.
 $line: tone(ash, 0.2);
@@ -332,7 +332,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   border: 0;
   @include pixel-corners(3px);
   // The hole's shades are near-black, and the rim a dark tone of $c with no
-  // inner glow, unless a theme says otherwise (Bright lightens the hole and
+  // inner glow, unless a theme says otherwise (Light lightens the hole and
   // gives item sockets a vivid rim and glow).
   background: radial-gradient(
     circle,
@@ -371,7 +371,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
 // Tokens that are built from palette tokens (var() inside a custom property is
 // resolved where it is declared, not where it is used). A region that
-// re-declares the palette, like the dark stage in parchment.scss, includes
+// re-declares the palette, like the dark stage in light.scss, includes
 // this too so they follow it. (The game's own damage, icon and rarity colours
 // are palette too: they live in the theme files.)
 @mixin derived-tokens {

@@ -1,8 +1,8 @@
 // Moonlit — blue-black stone: silver is what you touch, brass what you've
 // earned. The default theme. Palette only; the rules are in ashen.scss.
 //
-// The palette is a mixin so parchment.scss can bring it back for the fight
-// stage, which stays Moonlit's night under Parchment's lists.
+// The palette is a mixin so light.scss can bring it back for the fight
+// stage, which stays Moonlit's night under Light's lists.
 
 @mixin palette {
   --bg: #07080c;

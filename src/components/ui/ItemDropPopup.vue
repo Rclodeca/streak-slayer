@@ -42,7 +42,7 @@ const isCurrentEquipped = computed(
     @update:model-value="dismiss"
   >
     <template v-if="current">
-      <!-- The find itself; Bright sets it on a night-sky banner. -->
+      <!-- The find itself; Light sets it on a night-sky banner. -->
       <div class="found" :class="`rarity-${current.rarity}`">
         <p v-if="droppedBy" class="dropped-by">Spoils of the <span class="dropped-by-name">{{ droppedBy }}</span></p>
         <ItemHero :item="current" />
