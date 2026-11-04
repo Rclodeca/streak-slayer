@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyBossAttackEase,
   applyDamagePoolRebalance,
   applyHealBaseCut,
   applyHealBoost,
@@ -17,9 +18,9 @@ import {
   nameCharacter,
   randomizeStat,
 } from './character';
-import type { Character } from './types';
+import type { Character, Personality } from './types';
 import { createRng } from './rng';
-import { generateBoss, rescaleBossToHealthBands } from './boss';
+import { easeBossAttack, generateBoss, rescaleBossToHealthBands } from './boss';
 import { TUNING } from './constants/tuning';
 
 describe('createCharacter', () => {
@@ -513,5 +514,54 @@ describe('applyRankRebalance', () => {
 
   it('flags a fresh character', () => {
     expect(createCharacter(createRng(1)).rankRebalanceApplied).toBe(true);
+  });
+});
+
+describe('applyBossAttackEase', () => {
+  const bossOf = (personality: Personality) => ({ ...generateBoss(24, createRng(2)), personality, physicalAttack: 1000, magicAttack: 1000 });
+
+  it('eases the rare tiers\' own attack from the old tier number, once', () => {
+    const character = { ...createCharacter(createRng(1)), bossAttackEaseApplied: undefined };
+    const cases: [Personality, 'physicalAttack' | 'magicAttack', number][] = [
+      ['brute3x', 'physicalAttack', 2.5 / 3],
+      ['brute4x', 'physicalAttack', 3 / 4],
+      ['brute5x', 'physicalAttack', 3.5 / 5],
+      ['arcane3x', 'magicAttack', 2.5 / 3],
+      ['arcane4x', 'magicAttack', 3 / 4],
+      ['arcane5x', 'magicAttack', 3.5 / 5],
+    ];
+    for (const [personality, stat, ratio] of cases) {
+      const boss = bossOf(personality);
+      const out = applyBossAttackEase(character, boss);
+      expect(out.boss[stat]).toBeCloseTo(1000 * ratio, 6);
+      expect(out.boss[stat === 'physicalAttack' ? 'magicAttack' : 'physicalAttack']).toBe(1000);
+      expect(out.character.bossAttackEaseApplied).toBe(true);
+    }
+  });
+
+  it('leaves the common 2x tiers and every other personality\'s attacks alone', () => {
+    const character = { ...createCharacter(createRng(1)), bossAttackEaseApplied: undefined };
+    for (const personality of ['brute', 'arcane', 'balanced', 'tank', 'armored3x', 'warded5x'] as Personality[]) {
+      const boss = bossOf(personality);
+      expect(easeBossAttack(boss)).toEqual(boss);
+      expect(applyBossAttackEase(character, boss).boss).toEqual(boss);
+    }
+  });
+
+  it('drops the retired random crit chance', () => {
+    const boss = { ...bossOf('balanced'), critChance: 0.2 };
+    expect('critChance' in easeBossAttack(boss)).toBe(false);
+  });
+
+  it('returns a flagged character and its boss untouched', () => {
+    const character = createCharacter(createRng(1));
+    const boss = bossOf('brute5x');
+    const out = applyBossAttackEase(character, boss);
+    expect(out.character).toBe(character);
+    expect(out.boss).toBe(boss);
+  });
+
+  it('flags a fresh character', () => {
+    expect(createCharacter(createRng(1)).bossAttackEaseApplied).toBe(true);
   });
 });

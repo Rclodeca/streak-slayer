@@ -86,6 +86,11 @@ export interface Character {
   // (BASE_STATS.healing 235 -> 141): undefined means applyHealBaseCut still
   // has to cut healing; createCharacter sets it true.
   healBaseCutApplied?: boolean;
+  // Same one-time marker for the eased rare boss attacks (3x/4x/5x ->
+  // 2.5x/3x/3.5x) and the retired random boss crit: undefined means
+  // applyBossAttackEase still has to rescale the saved boss; createCharacter
+  // sets it true.
+  bossAttackEaseApplied?: boolean;
   // Events mechanic (see events.ts). `takenEventIds` holds one-time events
   // already picked this run; `pendingEventPicks` is how many level-ups are
   // still waiting for the player to choose an event. Both optional so an

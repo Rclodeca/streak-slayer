@@ -1,4 +1,4 @@
-import { rescaleBossToHealthBands } from './boss';
+import { easeBossAttack, rescaleBossToHealthBands } from './boss';
 import { TUNING } from './constants/tuning';
 import { ITEM_CATALOG } from './items';
 import { pickRandom, type Rng } from './rng';
@@ -56,6 +56,7 @@ export function createCharacter(rng: Rng, heroClass?: HeroClass): Character {
     healBoostApplied: true,
     healthGrowthBumpApplied: true,
     healBaseCutApplied: true,
+    bossAttackEaseApplied: true,
   };
 }
 
@@ -287,4 +288,15 @@ export function applyRankRebalance(character: Character, boss: Boss): { characte
     },
     boss: rescaleBossToHealthBands(boss),
   };
+}
+
+/**
+ * One-time migration for the eased rare boss attacks (3x/4x/5x -> 2.5x/3x/3.5x)
+ * and the retired random boss crit: rescales the saved boss's attack and drops
+ * its `critChance` — see `easeBossAttack`. A no-op, returning both objects
+ * as-is, once `bossAttackEaseApplied` is set.
+ */
+export function applyBossAttackEase(character: Character, boss: Boss): { character: Character; boss: Boss } {
+  if (character.bossAttackEaseApplied) return { character, boss };
+  return { character: { ...character, bossAttackEaseApplied: true }, boss: easeBossAttack(boss) };
 }

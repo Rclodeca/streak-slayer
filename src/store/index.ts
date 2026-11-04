@@ -3,7 +3,7 @@
 // fresh) and wire up debounced localStorage persistence.
 
 import { createPinia, getActivePinia, setActivePinia, type Pinia } from 'pinia';
-import { applyRankRebalance, createRng, dailyPeriodKey, migrateEventState, migrateQuestUnlock } from '../game-engine';
+import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateEventState, migrateQuestUnlock } from '../game-engine';
 import { useActivityLogStore } from './activityLogStore';
 import { useBossStore } from './bossStore';
 import { useCharacterStore } from './characterStore';
@@ -61,6 +61,9 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   const rebalanced = applyRankRebalance(characterStore.character, bossStore.boss);
   characterStore.setCharacter(rebalanced.character);
   bossStore.setBoss(rebalanced.boss);
+  const eased = applyBossAttackEase(characterStore.character, bossStore.boss);
+  characterStore.setCharacter(eased.character);
+  bossStore.setBoss(eased.boss);
   characterStore.setCharacter(migrateEventState(characterStore.character, habitStore.habits));
   characterStore.setCharacter(migrateQuestUnlock(characterStore.character, questStore.quests.length > 0));
 

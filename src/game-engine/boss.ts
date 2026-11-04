@@ -32,6 +32,23 @@ export function rescaleBossToHealthBands(boss: Boss): Boss {
 }
 
 /**
+ * Brings a saved boss in line with the eased rare attack tiers and the Frenzy
+ * crit change: a brute/arcane 3x/4x/5x boss's emphasized attack is scaled from
+ * its old tier number down to ATTACK_MULTIPLIER, and the retired random
+ * `critChance` is dropped. Every other field is untouched.
+ */
+export function easeBossAttack(boss: Boss): Boss {
+  const eased = { ...boss };
+  delete (eased as { critChance?: number }).critChance;
+  const stat = PERSONALITY_STAT[boss.personality];
+  const newMultiplier = ATTACK_MULTIPLIER[boss.personality];
+  if ((stat === 'physicalAttack' || stat === 'magicAttack') && newMultiplier !== undefined) {
+    eased[stat] = boss[stat] * (newMultiplier / PERSONALITY_MULTIPLIER[boss.personality as Exclude<Personality, 'balanced'>]);
+  }
+  return eased;
+}
+
+/**
  * Target damage-reduction fraction for a boss's armor or magicResist at this
  * index. Without `tierMultiplier` (the boss isn't armored/warded for this
  * resist) it follows the base line from BOSS_RESIST_BASE_PCT_START to

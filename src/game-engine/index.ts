@@ -26,6 +26,7 @@ export type {
 } from './types';
 
 export {
+  applyBossAttackEase,
   applyDamagePoolRebalance,
   applyHealBaseCut,
   applyHealBoost,
@@ -93,6 +94,7 @@ export {
   bossBaseHealth,
   bossHealthGrowthRate,
   damageReductionPct,
+  easeBossAttack,
   expectedLevelForBossIndex,
   generateBoss,
   PERSONALITY_NAME,

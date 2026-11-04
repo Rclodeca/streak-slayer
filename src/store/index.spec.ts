@@ -78,6 +78,26 @@ describe('store persistence smoke test', () => {
     expect(parsed.character.damagePoolRebalanceApplied).toBe(true);
   });
 
+  it('eases a saved rare boss\'s attack once, persisted, and never again on a reload', () => {
+    const rng = createRng(1);
+    const character = { ...createCharacter(rng), bossAttackEaseApplied: undefined };
+    const boss = { ...generateBoss(24, rng), personality: 'brute5x' as const, physicalAttack: 1000 };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ schemaVersion: CURRENT_SCHEMA_VERSION, character, boss, habits: [] }));
+
+    initializeStores();
+    vi.advanceTimersByTime(300);
+
+    const first = JSON.parse(localStorage.getItem(STORAGE_KEY) as string);
+    expect(first.boss.physicalAttack).toBeCloseTo(700, 6);
+    expect(first.character.bossAttackEaseApplied).toBe(true);
+
+    setActivePinia(createPinia());
+    initializeStores();
+    vi.advanceTimersByTime(300);
+
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) as string).boss.physicalAttack).toBeCloseTo(700, 6);
+  });
+
   it('applies the rank rebalance once, persisted, and never again on a reload', () => {
     const rng = createRng(1);
     const character = { ...createCharacter(rng), rankRebalanceApplied: undefined };
