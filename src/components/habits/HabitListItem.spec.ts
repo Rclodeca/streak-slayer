@@ -128,6 +128,29 @@ describe('HabitListItem', () => {
     expect(useHabitStore().habits[0].lastCompletedPeriodKey).not.toBeNull();
     expect(useCharacterStore().character.currentHealth).toBeLessThan(before);
     expect(wrapper.find('.habit-item').classes()).toContain('struck');
+    expect(button.attributes('aria-pressed')).toBe('true');
+  });
+
+  it("a bad habit's button says Give in, with no number on it", () => {
+    const wrapper = mountSkill({ isBad: true });
+    const button = wrapper.find('button.strike');
+    expect(button.text()).toBe('Give in');
+    expect(button.attributes('aria-label')).toBe('Give in to Read');
+    expect(button.find('b').exists()).toBe(false);
+  });
+
+  it('a bad habit shows what holding out deals in a plate, not on the button', () => {
+    const wrapper = mountSkill({ isBad: true });
+    const habit = useHabitStore().habits[0];
+    const damage = habitDamageBreakdown(useCharacterStore().character, habit, useHabitStore().habits, useBossStore().boss, dailyPeriodKey(new Date())).effectiveDamage;
+    const plate = wrapper.find('.reward-plate');
+    expect(plate.find('b').text()).toBe(formatCompact(damage));
+    expect(plate.findAll('.stat-icon')).toHaveLength(1);
+  });
+
+  it('a good skill has no reward plate', () => {
+    const wrapper = mountSkill();
+    expect(wrapper.find('.reward-plate').exists()).toBe(false);
   });
 
   describe('struck', () => {

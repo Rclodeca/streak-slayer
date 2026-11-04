@@ -1276,6 +1276,31 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-weight: 700;
   }
 
+  // A Resist card's reward: the type and what holding out deals, in a well
+  // sunk into the card (docs/mockups/pixel-resist-reward.html, option 1).
+  .habit-item .reward-plate {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 26px;
+    padding: 0 7px;
+    background: $well;
+    @include pixel-corners(2px);
+    @include bevel(var(--sunk-hi), var(--sunk-lo));
+    @include plain-label($label-sm, 700);
+    color: var(--c);
+  }
+
+  .habit-item:is(.struck, .resting) .reward-plate {
+    color: var(--struck-ink);
+  }
+
+  // Given in, the reward is lost: struck through.
+  .habit-item.struck .reward-plate b {
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+  }
+
   .habit-item .next-day {
     padding: 0;
     border: 0;

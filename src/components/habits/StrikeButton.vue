@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { HeartMinus } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { formatCompact } from '../../game-engine';
 import type { DamageType } from '../../game-engine';
@@ -10,7 +11,8 @@ import { DAMAGE_TYPE_ICON } from '../ui/statIcons';
 // option A). Pressing drops the face onto the lip; struck, it stays down and
 // goes grey until the period ends. Resting, it's flat and can't be pressed.
 // A struck Overdrive skill with charges left stays tappable, haloed. The type
-// colour comes from the row's --c.
+// colour comes from the row's --c. A bad habit's button carries no number: it
+// says Give in, and what holding out deals sits in the row's reward plate.
 const props = defineProps<{
   damageType: DamageType;
   damage: number;
@@ -36,7 +38,8 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
     :disabled="disabled"
     @click.stop="emit('strike')"
   >
-    <span class="face"><StatIcon :name="DAMAGE_TYPE_ICON[damageType]" :size="13" /><b>{{ formatCompact(damage) }}</b></span>
+    <span v-if="resist" class="face"><HeartMinus :size="16" aria-hidden="true" /><span>Give in</span></span>
+    <span v-else class="face"><StatIcon :name="DAMAGE_TYPE_ICON[damageType]" :size="13" /><b>{{ formatCompact(damage) }}</b></span>
   </button>
 </template>
 
@@ -140,17 +143,50 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   --ink-shadow: none;
 }
 
-/* Resist: a dark face on a red lip, the number tinted red. */
+/* Resist: a ghost key that says Give in, a thin red outline with no lip
+   (docs/mockups/pixel-resist-button.html, option C). Given in or resting, it
+   sinks into a well, like the reward plate beside it. */
 .strike.resist {
   --flash: var(--damage-color);
 }
 
 .strike.resist.open {
-  --face: var(--resist-face);
-  --base: color-mix(in srgb, var(--damage-color) 55%, #000);
   --ink: color-mix(in srgb, var(--damage-color) 72%, #fff);
   --ink-shadow: none;
-  --bevel: inset 0 2px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* No lip, so no room kept for one: the outline is the whole face, centred
+   in the button. */
+.strike.resist .face {
+  width: 92px;
+  height: 34px;
+  padding-bottom: 0;
+}
+
+.strike.resist .face::before {
+  display: none;
+}
+
+.strike.resist .face::after {
+  top: 0;
+  bottom: 0;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--damage-color) 50%, transparent);
+}
+
+.strike.resist:active .face::after {
+  background: color-mix(in srgb, var(--damage-color) 12%, transparent);
+}
+
+.strike.resist:is(.struck, .resting) .face::after {
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 2px 2px 0 var(--sunk-hi),
+    inset -2px -2px 0 var(--sunk-lo);
+}
+
+.strike.resist .face > * {
+  transform: none;
 }
 
 /* Struck: every trace of colour goes. */

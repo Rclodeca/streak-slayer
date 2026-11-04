@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, Give in button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Resist rows with the sunk plate (pixel-resist-reward.html, option 1). The
+   question here: what the Give in button looks like, open and given in. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+button { font: inherit; }
+
+.phone {
+  --bg: #07080c; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --brass: #d2bb85; --bad: #d4574a; --spent: #6a6f7a;
+  --phys: #e5705c; --magic: #a98be0;
+  --card: #141720; --hi: #1c2230; --lo: #0a0c12; --lip: #05060a;
+  --s-card: #12151d; --s-hi: #1c2230; --s-lo: #0a0c12; --s-face: #232836; --s-base: #1a1d26;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding: 8px 12px 22px; background: var(--bg); border: 1px solid #000; border-radius: 34px; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 2px; }
+.ht { display: flex; align-items: center; gap: 8px; color: var(--bad); }
+.ht svg { width: 16px; height: 16px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.row { --c: var(--phys); position: relative; display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='magic'] { --c: var(--magic); }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 500 16.5px 'Alegreya', Georgia, serif; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; gap: 6px; }
+.tagw { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; color: #8d8475; }
+.plate { display: inline-flex; align-items: center; gap: 3px; height: 26px; padding: 0 7px; clip-path: var(--px2); background: #0b0d13;
+  box-shadow: inset 2px 2px 0 #040508, inset -2px -2px 0 #1a1f2b; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--c); }
+.plate svg { width: 12px; height: 12px; }
+.gave { background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.gave .nt { color: var(--spent); }
+.gave .pp { opacity: .45; }
+.gave .plate { background: #0c0e13; color: #3e434e; }
+.gave .plate b { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* ===== The button. Each option sets the face, lip, ink and icon colour. ===== */
+.press { --lip: 3px; --face: #1d2230; --base: color-mix(in srgb, var(--bad) 55%, #000); --ink: #e9a79f; --icon: currentColor; --sh: inset 0 2px 0 rgba(255,255,255,.08);
+  --g-face: var(--s-face); --g-base: var(--s-base); --g-ink: #5b606b;
+  position: relative; flex: none; min-width: 96px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip); display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  background: none; border: 0; cursor: pointer; font: 700 14px 'Alegreya Sans', sans-serif; color: var(--ink); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--sh); transition: top .07s, bottom .07s, background .12s; }
+.press > * { position: relative; z-index: 1; transition: transform .07s; }
+.press svg { width: 16px; height: 16px; color: var(--icon); }
+.press:active::after, .gave .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .gave .press > * { transform: translateY(var(--lip)); }
+.phone .gave .press { --face: var(--g-face); --base: var(--g-base); --ink: var(--g-ink); --icon: var(--g-ink); --sh: none; }
+
+/* A · Wine: one colour family, a deep red face on a darker red lip */
+.bA .press { --face: #3b1a1d; --base: #1a0a0c; --ink: #f0b6ad; --sh: inset 0 2px 0 rgba(255,255,255,.1), inset 2px 0 0 rgba(255,255,255,.04);
+  --g-face: #1e1316; --g-base: #120a0c; --g-ink: #5e4a4d; }
+
+/* B · Silver: the plain touch key every other button uses; red lives only in the icon */
+.bB .press { --face: #232a3a; --base: #0a0c11; --ink: var(--touch); --icon: #e07a6e; --sh: inset 0 2px 0 rgba(255,255,255,.1), inset 2px 0 0 rgba(255,255,255,.05); }
+
+/* C · Ghost: no raised face, a thin red outline; given in, it sinks into a well like the plate */
+.bC .press { --ink: #e39a90; }
+.bC .press::before { display: none; }
+.bC .press::after { top: 0; bottom: var(--lip); background: transparent; box-shadow: inset 0 0 0 2px rgba(212,87,74,.5); }
+.bC .press:active::after { background: rgba(212,87,74,.12); top: 0; bottom: var(--lip); }
+.bC .press:active > * { transform: none; }
+.bC .gave .press::after { top: 0; bottom: var(--lip); background: #0b0d13; box-shadow: inset 2px 2px 0 #040508, inset -2px -2px 0 #1a1f2b; }
+.bC .gave .press > * { transform: none; }
+.bC .gave .press { --ink: #4a4f5a; --icon: #4a4f5a; }
+
+/* D · Blood: a full red key, as loud as the Take the blow key */
+.bD .press { --face: #b4443a; --base: #5a221d; --ink: #fff; --sh: inset 0 2px 0 rgba(255,255,255,.26), inset 0 -2px 0 rgba(0,0,0,.2); }
+.bD .press span { text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.bD .gave .press span { text-shadow: none; }
+
+/* E · Words only: no chrome at all, red text over a pixel underline */
+.bE .press { min-width: 84px; --ink: #e39a90; }
+.bE .press::before, .bE .press::after { display: none; }
+.bE .press span { padding-bottom: 2px; background: linear-gradient(currentColor, currentColor) 0 100% / 100% 2px no-repeat; }
+.bE .press:active > *, .bE .gave .press > * { transform: none; }
+.bE .gave .press { --ink: #4a4f5a; --icon: #4a4f5a; }
+.bE .gave .press span { background: none; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · Give in button</h1>
+  <p class="lede">Resist rows with the sunk plate, and five takes on the Give in button next to how it looks now. Tap to give in, tap again to take it back. Late snacking starts given in.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const P = {
+  shield: SHIELD,
+  phys: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  heartMinus: '<path d="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+};
+const ic = (n) => `<svg viewBox="0 0 24 24">${P[n]}</svg>`;
+
+const H = [
+  { n: 'Doomscroll',    t: 'phys',  d: 110, r: 3, s: 9 },
+  { n: 'Late snacking', t: 'magic', d: 80,  r: 1, s: 5, gave: true },
+  { n: 'Takeout',       t: 'magic', d: 150, r: 0, s: 3, week: true },
+];
+const streak = (s) => (s >= 3 ? ic('streak') + s : '');
+const row = (h) => `<li class="row${h.gave ? ' gave' : ''}" data-t="${h.t}" data-s="${h.s}">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.week ? '<span class="tagw">Week</span>' : ''}<span class="plate">${ic(h.t)}<b>${h.d}</b></span><span class="streak">${h.gave ? '' : streak(h.s)}</span></span>
+  <button class="press" type="button" aria-label="Give in to ${h.n}" aria-pressed="${!!h.gave}">${ic('heartMinus')}<span>Give in</span></button></li>`;
+
+const OPTIONS = [
+  { c: '',   tag: 'REFERENCE', n: 'Now', d: 'Dark grey face on a red lip, pink text. Given in: sinks to struck grey.' },
+  { c: 'bA', tag: 'A', n: 'Wine', d: 'One colour family: a deep red face on a darker red lip. Given in, it sinks into a darker wine rather than grey.' },
+  { c: 'bB', tag: 'B', n: 'Silver', d: 'The plain touch key every other button uses. Red lives only in the heart. Calmest; the danger is in the icon and the word.' },
+  { c: 'bC', tag: 'C', n: 'Ghost', d: 'No raised face, a thin red outline. Given in, it sinks into a well like the plate beside it. Says you never need to touch it.' },
+  { c: 'bD', tag: 'D', n: 'Blood', d: 'A full red key, the same as Take the blow. Unmissable, maybe too loud for three rows.' },
+  { c: 'bE', tag: 'E', n: 'Words only', d: 'No chrome: red text with a pixel underline, like a remove link. Quietest; the row reads as information with one way out.' },
+];
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>
+  <div class="phone ${o.c}">
+    <div class="shead"><span class="ht">${ic('shield')}<h2>Resist</h2></span><button class="add" type="button">+ New</button></div>
+    <ul>${H.map(row).join('')}</ul></div></div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press');
+  if (!b) return;
+  const r = b.closest('.row');
+  const gave = r.classList.toggle('gave');
+  b.setAttribute('aria-pressed', String(gave));
+  r.querySelector('.streak').innerHTML = gave ? '' : streak(+r.dataset.s);
+});
+</script>
+</body>
+</html>

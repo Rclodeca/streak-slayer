@@ -57,7 +57,6 @@ export const PALETTE_TOKENS = [
   'quiet-card',
   'quiet-hi',
   'quiet-lo',
-  'resist-face',
   'resting-face',
   'panel-hi',
   'panel-lo',

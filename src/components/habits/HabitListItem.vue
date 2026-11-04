@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { dailyPeriodKey, dayOfWeekIndex, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
@@ -10,6 +10,7 @@ import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { DAMAGE_TYPE_COLORS } from './damageTypeColors';
 import StatIcon from '../ui/StatIcon.vue';
+import { DAMAGE_TYPE_ICON } from '../ui/statIcons';
 import { MIN_STREAK_SHOWN, rankNumeral, streakStyleFor } from './habitDisplay';
 import RankPips from './RankPips.vue';
 import SkillSigil from './SkillSigil.vue';
@@ -105,6 +106,8 @@ function onStrike() {
     </span>
     <span class="meta">
       <span v-if="isResting" class="next-day">{{ nextDayLabel }}</span>
+      <!-- A bad habit's reward, what holding out deals, sunk into the card so it reads as a number to wait for, not a key. -->
+      <span v-if="habit.isBad" class="reward-plate"><StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" :size="12" /><b>{{ formatCompact(effectiveDamage) }}</b></span>
       <span class="streak" :style="streakStyle" :title="showStreak ? `${habit.streakCount} streak` : undefined">
         <template v-if="showStreak"><StatIcon name="streak" :size="12" />{{ habit.streakCount }}</template>
       </span>
@@ -116,7 +119,7 @@ function onStrike() {
       :resist="habit.isBad"
       :overdrive="canOverdrive"
       :lit="landing"
-      :label="canOverdrive ? `Overdrive ${habit.name}` : `Complete ${habit.name}`"
+      :label="habit.isBad ? `Give in to ${habit.name}` : canOverdrive ? `Overdrive ${habit.name}` : `Complete ${habit.name}`"
       @strike="onStrike"
     />
     <span v-if="flareRank > 0" class="rank-ghost" aria-hidden="true">Rank {{ rankNumeral(flareRank) }}</span>

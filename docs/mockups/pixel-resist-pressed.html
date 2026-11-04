@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, Resist pressed state</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Resist rows as option E of pixel-resist-clarity.html: name, rank pips, streak,
+   a "Give in" button. Four takes on what the button (and row) look like once
+   you've given in. Giving in resets the streak to 0, so it leaves the row. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 10px; min-height: 84px; font-size: 15px; }
+.sw { display: flex; gap: 6px; margin: 0 0 10px; min-height: 30px; }
+.sw button { padding: 5px 10px; background: #26282e; border: 1px solid #3a3d46; color: #b8b6b0; font: 700 12px 'Alegreya Sans', sans-serif; cursor: pointer; }
+.sw button.on { background: #dbe2ee; color: #12141a; border-color: #dbe2ee; }
+button { font: inherit; }
+
+.phone {
+  --bg: #07080c; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --brass: #d2bb85; --bad: #d4574a; --spent: #6a6f7a;
+  --card: #141720; --hi: #1c2230; --lo: #0a0c12; --lip: #05060a;
+  --s-card: #12151d; --s-hi: #1c2230; --s-lo: #0a0c12; --s-face: #232836; --s-base: #1a1d26;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding: 8px 12px 22px; background: var(--bg); border: 1px solid #000; border-radius: 34px; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 2px; }
+.ht { display: flex; align-items: center; gap: 8px; color: var(--bad); }
+.ht svg { width: 16px; height: 16px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.row { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 500 16.5px 'Alegreya', Georgia, serif; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; }
+.tagw { margin-right: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; color: #8d8475; }
+
+/* The Give in button: a dark face on a red lip, as Resist is built today */
+.press { --lip: 3px; --face: #1d2230; --base: color-mix(in srgb, var(--bad) 55%, #000); --ink: #e9a79f; --sh: inset 0 2px 0 rgba(255,255,255,.08);
+  position: relative; flex: none; min-width: 100px; height: calc(34px + var(--lip)); padding: 0 11px var(--lip); display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  background: none; border: 0; cursor: pointer; font: 700 14px 'Alegreya Sans', sans-serif; color: var(--ink); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--sh); transition: top .07s, bottom .07s; }
+.press > * { position: relative; z-index: 1; transition: transform .07s; }
+.press svg { width: 16px; height: 16px; }
+.press:active::after, .gave .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .gave .press > * { transform: translateY(var(--lip)); }
+.press .off { display: none; }
+
+/* Given in: the row and button go to the struck grey a spent skill wears */
+.gave { background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.gave .nt { color: var(--spent); }
+.gave .pp { opacity: .45; }
+.gave .press { --face: var(--s-face); --base: var(--s-base); --ink: #5b606b; --sh: none; }
+
+/* 2 · Broken ward: a cracked shield in dim red replaces the words */
+.o2 .gave .press .on, .o3 .gave .press .on { display: none; }
+.o2 .gave .press .off { display: inline-flex; color: color-mix(in srgb, var(--bad) 62%, var(--spent)); }
+.o2 .gave .press .off svg { width: 20px; height: 20px; }
+
+/* 3 · One word */
+.o3 .gave .press .off { display: inline; font-family: 'Cinzel', serif; font-weight: 600; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+
+.phone:not(.o4) .gave .streak { visibility: hidden; }
+
+/* 4 · Streak snuffed: the flame stays, grey and numberless */
+.o4 .gave .streak { color: transparent; }
+.o4 .gave .streak svg { color: #3e434e; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · Resist, given in</h1>
+  <p class="lede">Option E rows with four takes on the given-in state. Tap a Give in to try it, and tap again to take it back. Late snacking starts given in. Giving in resets the streak, so the flame leaves the row in 1–3. Option 4 keeps it there, out.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const P = {
+  shield: SHIELD,
+  cracked: SHIELD + '<path d="m12.4 4.6-2 4.4 3.2 2.4-2.4 3.8 1 3.6"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  heartMinus: '<path d="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+};
+const ic = (n) => `<svg viewBox="0 0 24 24">${P[n]}</svg>`;
+
+const H = [
+  { n: 'Doomscroll',    r: 3, s: 9 },
+  { n: 'Late snacking', r: 1, s: 5, gave: true },
+  { n: 'Takeout',       r: 0, s: 3, week: true },
+];
+const WORDS = ['Yielded', 'Fallen', 'Broken'];
+
+// A given-in streak is 0: hidden (MIN_STREAK_SHOWN is 3), except option 4 keeps the flame.
+const streak = (h, gave) => (gave ? ic('streak') : h.s >= 3 ? ic('streak') + h.s : '');
+const off = (o) => (o === 2 ? ic('cracked') : o === 3 ? WORDS[0] : '');
+const row = (h, o) => `<li class="row${h.gave ? ' gave' : ''}" data-s="${h.s}">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${streak(h, h.gave)}</span></span>
+  <button class="press" type="button" aria-label="Give in to ${h.n}" aria-pressed="${!!h.gave}"><span class="on">${ic('heartMinus')}Give in</span><span class="off">${off(o)}</span></button></li>`;
+
+const OPTIONS = [
+  { o: 1, n: 'Pressed in', d: 'The button stays down and goes grey, still reading Give in, the way a struck skill keeps its number. The row goes to the struck grey. Most consistent.' },
+  { o: 2, n: 'Broken ward', d: 'Down and grey, and the words give way to a cracked shield in dim red. It echoes the Resist shield: the ward broke. No new word.' },
+  { o: 3, n: 'One word', d: 'Down and grey with one terse word in place of Give in. Try the three.', words: true },
+  { o: 4, n: 'Streak snuffed', d: 'As 1, but the streak flame stays in its spot, grey and numberless: the run went out. Pairs with 2 or 3 just as well.' },
+];
+const head = `<div class="shead"><span class="ht">${ic('shield')}<h2>Resist</h2></span><button class="add" type="button">+ New</button></div>`;
+document.getElementById('grid').innerHTML = OPTIONS.map((x) => `<div class="col">
+  <div class="tag">${x.o}</div><h2>${x.n.toUpperCase()}</h2><p>${x.d}</p>
+  <div class="sw">${x.words ? WORDS.map((w, i) => `<button type="button" class="${i ? '' : 'on'}" data-w="${w}">${w}</button>`).join('') : ''}</div>
+  <div class="phone o${x.o}">${head}<ul>${H.map((h) => row(h, x.o)).join('')}</ul></div></div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const w = e.target.closest('[data-w]');
+  if (w) {
+    const col = w.closest('.col');
+    col.querySelectorAll('[data-w]').forEach((b) => b.classList.toggle('on', b === w));
+    col.querySelectorAll('.press .off').forEach((s) => (s.textContent = w.dataset.w));
+    return;
+  }
+  const b = e.target.closest('.press');
+  if (!b) return;
+  const r = b.closest('.row');
+  const gave = r.classList.toggle('gave');
+  b.setAttribute('aria-pressed', String(gave));
+  const s = +r.dataset.s;
+  r.querySelector('.streak').innerHTML = gave ? ic('streak') : s >= 3 ? ic('streak') + s : '';
+});
+</script>
+</body>
+</html>

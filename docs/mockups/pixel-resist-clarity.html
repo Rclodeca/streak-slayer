@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, Resist clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Resist panel only. The problem: the number on a bad habit's button is what you
+   DEAL if you leave it alone, but it sits on a button you press to GIVE IN. Four
+   ways to say which way round it is. Hit numbers are made up. Tap to try them. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 12px; min-height: 84px; font-size: 15px; }
+button { font: inherit; }
+
+.phone {
+  --bg: #07080c; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --brass: #d2bb85; --bad: #d4574a; --hurt: #e07a6e;
+  --phys: #e5705c; --magic: #a98be0; --dim: #6a6f7a;
+  --card: #141720; --hi: #1c2230; --lo: #0a0c12; --lip: #05060a;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding: 8px 12px 22px; background: var(--bg); border: 1px solid #000; border-radius: 34px; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 2px; }
+.ht { display: flex; align-items: center; gap: 8px; color: var(--bad); }
+.ht svg { width: 16px; height: 16px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+.row { --c: var(--phys); position: relative; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='magic'] { --c: var(--magic); }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 500 16.5px 'Alegreya', Georgia, serif; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub { display: flex; align-items: center; gap: 7px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--dim); }
+.sub .st { display: inline-flex; align-items: center; gap: 2px; color: var(--ink); }
+.sub .st svg { width: 12px; height: 12px; color: #8d8475; }
+.tagw { color: #5f6470; }
+.cost { color: var(--hurt); }
+.row.gave { background: #1b1215; box-shadow: inset 2px 2px 0 #2c1a1e, inset -2px -2px 0 #0c0708; }
+.row.gave .nt { color: #c9a29d; }
+
+/* red-lipped pixel button, as the Resist button is built today */
+.press { --lip: 3px; --face: #1d2230; --base: color-mix(in srgb, var(--bad) 55%, #000); --ink: color-mix(in srgb, var(--bad) 72%, #fff);
+  position: relative; flex: none; min-width: 58px; height: calc(36px + var(--lip)); padding: 0 11px var(--lip); display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  background: none; border: 0; cursor: pointer; font: 700 14px 'Alegreya Sans', sans-serif; color: var(--ink); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.08); transition: top .07s, bottom .07s; }
+.press > * { position: relative; z-index: 1; transition: transform .07s; }
+.press:active::after, .gave .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .gave .press > * { transform: translateY(var(--lip)); }
+.gave .press { --face: #6a2a28; --ink: #ffd7d1; }
+
+.moon { color: #8d9bd1; }
+.swd { color: var(--c); }
+.wrap { margin-top: 8px; }
+
+/* A · Two numbers: what you deal is a plain label, not a button; the button says what it costs */
+.hold { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 48px; font: 700 14px 'Alegreya Sans', sans-serif; color: var(--c); }
+.hold span { display: inline-flex; align-items: center; gap: 3px; }
+.hold small { font: 600 9px 'Cinzel', serif; letter-spacing: .16em; color: var(--dim); text-transform: uppercase; }
+.gave .hold { color: var(--dim); text-decoration: line-through; }
+.press .gi { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.press .gi small { font: 600 9px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; }
+.press .gi b { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: 14px; }
+
+/* B · The bank: one total in the header; each row is only the button */
+.bank { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; clip-path: var(--px2); background: rgba(141,155,209,.1); font: 700 13px 'Alegreya Sans', sans-serif; color: #b6c0e6; }
+.bank small { font: 600 9px 'Cinzel', serif; letter-spacing: .16em; color: var(--dim); text-transform: uppercase; }
+.bank b { color: var(--ink); font-size: 15px; transition: color .2s; }
+.bank.dip b { color: var(--hurt); }
+
+/* C · Caption: the line under the name says what happens; the button is a plain 'Give in' */
+.cap { display: inline-flex; align-items: center; gap: 4px; color: var(--c); }
+.gave .cap { color: var(--hurt); }
+.press.plain { min-width: 78px; font-size: 13.5px; --ink: #e9a79f; }
+.gave .press.plain { --ink: #ffd7d1; }
+
+/* D · Switch: both outcomes shown, the live one lit */
+.sw { flex: none; position: relative; display: flex; width: 148px; height: 40px; padding: 0; border: 0; cursor: pointer; clip-path: var(--px2); background: #0d1017;
+  box-shadow: inset 2px 2px 0 #05070a, inset -2px -2px 0 #1a1f2b; -webkit-tap-highlight-color: transparent; }
+.sw .half { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; font: 700 14px 'Alegreya Sans', sans-serif; color: var(--dim); transition: color .15s; }
+.sw .knob { position: absolute; z-index: 0; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); clip-path: var(--px2); background: color-mix(in srgb, var(--c) 78%, #000);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -2px 0 rgba(0,0,0,.25); transition: left .12s, background .12s; }
+.sw .h1 { color: #fff; }
+.gave .sw .knob { left: 50%; background: #8a3a34; }
+.gave .sw .h1 { color: var(--dim); }
+.gave .sw .h2 { color: #ffd7d1; }
+.swcap { display: flex; justify-content: flex-end; gap: 0; width: 148px; margin: 0 0 3px auto; font: 600 9px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.swcap span { flex: 1; text-align: center; }
+.swrow { display: flex; flex-direction: column; align-items: flex-end; }
+/* E · rows as built: name with rank pips under it, streak in its usual spot, the button says what it does */
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; color: #8d8475; }
+.tagw2 { margin-left: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.press.give { min-width: 100px; --ink: #e9a79f; }
+.press.give svg { width: 16px; height: 16px; }
+.gave .press.give { --ink: #ffd7d1; }
+
+/* Daily update (Pixel-cut, as pixel-popups.html #3) with an amount on every card */
+.wide { width: 100%; max-width: 820px; margin: 52px auto 0; display: flex; flex-direction: column; align-items: center; }
+.wide h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; align-self: flex-start; }
+.wide > p { margin: 0 0 12px; font-size: 15px; align-self: flex-start; max-width: 640px; }
+.phone.dm { position: relative; padding: 54px 10px 28px; overflow: hidden; --good: #7fc17a; --frame: #141720; --well: #0d1017;
+  --lifted: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; background: radial-gradient(70% 30% at 50% 6%, #1c2230, transparent 70%), var(--bg); }
+.phone.dm::before { content: ''; position: absolute; inset: 0; background: rgba(3,4,6,.6); pointer-events: none; }
+.phone.dm > * { position: relative; }
+.modal { clip-path: var(--px); background: var(--frame); box-shadow: inset 2px 2px 0 #2a3142, inset -2px -2px 0 #0a0c11; border-bottom: 3px solid var(--lip); padding: 0 12px 14px; }
+.mhead { display: flex; justify-content: center; align-items: center; min-height: 52px; }
+.mhead h3 { margin: 0; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.grp-l { margin: 12px 2px 7px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.grp-l:first-of-type { margin-top: 2px; }
+.dm ul { gap: 8px; }
+.lc { --tone: var(--bad); position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 8px 8px 16px; clip-path: var(--px); background: #1b2030; border-bottom: 3px solid var(--lip); box-shadow: var(--lifted); }
+.lc::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--tone); }
+.lc.ok { --tone: var(--good); }
+.lc .nm { flex: 1; min-width: 0; gap: 3px; }
+.lc .nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); overflow-wrap: anywhere; white-space: normal; }
+.lc .mt { font: 700 12px 'Alegreya Sans', sans-serif; color: #7c808b; text-transform: capitalize; }
+.lc .side { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+.lc .out { display: inline-flex; align-items: center; gap: 4px; font: 800 13px 'Alegreya Sans', sans-serif; color: var(--tone); }
+.lc .out svg { width: 14px; height: 14px; }
+.lc .out em { font-style: normal; color: var(--ink); }
+.tk { --lp: 3px; --face: #232a3a; --base: #0a0c11; --fg: var(--touch); position: relative; flex: none; height: calc(34px + var(--lp)); padding: 0 12px var(--lp); border: 0; background: none; cursor: pointer; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--fg); }
+.tk::before, .tk::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.tk::before { top: var(--lp); bottom: 0; background: var(--base); }
+.tk::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.1); transition: top .07s, bottom .07s; }
+.tk > span { position: relative; z-index: 1; display: inline-block; transition: transform .07s; }
+.tk.on { --face: #c8d0dd; --fg: #12141a; }
+.tk.on::after { top: var(--lp); bottom: 0; }
+.tk.on > span { transform: translateY(var(--lp)); }
+.cta { --lp: 3px; --face: #d4574a; --base: #6e2a24; --fg: #fff; position: relative; display: block; width: 100%; margin-top: 18px; height: calc(46px + var(--lp)); padding: 0 8px var(--lp); border: 0; background: none; cursor: pointer; font: 700 16px 'Alegreya Sans', sans-serif; color: var(--fg); }
+.cta::before, .cta::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.cta::before { top: var(--lp); bottom: 0; background: var(--base); }
+.cta::after { top: 0; bottom: var(--lp); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(0,0,0,.22); }
+.cta > span { position: relative; z-index: 1; }
+.cta.good { --face: #7fc17a; --base: #3d6a3a; --fg: #12301a; }
+.cta:active::after { top: var(--lp); bottom: 0; }
+.cta:active > span { transform: translateY(var(--lp)); display: inline-block; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · Resist clarity</h1>
+  <p class="lede">Today a bad habit's button shows the damage you <em>deal</em> by holding out, but you press it to <em>give in</em>, and that is what lets the boss hit you. Five ways to untangle it. Tap the buttons to try them. One row starts already given in.</p>
+  <div class="grid" id="grid"></div>
+  <div class="wide">
+    <h2>DAILY UPDATE</h2>
+    <p>The day turn over, as the Pixel-cut daily update, now with the amount on each card. Where the Resist button gave no number, this is where it lands: what the boss takes if you held out, what you take if you gave in. Press "I gave in" and Skip dessert flips. Amounts are made up.</p>
+    <div class="phone dm" id="dm"></div>
+  </div>
+</div>
+<script>
+const P = {
+  phys: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  heartMinus: '<path d="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+};
+const ic = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24">${P[n]}</svg>`;
+
+// hold = what you deal if you resist; hit = what you take if you give in
+const H = [
+  { n: 'Doomscroll',    t: 'phys',  hold: 110, hit: 58, s: 9 },
+  { n: 'Late snacking', t: 'magic', hold: 80,  hit: 41, s: 3, gave: true },
+  { n: 'Takeout',       t: 'magic', hold: 150, hit: 77, s: 3, week: true },
+];
+const end = (h) => (h.week ? "week's end" : "day's end");
+const sub = (h, extra = '') => `<span class="sub">${h.s >= 3 ? `<span class="st">${ic('streak')}${h.s}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}${extra}</span>`;
+const li = (h, mid, ctl, extra = '') => `<li class="row${h.gave ? ' gave' : ''}" data-t="${h.t}" data-hold="${h.hold}"><span class="nm"><span class="nt">${h.n}</span>${sub(h, extra)}</span>${mid}${ctl}</li>`;
+const head = (right = '') => `<div class="shead"><span class="ht">${ic('shield')}<h2>Resist</h2></span>${right || '<button class="add" type="button">+ New</button>'}</div>`;
+const total = () => H.filter((h) => !h.gave).reduce((a, h) => a + h.hold, 0);
+
+const A = () => `<div class="phone" data-o="A">${head()}<ul>${H.map((h) => li(h,
+  `<span class="hold"><span class="swd">${ic(h.t)}${h.hold}</span><small>hold</small></span>`,
+  `<button class="press" type="button" aria-label="Give in to ${h.n}"><span class="gi"><small>Give in</small><b>${ic('heart')}−${h.hit}</b></span></button>`)).join('')}</ul></div>`;
+
+const B = () => `<div class="phone" data-o="B">${head(`<span class="bank" id="bank"><small>Held</small>${ic('moon', 'moon')}<b>${total()}</b></span>`)}<ul>${H.map((h) => li(h, '',
+  `<button class="press" type="button" aria-label="Give in to ${h.n}"><span class="gi"><small>Give in</small><b>${ic('heart')}−${h.hit}</b></span></button>`)).join('')}</ul></div>`;
+
+const C = () => `<div class="phone" data-o="C">${head()}<ul>${H.map((h) => li(h, '',
+  `<button class="press plain" type="button" aria-label="Give in to ${h.n}">Give in</button>`,
+  `<span class="cap" data-hold="${h.hold}" data-hit="${h.hit}">${h.gave ? `${ic('heart')}Gave in · −${h.hit}` : `${ic(h.t)}${h.hold} at ${end(h)}`}</span>`)).join('')}</ul></div>`;
+
+const D = () => `<div class="phone" data-o="D">${head()}<ul>${H.map((h) => li(h, '',
+  `<button class="sw" type="button" role="switch" aria-checked="${!h.gave}" aria-label="${h.n}: hold or give in"><span class="knob"></span><span class="half h1">${ic(h.t)}${h.hold}</span><span class="half h2">${ic('heart')}−${h.hit}</span></button>`)).join('')}</ul></div>`;
+
+const RK = { 'Doomscroll': 3, 'Late snacking': 1, 'Takeout': 0 };
+const E = () => `<div class="phone" data-o="E">${head()}<ul>${H.map((h) => `<li class="row${h.gave ? ' gave' : ''}" data-t="${h.t}">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(RK[h.n])}</span></span>
+  <span class="meta">${h.week ? '<span class="tagw2">Week</span>' : ''}<span class="streak">${h.s >= 3 ? ic('streak') + h.s : ''}</span></span>
+  <button class="press give" type="button" aria-label="Give in to ${h.n}">${ic('heartMinus')}<span class="gl">${h.gave ? 'Gave in' : 'Give in'}</span></button></li>`).join('')}</ul></div>`;
+
+const OPTIONS = [
+  { tag: 'A', n: 'Two numbers', d: 'Split the one number in two. What you deal for holding out is a plain label, not a button. The button says Give in and shows what it costs you (heart, red). Giving in strikes the label out.', f: A },
+  { tag: 'B', n: 'The bank', d: 'One total up in the header: what you will strike with at day\'s end. Rows are only a Give in button with its cost. Give in and the bank drops. Cleanest rows, one idea to learn.', f: B },
+  { tag: 'C', n: 'Caption', d: 'The line under the name says what happens: "110 at day\'s end". The button is a plain Give in with no number. The cost shows after you press. Quietest, but the cost is a surprise.', f: C },
+  { tag: 'D', n: 'Switch', d: 'Both outcomes are always visible on a two-way switch; the live one is lit. Resting on the sword side, flipping to the heart side is giving in. No labels to read, it is the whole story.', f: D },
+  { tag: 'E', n: 'Give in, no number', d: 'Rows as built: name, rank pips under it, streak in its usual spot. The button is a Give in with a heart-minus and no number; it reads Gave in once pressed. The real hit shows in the HP bar and log, and the daily update (below) carries the amounts.', f: E },
+];
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col"><div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>${o.f()}</div>`).join('');
+
+const typeIcon = (r) => (r.dataset.t === 'phys' ? 'phys' : 'magic');
+const DM = [
+  { n: 'Meditate',       per: 'daily',  k: 'miss',   btn: 'I did this', t: 'phys',  hit: 58, deal: 120 },
+  { n: 'Read a chapter', per: 'weekly', k: 'miss',   btn: 'I did this', t: 'magic', hit: 77, deal: 210 },
+  { n: 'Doomscroll',     per: 'daily',  k: 'reward', btn: 'I gave in',  t: 'phys',  hit: 58, deal: 110 },
+  { n: 'Takeout',        per: 'weekly', k: 'reward', btn: 'I gave in',  t: 'magic', hit: 77, deal: 150 },
+];
+const dmOver = DM.map(() => false);
+function drawDm() {
+  const strikes = (it, i) => (it.k === 'miss') !== dmOver[i];
+  const group = (kind, label) => `<p class="grp-l">${label}</p><ul>${DM.map((it, i) => [it, i]).filter(([it]) => it.k === kind).map(([it, i]) => {
+    const sk = strikes(it, i);
+    return `<li class="lc ${sk ? '' : 'ok'}"><div class="nm"><span class="nt">${it.n}</span><span class="mt">${it.per}</span></div>
+      <div class="side"><span class="out">${sk ? `${ic('heartMinus')}Strikes back <em>−${it.hit}</em>` : `${ic(it.t)}Boss bleeds <em>${it.deal}</em>`}</span>
+      <button class="tk ${dmOver[i] ? 'on' : ''}" type="button" data-i="${i}"><span>${it.btn}</span></button></div></li>`; }).join('')}</ul>`;
+  const blow = DM.some((it, i) => strikes(it, i));
+  document.getElementById('dm').innerHTML = `<div class="modal"><div class="mhead"><h3>Daily update</h3></div>${group('miss', 'Left undone')}${group('reward', 'Resisted')}
+    <button class="cta ${blow ? '' : 'good'}" type="button"><span>${blow ? 'Take the blow' : 'Claim'}</span></button></div>`;
+}
+drawDm();
+document.getElementById('dm').addEventListener('click', (e) => { const b = e.target.closest('.tk'); if (b) { dmOver[+b.dataset.i] = !dmOver[+b.dataset.i]; drawDm(); } });
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press, .sw');
+  if (!b) return;
+  const row = b.closest('.row');
+  row.classList.toggle('gave');
+  const phone = row.closest('.phone');
+  if (phone.dataset.o === 'B') {
+    const bank = phone.querySelector('#bank');
+    const sum = [...phone.querySelectorAll('.row')].filter((r) => !r.classList.contains('gave')).reduce((a, r) => a + +r.dataset.hold, 0);
+    bank.querySelector('b').textContent = sum;
+    bank.classList.add('dip'); setTimeout(() => bank.classList.remove('dip'), 500);
+  }
+  if (phone.dataset.o === 'C') {
+    const cap = row.querySelector('.cap'); const gave = row.classList.contains('gave');
+    const wk = row.querySelector('.tagw');
+    cap.innerHTML = gave ? `${ic('heart')}Gave in · −${cap.dataset.hit}` : `${ic(typeIcon(row))}${cap.dataset.hold} at ${wk ? "week's end" : "day's end"}`;
+  }
+  if (phone.dataset.o === 'E') row.querySelector('.gl').textContent = row.classList.contains('gave') ? 'Gave in' : 'Give in';
+  if (phone.dataset.o === 'D') b.setAttribute('aria-checked', String(!row.classList.contains('gave')));
+});
+</script>
+</body>
+</html>
