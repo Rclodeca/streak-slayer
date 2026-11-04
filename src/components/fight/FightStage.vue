@@ -7,11 +7,14 @@ import { useScrolledPast } from '../../composables/useScrolledPast';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useFocusModeStore } from '../../store/focusModeStore';
+import { useStageEdgeStore } from '../../store/stageEdgeStore';
 import BossBar from '../boss/BossBar.vue';
 import BossPanel from '../boss/BossPanel.vue';
 import { PERSONALITY_SPRITE } from '../boss/bossSprites';
 import CharacterPanel from '../character/CharacterPanel.vue';
 import { createHitPlayer } from './hitFx';
+import StageScene from './StageScene.vue';
+import { STAGE_SCENES } from './stage/scenes';
 
 // The fight as one scene: the boss and the hero square off across one stage,
 // each half its own panel with its own details. Hits play out across it
@@ -21,14 +24,22 @@ import { createHitPlayer } from './hitFx';
 // their own box beneath it; Focus mode (the menu's) shrinks it to a 76px strip, the
 // fighters at half size with only their names and bars. The page's menu rides
 // in the stage's corner through the default slot, so it stays with the stage.
+// Behind it all, the boss's own place (StageScene): a day scene turns the stage's
+// names and stats to dark ink, and the plinths take the scene's stone.
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const focusMode = useFocusModeStore();
+const stageEdge = useStageEdgeStore();
 
 // The slain boss stays up while a kill plays out, as on the stage.
 const { phase, displayedBoss, heldLevel } = useCelebration();
 const boss = computed(() => displayedBoss.value ?? bossStore.boss);
+const scene = computed(() => STAGE_SCENES[boss.value.personality]);
+const plinth = computed(() => {
+  const [face, top, mid, foot] = scene.value.plinth;
+  return { '--plinth': face, '--plinth-top': top, '--plinth-mid': mid, '--plinth-foot': foot };
+});
 
 // On desktop the banner scrolls away with the page, and BossBar (the Focus
 // strip, the two HP bars side by side) drops in once the whole stage has gone
@@ -96,8 +107,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section ref="stage" class="fight-stage" :class="{ focus: focusMode.on }">
-    <div class="stage-bg" aria-hidden="true" />
+  <section
+    ref="stage"
+    class="fight-stage"
+    :class="{ focus: focusMode.on, 'day-stage': scene.day, 'pixel-edge': stageEdge.edge === 'pixel' }"
+    :style="plinth"
+  >
+    <div class="stage-bg" aria-hidden="true"><StageScene :personality="boss.personality" /></div>
     <div ref="inner" class="stage-inner" :style="blockEdges">
       <BossPanel />
       <CharacterPanel />
@@ -136,6 +152,13 @@ onBeforeUnmount(() => {
 .fight-stage {
   position: relative;
   overflow-x: clip;
+}
+
+/* A little air under the plinths, so the hero's doesn't sit on the stage's
+   edge. (The Focus strip has no plinths.) AppShell takes the same 4px off the
+   gap below, so the lists stay where they were. */
+.fight-stage:not(.focus) {
+  padding-bottom: 4px;
 }
 
 /* The page's menu, over the stage's top-right corner and its tap areas. */

@@ -23,7 +23,9 @@ document.documentElement.dataset.itemGrid = String(itemIconGrid.grid);
 const app = createApp(App);
 
 app.use(pinia);
-applyTheme(useThemeStore().theme);
+const themeStore = useThemeStore();
+applyTheme(themeStore.theme);
+themeStore.followSystem();
 initializeStores();
 
 app.mount('#app');

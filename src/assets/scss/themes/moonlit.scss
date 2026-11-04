@@ -1,7 +1,10 @@
 // Moonlit — blue-black stone: silver is what you touch, brass what you've
-// earned. The only theme. Palette only; the rules are in ashen.scss.
+// earned. The default theme. Palette only; the rules are in ashen.scss.
+//
+// The palette is a mixin so parchment.scss can bring it back for the fight
+// stage, which stays Moonlit's night under Parchment's lists.
 
-:root[data-theme='moonlit'] {
+@mixin palette {
   --bg: #07080c;
   --bg-rgb: 7 8 12;
   --text: #a9adb6;
@@ -35,7 +38,7 @@
     radial-gradient(ellipse 90% 30% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
   --boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
     drop-shadow(0 -2px 0 #2a120c) drop-shadow(0 0 12px rgba(224, 120, 58, 0.35)) brightness(1.06);
-  --hero-sprite-filter: drop-shadow(0 0 18px rgba(0, 0, 0, 0.95)) brightness(0.8) contrast(1.05);
+  --hero-sprite-filter: none; // the hero stands as drawn on the boss's scene
 
   // Cast-blue odds and ends the rules reach for.
   --spent-text: #6a6f7a; // a spent skill's name and damage
@@ -72,4 +75,58 @@
   // A stone button: a dark lifted face over a black lip (Replace, Drop).
   --stone-face: #232a3a;
   --stone-lip: #0a0c11;
+  // A dark well for inputs, bars and checks, with its line and inner shadow.
+  --field: #07090d;
+  --field-line: #2a3140;
+  --field-shadow: #020305;
+  --check-bg: rgba(0, 0, 0, 0.4);
+  --selected-card: #141a28; // a picked card in a list
+  --selected-shadow: #0a0d14;
+  --brass-on-face: #6e5418; // brass on a lit (pale) key
+  --on-brass: #14161c; // text on a brass chip
+  --well: rgba(0, 0, 0, 0.22); // a shallow well set into a panel or card
+  --on-true-damage: #1e1c18; // text on true damage's pale key
+  --on-crimson: #e8ebf0; // text on the crimson Take the blow button
+  --input-fill: rgba(0, 0, 0, 0.35);
+  --tint-to: #fff; // what red text is mixed toward to lift it off the card
+
+  // The game's own colours: damage, icons, rarity.
+  --damage-color: #c8402f;
+  --heal-color: #92bf88;
+  --stat-color: #d8cdb5;
+  --true-damage-color: #f1e9d6;
+  --exp-skill-color: #e6cf9a;
+  --dmg-physical: #d0604f;
+  --dmg-magic: #ab8dd8;
+  --dmg-healing: #92bf88;
+  --dmg-true: #f1e9d6;
+  --icon-health: #c33a2e;
+  --icon-lifesteal: #b8433a;
+  --icon-crit: #d6a24f;
+  --icon-steel: #a8a092;
+  --icon-arcane: #8d9bd1;
+  --icon-violet: #a58bd0;
+  --icon-streak: #8d8475;
+  --icon-exp: #d8b46a;
+  --icon-gold: #c8a96e;
+  --icon-gift: #c8a96e;
+  --hp-color: #a82a20;
+  // Rosier than physical red, so the thread never reads as a hit.
+  --fx-lifesteal: #d9566a;
+  --fx-reflect: #c4bcac;
+  --fx-boss-cut: #c33a2e;
+  --hp-trail: rgba(240, 222, 190, 0.75);
+  --exp-color: #c8a96e;
+  --rarity-common: #8d8475;
+  --rarity-uncommon: #86b08b;
+  --rarity-rare: #7f9fd1;
+  --rarity-epic: #ae8bd6;
+  // Ember, not gold: gold is Ashen's own chrome and blended into common.
+  --rarity-relic: #ec8338;
+  --soon-color: #d49a46;
+  --overdrive-color: #e0783a;
+}
+
+:root[data-theme='moonlit'] {
+  @include palette;
 }

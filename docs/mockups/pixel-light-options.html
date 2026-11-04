@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, light theme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Pixel-cut main screen. The question here: how the sections separate. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col p { margin: 0 0 12px; min-height: 64px; font-size: 15px; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --frame: #141720; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --spent: #6a6f7a; --done: #3c4352; --done-line: #566074; --streak-i: #8d8475;
+  /* open card */
+  --card: #171b25; --hi: #283041; --lo: #0d1017; --card-lip: #05060a; --resist-card: #141720;
+  /* struck card (Now) */
+  --s-card: #12151d; --s-hi: #1c2230; --s-lo: #0a0c12; --s-face: #232836; --s-base: #1a1d26; --s-name: var(--spent);
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding-bottom: 28px; background: var(--bg); border: 1px solid var(--edge); border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+button { font: inherit; }
+.cap { font: 600 11px 'Cinzel', serif; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+
+.top { position: relative; background: var(--bg); }
+.menu { position: absolute; right: 14px; top: 14px; z-index: 3; width: 40px; height: 40px; clip-path: var(--px2); background: var(--add-bg); border: 1px solid var(--add-line); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+.stage { position: relative; height: 228px; }
+.stage::before { content: ''; position: absolute; inset: -60px 0 0; pointer-events: none; background: linear-gradient(180deg, transparent, var(--sky-mid) 55%, var(--sky-end) 100%); }
+.stars { position: absolute; left: 0; top: -40px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 60px var(--star-b), 120px 30px var(--star-a), 230px 52px var(--star-b), 300px 18px var(--star-c), 352px 96px var(--star-a), 200px 120px var(--star-a), 90px 150px var(--star-a), 260px 170px var(--star-a), 330px 140px var(--star-b), 20px 110px var(--star-a); }
+.horizon { position: absolute; left: 0; right: 0; top: 150px; height: 78px;
+  background: conic-gradient(var(--hz-a) 25%, var(--hz-b) 0 50%, var(--hz-a) 0 75%, var(--hz-b) 0) 0 0 / 4px 4px, var(--hz-b); }
+.horizon::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: conic-gradient(var(--hz-edge) 25%, transparent 0 50%, var(--hz-edge) 0 75%, transparent 0) 0 0 / 4px 4px; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--bg)); }
+.plinth { position: absolute; height: 18px; z-index: 0; }
+.plinth::before { content: ''; position: absolute; inset: 0; clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: var(--pl-a); box-shadow: inset 0 3px 0 var(--pl-top), inset 0 6px 0 var(--pl-mid), inset 0 -3px 0 var(--pl-bot); }
+.plinth::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: -6px; height: 6px; background: var(--pl-sh); }
+.plinth.b { right: 22px; top: 146px; width: 136px; }
+.plinth.h { left: 14px; top: 208px; width: 120px; }
+.boss { position: absolute; right: 26px; top: 30px; width: 128px; z-index: 1; image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 #2a1a10) drop-shadow(-2px 0 0 #2a1a10) drop-shadow(0 2px 0 #2a1a10) drop-shadow(0 -2px 0 #2a1a10); }
+.hero { position: absolute; left: 18px; top: 110px; width: 112px; z-index: 1; image-rendering: pixelated; transform: scaleX(-1);
+  filter: drop-shadow(2px 0 0 #0b0d12) drop-shadow(-2px 0 0 #0b0d12) drop-shadow(0 2px 0 #0b0d12); }
+.unit { position: absolute; z-index: 2; }
+.unit.b { left: 16px; top: 16px; width: 196px; }
+.unit.h { left: 150px; top: 170px; width: 226px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .2em; color: var(--ink); margin-bottom: 5px; text-transform: uppercase; }
+.uname small { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.bnum { font: 700 11.5px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.uname .cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); }
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26; box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: #d9a93c; z-index: 1; }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: #d2bb85; z-index: 1; }
+.bar .mk.fired { background: #4a4f5c; }
+.bar span:not(.mk) { position: absolute; right: 6px; top: 0; z-index: 2; font: 700 11px/16px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.8); }
+.stats { display: flex; gap: 8px; margin-top: 6px; font: 700 11.5px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.stats span { display: inline-flex; align-items: center; gap: 2px; }
+.stats svg { width: 12px; height: 12px; }
+
+.sec { margin: 18px 12px 0; }
+.shead { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 0 2px; }
+.shead h2 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: var(--add-bg); border: 1px solid var(--add-line); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; }
+.group { font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 12px 2px 7px; text-transform: uppercase; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Card */
+.row { --face: color-mix(in srgb, var(--c) 82%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15);
+  --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] { --btn-c: #1e1c18; --btn-ts: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.tagw { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--dim); }
+.next { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); opacity: .7; }
+
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--btn-c); text-shadow: var(--btn-ts); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--btn-sh); transition: top .07s, bottom .07s; }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.press svg { width: 13px; height: 13px; }
+.press .ic-done { display: none; }
+.press:active::after, .on .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .on .press > * { transform: translateY(var(--lip)); }
+
+/* Struck */
+.phone .row.on { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt, .row.on .qn { color: var(--s-name); }
+.row.on .streak, .row.on .pp, .row.on .reward { opacity: .45; }
+
+/* Resting (set days off today): stays in Daily, greyed like a struck skill, can't be pressed */
+.row.resting { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none;
+  background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.resting .nt { color: var(--s-name); font-weight: 600; }
+.row.resting .pp { opacity: .45; }
+.row.resting .next { color: var(--s-name); opacity: 1; }
+.resting .press { pointer-events: none; }
+.resting .press::after { top: var(--lip); bottom: 0; }
+.resting .press > * { transform: translateY(var(--lip)); }
+
+/* Resist: ghost Give in key (thin red outline, no lip); given in it sinks into a well */
+.resist .row:not(.on) { --btn-c: var(--r-ink); --btn-ts: none; background: var(--resist-card); }
+.resist .nt { color: var(--text); font-weight: 500; }
+.resist .press { min-width: 96px; font-size: 14px; }
+.resist .press span { position: relative; z-index: 1; }
+.resist .press::before { display: none; }
+.resist .press::after { top: 0; bottom: var(--lip); background: transparent; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bad) 50%, transparent); }
+.resist .press:active::after { top: 0; bottom: var(--lip); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.resist .press:active > * { transform: none; }
+.resist .row.on .press::after { top: 0; bottom: var(--lip); background: var(--plate); box-shadow: inset 2px 2px 0 var(--plate-lo), inset -2px -2px 0 var(--plate-hi); }
+.resist .row.on .press > * { transform: none; }
+.resist .press svg { width: 16px; height: 16px; }
+.plate { display: inline-flex; align-items: center; gap: 3px; height: 26px; padding: 0 7px; clip-path: var(--px2); background: var(--plate);
+  box-shadow: inset 2px 2px 0 var(--plate-lo), inset -2px -2px 0 var(--plate-hi); font: 700 13px 'Alegreya Sans', sans-serif; color: var(--c); }
+.plate svg { width: 12px; height: 12px; }
+.resist .row.on .plate { color: var(--s-num); opacity: .7; }
+.resist .row.on .plate b { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.resist .row.on .press { --btn-c: var(--s-num); }
+
+/* Quests */
+.quest { padding-left: 4px; gap: 6px; }
+.quest .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.quest .qn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qpips { display: inline-flex; gap: 3px; }
+.qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); }
+.qpips i.lit { background: var(--brass); }
+.qm em { font-style: normal; }
+.quest.soon .qm em { color: var(--exp); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+.quest.side .reward { color: var(--side); }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qchk input { position: absolute; opacity: 0; pointer-events: none; }
+.qchk i { width: 20px; height: 20px; display: grid; place-items: center; clip-path: var(--px2); background: var(--chk); border: 2px solid var(--touch); }
+.qchk svg { width: 14px; height: 14px; opacity: 0; color: var(--touch); }
+.quest.on .qchk i { background: var(--done); border-color: var(--done-line); }
+.quest.on .qchk svg { opacity: 1; }
+
+/* Log */
+.log { margin: 22px 12px 0; padding: 12px 14px 6px; background: var(--frame); clip-path: var(--px); box-shadow: inset 2px 2px 0 var(--log-hi), inset -2px -2px 0 var(--log-lo); }
+.log h2 { margin: 0 0 6px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.log ul { gap: 0; }
+.log li { display: block; padding: 7px 0; border-top: 1px solid var(--hair); font-size: 14px; color: var(--text); }
+.log li:first-child { border-top: 0; }
+.log li > svg:first-child { width: 14px; height: 14px; margin-right: 3px; vertical-align: -2px; }
+.log .d { color: var(--phys); font-weight: 700; } .log .x { color: var(--exp); font-weight: 700; }
+.chip { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; padding: 1px 6px; background: var(--chip); font-size: 12px; font-weight: 700; color: var(--ink); }
+.chip svg { width: 11px; height: 11px; }
+
+
+/* Sections: title, group labels */
+.sec { --sp: var(--touch); position: relative; margin: 30px 12px 0 18px; padding-left: 14px; }
+.sec.resist { --sp: var(--bad); }
+.sec.quests { --sp: var(--brass); }
+.sec::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 6px; width: 3px; background: var(--sp); opacity: .5; }
+.shead { position: relative; height: 44px; min-height: 0; margin-bottom: 4px; }
+.shead::before { content: ''; position: absolute; left: -17px; top: 50%; width: 9px; height: 9px; margin-top: -5px; background: var(--sp); box-shadow: 0 0 0 3px var(--bg); }
+.ht { display: flex; align-items: center; gap: 8px; }
+.hr { display: flex; align-items: center; gap: 10px; }
+.hi { display: inline-flex; color: var(--sp); }
+.hi svg { width: 16px; height: 16px; }
+.group { position: relative; display: flex; align-items: center; gap: 8px; margin: 16px 2px 8px; }
+.group::before { content: ''; position: absolute; left: -14px; width: 8px; height: 2px; background: var(--sp); opacity: .7; }
+.shead + .group, .shead + ul { margin-top: 0; }
+.cnt { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); white-space: nowrap; }
+.cnt b { color: var(--ink); font-weight: 700; }
+.group .cnt { margin-left: auto; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.shead .cnt { display: none; }
+
+/* ================= Themes ================= */
+/* Moonlit, as built (reference) */
+.phone.dark {
+  --sky-mid: #0c0f17; --sky-end: #0f131d; --hz-a: #141926; --hz-b: #0f131d; --hz-edge: #0b0e15;
+  --star-a: #2c3446; --star-b: #3a4358; --star-c: #4a5470;
+  --pl-a: #1f2534; --pl-top: #3a4358; --pl-mid: #283041; --pl-bot: #10141d; --pl-sh: rgba(0,0,0,.45);
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --edge: #000; --glow: #1c2230; --dim: #5f6470; --bar-bg: rgba(0,0,0,.5); --hero-fx: drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.9);
+  --add-bg: rgba(219,226,238,.08); --add-line: rgba(219,226,238,.35); --chk: rgba(0,0,0,.4); --side: #c8a96e; --plat: rgba(150,165,200,.16);
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --ink: #f0f3f7; --resist-card: #161a24;
+  --s-num: #5b606b; --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-face: #1b1f28; --s-base: #111319; --s-name: #5b606b;
+  --r-face: #1d2230; --r-base: color-mix(in srgb, var(--bad) 55%, #000); --r-ink: color-mix(in srgb, var(--bad) 72%, #fff); --r-sh: rgba(255,255,255,.08);
+  --plate: #0b0d13; --plate-hi: #1a1f2b; --plate-lo: #040508;
+  --log-hi: #232937; --log-lo: #0b0d12; --hair: rgba(255,255,255,.04); --chip: rgba(255,255,255,.05);
+}
+.dark .row[data-t='true'], .lt .row[data-t='true'] { }
+
+/* shared light bits */
+.lt { --btn-text: #fff; }
+.lt .row[data-t='true'] { --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35); }
+.lt .row.on[data-t='true'] { --btn-c: var(--s-num); --btn-ts: none; }
+.lt .bar span { color: #fff; }
+
+/* D1 · White page, mist-blue cards */
+.phone.lt-d1 {
+  --sky-mid: #f1f4fb; --sky-end: #e8edf8; --hz-a: #dde4f3; --hz-b: #e6ebf6; --hz-edge: #ced8ec;
+    --star-a: #c6d0e6; --star-b: #b4c0dc; --star-c: #9eadd0;
+    --pl-a: #c9d4ea; --pl-top: #f5f8fe; --pl-mid: #dce4f3; --pl-bot: #a9b7d2; --pl-sh: rgba(30,45,90,.25);
+    --well: #2a3248; --well-hi: #5d6a8c; --well-lo: #141a2a;
+    --bg: #ffffff; --frame: #eef2f9; --edge: #c3cde0; --ink: #101626; --text: #4a5468; --touch: #1f2c4a;
+    --brass: #8a6a1c; --exp: #a8741a; --bad: #c0392b; --phys: #c4472f; --magic: #6f4fc0; --heal: #2f8a46; --true: #4a5163;
+    --spent: #98a1b4; --done: #d5dcea; --done-line: #aab5cc; --streak-i: #8a6f4a; --side: #8f6a22;
+    --glow: rgba(255,255,255,.8); --dim: #8a93a6; --bar-bg: rgba(20,28,50,.55); --plat: rgba(40,60,110,.18);
+    --hero-fx: drop-shadow(0 6px 6px rgba(20,30,60,.3));
+    --add-bg: rgba(31,44,74,.06); --add-line: rgba(31,44,74,.4); --chk: rgba(255,255,255,.85);
+    --card: #e2e9f6; --hi: #f7faff; --lo: #b3bfd7; --card-lip: #97a6c3; --resist-card: #efe5ea;
+    --s-num: #a4adc0; --s-card: #f1f4fa; --s-hi: #dde3ef; --s-lo: #fcfdff; --s-face: #dde3ee; --s-base: #ccd4e3; --s-name: #98a1b4;
+    --r-face: #f6e0e0; --r-base: #cf8a82; --r-ink: #a1291d; --r-sh: rgba(255,255,255,.8);
+    --plate: #d2dcef; --plate-hi: #ffffff; --plate-lo: #a9b7d2;
+    --log-hi: #f4f7fd; --log-lo: #c3cde0; --hair: rgba(20,30,60,.08); --chip: rgba(20,30,60,.07);
+}
+
+/* D2 · White page, sage cards */
+.phone.lt-d2 {
+  --sky-mid: #f1f6f0; --sky-end: #e8f0e7; --hz-a: #dce7da; --hz-b: #e5eee4; --hz-edge: #cddccb;
+    --star-a: #c5d4c3; --star-b: #b2c5b0; --star-c: #9bb399;
+    --pl-a: #c8d6c6; --pl-top: #f5faf4; --pl-mid: #dbe7d9; --pl-bot: #a6b9a4; --pl-sh: rgba(30,70,40,.25);
+    --well: #26382d; --well-hi: #5d7a67; --well-lo: #121c16;
+    --bg: #ffffff; --frame: #eef3ee; --edge: #c2d0c1; --ink: #121e17; --text: #4a5a50; --touch: #213a2b;
+    --brass: #86671a; --exp: #a8741a; --bad: #bd3a2c; --phys: #c4472f; --magic: #6f4fc0; --heal: #2c7d3a; --true: #4a5348;
+    --spent: #9aa79c; --done: #d6e0d5; --done-line: #aebdac; --streak-i: #8a6f4a; --side: #8f6a22;
+    --glow: rgba(255,255,255,.8); --dim: #8a9a8e; --bar-bg: rgba(20,40,28,.55); --plat: rgba(40,90,60,.18);
+    --hero-fx: drop-shadow(0 6px 6px rgba(20,50,30,.3));
+    --add-bg: rgba(33,58,43,.06); --add-line: rgba(33,58,43,.4); --chk: rgba(255,255,255,.85);
+    --card: #e0eadf; --hi: #f6fbf5; --lo: #b0c3ae; --card-lip: #94a992; --resist-card: #f0e6e2;
+    --s-num: #a3b0a5; --s-card: #f0f5ef; --s-hi: #dbe4da; --s-lo: #fbfdfb; --s-face: #dbe4da; --s-base: #cad6c8; --s-name: #9aa79c;
+    --r-face: #f6e1dc; --r-base: #cf8a7e; --r-ink: #a1291d; --r-sh: rgba(255,255,255,.8);
+    --plate: #d0dfcf; --plate-hi: #ffffff; --plate-lo: #a6b9a4;
+    --log-hi: #f4faf3; --log-lo: #c2d0c1; --hair: rgba(20,50,30,.08); --chip: rgba(20,50,30,.07);
+}
+
+/* E1 · Steel: cool grey metal, page and cards both grey */
+.phone.lt-e {
+  --sky-mid: #c5ccd5; --sky-end: #bac2cc; --hz-a: #afb8c3; --hz-b: #bac2cc; --hz-edge: #a1abb8;
+    --star-a: #9ba6b5; --star-b: #8995a6; --star-c: #75839a;
+    --pl-a: #aab4c0; --pl-top: #e0e5ea; --pl-mid: #c3cad3; --pl-bot: #8793a2; --pl-sh: rgba(20,30,45,.3);
+    --well: #232a35; --well-hi: #5c6778; --well-lo: #10141b;
+    --bg: #cfd5dc; --frame: #c0c7d0; --edge: #8f99a6; --ink: #13171d; --text: #454d59; --touch: #212934;
+    --brass: #7c6320; --exp: #9c6f16; --bad: #b8372b; --phys: #bd4430; --magic: #6a4cb8; --heal: #2a7a42; --true: #444b58;
+    --spent: #848d99; --done: #bcc3cc; --done-line: #98a1ae; --streak-i: #7d7060; --side: #8a6a28;
+    --glow: rgba(255,255,255,.55); --dim: #7e8794; --bar-bg: rgba(18,24,34,.58); --plat: rgba(40,55,80,.2);
+    --hero-fx: drop-shadow(0 6px 6px rgba(20,28,40,.35));
+    --add-bg: rgba(33,41,52,.07); --add-line: rgba(33,41,52,.42); --chk: rgba(255,255,255,.7);
+    --card: #e7ebef; --hi: #f8fafb; --lo: #a3acb8; --card-lip: #8791a0; --resist-card: #dde1e6;
+    --s-num: #8c95a1; --s-card: #c0c7d0; --s-hi: #adb5c0; --s-lo: #dde2e8; --s-face: #b4bcc7; --s-base: #a4acb8; --s-name: #858e9b;
+    --r-face: #eddedc; --r-base: #c58880; --r-ink: #9c271c; --r-sh: rgba(255,255,255,.7);
+    --plate: #bdc5cf; --plate-hi: #eff2f5; --plate-lo: #939daa;
+    --log-hi: #e0e4e9; --log-lo: #98a2af; --hair: rgba(15,22,34,.1); --chip: rgba(15,22,34,.08);
+}
+
+/* Dark stage over the lists (same Moonlit stage as A2) */
+.lt-dark .top {
+  --sky-mid: #0c0f17; --sky-end: #0f131d; --hz-a: #141926; --hz-b: #0f131d; --hz-edge: #0b0e15;
+  --star-a: #2c3446; --star-b: #3a4358; --star-c: #4a5470;
+  --pl-a: #1f2534; --pl-top: #3a4358; --pl-mid: #283041; --pl-bot: #10141d; --pl-sh: rgba(0,0,0,.45);
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --bg: #07080c; --glow: #1c2230; --ink: #e8ebf0; --text: #a9adb6; --touch: #dbe2ee; --brass: #d2bb85; --exp: #d9a93c;
+  --add-bg: rgba(219,226,238,.08); --add-line: rgba(219,226,238,.35); --bad: #d4574a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a;
+  --bar-bg: rgba(0,0,0,.5); --plat: rgba(150,165,200,.16); --hero-fx: drop-shadow(0 0 18px rgba(0,0,0,.9)) brightness(.9);
+  border-bottom: 3px solid #3a424e; }
+
+
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · more light options</h1>
+  <p class="lede">Two new directions for the light theme. D: a pure white page with coloured cards (mist blue, sage). E: a steel grey theme with no white and no parchment. Same layout everywhere; only the palette changes. Tap any button to strike it.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+// Lucide shapes the app uses (src/components/ui/statIcons.ts).
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  heartMinus: '<path d="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: 'var(--streak-i)', exp: '#d8b46a', quest: '#a8a092' };
+const icon = (name, color = COLOR[name] || 'currentColor', cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+
+// HabitList order: healing, physical, magic, true. Rank (0-8) is never lost.
+const daily = [
+  { n: 'Stretch',       t: 'heal',  d: '141', s: 12, r: 2, on: true },
+  { n: 'Morning run',   t: 'phys',  d: '1.1K', s: 23, r: 8, on: true },
+  { n: 'Pushups',       t: 'phys',  d: '196', s: 4,  r: 1 },
+  { n: 'Read 20 pages', t: 'magic', d: '288', s: 9,  r: 3, on: true },
+  { n: 'Meditate',      t: 'true',  d: '74',  s: 0,  r: 0 },
+];
+const resting = [
+  { n: 'Swim',          t: 'phys',  d: '230', s: 5,  r: 1, next: 'Thu' },
+  { n: 'Guitar',        t: 'magic', d: '160', s: 3,  r: 0, next: 'Sat' },
+];
+const weekly = [
+  { n: 'Call family',   t: 'heal',  d: '180', s: 0,  r: 0 },
+  { n: 'Long hike',     t: 'phys',  d: '1.4K', s: 6, r: 5, on: true },
+];
+const resist = [
+  { n: 'Doomscroll',    t: 'phys',  d: '110', s: 9, r: 1 },
+  { n: 'Late snacking', t: 'magic', d: '80',  s: 3, r: 0, on: true },
+  { n: 'Takeout',       t: 'magic', d: '150', s: 3, r: 0, week: true },
+];
+const quests = [
+  { n: 'Call the dentist',      p: 1, due: '2 days left', soon: true },
+  { n: 'Clear out the attic',   p: 2, due: '4 days left', side: true, on: true },
+  { n: 'Finish the tax return', p: 3, due: '6 days left' },
+];
+
+const row = (h, cls = '') => `<li class="row${h.on ? ' on' : ''}${cls}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.next ? `<span class="next">${h.next}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${h.s >= 3 ? icon('streak') + h.s : ''}</span></span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor', 'ic-type')}${icon('check', 'currentColor', 'ic-done')}<b>${h.d}</b></button>
+</li>`;
+
+const rrow = (h) => `<li class="row${h.on ? ' on' : ''}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.week ? '<span class="tagw">Week</span>' : ''}<span class="plate">${icon(TYPE_ICON[h.t], 'currentColor')}<b>${h.d}</b></span><span class="streak">${h.on || h.s < 3 ? '' : icon('streak') + h.s}</span></span>
+  <button class="press" type="button" aria-label="Give in to ${h.n}">${icon('heartMinus', 'currentColor')}<span>Give in</span></button>
+</li>`;
+
+const quest = (q) => `<li class="row quest${q.soon ? ' soon' : ''}${q.side ? ' side' : ''}${q.on ? ' on' : ''}">
+  <label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"${q.on ? ' checked' : ''}><i>${icon('check', 'currentColor')}</i></label>
+  <span class="body"><span class="qn">${q.n}</span>
+    <span class="qm"><span class="qpips">${[1, 2, 3].map((n) => `<i class="${n <= q.p ? 'lit' : ''}"></i>`).join('')}</span><em>${q.due}</em></span></span>
+</li>`;
+
+const cnt = (list) => `<span class="cnt"><b>${list.filter((x) => x.on).length}</b>/${list.length}</span>`;
+const head = (title, ic, count, add) => `<div class="shead"><span class="ht"><span class="hi">${icon(ic, 'currentColor')}</span><h2>${title}</h2></span><span class="hr">${count}${add ? `<button class="add" type="button">+ ${add}</button>` : ''}</span></div>`;
+const grp = (title, list) => `<div class="group"><span>${title}</span>${cnt(list)}</div>`;
+
+const screen = (cls) => `<div class="phone ${cls}">
+  <div class="top"><div class="stage">
+    <span class="stars"></span><span class="horizon"></span>
+    <span class="menu">${icon('menu', 'currentColor')}</span>
+    <span class="plinth b"></span><img class="boss" src="../../public/sprites/bosses/balanced.png" alt="">
+    <span class="plinth h"></span><img class="hero" src="../../public/sprites/player/warrior.png" alt="">
+    <div class="unit b"><div class="uname"><span><span class="bnum">#9</span> Drifter</span><span class="cue"></span></div>
+      <div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>
+      <div class="stats"><span>${icon('physical')}61</span><span>${icon('magic')}58</span><span>${icon('armor')}213</span><span>${icon('magicResist')}221</span><span>${icon('crit')}1%</span></div></div>
+    <div class="unit h"><div class="uname"><span>Ryn <small>14</small></span><span class="cue"></span></div>
+      <div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>
+      <div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div></div>
+  </div></div>
+
+  <section class="sec skills">
+    ${head('Skills', 'physical', cnt(daily.concat(weekly)), 'New habit')}
+    ${grp('Daily', daily)}
+    <ul>${daily.map((h) => row(h)).join('')}${resting.map((h) => row(h, ' resting')).join('')}</ul>
+    ${grp('Weekly', weekly)}
+    <ul>${weekly.map((h) => row(h)).join('')}</ul>
+  </section>
+
+  <section class="sec resist">
+    ${head('Resist', 'armor', cnt(resist), '')}
+    <ul>${resist.map(rrow).join('')}</ul>
+  </section>
+
+  <section class="sec quests">
+    ${head('Quests', 'quest', cnt(quests), 'New task')}
+    <ul>${quests.map(quest).join('')}</ul>
+  </section>
+
+  <section class="log"><h2>Log</h2><ul>
+    <li>${icon('physical')}Used "Read 20 pages" — dealt <span class="d">288</span> damage</li>
+    <li>${icon('physical')}Used "Morning run" — dealt <span class="d">1.1K</span> damage <span class="chip">${icon('crit')}Crit</span></li>
+    <li>${icon('magic')}Missed "Pushups" — took <span class="d">58</span> damage</li>
+    <li>${icon('quest')}Completed quest "Book the car service" — gained <span class="x">+120</span> EXP</li>
+  </ul></section>
+</div>`;
+
+const OPTIONS = [
+  { cls: 'lt lt-d1', tag: 'D1', n: 'White, mist cards', d: 'Pure white page; cards a pale periwinkle-blue with a firm blue-grey edge. Cool and clean, brass stays the gold.' },
+  { cls: 'lt lt-d2', tag: 'D2', n: 'White, sage cards', d: 'Same white page; cards a soft grey-green. Calmer and a touch warmer than blue.' },
+  { cls: 'lt lt-e', tag: 'E1', n: 'Steel', d: 'Grey metal throughout: a cool mid-grey page with lighter steel cards and darker struck ones. No white, no cream.' },
+  { cls: 'lt lt-e lt-dark', tag: 'E2', n: 'Steel, dark stage', d: 'Steel lists under the Moonlit stage, with a gunmetal seam where they meet. Leaves room for a backdrop per boss.' },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o) => `<div class="col">
+  <div class="tag">${o.tag}</div><h2>${o.n.toUpperCase()}</h2><p>${o.d}</p>
+  ${screen(o.cls)}
+</div>`).join('');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.press');
+  if (b) b.closest('.row').classList.toggle('on');
+});
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.qchk input')) e.target.closest('.row').classList.toggle('on', e.target.checked);
+});
+
+</script>
+</body>
+</html>

@@ -139,7 +139,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
 
 /* True damage's pale face takes dark text. */
 .strike.open[data-type='trueDamage'] {
-  --ink: #1e1c18;
+  --ink: var(--on-true-damage);
   --ink-shadow: none;
 }
 
@@ -151,7 +151,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
 }
 
 .strike.resist.open {
-  --ink: color-mix(in srgb, var(--damage-color) 72%, #fff);
+  --ink: color-mix(in srgb, var(--damage-color) 72%, var(--tint-to));
   --ink-shadow: none;
 }
 
@@ -179,7 +179,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
 }
 
 .strike.resist:is(.struck, .resting) .face::after {
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--well);
   box-shadow:
     inset 2px 2px 0 var(--sunk-hi),
     inset -2px -2px 0 var(--sunk-lo);

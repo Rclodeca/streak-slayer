@@ -155,6 +155,13 @@ const showHighScores = ref(false);
   grid-column: 1 / -1;
 }
 
+/* The stage's 4px of air under its plinths comes out of the gap below, so the
+   lists stay where they were. (On a phone the stage is pinned over the top of
+   the scroll box, which has air of its own there.) */
+.layout > .fight-stage:not(.focus) {
+  margin-bottom: -4px;
+}
+
 /* Desktop: no box of its own, the columns are the grid's. */
 .scroll-body {
   display: contents;

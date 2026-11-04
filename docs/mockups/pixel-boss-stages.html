@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut boss stages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* One scene per boss on the shipped phone stage (212px, boss right 40, no menu outline).
+   Each scene is pixel art at 195x108 (the stage plus 4px of ground), drawn at 2 CSS px per art px — the size of the
+   shipped stage's stars and dither. Sprites stay at file size. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; text-transform: uppercase; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col p { margin: 0 0 12px; min-height: 42px; font-size: 15px; }
+.tier { margin: 0 auto 56px; max-width: 1260px; }
+.tier > h2 { text-align: center; font: 700 13px 'Cinzel', serif; letter-spacing: .3em; color: #d2bb85; margin: 0 0 4px; text-transform: uppercase; }
+.tier > p { text-align: center; margin: 0 0 22px; font-size: 15px; }
+.controls { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: center; padding: 10px 0; margin: 0 0 26px; background: #1b1c20; }
+.seg { display: inline-flex; align-items: center; gap: 6px; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; text-transform: uppercase; }
+.seg span { margin-right: 4px; }
+.seg button { font: 700 13px 'Alegreya Sans', sans-serif; color: #c8d0dd; background: #2a2e38; border: 0; min-height: 36px; padding: 0 14px; cursor: pointer; }
+.seg button.on { background: #c8d0dd; color: #12141a; }
+
+/* Light theme: Parchment lists below; the stage keeps its scene and its text. */
+body.paper .phone { background: #e9dfc8; }
+body.paper .sec { --card: #fbf5e4; --hi: #fffdf5; --lo: #cdbf9d; --card-lip: #b6a780; --ink: #2a2218; --phys: #c4472f; --brass: #8a6a1c; }
+
+/* Pixel fade: no lip or shadow; the scene's ground dithers into the page over 12px. */
+.seam { display: none; position: absolute; left: 0; top: 216px; width: 390px; height: 12px; z-index: 3; image-rendering: pixelated; }
+body.fade .seam { display: block; }
+body.fade .stage { height: 216px; border-bottom: 0; box-shadow: none; }
+
+/* ================= Pixel-cut, Moonlit ================= */
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --card-lip: #05060a;
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; height: 340px; position: relative; background: var(--bg); outline: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+
+.stage { position: relative; height: 219px; overflow: hidden; border-bottom: 3px solid var(--card-lip); box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); }
+.stage canvas { position: absolute; left: 0; top: 0; width: 390px; height: 216px; image-rendering: pixelated; }
+.stage .fx { z-index: 0; }
+.menu { position: absolute; right: 14px; top: 14px; z-index: 4; width: 40px; height: 40px; clip-path: var(--px2); background: rgba(219,226,238,.08); display: grid; place-items: center; color: var(--touch); }
+.menu svg { width: 18px; height: 18px; }
+.boss, .hero { position: absolute; z-index: 1; image-rendering: pixelated; }
+.boss { right: 40px; top: 24px; }
+.hero { left: 18px; top: 94px; }
+
+.plinth { position: absolute; height: 18px; z-index: 0; }
+.plinth::before { content: ''; position: absolute; inset: 0;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: var(--pl); box-shadow: inset 0 3px 0 var(--pl-top), inset 0 6px 0 var(--pl-mid), inset 0 -3px 0 var(--pl-bot); }
+.plinth.b { right: 36px; top: 130px; width: 136px; }
+.plinth.h { left: 14px; top: 192px; width: 120px; }
+
+.unit { position: absolute; z-index: 2; text-shadow: 0 0 8px #000, 0 1px 2px #000; }
+.unit.b { left: 16px; top: 16px; width: 196px; }
+.unit.h { left: 150px; top: 154px; width: 226px; }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.8px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); margin-bottom: 5px; line-height: 1.2; }
+.uname small, .bnum { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); }
+.stats { display: flex; flex-wrap: wrap; gap: 2px 7px; margin-top: 5px; font: 500 11.2px/1.2 'Alegreya Sans', sans-serif; color: var(--text); font-variant-numeric: lining-nums; }
+.stats span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.stats svg { width: 12px; height: 12px; opacity: .8; }
+
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.h .bar { height: 15px; }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26; box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: var(--exp); z-index: 1; }
+.bar span { position: absolute; right: 5px; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; font: 700 12px/1 'Alegreya Sans', sans-serif; letter-spacing: .03em; font-variant-numeric: lining-nums tabular-nums; color: var(--ink); text-shadow: 0 0 3px #000, 0 0 2px #000; }
+.h .bar span { bottom: 2px; }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: var(--brass); z-index: 1; }
+.bar .mk.fired { background: #4a4f5c; }
+
+/* Day stages: dark type on the stage; the HP wells stay as they are. */
+.stage.light .unit { text-shadow: 0 1px 0 rgba(255,255,255,.3); }
+.stage.light .uname { color: #17130d; }
+.stage.light .uname small, .stage.light .bnum { color: #5f420c; }
+.stage.light .cue { border-color: #17130d; }
+.stage.light .stats { color: #261e14; }
+.stage.light .stats svg { filter: brightness(.5) saturate(1.5); opacity: 1; }
+.stage.light .menu { background: rgba(23,19,13,.12); color: #17130d; }
+
+/* The skills rows under the stage */
+.sec { margin: 12px 12px 0; }
+.shead { display: flex; align-items: center; height: 36px; padding: 0 2px; }
+.shead h3 { margin: 0; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.row { --face: color-mix(in srgb, var(--c) 88%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.nm { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); }
+.pp { display: flex; gap: 4px; padding-left: 2px; }
+.pp i { width: 4px; height: 4px; background: var(--brass); }
+.pp i:nth-child(5) { margin-left: 4px; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25); }
+.press svg, .press b { position: relative; z-index: 1; }
+.press svg { width: 13px; height: 13px; }
+.rowlist { margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; list-style: none; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · boss stages</h1>
+  <p class="lede">A place for every boss, from simple scenes for the common ones to set pieces for the 5x. Each scene is pixel art at the size of today's stage stars and dither, with a little motion. Bright stages switch the stage text to dark, and the plinths take the scene's stone. The stage looks the same in both themes; only the lists change.</p>
+  <div class="controls">
+    <div class="seg" data-group="theme"><span>Theme</span><button type="button" data-v="dark">Dark</button><button type="button" data-v="paper" class="on">Light</button></div>
+    <div class="seg" data-group="edge"><span>Stage edge</span><button type="button" data-v="hard" class="on">Hard edge</button><button type="button" data-v="fade">Pixel fade</button></div>
+  </div>
+  <div id="tiers"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD,
+  magicResist: SHIELD + '<path d="M12 22V2"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+};
+const COLOR = { physical: '#e5705c', magic: '#a98be0', true: '#f1e9d6', healing: '#7fc17a', crit: '#d6a24f', armor: '#a8a092', magicResist: '#8d9bd1', streak: '#8d8475' };
+const icon = (name, color = COLOR[name] || 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+
+/* ---------------- pixel painting ---------------- */
+const W = 195, H = 108;
+const rng = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+const dz = (x, y) => (B4[y & 3][x & 3] + .5) / 16;
+const painter = (ctx) => {
+  const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
+  return { ctx, R, P: (x, y, c) => R(x, y, 1, 1, c) };
+};
+// Flat colour bands, dithered into the next colour over the last part of each band.
+function bands(g, st, soft = .5) {
+  for (let i = 0; i < st.length - 1; i++) {
+    const [y0, c0] = st[i], [y1, c1] = st[i + 1];
+    for (let y = y0; y < y1; y++) {
+      const k = ((y - y0) / (y1 - y0) - (1 - soft)) / soft;
+      if (k <= 0) { g.R(0, y, W, 1, c0); continue; }
+      for (let x = 0; x < W; x++) g.P(x, y, dz(x, y) < k ? c1 : c0);
+    }
+  }
+}
+function n1(seed) { const r = rng(seed), p = Array.from({ length: 256 }, r); return (x) => { const i = Math.floor(x), f = x - i, s = f * f * (3 - 2 * f); return p[i & 255] * (1 - s) + p[(i + 1) & 255] * s; }; }
+function n2(seed) {
+  const r = rng(seed), p = Array.from({ length: 4096 }, r), at = (i, j) => p[(j & 63) * 64 + (i & 63)];
+  return (x, y) => { const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+    const a = at(i, j) * (1 - sx) + at(i + 1, j) * sx, b = at(i, j + 1) * (1 - sx) + at(i + 1, j + 1) * sx; return a * (1 - sy) + b * sy; };
+}
+const fbm = (n, x, y, o = 3) => { let h = 0, a = 1, s = 0, f = 1; for (let k = 0; k < o; k++) { h += n(x * f + k * 17, y * f + k * 9) * a; s += a; a *= .5; f *= 2; } return h / s; };
+// A silhouette from 1D noise, filled to the bottom; returns its top row per column.
+function ridge(g, o) {
+  const n = n1(o.seed), ys = [];
+  for (let x = 0; x < W; x++) {
+    let h = 0, a = 1, f = o.scale, s = 0;
+    for (let k = 0; k < (o.oct || 3); k++) { let v = n(x * f + k * 31.7); if (o.peaks) v = 1 - Math.abs(v * 2 - 1); h += v * a; s += a; a *= .5; f *= 2.1; }
+    const y = Math.round(o.base - (h / s) * o.amp); ys.push(y); g.R(x, y, 1, H - y, o.c);
+  }
+  return ys;
+}
+function disc(g, cx, cy, r, c, skip) { for (let y = -r; y <= r; y++) { if (skip && skip(y)) continue; const w = Math.round(Math.sqrt(r * r - y * y)); g.R(cx - w, cy + y, w * 2 + 1, 1, c); } }
+function halo(g, cx, cy, r0, r1, c, d = .6) {
+  for (let y = Math.floor(cy - r1); y <= cy + r1; y++) for (let x = Math.floor(cx - r1); x <= cx + r1; x++) {
+    const q = Math.hypot(x - cx, y - cy); if (q >= r0 && q < r1 && dz(x, y) < d * (1 - (q - r0) / (r1 - r0))) g.P(x, y, c);
+  }
+}
+function stars(g, seed, n, yMax, cols) { const r = rng(seed); for (let i = 0; i < n; i++) g.P(r() * W | 0, r() * yMax | 0, cols[r() * cols.length | 0]); }
+function pine(g, x, base, h, c, snow) {
+  const th = h / 3;
+  for (let r = 0; r < h; r++) { const t = Math.min(2, Math.floor(r / th)), k = r - t * th, hw = Math.floor(k * .55 + t * 1.1); g.R(x - hw, base - h + r, hw * 2 + 1, 1, snow && k < 1.5 && r > 1 ? snow : c); }
+  g.R(x, base, 1, 2, c);
+}
+function mesa(g, x0, x1, top, base, c, hi, sh, strata) {
+  const talus = top + (base - top) * .55;
+  for (let y = top; y < base; y++) {
+    const d = y > talus ? Math.round((y - talus) * 1.3) : 0, a = x0 - d - ((y * 7) % 5 === 0 ? 1 : 0), b = x1 + d;
+    g.R(a, y, b - a, 1, c); g.R(b - 3, y, 3, 1, sh);
+    if (strata && (y - top) % 5 === 2) for (let x = a; x < b - 3; x++) if (dz(x, y) < .5) g.P(x, y, strata);
+  }
+  g.R(x0, top, x1 - x0, 1, hi);
+}
+// A river along a polyline, wider as it comes toward the viewer.
+function stream(g, pts, w, [edge, mid, core]) {
+  const seg = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [ax, ay] = pts[i], [bx, by] = pts[i + 1], n = Math.ceil(Math.hypot(bx - ax, by - ay));
+    for (let s = 0; s < n; s++) seg.push([Math.round(ax + (bx - ax) * s / n), Math.round(ay + (by - ay) * s / n), (i + s / n) / (pts.length - 1)]);
+  }
+  const rad = (t) => Math.round(w * (.5 + t));
+  seg.forEach(([x, y, t]) => disc(g, x, y, rad(t), edge));
+  seg.forEach(([x, y, t]) => disc(g, x, y, Math.max(0, rad(t) - 1), mid));
+  seg.forEach(([x, y], i) => { if (i % 3) g.P(x, y, core); });
+}
+function rock(g, cx, cy, w, body, rim) {
+  for (let i = 0; i < w + 3; i++) { const hw = i === 0 ? w - 1 : Math.round(w * (1 - (i - 1) / (w + 2))); g.R(cx - hw, cy + i, hw * 2 + 1, 1, i === 0 ? rim : body); }
+}
+// A flat-bottomed cloud of overlapping puffs, its shadow showing along the bottom.
+function cloud(g, cx, cy, w, c, sh) {
+  const r = rng(cx * 31 + cy), puffs = [];
+  for (let i = -w; i <= w; i += 3) puffs.push([cx + i, Math.round((1 - Math.abs(i) / w) * w * .4 + 2 + r() * 2)]);
+  puffs.forEach(([x, rr]) => disc(g, x, cy, rr, sh, (dy) => dy > 2));
+  puffs.forEach(([x, rr]) => disc(g, x, cy - 1, rr, c, (dy) => dy > 2));
+}
+function boulder(g, cx, base, w, h, body, lit, sh) {
+  for (let y = base - h; y < base; y++) {
+    const k = (base - y) / h, hw = Math.round(w * Math.sqrt(1 - k * k));
+    g.R(cx - hw, y, hw * 2 + 1, 1, body); g.R(cx + hw - 1, y, 2, 1, sh); if (k > .55) g.R(cx - hw, y, Math.max(1, hw), 1, lit);
+  }
+}
+// A standing stone; returns the points down its face where runes glow.
+function menhir(g, x, base, w, h, body, lit, sh) {
+  for (let y = base - h; y < base; y++) { const inset = y === base - h ? 1 : 0; g.R(x + inset, y, w - inset * 2, 1, body); g.P(x + inset, y, lit); g.P(x + w - 1 - inset, y, sh); }
+  const pts = []; for (let y = base - h + 3; y < base - 2; y += 3) pts.push([x + (w >> 1), y]); return pts;
+}
+// A leaning prism, lit on its left facet; returns its tip.
+function crystal(g, x, base, h, w, lean, [dk, md, lt, tip]) {
+  for (let i = 0; i < h; i++) {
+    const y = base - h + i, cx = Math.round(x + (h - i) * lean), hw = Math.min(w, Math.floor(i * .7));
+    g.R(cx - hw, y, hw + 1, 1, md); g.R(cx + 1, y, hw, 1, dk); g.P(cx - hw, y, lt); if (i === 0) g.P(cx, y, tip);
+  }
+  return [Math.round(x + h * lean), base - h];
+}
+function tomb(g, x, base, w, h, cross) {
+  const body = '#2e2428', lit = '#4e3e44', sh = '#1c1418';
+  if (cross) { g.R(x, base - h, 2, h, body); g.R(x - 2, base - h + 2, 6, 2, body); g.P(x, base - h, lit); g.R(x - 2, base - h + 2, 1, 2, lit); return; }
+  for (let y = base - h; y < base; y++) { const k = y - (base - h), inset = k === 0 ? 2 : k === 1 ? 1 : 0; g.R(x + inset, y, w - inset * 2, 1, body); g.P(x + inset, y, lit); g.P(x + w - 1 - inset, y, sh); }
+}
+function branch(g, x, y, a, len, depth, c, r) {
+  for (let i = 0; i < len; i++) { x += Math.cos(a); y -= Math.sin(a); g.P(x, y, c); if (depth > 2) g.P(x + 1, y, c); }
+  if (depth <= 0) return;
+  branch(g, x, y, a + .35 + r() * .4, len * .68, depth - 1, c, r);
+  branch(g, x, y, a - .35 - r() * .4, len * .68, depth - 1, c, r);
+}
+// An arched stained-glass window, panes in a lead grid.
+function glass(g, x, top, w, h) {
+  const cols = ['#e8b040', '#c83a2a', '#3a6ad0', '#f0d890', '#7a3ab0'], r = w / 2, cx = x + r;
+  for (let y = top; y < top + h; y++) {
+    const dy = top + r - y, hw = y < top + r ? Math.sqrt(Math.max(0, r * r - dy * dy)) : r;
+    for (let xx = Math.round(cx - hw); xx < Math.round(cx + hw); xx++) {
+      const lead = (xx - x) % 4 === 0 || (y - top) % 5 === 0;
+      g.P(xx, y, lead ? '#1a120a' : cols[(((xx - x) >> 2) + ((y - top) / 5 | 0)) % cols.length]);
+    }
+  }
+}
+// A crenellated wall run: merlons every other 4px.
+function battlement(g, x0, x1, top, base, c, lit) {
+  for (let x = x0; x < x1; x++) { const t = ((x - x0) >> 2) % 2 ? top : top + 3; g.R(x, t, 1, base - t, c); g.P(x, t, lit); }
+}
+
+/* ---------------- the scenes ---------------- */
+const SCENES = {
+  drifter(g) {
+    bands(g, [[0, '#06070d'], [26, '#0a0d17'], [46, '#111626'], [60, '#192036'], [66, '#1d2540']]);
+    stars(g, 11, 70, 54, ['#2a3246', '#3a4358', '#4a5470']); stars(g, 12, 8, 44, ['#9aa3bd']);
+    // The moon sits behind the boss's hood.
+    halo(g, 143, 24, 10, 18, '#232b42', .75); disc(g, 143, 24, 10, '#e4e0d0');
+    disc(g, 139, 21, 2, '#c9c3af'); disc(g, 147, 28, 3, '#c9c3af'); g.P(146, 18, '#c9c3af'); g.P(137, 28, '#d3cdb9');
+    for (let y = 15; y <= 33; y++) for (let x = 146; x <= 153; x++) if (Math.hypot(x - 143, y - 24) <= 10 && Math.hypot(x - 139, y - 24) > 10 && dz(x, y) < .5) g.P(x, y, '#c9c3af');
+    ridge(g, { base: 62, amp: 9, scale: .03, c: '#141a2a', seed: 3 });
+    ridge(g, { base: 67, amp: 5, scale: .05, c: '#0f131e', seed: 7 });
+    bands(g, [[66, '#0e121c'], [86, '#0c1018'], [H, '#0a0d14']]);
+    for (let y = 64; y < H; y++) {
+      const t = (y - 64) / (H - 64), cx = 98 - 14 * Math.sin(t * 2.8) + 40 * t * t, hw = 1 + t * 30;
+      g.R(cx - hw, y, hw * 2 + 1, 1, '#1d202c'); g.P(cx - hw, y, '#2a2f3e'); g.P(cx + hw, y, '#2a2f3e');
+      if (t > .2) { g.P(cx - hw * .45, y, '#161922'); g.P(cx + hw * .45, y, '#161922'); }
+      if (y % 9 === 4 && t > .1) { const px = cx - hw - 4 - t * 3; g.R(px, y - 2 - t * 5, 1, 2 + t * 5, '#090b11'); }
+    }
+    const r = rng(5);
+    for (let i = 0; i < 60; i++) { const x = r() * W | 0, y = 68 + r() * 38 | 0; g.P(x, y, '#18202e'); g.P(x + 1, y - 1, '#151b28'); }
+    // A signpost at the roadside.
+    g.R(186, 60, 1, 16, '#06080c'); g.R(180, 62, 10, 2, '#06080c'); g.R(183, 67, 9, 2, '#06080c'); g.P(180, 62, '#2a3040');
+  },
+  colossus(g) {
+    bands(g, [[0, '#f3dcaa'], [20, '#eec98f'], [36, '#e6b27a'], [50, '#dc9866'], [60, '#d48a5a'], [62, '#d48a5a']]);
+    halo(g, 84, 46, 7, 17, '#f8e7c0', .85); disc(g, 84, 46, 7, '#fff3d2');
+    const far = ['#d99470', '#e6a880', '#c98260'];
+    mesa(g, 0, 24, 46, 62, ...far); mesa(g, 40, 66, 49, 62, ...far); mesa(g, 104, 128, 45, 62, ...far); mesa(g, 176, 195, 43, 62, ...far);
+    const near = ['#a4523a', '#c66e4a', '#7a3826', '#8e4430'];
+    mesa(g, -10, 14, 50, 66, ...near); mesa(g, 142, 197, 29, 66, ...near);
+    bands(g, [[62, '#e0a86c'], [74, '#d4955c'], [90, '#c4814c'], [H, '#b47040']]);
+    const r = rng(21);
+    for (let i = 0; i < 46; i++) { const y = 64 + r() * 42 | 0, x = r() * W | 0; g.R(x, y, 2 + r() * 7 * (y - 58) / 48 | 0, 1, '#ebbb83'); }
+    for (let i = 0; i < 12; i++) { const y = 66 + r() * 38 | 0, x = r() * W | 0, s = y > 88 ? 2 : 1; g.R(x, y, 2 * s + 1, s, '#8e4a2e'); g.R(x + 1, y - 1, s, 1, '#b46840'); }
+    for (let i = 0; i < 8; i++) { let x = r() * W | 0, y = 72 + r() * 32 | 0; for (let k = 0; k < 6; k++) { g.P(x, y, '#a86238'); x += r() < .5 ? 1 : 2; y += r() < .5 ? 0 : (r() < .5 ? 1 : -1); } }
+  },
+  bloodfang(g) {
+    bands(g, [[0, '#24183a'], [14, '#4a2652'], [28, '#8c3c5c'], [40, '#cc6450'], [50, '#ec9a58'], [62, '#f4b866'], [68, '#f4b866']]);
+    // A striped sun going down between the hero and the boss.
+    halo(g, 100, 58, 11, 20, '#f6c878', .7);
+    disc(g, 100, 58, 11, '#ffd27e', (y) => y > -3 && y % 3 === 0); disc(g, 100, 58, 7, '#ffe4a8', (y) => y > -3 && y % 3 === 0);
+    const r = rng(31);
+    for (let x = -2; x < W + 4; x += 4 + (r() * 4 | 0)) pine(g, x, 62, 8 + (r() * 9 | 0), '#4a2848');
+    for (let y = 54; y < 68; y++) { const d = 1 - Math.abs(y - 61) / 7; for (let x = 0; x < W; x++) if (dz(x, y) < d * .55) g.P(x, y, '#b4687a'); }
+    bands(g, [[68, '#1a131c'], [88, '#151017'], [H, '#110d13']]);
+    for (let i = 0; i < 70; i++) { const x = r() * W | 0, y = 70 + r() * 36 | 0; g.P(x, y, '#2a1e2c'); if (r() < .3) g.P(x + 1, y - 1, '#3a2838'); }
+    const near = (a, b, lo, hi) => { for (let x = a; x < b; x += 6 + (r() * 4 | 0)) pine(g, x, 70, lo + (r() * (hi - lo) | 0), '#150f19'); };
+    near(-3, 44, 22, 34); near(46, 148, 10, 17); near(150, 200, 20, 32);
+  },
+  frost(g) {
+    bands(g, [[0, '#87abc8'], [22, '#a2c2da'], [40, '#bcd5e6'], [54, '#d0e2ee'], [60, '#dbe9f2']]);
+    const ys = ridge(g, { base: 56, amp: 34, scale: .03, c: '#9ab3c8', seed: 41, peaks: true });
+    for (let x = 0; x < W; x++) {
+      for (let y = ys[x]; y < 42; y++) if (y < 38 || dz(x, y) < (42 - y) / 4) g.P(x, y, '#eef4f8');
+      if (x > 0 && ys[x] > ys[x - 1]) for (let y = ys[x] + 1; y < 40; y++) if (dz(x, y) < .35) g.P(x, y, '#c9d9e6');
+    }
+    ridge(g, { base: 64, amp: 8, scale: .045, c: '#cfdfe9', seed: 43 });
+    const r = rng(45);
+    const grove = (a, b, lo, hi) => { for (let x = a; x < b; x += 5 + (r() * 3 | 0)) pine(g, x, 66, lo + (r() * (hi - lo) | 0), '#35525e', '#e4eef4'); };
+    grove(2, 36, 12, 20); grove(92, 112, 8, 12); grove(148, 197, 12, 22);
+    bands(g, [[66, '#e6eff5'], [80, '#d8e6ef'], [96, '#c8dbe7'], [H, '#bcd2e0']]);
+    for (let k = 0; k < 5; k++) for (let x = 0; x < W; x++) { const y = 71 + k * 8 + Math.round(Math.sin(x * .05 + k * 1.7) * 2); if (dz(x, y) < .7) g.P(x, y, '#b4cad9'); }
+  },
+  apex(g) {
+    bands(g, [[0, '#0e0606'], [18, '#1e0a08'], [34, '#36110b'], [48, '#56190d'], [60, '#7a2810']]);
+    const n = n2(61);
+    for (let y = 0; y < 36; y++) for (let x = 0; x < W; x++) { const v = (fbm(n, x * .05, y * .14) - .5) * 2.4 + .5; if (v + (dz(x, y) - .5) * .25 > .62) g.P(x, y, '#2c0f0b'); }
+    ridge(g, { base: 63, amp: 12, scale: .04, c: '#260f0c', seed: 63, peaks: true });
+    halo(g, 92, 40, 3, 22, '#9a3410', .55);
+    for (let y = 6; y < 40; y++) { const cx = 92 + (40 - y) * .5 + Math.sin(y * .3) * 2, w = 3 + (40 - y) * .25; for (let x = Math.floor(cx - w); x <= cx + w; x++) if (dz(x, y) < .55) g.P(x, y, '#3c1712'); }
+    for (let y = 42; y < 64; y++) { const hw = 5 + (y - 42) * 2.1; g.R(92 - hw, y, hw * 2 + 1, 1, '#180a09'); g.P(92 + hw, y, '#3c1711'); g.P(92 + hw - 1, y, '#2a100d'); }
+    g.R(88, 41, 9, 1, '#ff7a22'); g.R(87, 42, 11, 1, '#ffb43c'); g.R(86, 43, 13, 1, '#c8401a');
+    stream(g, [[89, 44], [86, 50], [84, 55], [80, 62]], .4, ['#a8300e', '#ff6a1a', '#ffc04a']);
+    stream(g, [[96, 44], [99, 51], [102, 57], [104, 63]], .4, ['#a8300e', '#ff6a1a', '#ffc04a']);
+    bands(g, [[63, '#1e0d0b'], [82, '#170a09'], [H, '#110707']]);
+    // The lava river runs behind the hero and off the left edge.
+    stream(g, [[80, 64], [70, 68], [58, 72], [44, 77], [30, 83], [14, 90], [-4, 97]], 1.8, ['#8a240c', '#ff7418', '#ffd04a']);
+    const r = rng(65);
+    for (let i = 0; i < 16; i++) { let x = r() * W | 0, y = 66 + r() * 40 | 0; for (let k = 0; k < 6; k++) { g.P(x, y, k === 3 ? '#ff6a1a' : '#5a1a0c'); x += 1; y += r() < .5 ? 0 : (r() < .5 ? 1 : -1); } }
+  },
+  void(g) {
+    bands(g, [[0, '#05040b'], [40, '#090615'], [80, '#0d0a1d'], [H, '#0b0818']]);
+    const n = n2(71);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const band = Math.exp(-((x / W - .62) ** 2 + (y / H - .42) ** 2) * 5);
+      const v = ((fbm(n, x * .045, y * .06, 4) - .5) * 2.4 + .5) * (.55 + .6 * band) + (dz(x, y) - .5) * .1;
+      const c = v > .9 ? '#9a52a8' : v > .82 ? '#6e3488' : v > .72 ? '#4a2268' : v > .62 ? '#2e1648' : v > .52 ? '#1c0f30' : null;
+      if (c) g.P(x, y, c);
+    }
+    stars(g, 72, 110, H, ['#2a2440', '#3a3458', '#4a4470']); stars(g, 73, 24, H, ['#8a80b0']);
+    const r = rng(74);
+    for (let i = 0; i < 6; i++) { const x = 4 + r() * (W - 8) | 0, y = 4 + r() * 70 | 0; g.P(x, y, '#e8e0ff'); g.P(x - 1, y, '#6a6090'); g.P(x + 1, y, '#6a6090'); g.P(x, y - 1, '#6a6090'); g.P(x, y + 1, '#6a6090'); }
+    // Two broken slabs over the void: the boss's high, the hero's at the bottom edge.
+    for (let x = 132; x < W; x++) {
+      const top = 74 + (x < 141 ? Math.round((141 - x) * .7) : 0), bot = 78 + 26 * Math.pow(Math.max(0, 1 - Math.abs(x - 174) / 42), .8);
+      g.R(x, top, 1, bot - top, '#1a1430'); g.P(x, top, '#4e3e74'); g.P(x, top + 1, '#2e2448');
+      for (let y = Math.round(bot) - 6; y < bot; y++) if (dz(x, y) < .4) g.P(x, y, '#120e22');
+    }
+    for (let x = 0; x < 86; x++) { const top = x < 74 ? 100 : 100 + Math.round((x - 74) * .8); g.R(x, top, 1, H - top, '#1a1430'); g.P(x, top, '#4e3e74'); }
+    rock(g, 100, 64, 6, '#1a1430', '#4e3e74'); rock(g, 124, 92, 4, '#1a1430', '#4e3e74'); rock(g, 186, 40, 4, '#1a1430', '#4e3e74');
+  },
+
+  /* ---- common: a sky, a place, one small motion ---- */
+  ironguard(g) {
+    bands(g, [[0, '#7aa2c8'], [18, '#93b5d4'], [34, '#abc6de'], [46, '#c2d6e6']]);
+    cloud(g, 34, 12, 16, '#eef3f7', '#cbd8e4'); cloud(g, 132, 8, 12, '#eef3f7', '#cbd8e4'); cloud(g, 190, 30, 8, '#eef3f7', '#cbd8e4');
+    ridge(g, { base: 46, amp: 5, scale: .04, c: '#8aa6a0', seed: 81 });
+    // A sandstone curtain wall, a tower at the right edge, two banners.
+    battlement(g, 0, W, 36, 66, '#a8987e', '#c4b496');
+    for (let y = 41; y < 66; y++) for (let x = 0; x < W; x++) { const row = (y - 41) >> 2; if (((y - 41) % 4 === 3 || (x + (row & 1) * 4) % 8 === 0) && dz(x, y) < .8) g.P(x, y, '#8e8068'); }
+    battlement(g, 176, W, 28, 66, '#9e8e74', '#bcac8e'); g.R(176, 31, 1, 35, '#b8a888');
+    g.R(185, 38, 1, 4, '#3a3226'); g.R(185, 50, 1, 4, '#3a3226');
+    for (const bx of [70, 96]) { g.R(bx, 42, 6, 14, '#a8342a'); g.R(bx, 42, 6, 1, '#d8b060'); g.R(bx, 56, 2, 1, '#a8342a'); g.R(bx + 4, 56, 2, 1, '#a8342a'); g.R(bx + 2, 47, 2, 3, '#d8b060'); g.R(bx + 5, 43, 1, 13, '#7e2620'); }
+    bands(g, [[66, '#7c9c5c'], [82, '#6c8c4e'], [H, '#5c7c42']]);
+    g.R(0, 66, W, 1, '#4e6a3a');
+    const r = rng(83);
+    for (let i = 0; i < 60; i++) { const x = r() * W | 0, y = 68 + r() * 38 | 0; g.P(x, y, '#5a7a3e'); if (r() < .4) g.P(x, y - 1, '#86a862'); }
+    for (let i = 0; i < 8; i++) g.P(r() * W | 0, 70 + r() * 36 | 0, r() < .5 ? '#f0e4a0' : '#e8a0a0');
+  },
+  warden(g) {
+    bands(g, [[0, '#2e4a5e'], [16, '#46647a'], [30, '#6e8a8e'], [44, '#a8b4a0'], [54, '#dcd4a8'], [62, '#f0dca8']]);
+    stars(g, 91, 10, 20, ['#5a7890']);
+    halo(g, 100, 62, 5, 22, '#f8e8c0', .8); disc(g, 100, 62, 5, '#fff4d8');
+    ridge(g, { base: 62, amp: 5, scale: .03, c: '#4e6262', seed: 92 });
+    for (let y = 56; y < 68; y++) { const d = 1 - Math.abs(y - 62) / 6; for (let x = 0; x < W; x++) if (dz(x, y) < d * .5) g.P(x, y, '#c8ccb4'); }
+    ridge(g, { base: 68, amp: 4, scale: .05, c: '#2c3638', seed: 93 });
+    bands(g, [[68, '#283230'], [88, '#222a29'], [H, '#1d2423']]);
+    const r = rng(94);
+    for (let i = 0; i < 70; i++) g.P(r() * W | 0, 70 + r() * 36 | 0, r() < .5 ? '#4a3a4a' : '#344038');
+    const st = ['#3a3e44', '#7a8288', '#24282c'];
+    return { pts: [...menhir(g, 80, 66, 5, 14, ...st), ...menhir(g, 91, 64, 4, 10, ...st), ...menhir(g, 180, 70, 6, 24, ...st), ...menhir(g, 189, 68, 5, 15, ...st)] };
+  },
+  savage(g) {
+    bands(g, [[0, '#5e9ed8'], [22, '#7fb6e4'], [42, '#a2cdee'], [56, '#c2e0f2']]);
+    cloud(g, 46, 14, 16, '#ffffff', '#d4e4f0'); cloud(g, 148, 9, 12, '#ffffff', '#d4e4f0'); cloud(g, 188, 40, 7, '#ffffff', '#d4e4f0');
+    const ys = ridge(g, { base: 58, amp: 8, scale: .03, c: '#8cba78', seed: 101 });
+    disc(g, 100, ys[100] - 6, 3, '#4e8040'); g.P(99, ys[100] - 8, '#6a9c52'); g.R(100, ys[100] - 3, 1, 3, '#5a4a32');
+    ridge(g, { base: 66, amp: 6, scale: .045, c: '#6ca254', seed: 103 });
+    bands(g, [[66, '#64984a'], [84, '#58883f'], [H, '#4c7a36']]);
+    const r = rng(104);
+    for (let i = 0; i < 80; i++) { const x = r() * W | 0, y = 68 + r() * 38 | 0; g.P(x, y, '#46742f'); if (r() < .5) g.P(x, y - 1, '#7ab05a'); }
+    for (let i = 0; i < 14; i++) g.P(r() * W | 0, 70 + r() * 36 | 0, ['#f0d860', '#f09090', '#ffffff'][r() * 3 | 0]);
+    boulder(g, 184, 75, 8, 10, '#8a8e86', '#aaaea4', '#6a6e66'); g.R(175, 75, 18, 1, '#3e6a2c');
+    boulder(g, 98, 80, 3, 3, '#8a8e86', '#aaaea4', '#6a6e66');
+  },
+  adept(g) {
+    bands(g, [[0, '#2a3a66'], [16, '#4a5480'], [30, '#8a7a98'], [44, '#d49a7a'], [56, '#eeb47a'], [64, '#f4c888'], [70, '#f4c888']]);
+    stars(g, 111, 8, 14, ['#7a88b8']);
+    // A hill peaking under a broken tower with one lit window.
+    for (let x = 0; x < W; x++) { const y = Math.min(68, Math.round(50 + ((x - 98) / 34) ** 2 * 12)); g.R(x, y, 1, H - y, '#3a2a44'); }
+    [36, 33, 31, 32, 34, 30, 29, 31, 34, 37, 39].forEach((t, i) => g.R(93 + i, t, 1, 52 - t, '#24182e'));
+    g.R(93, 36, 1, 16, '#4a3a58');
+    ridge(g, { base: 70, amp: 4, scale: .05, c: '#241c34', seed: 113 });
+    bands(g, [[70, '#211a30'], [88, '#1a1528'], [H, '#151121']]);
+    const r = rng(114);
+    for (let i = 0; i < 50; i++) g.P(r() * W | 0, 71 + r() * 35 | 0, '#30264a');
+    return { pts: [[98, 38], [98, 39], [96, 44], [96, 45]] };
+  },
+
+  /* ---- 3x: lights, weather, water ---- */
+  bulwark(g) {
+    bands(g, [[0, '#22263a'], [16, '#3a3a52'], [30, '#5e5060'], [44, '#a0705e'], [56, '#d89a62']]);
+    battlement(g, 0, W, 38, 66, '#23252f', '#3a3c4a');
+    for (let y = 43; y < 66; y++) for (let x = 0; x < W; x++) { const row = (y - 43) >> 2; if (((y - 43) % 4 === 3 || (x + (row & 1) * 5) % 10 === 0) && dz(x, y) < .7) g.P(x, y, '#1a1c24'); }
+    battlement(g, 108, 122, 26, 66, '#1e2029', '#3a3c4a'); battlement(g, 158, 172, 26, 66, '#1e2029', '#3a3c4a');
+    g.R(108, 29, 1, 37, '#34364a'); g.R(158, 29, 1, 37, '#34364a');
+    // The gate stands open on a firelit yard; the portcullis is raised.
+    const FIRE = ['#3a2010', '#6a3816', '#a8581e', '#e08c2a'];
+    for (let y = 40; y < 66; y++) {
+      const hw = y < 52 ? Math.round(18 * Math.sqrt(Math.max(0, 1 - ((52 - y) / 12) ** 2))) : 18, k = (y - 40) / 26;
+      for (let x = 140 - hw; x < 140 + hw; x++) g.P(x, y, FIRE[Math.max(0, Math.min(3, Math.floor(k * 3.6 + (dz(x, y) - .5) * .8)))]);
+      g.P(140 - hw - 1, y, '#3a3c4a'); g.P(140 + hw, y, '#3a3c4a');
+    }
+    for (let x = 124; x < 157; x += 4) g.R(x, 41, 1, 7, '#14100c'); g.R(124, 44, 33, 1, '#14100c'); g.R(123, 47, 35, 1, '#14100c');
+    for (const bx of [112, 162]) { g.R(bx, 32, 6, 16, '#6a1a1a'); g.R(bx, 32, 6, 1, '#c8a050'); g.R(bx + 2, 38, 2, 3, '#c8a050'); }
+    for (const tx of [104, 176]) { halo(g, tx, 46, 1, 10, '#7a4a22', .5); g.R(tx, 48, 1, 4, '#101014'); }
+    bands(g, [[66, '#30303a'], [86, '#28282f'], [H, '#212128']]);
+    [68, 71, 75, 80, 86, 93, 101].forEach((y, i, a) => {
+      g.R(0, y, W, 1, '#1c1c22'); const step = 6 + i * 3, next = a[i + 1] || H;
+      for (let x = (i & 1) * (step >> 1); x < W; x += step) g.R(x, y + 1, 1, next - y - 1, '#1c1c22');
+    });
+    for (let y = 66; y < H; y++) { const s = (y - 66) * .6; for (let x = Math.round(122 - s); x < 158 + s; x++) if (dz(x, y) < .4 * (1 - (y - 66) / 44)) g.P(x, y, '#6a4224'); }
+    return { pts: [[104, 47], [176, 47]] };
+  },
+  berserker(g) {
+    bands(g, [[0, '#14171e'], [18, '#1c2029'], [36, '#262b36'], [52, '#323846'], [56, '#3a4150']]);
+    const n = n2(161);
+    for (let y = 0; y < 54; y++) for (let x = 0; x < W; x++) {
+      const v = (fbm(n, x * .03, y * .08) - .5) * 2.4 + .5 + (dz(x, y) - .5) * .12;
+      if (v > .72) g.P(x, y, '#3a414e'); else if (v > .6) g.P(x, y, '#2c323e'); else if (v < .34) g.P(x, y, '#101318');
+    }
+    bands(g, [[54, '#1a2430'], [62, '#16202a'], [66, '#141c26']]);
+    const r = rng(162);
+    for (let i = 0; i < 30; i++) g.R(r() * W | 0, 55 + r() * 9 | 0, 2 + r() * 3 | 0, 1, '#4a5a68');
+    for (let x = 0; x < 64; x++) { const top = Math.round(44 + x * .25 + Math.sin(x * .2) * 2); g.R(x, top, 1, 64 - top, '#14181e'); }
+    for (let x = 0; x < W; x++) { const top = 64 + Math.round(Math.sin(x * .08) * 1.5 + Math.sin(x * .31) * .8); g.R(x, top, 1, H - top, '#262c26'); g.P(x, top, '#34402e'); }
+    bands(g, [[70, '#222a22'], [90, '#1c221c'], [H, '#181d18']]);
+    for (let i = 0; i < 60; i++) { const x = r() * W | 0, y = 68 + r() * 38 | 0; g.P(x, y, r() < .5 ? '#2c3a2c' : '#141814'); }
+    boulder(g, 186, 76, 6, 6, '#3a3e3e', '#545a5a', '#282c2c'); boulder(g, 96, 72, 3, 3, '#3a3e3e', '#545a5a', '#282c2c');
+    return { horizon: 54 };
+  },
+  weaver(g) {
+    bands(g, [[0, '#070a1a'], [24, '#0c1028'], [44, '#141a3a'], [56, '#1c2448']]);
+    stars(g, 121, 70, 56, ['#2a3050', '#3a4268', '#4a5480']); stars(g, 122, 10, 50, ['#b0b8e0']);
+    const ys = ridge(g, { base: 58, amp: 16, scale: .035, c: '#10142c', seed: 123, peaks: true });
+    bands(g, [[57, '#18204a'], [64, '#141c40'], [72, '#101636']]);
+    for (let x = 0; x < W; x++) { const d = Math.round((58 - ys[x]) * .35); for (let y = 57; y < 57 + d && y < 70; y++) if (dz(x, y) < .55) g.P(x, y, '#0e1330'); }
+    const r = rng(124);
+    for (let i = 0; i < 30; i++) g.R(r() * W | 0, 58 + r() * 12 | 0, 2 + r() * 5 | 0, 1, '#2a3670');
+    for (let i = 0; i < 14; i++) g.R(r() * W | 0, 59 + r() * 11 | 0, 1 + r() * 3 | 0, 1, r() < .5 ? '#c8823a' : '#8a5a2a');
+    ridge(g, { base: 72, amp: 3, scale: .06, c: '#0f111f', seed: 125 });
+    bands(g, [[72, '#0f111f'], [90, '#0c0e1a'], [H, '#0a0b15']]);
+    const reeds = (a, b) => { for (let x = a; x < b; x += 2 + (r() * 3 | 0)) { const h = 4 + r() * 8 | 0; g.R(x, 72 - h, 1, h, '#06070e'); if (r() < .4) g.R(x, 72 - h, 1, 2, '#2a1c14'); } };
+    reeds(0, 22); reeds(70, 92); reeds(180, 195);
+  },
+
+  /* ---- 4x: stranger places, more motion ---- */
+  adamant(g) {
+    bands(g, [[0, '#07060c'], [30, '#0b0913'], [60, '#110d1b'], [H, '#0e0b16']]);
+    const n = n2(131);
+    for (let y = 0; y < 70; y++) for (let x = 0; x < W; x++) { const v = (fbm(n, x * .06, y * .08) - .5) * 2.4 + .5 + (dz(x, y) - .5) * .12; if (v > .72) g.P(x, y, '#1e1838'); else if (v > .6) g.P(x, y, '#16122a'); }
+    const r = rng(132);
+    halo(g, 182, 50, 4, 28, '#0e3444', .6); halo(g, 100, 58, 2, 16, '#0e3444', .6); halo(g, 4, 56, 2, 12, '#2a1040', .6);
+    for (let x = 0; x < W; x += 5 + (r() * 8 | 0)) { const len = 5 + r() * 14 | 0, w = 2 + r() * 2 | 0; for (let i = 0; i < len; i++) { const hw = Math.round(w * (1 - i / len)); g.R(x - hw, i, hw * 2 + 1, 1, '#05040a'); g.P(x + hw, i, '#2a2440'); } }
+    const T = ['#14506a', '#2a9ab8', '#7ae6f0', '#e0ffff'], A = ['#3a1858', '#7a34a8', '#c88af0', '#f4dcff'];
+    const tips = [crystal(g, 186, 68, 34, 4, -.12, T), crystal(g, 177, 68, 22, 3, .14, T), crystal(g, 193, 68, 18, 3, -.3, T), crystal(g, 170, 68, 12, 2, .25, A),
+      crystal(g, 100, 67, 16, 3, 0, T), crystal(g, 94, 67, 10, 2, .3, A), crystal(g, 106, 67, 9, 2, -.3, T), crystal(g, 3, 66, 14, 2, .2, A)];
+    ridge(g, { base: 69, amp: 3, scale: .06, c: '#151120', seed: 133 });
+    bands(g, [[69, '#15111e'], [88, '#110e19'], [H, '#0d0b14']]);
+    for (let i = 0; i < 40; i++) g.P(r() * W | 0, 70 + r() * 36 | 0, '#1c2a3a');
+    for (let i = 0; i < 16; i++) { const x = r() * W | 0, y = 74 + r() * 30 | 0; tips.push(crystal(g, x, y, 2 + r() * 3 | 0, 1, 0, r() < .7 ? T : A)); }
+    return { pts: tips };
+  },
+  aegis(g) {
+    bands(g, [[0, '#03070f'], [24, '#060c1a'], [44, '#0a1526'], [58, '#0e1c30']]);
+    stars(g, 141, 90, 58, ['#1e2a3c', '#2a3a50', '#3a4e68']); stars(g, 142, 14, 50, ['#8aa8c8']);
+    const ys = ridge(g, { base: 62, amp: 24, scale: .03, c: '#081220', seed: 143, peaks: true });
+    for (let x = 0; x < W; x++) for (let y = ys[x]; y < ys[x] + 4 && y < 48; y++) if (dz(x, y) < .6 - (y - ys[x]) * .15) g.P(x, y, '#2a4058');
+    bands(g, [[61, '#12283a'], [78, '#173046'], [H, '#1c384e']]);
+    // The aurora's reflection on the ice, and cracks.
+    for (let x = 0; x < W; x++) { const s = Math.sin(x * .05) * Math.cos(x * .021); if (s > .2) for (let y = 62; y < 74; y++) if (dz(x, y) < (s - .2) * .6 * (1 - (y - 62) / 12)) g.P(x, y, '#1e6a5a'); }
+    const r = rng(144);
+    for (let i = 0; i < 10; i++) { let x = r() * W | 0, y = 66 + r() * 40 | 0; for (let k = 0; k < 10; k++) { g.P(x, y, k % 4 ? '#3a6a88' : '#7aa8c8'); x += r() < .7 ? 1 : 0; y += r() < .5 ? 0 : (r() < .5 ? 1 : -1); } }
+    return { mask: ys };
+  },
+  harbinger(g) {
+    bands(g, [[0, '#08050a'], [20, '#14080e'], [38, '#260c14'], [52, '#3a121a'], [62, '#4a1a20']]);
+    stars(g, 151, 30, 40, ['#3a2830', '#4a3038']);
+    // A blood moon behind the reaper.
+    halo(g, 150, 30, 15, 28, '#5a1a1c', .6); disc(g, 150, 30, 15, '#c8402e');
+    disc(g, 145, 25, 3, '#a8301f'); disc(g, 155, 35, 4, '#a8301f'); disc(g, 156, 23, 2, '#a8301f'); g.P(142, 36, '#a8301f');
+    for (let y = 15; y <= 45; y++) for (let x = 150; x <= 165; x++) if (Math.hypot(x - 150, y - 30) <= 15 && Math.hypot(x - 144, y - 30) > 15 && dz(x, y) < .5) g.P(x, y, '#9a2a1c');
+    ridge(g, { base: 62, amp: 6, scale: .04, c: '#1a0c12', seed: 152 });
+    g.R(108, 58, 87, 1, '#0c0608'); for (let x = 108; x < W; x += 3) { g.R(x, 55, 1, 9, '#0c0608'); g.P(x, 54, '#2a1418'); }
+    bands(g, [[64, '#1a0e12'], [84, '#140a0e'], [H, '#10080b']]);
+    const r = rng(153);
+    branch(g, 4, 72, Math.PI / 2 + .1, 12, 4, '#07040a', r); branch(g, 188, 64, Math.PI / 2 - .15, 9, 4, '#07040a', r);
+    for (let i = 0; i < 50; i++) g.P(r() * W | 0, 66 + r() * 40 | 0, '#2a1a1e');
+    tomb(g, 72, 76, 6, 8); tomb(g, 88, 71, 0, 7, true); tomb(g, 100, 80, 7, 9); tomb(g, 182, 86, 7, 10); tomb(g, 180, 75, 0, 6, true); tomb(g, 30, 68, 4, 5);
+  },
+
+  /* ---- 5x: set pieces ---- */
+  juggernaut(g) {
+    bands(g, [[0, '#120c07'], [30, '#1a120a'], [66, '#22180d']]);
+    for (let y = 0; y < 66; y++) for (let x = 0; x < W; x++) { const row = y / 6 | 0; if ((y % 6 === 5 || (x + (row & 1) * 6) % 12 === 0) && dz(x, y) < .6) g.P(x, y, '#0c0805'); }
+    // A tall window lights the boss from behind; a smaller one at the right edge.
+    halo(g, 143, 34, 12, 36, '#3e2c14', .7);
+    g.R(130, 8, 26, 50, '#2e2214'); glass(g, 132, 10, 22, 46); g.R(181, 30, 14, 30, '#2e2214'); glass(g, 183, 32, 10, 26);
+    for (const px of [84, 170]) {
+      g.R(px, 0, 9, 66, '#3a2a1a'); g.R(px, 0, 1, 66, '#6a4a28'); g.R(px + 8, 0, 1, 66, '#22180e');
+      g.R(px - 2, 4, 13, 3, '#c8a050'); g.R(px - 2, 7, 13, 1, '#8a6a30'); g.R(px - 2, 62, 13, 4, '#8a6a30'); g.R(px - 2, 62, 13, 1, '#c8a050');
+    }
+    for (const bx of [26, 58]) {
+      g.R(bx, 0, 10, 30, '#4a2060'); g.R(bx, 0, 10, 2, '#c8a050'); g.R(bx, 0, 1, 30, '#c8a050'); g.R(bx + 9, 0, 1, 30, '#c8a050');
+      g.R(bx, 30, 4, 2, '#4a2060'); g.R(bx + 6, 30, 4, 2, '#4a2060'); g.R(bx + 4, 12, 2, 4, '#c8a050'); g.R(bx + 3, 13, 4, 2, '#c8a050');
+    }
+    // A checkered floor running to the back, a red carpet down the middle.
+    const vx = 150, vy = 40;
+    for (let y = 66; y < H; y++) {
+      const dy = y - vy, row = Math.floor(Math.log(dy) * 6);
+      for (let x = 0; x < W; x++) {
+        const u = (x - vx) / dy;
+        let c = (row + Math.floor(u * 5)) & 1 ? '#3a2a18' : '#4a3620';
+        if (u > -.78 && u < -.42) c = Math.abs(u + .78) < 1 / dy || Math.abs(u + .42) < 1 / dy ? '#c8a050' : '#7a1a1a';
+        g.P(x, y, c);
+      }
+    }
+    const shaft = (x0, x1, y0, dens) => { for (let y = y0; y < H; y++) { const off = (y - y0) * .9; for (let x = Math.round(x0 - off); x < x1 - off; x++) if (dz(x, y) < dens * (1 - (y - y0) / (H - y0) * .5)) g.P(x, y, '#e8c070'); } };
+    shaft(132, 154, 30, .16); shaft(183, 193, 44, .12);
+  },
+  sovereign(g) {
+    bands(g, [[0, '#6a9ad0'], [18, '#8ab2dc'], [34, '#b4c8e2'], [46, '#e0d4c4'], [56, '#f4dcb0'], [70, '#f8e6c4']]);
+    for (let y = 0; y < 62; y++) for (let x = 0; x < W; x++) {
+      const a = Math.atan2(y - 52, x - 96), s = ((a + Math.PI) / (Math.PI / 12)) | 0;
+      if (s % 2 === 0 && dz(x, y) < .32 * Math.max(0, 1 - Math.hypot(x - 96, y - 52) / 110)) g.P(x, y, '#fff6e0');
+    }
+    halo(g, 96, 52, 8, 24, '#fff0d0', .8); disc(g, 96, 52, 8, '#fffbf0');
+    const r = rng(181);
+    for (let x = -6; x < W + 6; x += 9) cloud(g, x, 59 + (r() * 3 | 0), 6 + (r() * 4 | 0), '#f8ecd8', '#e6d0ac');
+    // A floating island with a small gold temple at the right edge.
+    rock(g, 184, 47, 10, '#b89a6a', '#e8d4a8'); g.R(176, 45, 17, 2, '#e8d4a8');
+    for (const cx of [177, 181, 185, 189]) { g.R(cx, 36, 2, 9, '#f4e6c4'); g.P(cx + 1, 40, '#d8c49c'); }
+    g.R(175, 34, 19, 2, '#e8d4a8'); for (let y = 29; y < 34; y++) { const hw = (y - 29) * 2; g.R(184 - hw, y, hw * 2 + 1, 1, '#d8b060'); }
+    // The cloud floor the fight stands on.
+    for (let x = 0; x < W; x++) {
+      const top = 64 + Math.round(Math.sin(x * .13) * 2 + Math.sin(x * .047 + 1) * 3);
+      for (let y = top; y < H; y++) g.P(x, y, y === top ? '#ffffff' : y > 96 && dz(x, y) < (y - 96) / 10 ? '#e2ceac' : y > 80 && dz(x, y) < (y - 80) / 30 ? '#f0e2c8' : '#fff8ee');
+    }
+    for (let i = 0; i < 8; i++) cloud(g, r() * W | 0, 78 + r() * 24 | 0, 4 + (r() * 5 | 0), '#fffaf2', '#eadbbe');
+  },
+};
+
+/* Light motion, stepped in whole art pixels like the art. Each effect is built once per
+   stage from the scene's data (mask, points) and draws one frame at a time. */
+const parts = (n, make, tick, draw) => (d, r) => {
+  const ps = Array.from({ length: n }, () => make(r, d));
+  return (g, t) => { for (const q of ps) { tick(q, t, d); draw(g, q, t, d); } };
+};
+// n particles drifting inside [y0, y1], wrapping at the edges; blink hides them part of the time.
+const drift = (o) => parts(o.n, (r) => ({ x: r() * W, y: o.y0 + r() * (o.y1 - o.y0), s: .6 + r() * .8, p: r() * 7, c: o.c[r() * o.c.length | 0] }),
+  (q, t) => {
+    q.x += (o.vx || 0) * q.s + Math.sin(t * .07 + q.p) * (o.sway || 0); q.y += (o.vy || 0) * q.s + Math.cos(t * .05 + q.p) * (o.bob || 0);
+    if (q.x > W + 2) q.x = -2; if (q.x < -2) q.x = W + 2; if (q.y > o.y1) q.y = o.y0; if (q.y < o.y0) q.y = o.y1;
+  },
+  (g, q, t) => { if (o.blink == null || Math.sin(t * .12 + q.p * 3) > o.blink) g.R(q.x, q.y, o.w || 1, 1, q.c); });
+const flier = (n, y0, y1, v, c) => parts(n, (r) => ({ x: r() * W, b: y0 + r() * (y1 - y0), p: r() * 7 }),
+  (q, t) => { q.x += v + Math.cos(t * .09 + q.p) * v; q.y = q.b + Math.sin(t * .13 + q.p * 2) * (v * 8); if (q.x > W + 3) { q.x = -3; q.b = y0 + Math.random() * (y1 - y0); } },
+  (g, q, t) => { const up = ((t + q.p * 4) | 0) % 4 < 2; g.R(q.x - 1, q.y, 3, 1, c); g.P(q.x - 2, up ? q.y - 1 : q.y + 1, c); g.P(q.x + 2, up ? q.y - 1 : q.y + 1, c); });
+
+const FX = {
+  fireflies: drift({ n: 9, y0: 58, y1: 102, sway: .35, bob: .25, c: ['#eef3b0', '#cfe0a0'], blink: .1 }),
+  leaves: drift({ n: 14, y0: -2, y1: H, vx: .35, vy: .4, sway: .4, c: ['#d8743a', '#b84a2a', '#e8a04a'] }),
+  snow: drift({ n: 80, y0: -1, y1: H, vy: .6, sway: .3, c: ['#ffffff'] }),
+  dust: drift({ n: 18, y0: 58, y1: 104, vx: .55, bob: .1, c: ['#f6dcae'] }),
+  embers: drift({ n: 26, y0: 0, y1: H, vy: -.55, sway: .35, c: ['#ffcf5a', '#ff7a2a'] }),
+  motes: drift({ n: 16, y0: 0, y1: H, vy: -.22, sway: .2, c: ['#a888dc'], blink: -.3 }),
+  seeds: drift({ n: 14, y0: 40, y1: 104, vx: .4, vy: -.08, bob: .15, c: ['#f6f4dc', '#ffffff'] }),
+  glyphs: drift({ n: 10, y0: 20, y1: 100, vy: -.2, sway: .2, c: ['#c8a0ff', '#9a78e0'], blink: -.2 }),
+  haze: drift({ n: 10, y0: 50, y1: 100, vx: .2, vy: -.05, c: ['#e8e4cc'], blink: 0 }),
+  cyan: drift({ n: 14, y0: 10, y1: 100, vx: .05, vy: -.12, sway: .2, c: ['#7ae6f0', '#3ab0c8'], blink: -.4 }),
+  golddust: drift({ n: 24, y0: 20, y1: 104, vx: -.18, vy: .2, sway: .15, c: ['#f8dc8a', '#fff0c0'], blink: -.2 }),
+  sparkles: drift({ n: 18, y0: 0, y1: H, vy: -.3, sway: .25, c: ['#fff4c0', '#f8d070'], blink: .2 }),
+  feathers: drift({ n: 6, y0: -2, y1: H, vx: .1, vy: .25, sway: .6, c: ['#ffffff'], w: 2 }),
+  birds: flier(4, 8, 34, .25, '#3a4250'),
+  bats: flier(5, 10, 50, .45, '#040203'),
+  lanterns: parts(12, (r) => ({ x: r() * W, y: 30 + r() * 40, v: .08 + r() * .1, p: r() * 7 }),
+    (q, t) => { q.y -= q.v; q.x += Math.sin(t * .03 + q.p) * .12; if (q.y < -2) { q.y = 66 + Math.random() * 4; q.x = Math.random() * W; } },
+    (g, q, t) => { g.P(q.x, q.y, Math.sin(t * .3 + q.p * 5) > -.6 ? '#ffe08a' : '#ffc060'); g.P(q.x + 1, q.y, '#ff9a3a'); g.P(q.x, q.y + 1, '#e8782a'); g.P(q.x + 1, q.y + 1, '#b8501a'); }),
+  rain: parts(90, (r) => ({ x: r() * (W + 40), y: r() * H, v: 2.5 + r() * 1.5 }),
+    (q) => { q.y += q.v; q.x -= q.v * .4; if (q.y > H) { q.y = -3; q.x = Math.random() * (W + 40); } },
+    (g, q) => { g.P(q.x, q.y, '#6a7a92'); g.P(q.x + 1, q.y - 2, '#47556c'); }),
+  lightning: (d, r) => {
+    let next = 20, k = 9, bolt = [];
+    return (g, t) => {
+      if (t >= next) {
+        k = 0; next = t + 45 + r() * 90; bolt = [];
+        let x = 118 + r() * 70 | 0; const end = 30 + r() * 22;
+        for (let y = 0; y < end; y++) {
+          bolt.push([x, y]); if (r() < .45) x += r() < .5 ? -1 : 1;
+          if (r() < .06) { let bx = x, by = y; for (let i = 0; i < 6 + r() * 6; i++) { by++; bx += r() < .6 ? 1 : 0; bolt.push([bx, by]); } }
+        }
+      }
+      if (k > 4) return;
+      if (k < 2) for (let y = 0; y < d.horizon; y++) for (let x = 0; x < W; x++) if (dz(x, y) < (k ? .12 : .28)) g.P(x, y, '#8a98b8');
+      if (k !== 2) bolt.forEach(([x, y]) => { g.P(x, y, '#f4f8ff'); g.P(x + 1, y, '#9ab0e0'); });
+      k++;
+    };
+  },
+  aurora: (d) => (g, t) => {
+    for (let x = 0; x < W; x++) {
+      const b = Math.round(30 + 7 * Math.sin(x * .035 + t * .02) + 4 * Math.sin(x * .09 - t * .03));
+      const I = .5 + .5 * Math.sin(x * .05 + t * .025) * Math.cos(x * .021 - t * .015);
+      for (let y = Math.max(0, b - 20); y <= b && y < d.mask[x] - 1; y++) {
+        const k = (y - (b - 20)) / 20;
+        if (dz(x, y) < I * (.15 + k * .55)) g.P(x, y, k > .85 ? '#7af8c0' : k > .5 ? '#2ec890' : k > .25 ? '#1a8a7a' : '#4a3a9a');
+      }
+    }
+  },
+  fog: () => {
+    const n = n2(171);
+    return (g, t) => { for (let y = 60; y < 90; y++) { const w = 1 - Math.abs(y - 72) / 14; for (let x = 0; x < W; x++) if (dz(x, y) < (fbm(n, (x + t * .3) * .05, y * .12, 2) - .45) * 2.2 * w) g.P(x, y, '#3e2830'); } };
+  },
+  twinkle: (d, r) => {
+    const s = Array.from({ length: 16 }, () => [r() * W | 0, r() * 50 | 0, r() * 7]);
+    return (g, t) => s.forEach(([x, y, p]) => { if (Math.sin(t * .07 + p) > .85) g.P(x, y, '#d8e6ff'); });
+  },
+  runes: (d, r) => {
+    const ph = d.pts.map(() => r() * 7);
+    return (g, t) => d.pts.forEach(([x, y], i) => { const s = Math.sin(t * .06 + ph[i]); g.P(x, y, s > .4 ? '#e0c0ff' : s > -.2 ? '#9a6ad8' : '#5a3e7a'); });
+  },
+  window: (d) => (g) => d.pts.forEach(([x, y]) => g.P(x, y, Math.random() < .8 ? '#ffd27a' : '#e89a48')),
+  torches: (d) => (g) => d.pts.forEach(([x, y]) => {
+    const h = 2 + (Math.random() * 2.5 | 0);
+    g.P(x - 1, y, '#c8401a'); g.P(x + 1, y, '#c8401a'); g.P(x, y, '#ff7a1a'); g.P(x, y - 1, '#ffb43c');
+    if (h > 2) g.P(x + (Math.random() < .5 ? -1 : 0), y - 2, '#ffe08a'); if (h > 3) g.P(x, y - 3, '#ffb43c');
+  }),
+  glints: (d, r) => {
+    const ph = d.pts.map(() => r() * 40);
+    return (g, t) => d.pts.forEach(([x, y], i) => {
+      const s = Math.sin(t * .05 + ph[i]); if (s < .9) return;
+      g.P(x, y, '#ffffff'); if (s > .96) { g.P(x - 1, y, '#bff8ff'); g.P(x + 1, y, '#bff8ff'); g.P(x, y - 1, '#bff8ff'); g.P(x, y + 1, '#bff8ff'); }
+    });
+  },
+};
+
+const TIERS = [
+  { h: 'Common', p: 'Simpler scenes: a sky, a place, one small motion.', bosses: [
+    { scene: 'drifter', sprite: 'balanced', name: 'Drifter', n: 1, when: 'Night', fx: ['fireflies'], stone: ['#1f2534', '#3a4358', '#283041', '#10141d'],
+      d: 'A moonlit road. The moon sits behind the hood so the dark boss still stands out.' },
+    { scene: 'colossus', sprite: 'tank', name: 'Colossus', n: 4, when: 'Day', fx: ['dust'], light: true, stone: ['#a85e3a', '#d48c5c', '#bc7246', '#743a22'],
+      d: 'Red-rock canyon, the sun going down behind a mesa. Sandstone plinths.' },
+    { scene: 'ironguard', sprite: 'armored', name: 'Iron Guardian', n: 2, when: 'Day', fx: ['birds'], light: true, stone: ['#7a7f88', '#b0b5bc', '#94999f', '#4e535a'],
+      d: 'A castle wall under a clear sky, banners on the stone, birds going over.' },
+    { scene: 'warden', sprite: 'warded', name: 'Arcane Warden', n: 3, when: 'Dawn', fx: ['runes', 'haze'], stone: ['#3a3e44', '#7a8288', '#50565c', '#1c1f22'],
+      d: 'Standing stones on a moor at first light, runes pulsing in the stone.' },
+    { scene: 'savage', sprite: 'brute', name: 'Savage Brute', n: 5, when: 'Day', fx: ['seeds'], light: true, stone: ['#7a7e72', '#a8ac9c', '#8e9284', '#4e5248'],
+      d: 'Open green hills, a lone tree and a boulder, seeds on the wind.' },
+    { scene: 'adept', sprite: 'arcane', name: 'Arcane Adept', n: 6, when: 'Dusk', fx: ['window', 'glyphs'], stone: ['#2a2440', '#5a4e7a', '#3a3456', '#120f1e'],
+      d: 'A broken tower on a hill at golden hour, one window lit, glyphs rising.' },
+  ] },
+  { h: '3x', p: 'More going on: firelight, weather, water.', bosses: [
+    { scene: 'bulwark', sprite: 'armored3x', name: 'Steel Bulwark', n: 11, when: 'Dusk', fx: ['torches'], stone: ['#2a2c36', '#5a5e6e', '#3e414e', '#14151b'],
+      d: 'A fortress gate standing open on a firelit yard, torches on the wall.' },
+    { scene: 'frost', sprite: 'warded3x', name: 'Frost Sentinel', n: 9, when: 'Day', fx: ['snow'], light: true, stone: ['#9cc0d8', '#eaf4fa', '#c0dbeb', '#6a90aa'],
+      d: 'A snowfield under grey-blue peaks, snow falling. Ice plinths.' },
+    { scene: 'berserker', sprite: 'brute3x', name: 'Raging Berserker', n: 14, when: 'Storm', fx: ['rain', 'lightning'], stone: ['#2e3238', '#5a626e', '#3e444e', '#16191e'],
+      d: 'A sea cliff in a storm: driving rain, lightning over the water.' },
+    { scene: 'weaver', sprite: 'arcane3x', name: 'Spellweaver', n: 17, when: 'Night', fx: ['lanterns'], stone: ['#1e2238', '#4a5480', '#2e3456', '#0c0e1c'],
+      d: 'A mountain lake at night, lanterns rising off the water.' },
+  ] },
+  { h: '4x', p: 'Stranger places, more motion.', bosses: [
+    { scene: 'adamant', sprite: 'armored4x', name: 'Adamant Bastion', n: 19, when: 'Underground', fx: ['glints', 'cyan'], stone: ['#1c1a2a', '#3a6a80', '#262a40', '#0a0912'],
+      d: 'A crystal cavern, the crystals glinting as you watch.' },
+    { scene: 'aegis', sprite: 'warded4x', name: 'Spectral Aegis', n: 24, when: 'Night', fx: ['aurora', 'twinkle'], stone: ['#2a4a64', '#7ab0d0', '#3e6888', '#122436'],
+      d: 'Northern lights over a frozen lake, moving across the sky.' },
+    { scene: 'bloodfang', sprite: 'brute4x', name: 'Bloodfang Marauder', n: 21, when: 'Dusk', fx: ['leaves'], stone: ['#262028', '#4a3e4a', '#342a36', '#120e14'],
+      d: 'A pine forest at sunset, mist between the tree lines, leaves blowing past.' },
+    { scene: 'harbinger', sprite: 'arcane4x', name: 'Eldritch Harbinger', n: 27, when: 'Night', fx: ['fog', 'bats'], stone: ['#2a2228', '#5a4a50', '#3a3036', '#120c0e'],
+      d: 'A graveyard under a blood moon, fog rolling between the stones, bats.' },
+  ] },
+  { h: '5x', p: 'The set pieces.', bosses: [
+    { scene: 'juggernaut', sprite: 'armored5x', name: 'Mythic Juggernaut', n: 33, when: 'Throne hall', fx: ['golddust'], stone: ['#5a4630', '#d8b060', '#8a6a40', '#2a1e12'],
+      d: 'A throne hall, light through stained glass falling across the floor.' },
+    { scene: 'sovereign', sprite: 'warded5x', name: 'Ethereal Sovereign', n: 38, when: 'Day', fx: ['sparkles', 'feathers'], light: true, stone: ['#e8d8b8', '#fffaf0', '#f4e8d0', '#c8a878'],
+      d: 'Above the clouds: sun rays, a floating temple, feathers drifting down.' },
+    { scene: 'apex', sprite: 'brute5x', name: 'Apex Destroyer', n: 35, when: 'Dusk', fx: ['embers'], stone: ['#1c1212', '#5a2a20', '#2e1a18', '#0a0606'],
+      d: 'An erupting volcano under ash, a lava river behind the hero, embers rising.' },
+    { scene: 'void', sprite: 'arcane5x', name: 'Voidcaller', n: 31, when: 'Night', fx: ['motes'], stone: ['#211a33', '#5a4a84', '#33284e', '#0d0a17'],
+      d: 'Two broken slabs adrift in a violet void, the dragon against the nebula.' },
+  ] },
+];
+
+const bossUnit = (b) => `<div class="unit b"><div class="uname"><span><span class="bnum">#${b.n}</span> ${b.name}</span><span class="cue"></span></div>
+  <div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>
+  <div class="stats"><span>${icon('physical')}57</span><span>${icon('magic')}117</span><span>${icon('armor')}158</span><span>${icon('magicResist')}223</span><span>${icon('crit')}3%</span></div></div>`;
+const heroUnit = `<div class="unit h"><div class="uname"><span>Ryn <small>14</small></span><span class="cue"></span></div>
+  <div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>
+  <div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div></div>`;
+const SKILLS = `<section class="sec"><div class="shead"><h3>Skills</h3></div><ul class="rowlist">
+  <li class="row" style="--c: var(--phys)"><span class="nm"><span class="nt">Morning run</span><span class="pp">${'<i></i>'.repeat(8)}</span></span>
+  <span class="streak">${icon('streak')}23</span><button class="press" type="button">${icon('physical', 'currentColor')}<b>1.1K</b></button></li>
+</ul></section>`;
+
+const phone = (b) => {
+  const [pl, top, mid, bot] = b.stone;
+  return `<div class="col"><div class="tag">${b.when}</div><h2>${b.name}</h2><p>${b.d}</p>
+  <div class="phone">
+    <div class="stage${b.light ? ' light' : ''}" style="--pl:${pl};--pl-top:${top};--pl-mid:${mid};--pl-bot:${bot}">
+      <canvas class="art" data-scene="${b.scene}" width="${W}" height="${H}"></canvas>
+      <canvas class="fx" data-fx="${b.fx.join(' ')}" width="${W}" height="${H}"></canvas>
+      <span class="menu">${icon('menu', 'currentColor')}</span>
+      <span class="plinth b"></span><img class="boss" src="../../public/sprites/bosses/${b.sprite}.png" alt="">
+      <span class="plinth h"></span><img class="hero" src="../../public/sprites/player/warrior.png" alt="">
+      ${bossUnit(b)}${heroUnit}
+    </div>
+    <canvas class="seam" width="${W}" height="6"></canvas>
+    ${SKILLS}
+  </div></div>`;
+};
+document.getElementById('tiers').innerHTML = TIERS.map((tr) => `<section class="tier"><h2>${tr.h}</h2><p>${tr.p}</p>
+  <div class="grid">${tr.bosses.map(phone).join('')}</div></section>`).join('');
+
+const layers = [...document.querySelectorAll('.stage')].map((st, i) => {
+  const art = st.querySelector('canvas.art'), fx = st.querySelector('canvas.fx');
+  const d = SCENES[art.dataset.scene](painter(art.getContext('2d'))) || {};
+  return { g: painter(fx.getContext('2d')), runs: fx.dataset.fx.split(' ').map((name) => FX[name](d, rng(100 + i))) };
+});
+let t = 0;
+const frame = () => {
+  t++;
+  for (const l of layers) { l.g.ctx.clearRect(0, 0, W, H); for (const run of l.runs) run(l.g, t); }
+};
+frame();
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(frame, 83);
+
+// The fade strip: each column's bottom ground pixel, dithered into the page colour.
+const PAGE = { dark: '#07080c', paper: '#e9dfc8' };
+function paintSeams() {
+  const page = PAGE[document.body.classList.contains('paper') ? 'paper' : 'dark'];
+  document.querySelectorAll('.phone').forEach((ph) => {
+    const row = ph.querySelector('canvas.art').getContext('2d').getImageData(0, H - 1, W, 1).data, g = painter(ph.querySelector('canvas.seam').getContext('2d'));
+    for (let x = 0; x < W; x++) for (let k = 0; k < 6; k++) g.P(x, k, dz(x, k) < (k + 1) / 7 ? page : `rgb(${row[x * 4]},${row[x * 4 + 1]},${row[x * 4 + 2]})`);
+  });
+}
+document.body.classList.add('paper');
+paintSeams();
+document.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', (e) => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  seg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === btn));
+  const vals = [...seg.querySelectorAll('button')].map((x) => x.dataset.v);
+  vals.forEach((v) => document.body.classList.toggle(v, v === btn.dataset.v));
+  paintSeams();
+}));
+// ?theme=dark&edge=fade opens the page on those settings.
+new URLSearchParams(location.search).forEach((v, k) => document.querySelector(`.seg[data-group="${k}"] button[data-v="${v}"]`)?.click());
+</script>
+</body>
+</html>

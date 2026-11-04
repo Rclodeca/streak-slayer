@@ -9,6 +9,7 @@ import { holdHp, playHit } from '../../composables/useHitFeed';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useFocusModeStore } from '../../store/focusModeStore';
+import { useStageEdgeStore } from '../../store/stageEdgeStore';
 import BossBar from '../boss/BossBar.vue';
 import FightStage from './FightStage.vue';
 import { IMPACT_MS } from './hitFx';
@@ -72,6 +73,29 @@ describe('FightStage', () => {
     useFocusModeStore().setOn(true);
     await nextTick();
     expect(wrapper.find('.fight-stage').classes()).toContain('focus');
+  });
+
+  it("puts the boss's scene behind the fight: its stone on the plinths, dark ink on a day scene", async () => {
+    const bossStore = useBossStore();
+    bossStore.boss.personality = 'balanced';
+    const wrapper = mountStage();
+    const stage = () => wrapper.find('.fight-stage');
+    expect(stage().find('.stage-bg .stage-scene').exists()).toBe(true);
+    expect(stage().classes()).not.toContain('day-stage');
+    expect(stage().attributes('style')).toContain('--plinth: #1f2534');
+
+    bossStore.boss.personality = 'tank';
+    await nextTick();
+    expect(stage().classes()).toContain('day-stage');
+    expect(stage().attributes('style')).toContain('--plinth: #a85e3a');
+  });
+
+  it('takes the Pixel edge when the player picks it', async () => {
+    const wrapper = mountStage();
+    expect(wrapper.find('.fight-stage').classes()).not.toContain('pixel-edge');
+    useStageEdgeStore().setEdge('pixel');
+    await nextTick();
+    expect(wrapper.find('.fight-stage').classes()).toContain('pixel-edge');
   });
 
   it('feeds the drop-down bar the boss and the hero, parked until the stage scrolls away', () => {

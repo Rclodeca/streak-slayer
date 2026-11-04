@@ -1,0 +1,129 @@
+// Parchment — warm paper and ink, the light theme (docs/mockups/pixel-light.html,
+// option A2). Brass stays the gold. The fight stage keeps Moonlit's palette
+// (the sprites were drawn for it, and each boss brings its own backdrop), so
+// the stage re-declares it inside itself and the lists below sit on paper.
+// Palette only; the rules are in ashen.scss.
+
+@use 'ashen';
+@use 'moonlit';
+
+:root[data-theme='parchment'] {
+  color-scheme: light;
+  --bg: #e9dfc8;
+  --bg-rgb: 233 223 200;
+  --text: #5d5340;
+  --text-h: #2a2218;
+  --border: #cfc3a3;
+  --code-bg: #ddd1b6;
+  --frame: #ddd1b6;
+  --frame-rgb: 221 209 182;
+  --panel-fill: #ddd1b6;
+  --ash-rgb: 110 90 55; // structure lines: brown ink instead of ash
+  --ash-mark: #a8996f;
+  --ash-deep: #8f846c;
+  --moon: #3a3224; // what you touch is dark ink here
+  --moon-solid: #5a4e38;
+  --moon-tint-rgb: 58 50 36;
+  --moon-glow-rgb: 90 75 45;
+  --brass: #8a6a1c;
+  --brass-rgb: 138 106 28;
+  --brass-solid: #a07a22;
+  --check-done: #cfc3a4;
+  --check-done-line: #a89a78;
+  --page-glow: rgba(255, 250, 235, 0.5);
+  // The main button: dark ink with cream text.
+  --button-fill: #3a3224;
+  --button-fill-hover: #4b4130;
+  --button-line: rgba(255, 255, 255, 0.18);
+  --button-text: #fbf5e4;
+  --stage-light:
+    radial-gradient(ellipse 45% 55% at 68% 55%, rgba(215, 205, 185, 0.15), transparent 72%),
+    radial-gradient(ellipse 90% 30% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
+  --boss-sprite-filter: drop-shadow(2px 0 0 #2a120c) drop-shadow(-2px 0 0 #2a120c) drop-shadow(0 2px 0 #2a120c)
+    drop-shadow(0 -2px 0 #2a120c) drop-shadow(0 0 12px rgba(224, 120, 58, 0.35)) brightness(1.06);
+  --hero-sprite-filter: none; // the hero stands as drawn on the boss's scene
+
+  --spent-text: #9a8f78;
+  --day-on-rgb: 190 175 140;
+  --bar-rgb: 233 223 200;
+  --plate: #e6dbbf;
+
+  // Cards: open ones are bright paper with a bevel; struck ones sink flat.
+  --card: #fbf5e4;
+  --card-hi: #fffdf5;
+  --card-lo: #cdbf9d;
+  --card-lip: #b6a780;
+  --card-ink: #2a2218;
+  --struck-card: #e3d8bd;
+  --struck-hi: #d3c7a7;
+  --struck-lo: #f4ecd5;
+  --struck-face: #d6cab0;
+  --struck-lip: #c6ba9a;
+  --struck-ink: #9a8f78;
+  --quiet-card: #f3ead3;
+  --quiet-hi: #fffaf0;
+  --quiet-lo: #d4c8a8;
+  --resting-face: #d6cab0;
+  --panel-hi: #f6efdb;
+  --panel-lo: #c8baa0;
+  --sunk-hi: #c4b793;
+  --sunk-lo: #f8f0dc;
+  --button-lip: #1d170e;
+  --stone-face: #e6dbbf;
+  --stone-lip: #b6a780;
+  --field: #efe6cf;
+  --field-line: #b6a780;
+  --field-shadow: #cdbf9d;
+  --check-bg: rgba(255, 255, 255, 0.75);
+  --selected-card: #efe4c9;
+  --selected-shadow: #cdbf9d;
+  --brass-on-face: #ead9a8;
+  --on-brass: #fbf5e4;
+  --well: rgba(90, 65, 20, 0.1);
+  --on-true-damage: #fff;
+  --on-crimson: #fff;
+  --input-fill: #f6efdb;
+  --tint-to: #000;
+
+  // The game's own colours, darker so they read on paper.
+  --damage-color: #b3402f;
+  --heal-color: #3f8a3b;
+  --stat-color: #4a4030;
+  --true-damage-color: #4e4a3c;
+  --exp-skill-color: #8a6a1c;
+  --dmg-physical: #c4472f;
+  --dmg-magic: #7a52b8;
+  --dmg-healing: #3f8a3b;
+  --dmg-true: #5a5342;
+  --icon-health: #b3402f;
+  --icon-lifesteal: #a8362e;
+  --icon-crit: #a8741a;
+  --icon-steel: #6f6a5c;
+  --icon-arcane: #5a68a8;
+  --icon-violet: #7a52b8;
+  --icon-streak: #8a6f4a;
+  --icon-exp: #a8741a;
+  --icon-gold: #8a6a1c;
+  --icon-gift: #8a6a1c;
+  --hp-color: #a82a20;
+  --fx-lifesteal: #d9566a;
+  --fx-reflect: #c4bcac;
+  --fx-boss-cut: #c33a2e;
+  --hp-trail: rgba(240, 222, 190, 0.75);
+  --exp-color: #a8741a;
+  --rarity-common: #8a8070;
+  --rarity-uncommon: #3f8a3b;
+  --rarity-rare: #3f68b0;
+  --rarity-epic: #7a52b8;
+  --rarity-relic: #c4631c;
+  --soon-color: #b3741c;
+  --overdrive-color: #c4631c;
+}
+
+// The night stage: Moonlit's palette, and the tokens built from it, inside
+// the pinned stage, the boss bar and the hooded scenes. Panels teleported to
+// <body> (the menu, popups) stay on paper.
+:root[data-theme='parchment'] :is(.fight-stage, .boss-bar, .scene-layer, .death-layer) {
+  @include moonlit.palette;
+  @include ashen.derived-tokens;
+}

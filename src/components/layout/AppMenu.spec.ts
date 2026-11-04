@@ -5,6 +5,8 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { STORAGE_KEY, useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
+import { STORAGE_KEY as EDGE_KEY, useStageEdgeStore } from '../../store/stageEdgeStore';
+import { STORAGE_KEY as THEME_KEY, useThemeStore } from '../../store/themeStore';
 import AppMenu from './AppMenu.vue';
 
 enableAutoUnmount(afterEach);
@@ -15,13 +17,51 @@ describe('AppMenu', () => {
     setActivePinia(createPinia());
   });
 
-  it('shows no Theme section while Moonlit is the only theme', async () => {
+  it('lists the themes and swaps between them, keeping the menu open', async () => {
     const wrapper = mount(AppMenu, { attachTo: document.body });
     await wrapper.find('.menu-button').trigger('click');
     const panel = document.body.querySelector('.menu-panel')!;
     expect(panel.textContent).toContain('High Scores');
-    expect(panel.textContent).not.toContain('Theme');
-    expect(panel.querySelector('[role="menuitemradio"]')).toBeNull();
+    expect(panel.textContent).toContain('Theme');
+    // The stage edge's two choices come first.
+    const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')].slice(2);
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['System', 'Light', 'Dark']);
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true']);
+
+    options()[1].click(); // Light
+    await wrapper.vm.$nextTick();
+    expect(useThemeStore().theme).toBe('parchment');
+    expect(localStorage.getItem(THEME_KEY)).toBe('parchment');
+    expect(document.documentElement.dataset.theme).toBe('parchment');
+    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
+
+    options()[0].click(); // System
+    await wrapper.vm.$nextTick();
+    expect(useThemeStore().preference).toBe('system');
+    expect(localStorage.getItem(THEME_KEY)).toBe('system');
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+  });
+
+  it('picks the stage edge, keeping the menu open', async () => {
+    const wrapper = mount(AppMenu, { attachTo: document.body });
+    await wrapper.find('.menu-button').trigger('click');
+    const panel = document.body.querySelector('.menu-panel')!;
+    expect(panel.textContent).toContain('Stage edge');
+    const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')].slice(0, 2);
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['Hard', 'Pixel']);
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false']);
+
+    options()[1].click(); // Pixel
+    await wrapper.vm.$nextTick();
+    expect(useStageEdgeStore().edge).toBe('pixel');
+    expect(localStorage.getItem(EDGE_KEY)).toBe('pixel');
+    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
+    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+
+    options()[0].click(); // Hard
+    await wrapper.vm.$nextTick();
+    expect(useStageEdgeStore().edge).toBe('hard');
   });
 
   it('flips Focus mode from the menu, and keeps the menu open', async () => {

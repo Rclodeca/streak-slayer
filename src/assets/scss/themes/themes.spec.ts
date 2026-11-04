@@ -65,6 +65,19 @@ export const PALETTE_TOKENS = [
   'button-lip',
   'stone-face',
   'stone-lip',
+  'field',
+  'field-line',
+  'field-shadow',
+  'check-bg',
+  'selected-card',
+  'selected-shadow',
+  'brass-on-face',
+  'on-brass',
+  'tint-to',
+  'well',
+  'on-true-damage',
+  'on-crimson',
+  'input-fill',
 ];
 
 function compileThemes(): string {
@@ -93,7 +106,7 @@ function declaredTokens(css: string, id: string): Set<string> {
   return names;
 }
 
-describe('Moonlit theme', () => {
+describe('Themes', () => {
   const css = compileThemes();
 
   for (const { id } of THEMES) {
