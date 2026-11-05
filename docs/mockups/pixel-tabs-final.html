@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Pixel-cut, final tabs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Final phone layout: bottom bar Skills · Quests · Trials · Hero. Log in the menu. Pixel-cut on Moonlit. */
+@property --t { syntax: '<number>'; inherits: true; initial-value: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 70px; max-width: 1300px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 14px; max-width: 720px; }
+.rules { max-width: 720px; margin: 0 auto 16px; padding: 12px 18px; background: #23252b; font-size: 15px; }
+.rules b { color: #ece8de; }
+.rules ul { margin: 6px 0 0; padding-left: 18px; }
+.toggle { display: flex; justify-content: center; margin: 0 0 30px; font-size: 15px; }
+.toggle label { cursor: pointer; display: flex; align-items: center; gap: 6px; color: #ece8de; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; }
+.col { width: 390px; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.col p { margin: 0 0 10px; min-height: 60px; font-size: 14.5px; }
+
+/* ================= Phone ================= */
+/* Moonlit; in Light the stage and the Log sheet keep it (see the Light block) */
+.phone, .light :is(.stage, .sheet) {
+  --bg: #07080c; --frame: #141720; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee;
+  --brass: #d2bb85; --exp: #d9a93c; --bad: #d4574a; --good: #7fc17a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --crit: #d6a24f; --steel: #a8a092; --arcane: #8d9bd1; --blood: #d0475a; --health: #e0604f;
+  --common: #8d8475; --uncommon: #86b08b; --rare: #7f9fd1; --epic: #ae8bd6; --relic: #ec8338;
+  --spent: #6a6f7a; --done: #3c4352; --done-line: #566074; --streak-i: #8d8475;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --card-lip: #05060a; --resist-card: #161a24;
+  --s-card: #0e1117; --s-hi: #161a24; --s-lo: #07090d; --s-face: #1b1f28; --s-base: #111319; --s-name: #5b606b; --s-num: #5b606b;
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+}
+.phone {
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --t: 0; transition: --t .28s ease;
+  width: 390px; height: 760px; display: flex; flex-direction: column; position: relative; background: var(--bg);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone.strip { --t: 1; }
+body.fullstage .phone.strip { --t: 0; }
+button { font: inherit; }
+svg { flex: none; }
+
+/* ---- Pinned stage; --t runs 0 (full, 212px) to 1 (Focus strip, 76px) ---- */
+.stage { position: relative; flex: none; height: calc(212px - 136px * var(--t)); overflow: hidden; z-index: 5; background: #0c0f17; border-bottom: 3px solid var(--card-lip); box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); }
+.stars { position: absolute; left: 0; top: -10px; width: 2px; height: 2px; background: transparent;
+  box-shadow: 40px 60px #3a4358, 120px 30px #2c3446, 230px 52px #3a4358, 300px 18px #4a5470, 352px 96px #2c3446, 200px 120px #2c3446, 90px 150px #232a39, 260px 170px #232a39, 330px 140px #3a4358, 20px 110px #2c3446; }
+.horizon { position: absolute; left: 0; right: 0; bottom: 0; height: calc(70px + 6px * var(--t)); background: conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px, #0f131d; }
+.horizon::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, #0c0f17); }
+.menu { position: absolute; right: 14px; top: calc(14px + 4px * var(--t)); z-index: 4; width: 40px; height: 40px; padding: 0; clip-path: var(--px2); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); display: grid; place-items: center; color: var(--touch); cursor: pointer; }
+.menu svg { width: 18px; height: 18px; }
+.boss { position: absolute; z-index: 1; right: calc(26px + 32px * var(--t)); top: calc(24px - 18px * var(--t)); width: calc(128px - 64px * var(--t)); image-rendering: pixelated; }
+.hero { position: absolute; z-index: 1; left: calc(18px - 6px * var(--t)); top: calc(94px - 82px * var(--t)); width: calc(112px - 56px * var(--t)); image-rendering: pixelated; }
+.plinth { position: absolute; height: 18px; z-index: 0; opacity: calc(1 - 1.6 * var(--t)); }
+.plinth::before { content: ''; position: absolute; inset: 0; clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
+  background: #1f2534; box-shadow: inset 0 3px 0 #3a4358, inset 0 6px 0 #283041, inset 0 -3px 0 #10141d; }
+.plinth.b { right: calc(22px + 32px * var(--t)); top: calc(130px - 100px * var(--t)); width: calc(136px - 68px * var(--t)); }
+.plinth.h { left: 14px; top: calc(192px - 140px * var(--t)); width: calc(120px - 60px * var(--t)); }
+.unit { position: absolute; z-index: 2; text-shadow: 0 0 8px #000, 0 1px 2px #000; }
+.unit.b { left: calc(16px + 64px * var(--t)); top: calc(16px - 8px * var(--t)); width: calc(196px - 6px * var(--t)); }
+.unit.h { left: calc(150px - 70px * var(--t)); top: calc(154px - 112px * var(--t)); width: calc(226px - 36px * var(--t)); }
+.uname { display: flex; align-items: center; gap: 6px; font: 600 12.8px/1.2 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); margin-bottom: 5px; }
+.b .uname { font-size: calc(12.8px - 1px * var(--t)); margin-bottom: calc(5px - 2px * var(--t)); }
+.h .uname { height: calc(16px * (1 - var(--t))); margin-bottom: calc(5px * (1 - var(--t))); overflow: hidden; opacity: calc(1 - 2 * var(--t)); }
+.uname small, .bnum { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--brass); letter-spacing: .04em; }
+.cue { display: inline-block; width: 6px; height: 6px; margin-left: 2px; border-top: 1.5px solid var(--touch); border-right: 1.5px solid var(--touch); transform: rotate(45deg); opacity: calc(1 - 2 * var(--t)); }
+.stats { display: flex; flex-wrap: wrap; gap: 2px 7px; margin-top: 5px; font: 500 11.2px/1.2 'Alegreya Sans', sans-serif; color: var(--text); opacity: calc(1 - 2.5 * var(--t)); }
+.stats span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.stats svg { width: 12px; height: 12px; opacity: .8; }
+.bar { position: relative; height: 16px; clip-path: var(--px2); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.h .bar { height: 15px; }
+.bar b { position: absolute; left: 2px; top: 2px; bottom: 2px; background: #b83a26; box-shadow: inset 0 2px 0 #e06447, inset 0 -2px 0 #7c2214; }
+.bar i { position: absolute; left: 2px; bottom: 2px; height: 2px; background: var(--exp); z-index: 1; }
+.bar span { position: absolute; right: 5px; top: 0; bottom: 0; z-index: 2; display: flex; align-items: center; font: 700 12px/1 'Alegreya Sans', sans-serif; font-variant-numeric: tabular-nums; color: var(--ink); text-shadow: 0 0 3px #000; }
+.h .bar span { bottom: 2px; }
+.bar .mk { position: absolute; top: 2px; bottom: 2px; width: 2px; background: var(--brass); z-index: 1; } .bar .mk.fired { background: #4a4f5c; }
+.tap-hero { position: absolute; left: 0; bottom: 0; width: 48%; height: 60%; z-index: 3; background: none; border: 0; cursor: pointer; }
+.strip .tap-hero { width: 70px; height: 100%; }
+
+/* ---- Scroll area + panels ---- */
+.scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; padding-bottom: 20px; }
+.scroll::-webkit-scrollbar { display: none; }
+.panel { display: none; } .panel.on { display: block; }
+.act { display: flex; justify-content: space-between; align-items: center; min-height: 52px; padding: 6px 14px 0 16px; }
+.sum { font: 700 13px 'Alegreya Sans', sans-serif; color: var(--text); } .sum b { color: var(--ink); }
+.add { font: 700 12.5px 'Alegreya Sans', sans-serif; color: var(--touch); background: rgba(219,226,238,.08); border: 1px solid rgba(219,226,238,.35); clip-path: var(--px2); padding: 8px 13px; min-height: 38px; cursor: pointer; }
+.add.sq { width: 38px; padding: 0; font-size: 18px; line-height: 1; }
+
+/* ---- Cards (as built) ---- */
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.sec { margin: 0 12px; }
+.group { display: flex; align-items: center; gap: 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); margin: 12px 2px 7px; text-transform: uppercase; }
+.group .cnt, .cnt { margin-left: auto; font: 700 11px 'Alegreya Sans', sans-serif; letter-spacing: 0; text-transform: none; color: var(--text); }
+.cnt b { color: var(--ink); }
+.sec > .group:first-child { margin-top: 4px; }
+.row { --face: color-mix(in srgb, var(--c) 88%, #000); --base: color-mix(in srgb, var(--c) 36%, #000);
+  --btn-sh: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15); --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row[data-t='true'] { --btn-c: #1e1c18; --btn-ts: none; }
+.nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt { font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp { display: flex; gap: 4px; padding-left: 2px; } .pp:empty { display: none; }
+.pp i { width: 4px; height: 4px; background: var(--brass); } .pp i:nth-child(5) { margin-left: 4px; }
+.meta { display: flex; align-items: center; gap: 7px; }
+.streak { min-width: 26px; display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.tagw { font: 700 12px 'Alegreya Sans', sans-serif; color: #5f6470; }
+.next { font: 700 12px 'Alegreya Sans', sans-serif; color: var(--touch); opacity: .7; }
+.press { --lip: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--lip)); padding: 0 10px var(--lip);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 0; cursor: pointer;
+  font: 700 14.5px 'Alegreya Sans', sans-serif; color: var(--btn-c); text-shadow: var(--btn-ts); -webkit-tap-highlight-color: transparent; }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--lip); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--lip); background: var(--face); box-shadow: var(--btn-sh); transition: top .07s, bottom .07s; }
+.press svg, .press b { position: relative; z-index: 1; font-weight: inherit; transition: transform .07s; }
+.press svg { width: 13px; height: 13px; }
+.press:active::after, .on .press::after { top: var(--lip); bottom: 0; }
+.press:active > *, .on .press > * { transform: translateY(var(--lip)); }
+.row.on { --face: var(--s-face); --base: var(--s-base); --btn-sh: none; --btn-c: var(--s-num); --btn-ts: none; background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt, .row.on .qn { color: var(--s-name); }
+.row.on .streak, .row.on .pp, .row.on .reward { opacity: .45; }
+.rest { margin-top: 8px; }
+.rest summary { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 2px; list-style: none; cursor: pointer; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--text); text-transform: uppercase; }
+.rest summary::-webkit-details-marker { display: none; }
+.rest summary span { color: var(--touch); }
+.rest summary::after, .fold::after { content: ''; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+.rest[open] summary::after { transform: rotate(225deg) translateY(-1px); }
+.row.resting { --face: #12151d; --base: transparent; --btn-sh: inset 0 0 0 2px rgba(255,255,255,.04); --btn-c: color-mix(in srgb, var(--c) 45%, var(--spent)); --btn-ts: none; background: var(--resist-card); box-shadow: inset 2px 2px 0 #1c2230, inset -2px -2px 0 #0a0c12; }
+.row.resting .nt { color: var(--text); font-weight: 500; } .resting .press { pointer-events: none; }
+.resting .press::after { top: var(--lip); bottom: 0; } .resting .press > * { transform: translateY(var(--lip)); }
+
+/* Resist: its own quiet section at the foot of Skills, folds shut */
+.resist { margin-top: 26px; }
+.resist .rhead { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 0 0 2px; border-top: 2px solid #141823; padding-top: 6px; }
+.fold { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0; background: none; border: 0; cursor: pointer; color: var(--text); text-align: left; }
+.fold h3 { margin: 0; display: flex; align-items: center; gap: 7px; font: 600 12.5px 'Cinzel', serif; letter-spacing: .22em; color: var(--ink); text-transform: uppercase; }
+.fold h3 svg { width: 15px; height: 15px; color: var(--bad); }
+.fold .cnt { margin-left: auto; margin-right: 4px; }
+.fold::after { margin-right: 6px; transform: rotate(225deg) translateY(-1px); }
+.resist.shut .fold::after { transform: rotate(45deg) translateY(-2px); }
+.resist.shut .rbody { display: none; }
+.resist .row:not(.on) { --face: #1d2230; --base: color-mix(in srgb, var(--bad) 55%, #000); --btn-c: color-mix(in srgb, var(--bad) 72%, #fff); --btn-ts: none; --btn-sh: inset 0 2px 0 rgba(255,255,255,.08); background: var(--resist-card); }
+.resist .nt { color: var(--text); font-weight: 500; }
+
+/* Quests */
+.quest { padding-left: 4px; gap: 6px; }
+.quest .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+.quest .qn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest .qm { display: flex; align-items: center; gap: 6px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); }
+.qpips { display: inline-flex; gap: 3px; } .qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); } .qpips i.lit { background: var(--brass); }
+.qm em { font-style: normal; } .quest.soon .qm em { color: var(--exp); } .quest.urgent .qm em { color: #e7a198; }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; gap: 1px; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.reward svg { width: 18px; height: 18px; }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; }
+.qchk input { position: absolute; opacity: 0; pointer-events: none; }
+.qchk i { width: 20px; height: 20px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); }
+.qchk svg { width: 14px; height: 14px; opacity: 0; color: var(--touch); }
+.quest.on .qchk i { background: var(--done); border-color: var(--done-line); } .quest.on .qchk svg { opacity: 1; }
+
+/* Trials (the challenge cards, as built) */
+.trial { align-items: flex-start; gap: 12px; padding: 10px 12px 10px 10px; }
+.tsock { flex: none; width: 44px; height: 44px; display: grid; place-items: center; clip-path: var(--px); background: var(--well); color: var(--brass);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.tsock svg { width: 22px; height: 22px; }
+.tbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tname { display: flex; align-items: center; gap: 7px; font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); }
+.tnew { font: 800 10px 'Alegreya Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; padding: 1px 5px; background: var(--brass); color: #1e1a10; clip-path: var(--px2); }
+.tdeed { font-size: 13.5px; color: var(--text); line-height: 1.3; }
+.tprog { display: flex; align-items: center; gap: 8px; margin-top: 3px; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.tbar { flex: 1; max-width: 150px; height: 8px; clip-path: var(--px2); background: var(--well); box-shadow: inset 1px 1px 0 var(--well-lo); }
+.tbar i { display: block; height: 100%; background: #c8a96e; box-shadow: inset 0 2px 0 rgba(255,255,255,.2); }
+.tgift { flex: none; position: relative; align-self: center; color: #c8a96e; padding-right: 4px; }
+.tgift svg { width: 22px; height: 22px; }
+.tgift .mark { position: absolute; right: -2px; top: -6px; font: 800 12px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.trial.done { background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.trial.done .tname { color: var(--s-name); } .trial.done .tsock { color: var(--s-name); } .trial.done .tdeed { color: var(--dim); }
+.trelic { align-self: center; font: 600 13px 'Alegreya', serif; color: var(--relic); max-width: 92px; text-align: right; line-height: 1.2; }
+
+/* Hero page */
+.hhead { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 12px 12px 0; }
+.well { display: flex; flex-direction: column; gap: 1px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); padding: 9px 12px; }
+.well .tl { display: flex; align-items: center; gap: 5px; font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--text); }
+.well .tl svg { width: 13px; height: 13px; }
+.well .tv { font: 700 18px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.well .tv.brass { color: var(--brass); }
+.well .tn { font-size: 12px; color: var(--dim); }
+.fx { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 12px 0; }
+.ef { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; clip-path: var(--px2); font: 700 12.5px 'Alegreya Sans', sans-serif; }
+.ef svg { width: 13px; height: 13px; }
+.ef.bane { background: rgba(212,87,74,.12); color: #e7a198; } .ef.boon { background: rgba(127,193,122,.1); color: #a9d6a5; }
+.lbl { margin: 18px 14px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+.gear { margin: 0 12px; }
+.gr { --r: var(--common); display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px 8px 8px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.slot { position: relative; flex: none; width: 64px; height: 64px; clip-path: var(--px); background: radial-gradient(circle, color-mix(in srgb, var(--r) 20%, #07090d), #05060a 72%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) 60%, #000), inset 4px 4px 0 #020305, inset -4px -4px 0 color-mix(in srgb, var(--r) 30%, #0b0d12); }
+.slot .art { position: absolute; inset: 0; overflow: hidden; }
+.slot img { --rim: color-mix(in srgb, var(--r) 55%, #000); position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; transform: translate(-50%, -50%); image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)); }
+.gr.ench .slot { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) 60%, #000), inset 4px 4px 0 #020305, inset -4px -4px 0 color-mix(in srgb, var(--r) 30%, #0b0d12), inset 0 0 18px rgba(170,220,240,.35); }
+.gt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+.gn { font: 600 15.5px 'Alegreya', Georgia, serif; color: var(--ink); line-height: 1.2; }
+.rar { font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--r); text-transform: capitalize; }
+.bons { display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.bons span { display: inline-flex; align-items: center; gap: 3px; } .bons svg { width: 13px; height: 13px; }
+.bons small { font-weight: 500; font-size: 13px; color: var(--text); }
+.gfx { font-size: 13px; color: var(--text); }
+.gr.empty { align-items: center; color: var(--dim); font-size: 14px; background: var(--well); border-bottom: 0; box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.gr.empty .slot { --r: #2a3140; }
+.opal { background: linear-gradient(90deg, transparent 30%, #8ff5ea 40%, #fff 50%, #f0b0ff 60%, transparent 70%) 0 0 / 300% 100% no-repeat, linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc);
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: opal 5.5s linear infinite; }
+@keyframes opal { from { background-position: 100% 0, 0 0; } to { background-position: -200% 0, 0 0; } }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 0 12px; }
+.tiles .well .tv em { font-style: normal; font-size: 12.5px; color: var(--good); margin-left: 4px; }
+
+/* Sealed (level under 3): the tab can be opened, and shows the seal */
+.seal { display: none; margin: 30px 12px 0; padding: 30px 16px; text-align: center; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.seal .lm { width: 44px; height: 44px; margin: 0 auto 10px; display: grid; place-items: center; clip-path: var(--px2); background: rgba(210,187,133,.1); border: 1px solid rgba(210,187,133,.4); color: var(--brass); }
+.seal .lm svg { width: 20px; height: 20px; }
+.seal p { margin: 0; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; color: var(--text); text-transform: uppercase; }
+.newbie .panel.sealable .real { display: none; } .newbie .panel.sealable .seal { display: block; }
+
+/* ---- Bottom bar ---- */
+.bar-b { flex: none; position: relative; display: flex; padding: 0 6px 22px; background: #0c0f17; border-top: 3px solid var(--card-lip); box-shadow: 0 -10px 18px -8px rgba(0,0,0,.6); z-index: 6; }
+.tabb { --sp: var(--touch); flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 58px; padding-top: 3px;
+  cursor: pointer; background: none; border: 0; color: #6d7280; font: 700 10.5px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+.tabb svg { width: 21px; height: 21px; }
+.tabb.sel { color: var(--ink); }
+.tabb.sel::before { content: ''; position: absolute; left: 20px; right: 20px; top: -3px; height: 3px; background: var(--sp); }
+.tabb.sel svg { color: var(--sp); }
+.tabb[data-t='quests'], .tabb[data-t='trials'] { --sp: var(--brass); }
+.tabb .badge { position: absolute; top: 5px; left: calc(50% + 7px); }
+.dot { display: inline-block; min-width: 16px; height: 16px; padding: 0 4px; text-align: center; font: 800 10.5px/16px 'Alegreya Sans', sans-serif; background: var(--brass); color: #1e1a10; clip-path: var(--px2); }
+.pip { display: inline-block; width: 8px; height: 8px; margin-top: 2px; background: var(--brass); box-shadow: 0 0 0 2px #0c0f17; }
+.tabb .lk { display: none; position: absolute; top: 6px; left: calc(50% + 8px); width: 12px; height: 12px; }
+.newbie .tabb.sealable { color: #474c58; }
+.newbie .tabb.sealable .lk { display: block; color: #6d7280; }
+.newbie .tabb.sealable .badge { display: none; }
+.newbie .tabb.sealable.sel { color: var(--text); }
+.home { position: absolute; left: 50%; bottom: 7px; width: 120px; height: 4px; margin-left: -60px; background: #3a4052; border-radius: 4px; z-index: 7; }
+
+/* ---- Menu + Log sheet ---- */
+.pop { display: none; position: absolute; right: 14px; top: 62px; z-index: 20; width: 200px; padding: 6px; clip-path: var(--px); background: #1a1f2d; box-shadow: inset 2px 2px 0 #2e364b, inset -2px -2px 0 #0b0d12; }
+.phone.menu-open .pop { display: block; }
+.pop button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 10px; background: none; border: 0; cursor: pointer; color: var(--ink); font: 600 15px 'Alegreya Sans', sans-serif; text-align: left; }
+.pop button svg { width: 16px; height: 16px; color: var(--touch); }
+.pop button.new { color: var(--brass); } .pop button.new svg { color: var(--brass); }
+.pop hr { border: 0; height: 1px; background: rgba(255,255,255,.06); margin: 4px 6px; }
+.pop .dim { color: var(--dim); font-size: 13px; padding: 4px 10px 6px; }
+.scrim { display: none; position: absolute; inset: 0; z-index: 15; background: rgba(0,0,0,.55); }
+.phone.menu-open .scrim, .phone.log-open .scrim { display: block; }
+.phone.menu-open .scrim { background: transparent; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 16; height: 64%; display: flex; flex-direction: column; padding: 8px 14px 26px;
+  background: #11151e; clip-path: polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% 100%, 0 100%);
+  box-shadow: inset 0 3px 0 #2e364b; transform: translateY(102%); transition: transform .25s ease; }
+.phone.log-open .sheet { transform: none; }
+.grab { width: 40px; height: 4px; margin: 2px auto 6px; background: #3a4052; }
+.shead { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+.shead h3 { margin: 0; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; color: var(--ink); text-transform: uppercase; }
+.close { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; background: none; border: 0; color: var(--touch); cursor: pointer; }
+.close svg { width: 18px; height: 18px; }
+.logl { flex: 1; overflow-y: auto; scrollbar-width: none; display: block; }
+.logl li { display: block; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.04); font-size: 14px; color: var(--text); }
+.logl li:first-child { border-top: 0; }
+.logl li > svg:first-child { width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px; }
+.logl .d { color: var(--phys); font-weight: 700; } .logl .x { color: var(--exp); font-weight: 700; } .logl .h { color: var(--heal); font-weight: 700; }
+.logl .day { padding: 12px 0 4px; border: 0; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--dim); }
+.chip { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; padding: 1px 6px; background: rgba(255,255,255,.05); font-size: 12px; font-weight: 700; color: var(--ink); }
+.chip svg { width: 11px; height: 11px; }
+
+/* ================= Light (as built in light.scss) =================
+   Grey page, white cards, gunmetal Resist, navy for touch. The stage keeps
+   Moonlit and the Log sheet takes Dusk, like the other popups. */
+body.light { background: #dfe3e9; color: #4f5866; }
+.light h1, .light .col h2, .light .rules b, .light .toggle label { color: #141a24; }
+.light .rules { background: #fff; }
+.light .col .tag { color: #8b93a1; }
+.light .phone {
+  --bg: #eef1f5; --ink: #141a24; --text: #4f5866; --dim: #8b93a1; --touch: #1d3557;
+  --brass: #a87400; --exp: #b07d12; --bad: #c8382a; --good: #2f8a46; --phys: #c8442d; --magic: #6f4fc0; --heal: #2f8a46; --true: #3d4452;
+  --crit: #b07d12; --steel: #6b7280; --arcane: #4f63b0; --blood: #b0342c; --health: #c0392b;
+  --common: #6b7381; --uncommon: #2f8a46; --rare: #2f68c0; --epic: #6f4fc0; --relic: #c4631c;
+  --spent: #a3aab5; --done: #e3e6ea; --done-line: #b9c0ca; --streak-i: #8a6f4a;
+  --card: #fff; --hi: #fff; --lo: #f1f3f6; --card-lip: #cfd5de;
+  --s-card: #e4e8ed; --s-hi: #e4e8ed; --s-lo: #e4e8ed; --s-face: #d6dbe2; --s-base: #c9cfd8; --s-name: #9aa2ae; --s-num: #9aa2ae;
+  --well: rgba(20,30,50,.11); --well-hi: #fff; --well-lo: #c3cad4;
+  border-color: #b4bcc8; box-shadow: 0 18px 40px rgba(20,30,50,.22);
+}
+/* Skills: white card, the type's brighter colour in the button */
+.light .sec:not(.resist) .row:not(.on, .resting) { --phys: #ee6a4e; --magic: #8b63e6; --heal: #3fae5c; }
+.light .row[data-t='true']:not(.on) { --btn-c: #fff; --btn-ts: 0 1px 0 rgba(0,0,0,.35); }
+.light .row.resting { --face: #dce1e7; --btn-sh: none; background: var(--s-card); box-shadow: none; }
+.light .row.resting .nt { color: var(--s-name); }
+.light .tagw { color: var(--dim); }
+.light .add { background: rgba(29,53,87,.06); border-color: rgba(29,53,87,.4); }
+/* Resist: gunmetal; given in, plain grey like a struck skill */
+.light .resist .rhead { border-top-color: #d5dae1; }
+.light .resist .row:not(.on) { --ink: #f1f3f5; --brass: #d2bb85; --streak-i: #b8ad98; --face: #2a2e34; --base: color-mix(in srgb, #e0675a 55%, #000); --btn-c: color-mix(in srgb, #e0675a 72%, #fff);
+  background: #383e47; border-bottom-color: #1b1e23; box-shadow: inset 2px 2px 0 #4d545f, inset -2px -2px 0 #262a31; }
+.light .resist .row:not(.on) .nt { color: #e3e7ec; }
+/* Quests */
+.light .qchk i { background: #fff; }
+.light .quest.urgent .qm em { color: #c8382a; }
+/* Trials: a brass tile for the icon */
+.light .tsock { background: #b8860b; color: #fff; box-shadow: inset 0 0 0 2px color-mix(in srgb, #b8860b 70%, #000); }
+.light .trial.done .tsock { color: #fff; opacity: .45; }
+.light .tbar i { background: #c9971f; box-shadow: none; }
+.light .tgift { color: #a87400; }
+.light .tnew, .light .dot { background: #a87400; color: #fff; }
+/* Hero page */
+.light .ef.bane { background: rgba(200,56,42,.1); color: #b0342c; }
+.light .ef.boon { background: rgba(47,138,70,.12); color: #2f8a46; }
+.light .opal { background: linear-gradient(90deg, transparent 30%, #5fe0d4 40%, #c9b0ff 50%, #f59bbd 60%, transparent 70%) 0 0 / 300% 100% no-repeat, linear-gradient(90deg, #0f8f84, #7048d0 55%, #c93c76);
+  -webkit-background-clip: text; background-clip: text; }
+.light .seal .lm { background: rgba(168,116,0,.1); border-color: rgba(168,116,0,.4); }
+/* Bottom bar: white */
+.light .bar-b { background: #fff; border-top: 1px solid #d5dae1; box-shadow: 0 -6px 16px -10px rgba(20,30,50,.25); }
+.light .tabb:not(.sel) { color: #8b93a1; }
+.light .tabb.sel::before { top: -1px; }
+.light .tabb[data-t='quests'], .light .tabb[data-t='trials'] { --sp: #b8860b; }
+.light .pip { box-shadow: 0 0 0 2px #fff; }
+.light .newbie .tabb.sealable { color: #c3cad4; }
+.light .newbie .tabb.sealable .lk { color: #9aa3b0; }
+.light .newbie .tabb.sealable.sel { color: var(--text); }
+.light .home { background: #141a24; }
+/* Menu: the page's grey panel. Log sheet: Dusk */
+.light .pop { background: #eef1f5; box-shadow: inset 0 0 0 1px #b4bcc8, inset 3px 3px 0 #fff, inset -3px -3px 0 #dfe3e9; }
+.light .pop hr { background: rgba(20,30,50,.12); }
+.light .phone.log-open .scrim { background: rgba(20,26,36,.45); }
+.light .sheet { --ink: #f3f5f8; --text: #b7bdc8; --dim: #7c8494; background: #262c3a; box-shadow: inset 0 3px 0 #394154; }
+.light .grab { background: #4a5266; }
+.toggle { gap: 26px; flex-wrap: wrap; }
+.seg { display: flex; gap: 14px; }
+</style>
+</head>
+<body class="light">
+<div class="page">
+  <h1>Pixel-cut · final tabs</h1>
+  <p class="lede">The bottom bar: Skills · Quests · Trials · Hero. Every phone is live: tap the bar, tap the hero, open the menu, fold Resist, strike skills, check off quests.</p>
+  <div class="rules"><b>What's in it</b>
+    <ul>
+      <li><b>Skills</b> keeps Daily, Resting and Weekly, then <b>Resist</b> at the foot. Resist folds shut, with its count and its own plus. It starts open.</li>
+      <li><b>Quests</b> are only the ones you write. No Main / Side switch. Badge only when one is due today or overdue.</li>
+      <li><b>Trials</b> are the old side quests. No add button. A pip when a new one arrives, gone once you open the tab.</li>
+      <li><b>Hero</b> replaces the hero popup. Tapping the hero on the stage opens it too. It starts at level and best streak, then effects, gear and stats. The boss stays a popup.</li>
+      <li><b>Trials and Hero use the 76px Focus strip</b>, since you read those pages and don't strike from them. Skills and Quests keep the full stage. The switch animates.</li>
+      <li><b>Log</b> is in the menu and opens as a sheet. It replaces the old "Show log" toggle.</li>
+      <li><b>New players</b> (level under 3): Quests and Trials are greyed with a lock but still open, showing the seal. They unlock together at level 3.</li>
+      <li><b>Light</b>: grey page, white cards, gunmetal Resist and a white bar. The stage stays night, and the Log sheet takes Dusk like the other popups.</li>
+    </ul></div>
+  <div class="toggle"><span class="seg" role="radiogroup" aria-label="Theme"><label><input type="radio" name="theme" value="light" checked> Light</label><label><input type="radio" name="theme" value="dark"> Dark</label></span>
+    <label><input type="checkbox" id="fullToggle"> Keep the full stage on every tab</label></div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  health: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  lifesteal: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  critBoost: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  armor: SHIELD, magicResist: SHIELD + '<path d="M12 22V2"/>', shieldCheck: SHIELD + '<path d="m9 12 2 2 4-4"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  quest: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  hero: '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  menu: '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  wounds: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/><path d="m2 2 20 20"/>',
+  history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>',
+  trophy: '<path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>',
+  focus: '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>',
+  calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>',
+  sunrise: '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  gem: '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', health: 'var(--health)', lifesteal: 'var(--blood)', crit: 'var(--crit)', critBoost: 'var(--crit)', armor: 'var(--steel)', magicResist: 'var(--arcane)', streak: 'var(--streak-i)' };
+const icon = (name, color = COLOR[name] || 'currentColor', cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+const TYPE_ICON = { heal: 'healing', phys: 'physical', magic: 'magic', true: 'true' };
+const SPR = '../../public/sprites/';
+
+/* ---- data ---- */
+const daily = [
+  { n: 'Stretch', t: 'heal', d: '141', s: 12, r: 2, on: true }, { n: 'Morning run', t: 'phys', d: '1.1K', s: 23, r: 8, on: true },
+  { n: 'Pushups', t: 'phys', d: '196', s: 4, r: 1 }, { n: 'Read 20 pages', t: 'magic', d: '288', s: 9, r: 3, on: true }, { n: 'Meditate', t: 'true', d: '74', s: 0, r: 0 },
+];
+const resting = [{ n: 'Swim', t: 'phys', d: '230', s: 5, r: 1, next: 'Thu' }, { n: 'Guitar', t: 'magic', d: '160', s: 3, r: 0, next: 'Sat' }];
+const weekly = [{ n: 'Call family', t: 'heal', d: '180', s: 0, r: 0 }, { n: 'Long hike', t: 'phys', d: '1.4K', s: 6, r: 5, on: true }];
+const resist = [{ n: 'Doomscroll', t: 'phys', d: '110', s: 9, r: 1 }, { n: 'Late snacking', t: 'magic', d: '80', s: 3, r: 0, on: true }, { n: 'Takeout', t: 'magic', d: '150', s: 3, r: 0, week: true }];
+const quests = [
+  { n: 'Call the dentist', p: 1, due: 'Due today', cls: 'urgent' }, { n: 'Renew passport', p: 2, due: '2 days left', cls: 'soon' },
+  { n: 'Finish the tax return', p: 3, due: '6 days left' }, { n: 'Book the car service', p: 1, due: 'Done', on: true },
+];
+const trials = [
+  { n: 'Early riser', deed: 'Check off a hard skill before noon.', ic: 'sunrise', cur: 0, max: 1, fresh: true },
+  { n: 'Hold the line', deed: 'Resist 5 bad habits.', ic: 'armor', cur: 3, max: 5 },
+  { n: 'Clean slate', deed: 'Go 3 days in a row without a bad habit.', ic: 'shieldCheck', cur: 1, max: 3 },
+  { n: 'Epic find', deed: 'Find an epic item.', ic: 'gem', done: true, relic: 'First Blood' },
+];
+const items = [
+  { n: 'Godslayer Greatblade', ic: 'godslayer-greatblade', r: 'epic', ench: true, b: [['physical', '+84%', 'physical'], ['health', '+40%', 'max health'], ['lifesteal', '+4%', 'lifesteal']], fx: '+30% damage to bosses above 75% HP.' },
+  { n: 'First Blood', ic: 'first-blood', r: 'relic', b: [['physical', '+25%', 'physical'], ['lifesteal', '+2%', 'lifesteal']], fx: 'First hit on each boss always crits.' },
+  { n: "Executioner's Axe", ic: 'executioners-axe', r: 'rare', b: [['physical', '+26%', 'physical'], ['armor', '+150', 'armor']] },
+  { n: 'Vampiric Fang', ic: 'vampiric-fang', r: 'uncommon', b: [['physical', '+6%', 'physical'], ['lifesteal', '+3%', 'lifesteal']] },
+];
+const stats = [
+  ['health', 'Max health', '5.74K', '+1.6K'], ['physical', 'Physical', '1.4K', '+640'], ['magic', 'Magic', '416'], ['true', 'True', '611'],
+  ['healing', 'Healing', '526'], ['crit', 'Crit chance', '3%'], ['armor', 'Armor', '225', null, '18.4% less damage'], ['lifesteal', 'Lifesteal', '9%'],
+];
+
+/* ---- pieces ---- */
+const row = (h, cls = '') => `<li class="row${h.on ? ' on' : ''}${cls}" data-t="${h.t}" style="--c: var(--${h.t})">
+  <span class="nm"><span class="nt">${h.n}</span><span class="pp">${'<i></i>'.repeat(h.r)}</span></span>
+  <span class="meta">${h.next ? `<span class="next">${h.next}</span>` : ''}${h.week ? '<span class="tagw">Week</span>' : ''}<span class="streak">${h.s >= 3 ? icon('streak') + h.s : ''}</span></span>
+  <button class="press" type="button">${icon(TYPE_ICON[h.t], 'currentColor')}<b>${h.d}</b></button></li>`;
+const questRow = (q) => `<li class="row quest ${q.cls || ''}${q.on ? ' on' : ''}">
+  <label class="qchk"><input type="checkbox" aria-label="Complete ${q.n}"${q.on ? ' checked disabled' : ''}><i>${icon('check', 'currentColor')}</i></label>
+  <span class="body"><span class="qn">${q.n}</span><span class="qm"><span class="qpips">${[1, 2, 3].map((n) => `<i class="${n <= q.p ? 'lit' : ''}"></i>`).join('')}</span><em>${q.due}</em></span></span>
+  <span class="reward">${icon('exp', 'currentColor')}+EXP</span></li>`;
+const trialRow = (t) => `<li class="row trial${t.done ? ' done' : ''}">
+  <span class="tsock">${icon(t.ic, 'currentColor')}</span>
+  <span class="tbody"><span class="tname">${t.n}${t.fresh ? '<span class="tnew">New</span>' : ''}</span><span class="tdeed">${t.deed}</span>
+    ${t.done ? '' : `<span class="tprog"><span class="tbar"><i style="width:${(t.cur / t.max) * 100}%"></i></span>${t.cur} / ${t.max}</span>`}</span>
+  ${t.done ? `<span class="trelic">${t.relic}</span>` : `<span class="tgift" role="img" aria-label="An unknown item">${icon('gift', 'currentColor')}<span class="mark">?</span></span>`}</li>`;
+const gearRow = (it) => `<li class="gr${it.ench ? ' ench' : ''}" style="--r:var(--${it.r})">
+  <span class="slot"><span class="art"><img src="${SPR}items/${it.ic}.png" alt=""></span></span>
+  <div class="gt"><span class="gn">${it.n}</span>
+    <span><span class="rar">${it.r}</span>${it.ench ? ' <span class="rar opal">· Enchanted</span>' : ''}</span>
+    <span class="bons">${it.b.map(([s, v, l]) => `<span>${icon(s)}<span class="${it.ench ? 'opal' : ''}">${v}</span> <small>${l}</small></span>`).join('')}</span>
+    ${it.fx ? `<span class="gfx">${it.fx}</span>` : ''}</div></li>`;
+const cnt = (l) => `<span class="cnt"><b>${l.filter((x) => x.on).length}</b>/${l.length}</span>`;
+const grp = (t, l) => `<div class="group"><span>${t}</span>${cnt(l)}</div>`;
+const act = (sum, add) => `<div class="act"><span class="sum">${sum}</span>${add ? `<button class="add" type="button">+ ${add}</button>` : ''}</div>`;
+const seal = `<div class="seal"><div class="lm">${icon('lock', 'currentColor')}</div><p>Sealed until level 3</p></div>`;
+const struck = daily.concat(weekly).filter((x) => x.on).length, total = daily.length + weekly.length;
+
+const skillsPanel = (resistShut) => `<div class="panel" data-p="skills">${act(`<b>${struck}</b> of ${total} struck today`, 'New habit')}
+  <div class="sec">${grp('Daily', daily)}<ul>${daily.map((h) => row(h)).join('')}</ul>
+    <details class="rest"><summary>Resting <span>${resting.length}</span></summary><ul>${resting.map((h) => row(h, ' resting')).join('')}</ul></details>
+    ${grp('Weekly', weekly)}<ul>${weekly.map((h) => row(h)).join('')}</ul></div>
+  <div class="sec resist${resistShut ? ' shut' : ''}">
+    <div class="rhead"><button class="fold" type="button" aria-expanded="${!resistShut}"><h3>${icon('armor', 'currentColor')}Resist</h3>${cnt(resist)}</button><button class="add sq" type="button" aria-label="Add habit to resist">+</button></div>
+    <div class="rbody">${grp('Daily', resist.filter((h) => !h.week))}<ul>${resist.filter((h) => !h.week).map((h) => row(h)).join('')}</ul>
+      ${grp('Weekly', resist.filter((h) => h.week))}<ul>${resist.filter((h) => h.week).map((h) => row(h)).join('')}</ul></div></div></div>`;
+const questsPanel = `<div class="panel sealable" data-p="quests"><div class="real">${act('<b>1</b> due today', 'New task')}
+  <div class="sec"><ul>${quests.map(questRow).join('')}</ul></div></div>${seal}</div>`;
+const trialsPanel = `<div class="panel sealable" data-p="trials"><div class="real">${act('<b>3</b> sworn', '')}
+  <div class="sec"><ul>${trials.map(trialRow).join('')}</ul></div></div>${seal}</div>`;
+const heroPanel = (lvl) => `<div class="panel" data-p="hero">
+  <div class="hhead"><div class="well"><span class="tl">Level</span><span class="tv brass">${lvl}</span><span class="tn">1.3K EXP to next</span></div>
+    <div class="well"><span class="tl">${icon('streak')}Best streak</span><span class="tv">23</span><span class="tn">Morning run</span></div></div>
+  <div class="fx"><span class="ef boon">${icon('critBoost', 'currentColor')}+20% crit · 1d</span><span class="ef bane">${icon('wounds', 'currentColor')}Wounds · 50% heal · 2d</span></div>
+  <div class="lbl">Equipment</div>
+  <ul class="gear">${items.map(gearRow).join('')}<li class="gr empty"><span class="slot"></span>Empty slot</li></ul>
+  <div class="lbl">Stats</div>
+  <div class="tiles">${stats.map(([ic, l, v, g, note]) => `<div class="well"><span class="tl">${icon(ic)}${l}</span><span class="tv">${v}${g ? `<em>${g}</em>` : ''}</span>${note ? `<span class="tn">${note}</span>` : ''}</div>`).join('')}</div></div>`;
+
+const logSheet = `<div class="sheet" role="dialog" aria-label="Log"><div class="grab"></div>
+  <div class="shead"><h3>Log</h3><button class="close" type="button" aria-label="Close">${icon('x', 'currentColor')}</button></div>
+  <ul class="logl">
+    <li class="day">Today</li>
+    <li>${icon('magic')}Used "Read 20 pages" — dealt <span class="d">288</span> damage</li>
+    <li>${icon('physical')}Used "Morning run" — dealt <span class="d">1.1K</span> damage <span class="chip">${icon('crit')}Crit</span></li>
+    <li>${icon('healing')}Used "Stretch" — healed <span class="h">141</span></li>
+    <li>${icon('quest')}Completed quest "Book the car service" — gained <span class="x">+120</span> EXP</li>
+    <li class="day">Yesterday</li>
+    <li>${icon('physical')}Missed "Pushups" — took <span class="d">58</span> damage</li>
+    <li>${icon('armor')}Resisted "Doomscroll" — dealt <span class="d">110</span> damage</li>
+    <li>${icon('gift', 'var(--relic)')}Trial "Epic find" — earned First Blood</li>
+    <li>${icon('magic')}Used "Guitar" — dealt <span class="d">160</span> damage</li></ul></div>`;
+const menuPop = `<div class="pop" role="menu">
+  <button type="button">${icon('undo', 'currentColor')}Undo</button>
+  <button type="button" class="new" data-log>${icon('history', 'currentColor')}Log</button>
+  <button type="button">${icon('trophy', 'currentColor')}High Scores</button>
+  <button type="button">${icon('focus', 'currentColor')}Focus</button>
+  <hr><div class="dim">Export · Import · Theme</div></div>`;
+
+const stage = (lvl) => `<div class="stage"><span class="stars"></span><span class="horizon"></span>
+  <button class="menu" type="button" aria-label="Menu">${icon('menu', 'currentColor')}</button>
+  <span class="plinth b"></span><img class="boss" src="${SPR}bosses/balanced.png" alt=""><span class="plinth h"></span><img class="hero" src="${SPR}player/warrior.png" alt="">
+  <div class="unit b"><div class="uname"><span><span class="bnum">#9</span> Arcane Adept</span><span class="cue"></span></div>
+    <div class="bar"><b style="width:41%"></b><span class="mk fired" style="left:66%"></span><span class="mk" style="left:33%"></span><span>266 / 648</span></div>
+    <div class="stats"><span>${icon('physical')}57</span><span>${icon('magic')}117</span><span>${icon('armor')}158</span><span>${icon('magicResist')}223</span><span>${icon('crit')}3%</span></div></div>
+  <div class="unit h"><div class="uname"><span>Ryn <small>${lvl}</small></span><span class="cue"></span></div>
+    <div class="bar"><b style="width:62%"></b><i style="width:38%"></i><span>3.56K / 5.74K</span></div>
+    <div class="stats"><span>${icon('physical')}1.4K</span><span>${icon('magic')}416</span><span>${icon('healing')}526</span><span>${icon('true')}611</span><span>${icon('crit')}3%</span></div></div>
+  <button class="tap-hero" type="button" aria-label="Ryn details"></button></div>`;
+
+const TABS = [
+  { k: 'skills', i: 'physical', l: 'Skills' },
+  { k: 'quests', i: 'quest', l: 'Quests', badge: '<span class="dot badge">1</span>', sealable: true },
+  { k: 'trials', i: 'gift', l: 'Trials', badge: '<span class="pip badge"></span>', sealable: true },
+  { k: 'hero', i: 'hero', l: 'Hero' },
+];
+const STRIP = ['trials', 'hero'];
+const phone = (o) => {
+  const lvl = o.newbie ? 2 : 14;
+  return `<div class="phone${o.newbie ? ' newbie' : ''}" data-start="${o.start}"${o.scroll ? ` data-scroll="${o.scroll}"` : ''}${o.log ? ' data-log="1"' : ''}>${stage(lvl)}
+  <div class="scroll">${skillsPanel(o.resistShut)}${questsPanel}${trialsPanel}${heroPanel(lvl)}</div>
+  <div class="bar-b" role="tablist">${TABS.map((t) => `<button class="tabb${t.sealable ? ' sealable' : ''}" type="button" role="tab" data-t="${t.k}">${icon(t.i, 'currentColor')}${t.l}${t.badge || ''}${t.sealable ? icon('lock', 'currentColor', 'lk') : ''}</button>`).join('')}</div>
+  <span class="home"></span><div class="scrim"></div>${menuPop}${logSheet}</div>`;
+};
+
+const SHOTS = [
+  { tag: 'Skills', h: 'Opens here', start: 'skills', p: 'Full stage. The count line replaces the old summary panel. "+ New habit" stays where the first-habit hint points.' },
+  { tag: 'Skills, scrolled', h: 'Resist at the foot', start: 'skills', scroll: 9999, p: 'Resist sits under Weekly, with its count, a fold and its own plus. Tap the Resist title to fold it shut.' },
+  { tag: 'Quests', h: 'Only yours', start: 'quests', p: 'No Main / Side switch. The badge counts what is due today or overdue, not just "soon". Done quests sink to the bottom.' },
+  { tag: 'Trials', h: 'The old side quests', start: 'trials', p: 'The stage drops to the Focus strip. A new trial wears a "New" tag the first time you see it, and the tab pip goes away.' },
+  { tag: 'Hero', h: 'The popup, as a page', start: 'hero', p: 'Strip stage, so the hero isn\'t shown twice. Level and best streak up top, then effects, gear in sockets, stats in wells.' },
+  { tag: 'Menu → Log', h: 'Log as a sheet', start: 'skills', log: true, p: 'Log is the second item in the menu and slides up over the current tab. Tap outside or × to close. Desktop could keep it in the side column.' },
+  { tag: 'New player', h: 'Level 2, sealed', start: 'quests', newbie: true, p: 'Quests and Trials are greyed with a lock and no badges, but still open to show the seal. The level-3 unlock popup opens both.' },
+];
+
+document.getElementById('grid').innerHTML = SHOTS.map((s) => `<div class="col">
+  <div class="tag">${s.tag}</div><h2>${s.h}</h2><p>${s.p}</p>${phone(s)}</div>`).join('');
+
+/* ---- behaviour ---- */
+function select(ph, key) {
+  ph.dataset.cur = key;
+  ph.querySelectorAll('.tabb').forEach((b) => b.classList.toggle('sel', b.dataset.t === key));
+  ph.querySelectorAll('.panel').forEach((p) => p.classList.toggle('on', p.dataset.p === key));
+  ph.classList.toggle('strip', STRIP.includes(key));
+  if (key === 'trials') ph.querySelector('.tabb[data-t="trials"] .pip')?.remove();
+  ph.querySelector('.scroll').scrollTop = 0;
+}
+const closeAll = (ph) => ph.classList.remove('menu-open', 'log-open');
+document.querySelectorAll('.phone').forEach((ph) => {
+  ph.style.transition = 'none';
+  select(ph, ph.dataset.start);
+  if (ph.dataset.scroll) ph.querySelector('.scroll').scrollTop = +ph.dataset.scroll;
+  if (ph.dataset.log) { ph.classList.add('log-open'); ph.querySelector('.sheet').style.transition = 'none'; }
+  requestAnimationFrame(() => requestAnimationFrame(() => { ph.style.transition = ''; ph.querySelector('.sheet').style.transition = ''; }));
+});
+document.addEventListener('click', (e) => {
+  const ph = e.target.closest('.phone'); if (!ph) return;
+  const tab = e.target.closest('.tabb'); if (tab) { closeAll(ph); select(ph, tab.dataset.t); return; }
+  if (e.target.closest('.tap-hero')) { select(ph, 'hero'); return; }
+  if (e.target.closest('.menu')) { ph.classList.toggle('menu-open'); return; }
+  if (e.target.closest('[data-log]')) { ph.classList.remove('menu-open'); ph.classList.add('log-open'); return; }
+  if (e.target.closest('.scrim') || e.target.closest('.close') || e.target.closest('.pop button')) { closeAll(ph); return; }
+  const fold = e.target.closest('.fold');
+  if (fold) { const sec = fold.closest('.resist'); sec.classList.toggle('shut'); fold.setAttribute('aria-expanded', !sec.classList.contains('shut')); return; }
+  const b = e.target.closest('.press'); if (b) b.closest('.row').classList.toggle('on');
+});
+document.addEventListener('change', (e) => { if (e.target.matches('.qchk input')) e.target.closest('.row').classList.toggle('on', e.target.checked); });
+document.getElementById('fullToggle').addEventListener('change', (e) => document.body.classList.toggle('fullstage', e.target.checked));
+document.querySelectorAll('input[name="theme"]').forEach((r) => r.addEventListener('change', (e) => document.body.classList.toggle('light', e.target.value === 'light')));
+</script>
+</body>
+</html>
