@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { Lock, Plus, ScrollText } from 'lucide-vue-next';
-import { activeChallenges, dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
+import { dailyPeriodKey, questsOpen } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
@@ -9,9 +9,9 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
 import Modal from '../ui/Modal.vue';
-import ChallengeList from './ChallengeList.vue';
 import QuestDetailModal from './QuestDetailModal.vue';
 import QuestForm from './QuestForm.vue';
+import SealedNotice from './SealedNotice.vue';
 
 const questStore = useQuestStore();
 const characterStore = useCharacterStore();
@@ -26,14 +26,6 @@ const PIPS: Record<Difficulty, number> = { easy: 1, medium: 2, hard: 3 };
 const MS_PER_DAY = 86_400_000;
 
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
-// Main: the quests the player wrote. Side: the in-game challenges. Not remembered between visits.
-const tab = ref<'main' | 'side'>('main');
-const activeChallengeCount = computed(() => activeChallenges(characterStore.character).length);
-// No active side quests: the Side tab greys out and locks, and a visit to it drops back to Main.
-const sideLocked = computed(() => activeChallengeCount.value === 0);
-watch(sideLocked, (locked) => {
-  if (locked) tab.value = 'main';
-});
 const showAdd = ref(false);
 const detailId = ref<string | null>(null);
 const detailQuest = computed(() => questStore.quests.find((q) => q.id === detailId.value) ?? null);
@@ -82,31 +74,11 @@ function onCheckOff(quest: Quest) {
   <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
       <h2><Lock v-if="!open" :size="16" class="section-icon lock-icon" /><ScrollText v-else :size="16" class="section-icon" />Quests</h2>
-      <button v-if="open && tab === 'main'" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
+      <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
     </div>
     <p class="section-caption">One-off tasks</p>
-    <div v-if="open" class="quest-tabs" role="tablist">
-      <button type="button" role="tab" class="quest-tab" :class="{ selected: tab === 'main' }" :aria-selected="tab === 'main'" @click="tab = 'main'">Main</button>
-      <button
-        type="button"
-        role="tab"
-        class="quest-tab side"
-        :class="{ selected: tab === 'side', locked: sideLocked }"
-        :aria-selected="tab === 'side'"
-        :disabled="sideLocked"
-        @click="tab = 'side'"
-      >
-        Side<Lock v-if="sideLocked" :size="12" class="tab-lock" aria-hidden="true" /><span v-else class="tab-count">{{ activeChallengeCount }}</span>
-      </button>
-    </div>
-    <div v-if="!open" class="lock-area">
-      <div class="lock-ghost" aria-hidden="true"><i /><i /></div>
-      <div class="lock-seal">
-        <span class="lock-mark"><Lock :size="18" /></span>
-        <p class="lock-text">Sealed until level {{ QUESTS_UNLOCK_LEVEL }}</p>
-      </div>
-    </div>
-    <ul v-else-if="tab === 'main' && questStore.quests.length">
+    <SealedNotice v-if="!open" />
+    <ul v-else-if="questStore.quests.length">
       <li
         v-for="quest in sortedQuests"
         :key="quest.id"
@@ -134,8 +106,7 @@ function onCheckOff(quest: Quest) {
         </button>
       </li>
     </ul>
-    <p v-else-if="tab === 'main'" class="section-empty">No quests yet. Tap +.</p>
-    <ChallengeList v-else />
+    <p v-else class="section-empty">No quests yet. Tap +.</p>
   </section>
 
   <Modal v-model="showAdd" title="New quest" max-width="480px">
@@ -228,97 +199,13 @@ function onCheckOff(quest: Quest) {
   margin: 0;
 }
 
-/* Sealed until QUESTS_UNLOCK_LEVEL: two blurred placeholder rows under a lock. */
+/* Sealed until QUESTS_UNLOCK_LEVEL (SealedNotice). */
 .locked h2 {
   color: var(--text);
 }
 
-.lock-area {
-  position: relative;
-  margin-top: 0;
-}
-
-.lock-ghost {
-  display: grid;
-  gap: 0.5rem;
-  opacity: 0.35;
-  filter: blur(2px);
-}
-
-.lock-ghost i {
-  display: block;
-  height: 3rem;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.lock-seal {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.lock-mark {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-}
-
-.lock-text {
-  margin: 0;
-  color: var(--text);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .quest-section ul {
   margin-top: 0.75rem;
-}
-
-/* Base layout only; the Pixel-cut look is in themes/ashen.scss. */
-.quest-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.quest-tab {
-  flex: 1;
-  min-height: 44px;
-  color: var(--text);
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.quest-tab.selected {
-  color: var(--text-h);
-  border-color: var(--accent-border);
-}
-
-.tab-count {
-  margin-left: 0.4rem;
-  font-size: 0.75rem;
-}
-
-.quest-tab.locked {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.tab-lock {
-  margin-left: 0.4rem;
 }
 
 .body {

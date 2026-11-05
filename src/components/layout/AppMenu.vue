@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Check, Download, Focus, Menu, ScrollText, Trophy, Undo2, Upload } from 'lucide-vue-next';
+import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { exportSaveFile } from '../../composables/useSaveFileTransfer';
 import { useUndoCheck } from '../../composables/useUndoCheck';
 import { useFocusModeStore } from '../../store/focusModeStore';
@@ -11,19 +12,22 @@ import { THEME_CHOICES, useThemeStore } from '../../store/themeStore';
 import type { ThemePreference } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
-// Top-right menu: Undo, High Scores, Focus mode, Show log, save export/import,
-// and the theme picker (it hides itself if there is only one theme). Picking a
+// Top-right menu: Undo, the log, High Scores, Focus mode, save export/import,
+// and the theme picker (it hides itself if there is only one theme). On a
+// phone, Log opens the log in a popup; wider screens keep it in the side
+// column, and Show log turns it on or off there. Picking a
 // theme, or flipping Focus mode / Show log, keeps the menu open so the change can
 // be seen and flipped back; anything else, a tap outside (which does nothing
 // else), or Escape closes it.
 // The panel is teleported to <body> and placed under the button: the button
 // rides inside the pinned stage, and on a phone the panel was being cut off
 // where the stage's layer ends, so it lives above the whole page instead.
-const emit = defineEmits<{ 'high-scores': [] }>();
+const emit = defineEmits<{ 'high-scores': []; log: [] }>();
 
 const themeStore = useThemeStore();
 const focusMode = useFocusModeStore();
 const logVisible = useLogVisibleStore();
+const isPhone = usePhoneLayout();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
@@ -47,6 +51,11 @@ const { canUndo, undo } = useUndoCheck();
 function undoCheck() {
   open.value = false;
   undo();
+}
+
+function openLog() {
+  open.value = false;
+  emit('log');
 }
 
 function openHighScores() {
@@ -156,12 +165,13 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <div v-if="open" ref="panel" class="menu-panel" role="menu" :style="panelPos">
         <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
+        <button v-if="isPhone" type="button" class="menu-item" role="menuitem" @click="openLog"><ScrollText :size="15" />Log</button>
         <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
         <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
         <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="focusMode.setOn(!focusMode.on)">
           <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />
         </button>
-        <button type="button" class="menu-item" role="menuitemcheckbox" :aria-checked="logVisible.on" @click="logVisible.setOn(!logVisible.on)">
+        <button v-if="!isPhone" type="button" class="menu-item" role="menuitemcheckbox" :aria-checked="logVisible.on" @click="logVisible.setOn(!logVisible.on)">
           <ScrollText :size="15" />Show log<Check :size="15" class="tick focus-tick" :class="{ on: logVisible.on }" />
         </button>
         <div class="menu-divider" role="separator" />

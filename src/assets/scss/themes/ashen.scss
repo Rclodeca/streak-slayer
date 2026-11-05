@@ -1023,41 +1023,36 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // is a title, with its add button, over its cards. A card's background is
   // --card-bg, so the base hover can't repaint it.
 
-  // Each section hangs from a spine: a line down its left in its own colour
-  // (silver, red for Resist, brass for Quests), a node at the title and a
-  // tick at each group. (docs/mockups/pixel-sections.html, Spine)
-  :is(.skill-list, .resist-list, .quest-section) {
+  // Each section has its own colour (silver, red for Resist, brass for Quests
+  // and Trials), in its title's icon and its add button. No line or node down
+  // the left any more (the spine, docs/mockups/pixel-sections.html): the
+  // cards run the full width.
+  :is(.skill-list, .resist-list, .quest-section, .trial-section, .hero-page) {
     --spine: var(--accent);
     position: relative;
-    margin-left: 6px;
-    padding-left: 14px;
   }
 
   .resist-list {
     --spine: var(--damage-color);
   }
 
-  .quest-section {
+  :is(.quest-section, .trial-section) {
     --spine: #{$brass};
   }
 
-  // The gap between sections is the layout's 20px plus this.
-  :is(.resist-list, .quest-section) {
+  // The gap between sections is the layout's 20px plus this. On a phone, a
+  // section that opens its tab sits straight under the stage.
+  :is(.resist-list, .quest-section, .trial-section) {
     margin-top: 10px;
   }
 
-  :is(.skill-list, .resist-list, .quest-section)::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 8px;
-    bottom: 6px;
-    width: 3px;
-    background: var(--spine);
-    opacity: 0.5;
+  @media (max-width: 820px) {
+    .tab-panel > :first-child {
+      margin-top: 0;
+    }
   }
 
-  :is(.habit-list-header, .quest-header) {
+  :is(.habit-list-header, .quest-header, .hero-page-header) {
     position: relative;
     height: 44px;
     min-height: 0;
@@ -1065,19 +1060,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     padding: 0 2px;
   }
 
-  :is(.habit-list-header, .quest-header)::before {
-    content: '';
-    position: absolute;
-    left: -17px;
-    top: 50%;
-    width: 9px;
-    height: 9px;
-    margin-top: -5px;
-    background: var(--spine);
-    box-shadow: 0 0 0 3px var(--bg);
-  }
-
-  :is(.habit-list-header, .quest-header) h2 {
+  :is(.habit-list-header, .quest-header, .hero-page-header) h2 {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1086,7 +1069,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--text-h);
   }
 
-  // The title's icon takes its section's spine colour.
+  // The title's icon takes its section's colour.
   .section-icon {
     flex-shrink: 0;
     color: var(--spine);
@@ -1094,8 +1077,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // Add: a ghost plus in the section's colour. The tap area is 44px; the
   // drawn square is 30px. (docs/mockups/pixel-add-together.html) It is
-  // dropped 1px so the square's top edge lines up with the top of the
-  // section's spine bar, and 7px right (the tap area's inset around the
+  // dropped 1px, and moved 7px right (the tap area's inset around the
   // square) so the square ends where the Daily/Weekly labels and the cards
   // end; a transform leaves the header's layout alone.
   .add-button {
@@ -1163,18 +1145,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     margin: 16px 2px 8px;
     @include engraved($caps-xs, 0.26em);
     color: var(--text);
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: -14px;
-      top: 50%;
-      width: 8px;
-      height: 2px;
-      margin-top: -1px;
-      background: var(--spine);
-      opacity: 0.7;
-    }
   }
 
   .habit-group-title {
@@ -1450,13 +1420,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     cursor: default;
   }
 
-  // ---------- Challenges ----------
-  // Game-side deeds, kept apart from the quests the player writes: two sunk
-  // tabs under the header, brass for the side one, and challenge cards cut
-  // like the quest cards (docs/mockups/pixel-challenges-2.html option C;
-  // pixel-challenges.html, Rim for the level-up card, Cards for the list).
+  // ---------- Challenges (Trials) ----------
+  // Game-side deeds, kept apart from the quests the player writes in a
+  // section (a phone tab) of their own, the challenge cards cut like the quest
+  // cards (docs/mockups/pixel-challenges-2.html option C; pixel-challenges.html,
+  // Rim for the level-up card, Cards for the list).
 
-  // A small brass count, as on the Side tab.
+  // A small brass count, as on the Quests tab.
   @mixin brass-count {
     display: inline-grid;
     place-items: center;
@@ -1478,65 +1448,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--icon-gift);
     @include name-serif(700);
     font-size: 1rem;
-  }
-
-  .quest-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    margin: 0 0 10px;
-    padding: 4px;
-    @include sunk-well;
-  }
-
-  .quest-tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 44px;
-    padding: 0 8px;
-    border: 0;
-    background: none;
-    color: var(--spent-text);
-    @include pixel-corners(2px);
-    @include engraved($caps-xs, 0.2em);
-    @include inset-focus;
-
-    &.selected {
-      background: var(--card);
-      color: var(--card-ink);
-      @include bevel(var(--card-hi), var(--card-lo));
-    }
-
-    // Side is brass: dim when it waits, bright with a brass rim when open.
-    &.side {
-      color: color-mix(in srgb, #{$brass} 70%, #000);
-    }
-
-    &.side.selected {
-      color: $brass;
-      box-shadow:
-        inset 2px 2px 0 var(--card-hi),
-        inset -2px -2px 0 var(--card-lo),
-        inset 0 0 0 2px color-mix(in srgb, #{$brass} 55%, #000);
-    }
-  }
-
-  .quest-tab .tab-count {
-    margin: 0;
-    @include brass-count;
-  }
-
-  // No active side quests: greyed out, not brass, and not pressable.
-  .quest-tab.locked {
-    color: var(--spent-text);
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .quest-tab .tab-lock {
-    margin: 0;
   }
 
   .challenge-list {
@@ -1685,6 +1596,91 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .challenge .challenge-gift .mark {
     font-size: 1.1rem;
+  }
+
+  // A trial new since the Trials tab was last open.
+  .challenge-new {
+    margin-left: 7px;
+    padding: 1px 5px;
+    vertical-align: 2px;
+    @include pixel-corners(2px);
+    background: $brass;
+    color: var(--on-brass);
+    @include plain-label(0.65rem, 800);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  // ---------- The phone's bottom bar ----------
+  // (docs/mockups/pixel-tabs-final.html) The stage's night, under a black lip
+  // and a shadow cast up over the list. Engraved names, the chosen one lit
+  // with a mark along the top in its colour: silver, brass for Quests and
+  // Trials. Sealed ones grey out under a small lock.
+  .tab-bar {
+    --tab-bar-bg: #0c0f17;
+    position: relative;
+    z-index: 8;
+    background: var(--tab-bar-bg);
+    border-top: 3px solid var(--card-lip);
+    box-shadow: 0 -10px 18px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  .tab {
+    --mark: var(--accent);
+    @include engraved($caps-xs, 0.14em);
+    color: var(--spent-text);
+    @include inset-focus;
+  }
+
+  .tab:is(.tab-quests, .tab-trials) {
+    --mark: #{$brass};
+  }
+
+  .tab.selected {
+    color: var(--text-h);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: -3px;
+      height: 3px;
+      background: var(--mark);
+    }
+
+    .tab-icon {
+      color: var(--mark);
+    }
+  }
+
+  .tab.sealed {
+    color: color-mix(in srgb, var(--spent-text) 60%, transparent);
+  }
+
+  .tab.sealed.selected {
+    color: var(--text);
+  }
+
+  .tab .tab-lock {
+    color: var(--spent-text);
+  }
+
+  .tab .tab-count {
+    min-width: 16px;
+    height: 16px;
+    @include brass-count;
+    font-size: 0.65rem;
+  }
+
+  .tab .tab-pip {
+    background: $brass;
+    box-shadow: 0 0 0 2px var(--tab-bar-bg);
+  }
+
+  // The phone's Hero tab: its level in brass, as on the stage.
+  .hero-head .level-value {
+    color: $brass;
   }
 
   // The quest popup (docs/mockups/pixel-quests.html, Plates): the deed in a
@@ -1962,6 +1958,16 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .modal-footer {
     border-top-color: $line;
+  }
+
+  // The log's sheet (phones): stepped only along its top, where it lifts off
+  // the bottom of the screen; a grab bar in ash.
+  .modal-content.sheet {
+    clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% 100%, 0 100%);
+  }
+
+  .sheet-grab::before {
+    background: $line-mid;
   }
 
   // Title on the left; the close button is taken out of the flow, at the
@@ -2754,9 +2760,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include true-sans(0.84375rem, 700);
   }
 
+  // An empty slot: a sunk well with a dim, empty socket
+  // (docs/mockups/pixel-tabs-final.html).
   .gear-row.empty {
+    --rarity: #2a3140;
     align-items: center;
     @include sunk-well;
+    @include true-sans(0.875rem);
     color: var(--spent-text);
   }
 

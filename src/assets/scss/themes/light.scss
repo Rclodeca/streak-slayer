@@ -14,7 +14,6 @@
 @use 'moonlit';
 
 $light: ":root[data-theme='light']";
-$ticket-gold: #ebc35a;
 
 #{$light} {
   color-scheme: light;
@@ -268,7 +267,7 @@ $ticket-gold: #ebc35a;
 }
 
 // ---------- Log: a white card, like the skills ----------
-#{$light} .activity-log {
+#{$light} .activity-log:not(.bare) {
   background: var(--card);
   border-bottom: 3px solid var(--card-lip);
   box-shadow:
@@ -298,16 +297,15 @@ $ticket-gold: #ebc35a;
   --sunk-lo: #4a515b;
 }
 
-// ---------- Quests: white cards like the skills ----------
-#{$light} .quest-tab:is(.selected, .side.selected) {
-  background: #fff;
-  color: #8a5a00;
-  box-shadow: inset 0 0 0 2px $ticket-gold;
+// ---------- The phone's bottom bar: white, under a grey line ----------
+#{$light} .tab-bar {
+  --tab-bar-bg: #fff;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 16px -10px rgba(20, 30, 50, 0.25);
 }
 
-// The tab that waits reads as grey text on the grey well, not a ghost.
-#{$light} .quest-tab:not(.selected, .side, .locked) {
-  color: var(--text);
+#{$light} .tab.selected::before {
+  top: -1px;
 }
 
 // ---------- Side quests: white cards, a brass tile for the icon ----------

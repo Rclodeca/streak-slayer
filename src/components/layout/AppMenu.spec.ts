@@ -2,7 +2,7 @@
 
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { STORAGE_KEY, useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { STORAGE_KEY as THEME_KEY, useThemeStore } from '../../store/themeStore';
@@ -94,5 +94,19 @@ describe('AppMenu', () => {
     outside.click();
     expect(taps).toBe(1);
     outside.remove();
+  });
+
+  it('opens the log in its popup on a phone, instead of the side column\'s Show log', async () => {
+    vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
+    const wrapper = mount(AppMenu, { attachTo: document.body });
+    await wrapper.find('.menu-button').trigger('click');
+    const items = () => [...document.body.querySelectorAll<HTMLElement>('.menu-item')];
+    expect(items().some((el) => el.textContent?.includes('Show log'))).toBe(false);
+
+    items().find((el) => el.textContent?.trim() === 'Log')!.click();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('log')).toHaveLength(1);
+    expect(document.body.querySelector('.menu-panel')).toBeNull();
+    vi.unstubAllGlobals();
   });
 });

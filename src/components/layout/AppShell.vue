@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import AppMenu from './AppMenu.vue';
+import TabBar from './TabBar.vue';
 import NewHeroScreen from './NewHeroScreen.vue';
 import PopupPreview from '../debug/PopupPreview.vue';
 import FightStage from '../fight/FightStage.vue';
 import SkipDayButton from '../debug/SkipDayButton.vue';
+import HeroDetails from '../character/HeroDetails.vue';
 import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
 import QuestSection from '../quests/QuestSection.vue';
+import TrialSection from '../quests/TrialSection.vue';
 import ProgressSummary from './ProgressSummary.vue';
 import ActivityLog from '../ui/ActivityLog.vue';
 import DeathScreen from '../ui/DeathScreen.vue';
+import Modal from '../ui/Modal.vue';
 import HoodedScene from '../ui/HoodedScene.vue';
 import ItemDropPopup from '../ui/ItemDropPopup.vue';
 import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
@@ -21,10 +25,14 @@ import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
 import EventChoiceModal from '../events/EventChoiceModal.vue';
 import ReviveNotice from '../ui/ReviveNotice.vue';
 import BossSkillPopup from '../boss/BossSkillPopup.vue';
+import { activeChallenges } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
+import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
+import { useTabStore } from '../../store/tabStore';
+import { trialKey, useTrialSeenStore } from '../../store/trialSeenStore';
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
@@ -51,6 +59,34 @@ const needsName = computed(() => characterStore.character.name === undefined);
 // the boss's number joins its name (BossPanel). High Scores keeps the bar,
 // with its Back button.
 const showHighScores = ref(false);
+
+// Phones show one list at a time, picked in the bottom bar (TabBar), each
+// opening at its top; the Hero tab is the hero's details, which wider screens
+// open as a popup from the stage. There the log is a popup from the menu too,
+// in place of the side column.
+const isPhone = usePhoneLayout();
+const tabStore = useTabStore();
+const showLog = ref(false);
+const scrollBody = ref<HTMLElement | null>(null);
+watch(
+  () => tabStore.tab,
+  () => {
+    if (scrollBody.value) scrollBody.value.scrollTop = 0;
+  },
+);
+
+// What's on the Trials tab has been seen: its pip goes, and the new ones
+// keep their "New" tags until the tab is left.
+const trialSeen = useTrialSeenStore();
+const trialKeys = computed(() => activeChallenges(characterStore.character).map(trialKey).join());
+watch(
+  [() => isPhone.value && tabStore.tab === 'trials', trialKeys],
+  ([onTrials]) => {
+    if (onTrials) trialSeen.visit(activeChallenges(characterStore.character));
+    else trialSeen.leave();
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -80,12 +116,14 @@ const showHighScores = ref(false);
       <PopupPreview v-if="isDev" />
       <div class="layout">
         <FightStage>
-          <AppMenu @high-scores="showHighScores = true" />
+          <AppMenu @high-scores="showHighScores = true" @log="showLog = true" />
         </FightStage>
-        <div class="scroll-body">
+        <div ref="scrollBody" class="scroll-body">
           <main class="main">
-            <HabitList />
-            <QuestSection />
+            <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>
+            <div class="tab-panel" :class="{ current: tabStore.tab === 'quests' }"><QuestSection /></div>
+            <div class="tab-panel" :class="{ current: tabStore.tab === 'trials' }"><TrialSection /></div>
+            <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'hero' }"><HeroDetails page /></div>
           </main>
           <aside class="side">
             <ProgressSummary class="progress" />
@@ -99,7 +137,11 @@ const showHighScores = ref(false);
             </div>
           </aside>
         </div>
+        <TabBar v-if="isPhone" />
       </div>
+      <Modal v-model="showLog" title="Log" sheet>
+        <ActivityLog bare />
+      </Modal>
     </template>
   </div>
 </template>
@@ -162,8 +204,10 @@ const showHighScores = ref(false);
   margin-bottom: -4px;
 }
 
-/* Desktop: no box of its own, the columns are the grid's. */
-.scroll-body {
+/* Desktop: no box of its own, the columns are the grid's, and every list
+   shows. */
+.scroll-body,
+.tab-panel {
   display: contents;
 }
 
@@ -218,11 +262,12 @@ const showHighScores = ref(false);
 }
 
 /* Phones: one column. The fight view fills the screen and never scrolls
-   itself: the stage is the top row and the lists scroll in a box beneath it,
-   so a pull past either end of the lists bounces only the lists, never the
-   stage (the page has nothing to bounce, see main.scss). Every section is a
-   row of the scroll box's grid, spaced like the rest. The progress rings are
-   desktop and tablet only. */
+   itself: the stage is the top row, the bottom bar the last, and the current
+   tab's list scrolls in a box between them, so a pull past either end of the
+   list bounces only the list, never the stage (the page has nothing to
+   bounce, see main.scss). Every section is a row of the scroll box's grid,
+   spaced like the rest. The side column (the progress rings and the log) is
+   desktop and tablet only: the log is the menu's popup here. */
 @media (max-width: 820px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
@@ -237,7 +282,7 @@ const showHighScores = ref(false);
   .fight-view .layout {
     flex: 1;
     min-height: 0;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
     gap: 0;
   }
 
@@ -248,15 +293,15 @@ const showHighScores = ref(false);
     gap: 1.25rem;
     min-height: 0;
     overflow-y: auto;
-    padding: 1.25rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    padding: 1.25rem 1rem 1rem;
   }
 
-  .main,
-  .side {
+  .main {
     display: contents;
   }
 
-  .progress {
+  .tab-panel:not(.current),
+  .side {
     display: none;
   }
 }

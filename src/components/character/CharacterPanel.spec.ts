@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addDaysToDayKey, dailyPeriodKey, effectiveStat, formatCompact, ITEM_CATALOG } from '../../game-engine';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useTabStore } from '../../store/tabStore';
 import Modal from '../ui/Modal.vue';
 import CharacterPanel from './CharacterPanel.vue';
 
@@ -45,6 +46,14 @@ describe('CharacterPanel', () => {
     expect(wrapper.find('.item-grid').exists()).toBe(false);
     await wrapper.find('button.tap-hero').trigger('click');
     expect(wrapper.findComponent(Modal).props('modelValue')).toBe(true);
+  });
+
+  it('opens the Hero tab instead of the popup on a phone', async () => {
+    vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
+    const wrapper = mount(CharacterPanel);
+    await wrapper.find('button.tap-hero').trigger('click');
+    expect(useTabStore().tab).toBe('hero');
+    expect(wrapper.findComponent(Modal).props('modelValue')).toBe(false);
   });
 
   it('lights the hero while its tap area is held', async () => {

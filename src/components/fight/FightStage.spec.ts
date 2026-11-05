@@ -9,6 +9,7 @@ import { holdHp, playHit } from '../../composables/useHitFeed';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useFocusModeStore } from '../../store/focusModeStore';
+import { useTabStore } from '../../store/tabStore';
 import BossBar from '../boss/BossBar.vue';
 import FightStage from './FightStage.vue';
 import { IMPACT_MS } from './hitFx';
@@ -72,6 +73,24 @@ describe('FightStage', () => {
     useFocusModeStore().setOn(true);
     await nextTick();
     expect(wrapper.find('.fight-stage').classes()).toContain('focus');
+  });
+
+  it('drops to the strip on the phone\'s Hero tab only', async () => {
+    vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
+    const wrapper = mountStage();
+    const tabStore = useTabStore();
+    for (const [tab, strip] of [['quests', false], ['trials', false], ['hero', true], ['skills', false]] as const) {
+      tabStore.select(tab);
+      await nextTick();
+      expect(wrapper.find('.fight-stage').classes().includes('focus')).toBe(strip);
+    }
+  });
+
+  it('keeps the full stage on every tab on wider screens', async () => {
+    const wrapper = mountStage();
+    useTabStore().select('hero');
+    await nextTick();
+    expect(wrapper.find('.fight-stage').classes()).not.toContain('focus');
   });
 
   it('keeps the plain night in the focus strip: no scene, no day ink', async () => {

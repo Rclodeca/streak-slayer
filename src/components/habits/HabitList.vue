@@ -6,12 +6,14 @@ import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
+import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useModalPriority } from '../../composables/useModalPriority';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useHintStore } from '../../store/hintStore';
 import type { HintId } from '../../store/hintStore';
+import { useTabStore } from '../../store/tabStore';
 import AddHabitModal from './AddHabitModal.vue';
 import SpotlightHint from '../ui/SpotlightHint.vue';
 import HabitListItem from './HabitListItem.vue';
@@ -30,9 +32,14 @@ function openAdd(bad: boolean) {
   showAddModal.value = true;
 }
 
+// The hints wait while a phone shows another tab (TabBar).
+const isPhone = usePhoneLayout();
+const tabStore = useTabStore();
+const offTab = computed(() => isPhone.value && tabStore.tab !== 'skills');
+
 // A player with no habits yet is shown where to add one, until "Later".
 const hintDismissed = ref(false);
-const showHint = computed(() => !habitStore.habits.length && !hintDismissed.value && !showAddModal.value);
+const showHint = computed(() => !habitStore.habits.length && !hintDismissed.value && !showAddModal.value && !offTab.value);
 
 // Good habits are the skills, by period. Bad ones wait apart in Resist,
 // since there's nothing to tap there unless you give in.
@@ -88,7 +95,7 @@ const popupOpen = computed(
 );
 
 const checkHint = computed<{ id: HintId; habit: Habit } | null>(() => {
-  if (popupOpen.value) return null;
+  if (popupOpen.value || offTab.value) return null;
   const now = debugClockStore.now();
   for (const id of ['checkGood', 'checkBad'] as const) {
     if (hintStore.seen[id]) continue;

@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { bossSkillMarks, effectiveStat, expToNextLevel, heroClassFor, PERSONALITY_NAME } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
+import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { setHitPlayer, useHitFeed } from '../../composables/useHitFeed';
 import { useScrolledPast } from '../../composables/useScrolledPast';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useFocusModeStore } from '../../store/focusModeStore';
+import { STRIP_TABS, useTabStore } from '../../store/tabStore';
 import BossBar from '../boss/BossBar.vue';
 import BossPanel from '../boss/BossPanel.vue';
 import { PERSONALITY_SPRITE } from '../boss/bossSprites';
@@ -20,8 +22,9 @@ import { STAGE_SCENES } from './stage/scenes';
 // (hitFx.ts), each fighter's HP held back until its blow lands.
 //
 // On phones the stage holds the top of the screen while the lists scroll in
-// their own box beneath it; Focus mode (the menu's) shrinks it to a 76px strip, the
-// fighters at half size with only their names and bars. The page's menu rides
+// their own box beneath it; Focus mode (the menu's), or the phone's Hero tab
+// (STRIP_TABS), shrinks it to a 76px strip, the fighters at half size with
+// only their names and bars. The page's menu rides
 // in the stage's corner through the default slot, so it stays with the stage.
 // Behind it all, the boss's own place (StageScene): a day scene turns the stage's
 // names and stats to dark ink, and the plinths take the scene's stone. The Focus
@@ -30,6 +33,9 @@ import { STAGE_SCENES } from './stage/scenes';
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const focusMode = useFocusModeStore();
+const isPhone = usePhoneLayout();
+const tabStore = useTabStore();
+const focused = computed(() => focusMode.on || (isPhone.value && STRIP_TABS.includes(tabStore.tab)));
 
 // The slain boss stays up while a kill plays out, as on the stage.
 const { phase, displayedBoss, heldLevel } = useCelebration();
@@ -73,6 +79,65 @@ function measureBlocks() {
   blockEdges.value = { '--boss-bottom': `${boss.bottom - box.top}px`, '--hero-top': `${heroBlock.top - box.top}px` };
 }
 
+// A switch between the full stage and the strip plays out rather than
+// jumping (FLIP): the stage's box eases to its new height, clipped meanwhile,
+// and the fighters, their blocks and the menu glide from where they stood to
+// where they now stand, the fighters scaling as they go. The backdrop, and
+// what only the full stage shows, fade in. Transform and opacity only, bar the
+// box's height, so it stays cheap on a phone.
+const SHIFT = { duration: 280, easing: 'ease' };
+const MOVERS = ['.boss-figure', '.hero-figure', '.boss-block', '.hero-block', '.stage-menu'];
+const FADERS = ['.stage-bg', '.boss-plat', '.hero-plat', '.stat-summary'];
+let shifting: Animation[] = [];
+let shiftRun = 0;
+
+function snapshot(el: HTMLElement) {
+  return {
+    height: el.getBoundingClientRect().height,
+    margin: getComputedStyle(el).marginBottom,
+    rects: MOVERS.map((sel) => el.querySelector(sel)?.getBoundingClientRect()),
+  };
+}
+
+watch(focused, async () => {
+  const el = stage.value;
+  if (!el || typeof el.animate !== 'function' || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  // Taken mid-glide if the last switch is still playing, so this one carries on from there.
+  const from = snapshot(el);
+  for (const animation of shifting) animation.cancel();
+  shifting = [];
+  const run = ++shiftRun;
+  await nextTick();
+  if (run !== shiftRun || !stage.value) return;
+  const to = snapshot(el);
+  const play = (node: Element, keyframes: Parameters<Element['animate']>[0]) => shifting.push(node.animate(keyframes, SHIFT));
+
+  el.style.overflow = 'clip';
+  play(el, [
+    { height: `${from.height}px`, marginBottom: from.margin },
+    { height: `${to.height}px`, marginBottom: to.margin },
+  ]);
+  shifting[0].onfinish = () => {
+    if (run === shiftRun) el.style.overflow = '';
+  };
+
+  MOVERS.forEach((sel, i) => {
+    const node = el.querySelector<HTMLElement>(sel);
+    const [a, b] = [from.rects[i], to.rects[i]];
+    if (!node || !a?.width || !b?.width) return;
+    // A fighter scales about its centre; a block or the menu only moves, from its corner.
+    const figure = sel.endsWith('figure');
+    const scale = figure ? a.width / b.width : 1;
+    const dx = figure ? a.left + a.width / 2 - (b.left + b.width / 2) : a.left - b.left;
+    const dy = figure ? a.top + a.height / 2 - (b.top + b.height / 2) : a.top - b.top;
+    const base = getComputedStyle(node).transform;
+    const rest = base === 'none' ? '' : ` ${base}`;
+    play(node, [{ transform: `translate(${dx}px, ${dy}px) scale(${scale})${rest}` }, { transform: base }]);
+  });
+
+  for (const node of el.querySelectorAll(FADERS.join())) play(node, [{ opacity: 0 }, { opacity: 0, offset: 0.35 }, { opacity: 1 }]);
+});
+
 const fxLayer = ref<HTMLElement | null>(null);
 const FIGURES = { boss: ['.boss-figure', '.sprite'], hero: ['.hero-figure', '.player-sprite'] } as const;
 
@@ -100,6 +165,7 @@ onMounted(() => {
   );
 });
 onBeforeUnmount(() => {
+  for (const animation of shifting) animation.cancel();
   blockObserver?.disconnect();
   setHitPlayer(null);
 });
@@ -110,12 +176,12 @@ onBeforeUnmount(() => {
     ref="stage"
     class="fight-stage"
     :class="{
-      focus: focusMode.on,
-      'day-stage': scene.day && !focusMode.on,
+      focus: focused,
+      'day-stage': scene.day && !focused,
     }"
     :style="plinth"
   >
-    <div class="stage-bg" aria-hidden="true"><StageScene v-if="!focusMode.on" :personality="boss.personality" /></div>
+    <div class="stage-bg" aria-hidden="true"><StageScene v-if="!focused" :personality="boss.personality" /></div>
     <div ref="inner" class="stage-inner" :style="blockEdges">
       <BossPanel />
       <CharacterPanel />
@@ -154,6 +220,9 @@ onBeforeUnmount(() => {
 .fight-stage {
   position: relative;
   overflow-x: clip;
+  /* Its height is its content's, bar while a switch to or from the strip
+     eases it (above): border-box, so that height takes in its padding. */
+  box-sizing: border-box;
 }
 
 /* A little air under the plinths, so the hero's doesn't sit on the stage's

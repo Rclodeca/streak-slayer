@@ -6,6 +6,10 @@ import { rankNumeral } from '../habits/habitDisplay';
 import StatIcon from './StatIcon.vue';
 import type { StatIconName } from './statIcons';
 
+// `bare`: inside a popup (the phone's, from the menu), which brings its own
+// frame and title.
+defineProps<{ bare?: boolean }>();
+
 const activityLogStore = useActivityLogStore();
 
 // The skills an item can resist (Aegis, Bloodbound, Null Mirror).
@@ -20,8 +24,8 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
 </script>
 
 <template>
-  <section class="panel activity-log">
-    <h2>Log</h2>
+  <section class="activity-log" :class="bare ? 'bare' : 'panel'">
+    <h2 v-if="!bare">Log</h2>
     <ul v-if="activityLogStore.entries.length">
       <li v-for="entry in activityLogStore.entries" :key="entry.id">
         <template v-if="entry.kind === 'skill-damage'">

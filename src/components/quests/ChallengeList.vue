@@ -6,6 +6,7 @@ import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
+import { trialKey, useTrialSeenStore } from '../../store/trialSeenStore';
 import StatIcon from '../ui/StatIcon.vue';
 import { challengeIcon } from './challengeIcons';
 
@@ -13,8 +14,10 @@ const characterStore = useCharacterStore();
 const habitStore = useHabitStore();
 const bossStore = useBossStore();
 const debugClockStore = useDebugClockStore();
+const trialSeen = useTrialSeenStore();
 
-// Active first, finished ones sink to the bottom.
+// Active first, finished ones sink to the bottom. One that was new when the
+// phone's Trials tab opened says so (trialSeenStore).
 const cards = computed(() => {
   const { character } = characterStore;
   const context = { habits: habitStore.habits, boss: bossStore.boss, todayDate: debugClockStore.now() };
@@ -22,6 +25,7 @@ const cards = computed(() => {
     entry,
     def: getChallengeDef(entry.id),
     done: !!entry.doneDayKey,
+    fresh: trialSeen.fresh.includes(trialKey(entry)),
     relicName: ITEM_CATALOG.find((item) => item.id === entry.relicId)?.name ?? '',
     progress: challengeProgress(entry, context),
   });
@@ -34,7 +38,7 @@ const cards = computed(() => {
     <li v-for="card in cards" :key="card.entry.id" class="challenge" :class="{ done: card.done }">
       <span class="challenge-socket"><component :is="challengeIcon(card.def.icon)" :size="22" /></span>
       <div class="challenge-body">
-        <span class="challenge-name">{{ card.def.name }}</span>
+        <span class="challenge-name">{{ card.def.name }}<span v-if="card.fresh" class="challenge-new">New</span></span>
         <span class="challenge-deed">{{ card.def.deed }}</span>
         <template v-if="!card.done">
           <span v-if="card.progress.kind === 'bar'" class="challenge-progress">
@@ -91,6 +95,12 @@ const cards = computed(() => {
 
 .challenge-name {
   color: var(--text-h);
+}
+
+.challenge-new {
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  vertical-align: 2px;
 }
 
 .challenge-deed,
