@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Gift, Lock } from 'lucide-vue-next';
-import { questsOpen } from '../../game-engine';
+import { trialsOpen, TRIALS_UNLOCK_LEVEL } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import ChallengeList from './ChallengeList.vue';
 import SealedNotice from './SealedNotice.vue';
 
 // Trials: the side quests, in-game challenges each for a hidden relic
 // (game-engine/challenges.ts). The game sets them, so there's no add button.
-// Sealed along with the quests until QUESTS_UNLOCK_LEVEL (see questsOpen).
+// Sealed until TRIALS_UNLOCK_LEVEL (see trialsOpen); the Trials unlocked popup opens it.
 const characterStore = useCharacterStore();
-const open = computed(() => questsOpen(characterStore.character));
+const open = computed(() => trialsOpen(characterStore.character));
 </script>
 
 <template>
@@ -19,7 +19,7 @@ const open = computed(() => questsOpen(characterStore.character));
       <h2><Lock v-if="!open" :size="16" class="section-icon lock-icon" /><Gift v-else :size="16" class="section-icon" />Trials</h2>
     </div>
     <p class="section-caption">Sworn deeds</p>
-    <SealedNotice v-if="!open" />
+    <SealedNotice v-if="!open" :level="TRIALS_UNLOCK_LEVEL" />
     <ChallengeList v-else />
   </section>
 </template>

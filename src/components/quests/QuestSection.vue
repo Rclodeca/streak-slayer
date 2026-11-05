@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Lock, Plus, ScrollText } from 'lucide-vue-next';
-import { dailyPeriodKey, questsOpen } from '../../game-engine';
+import { dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
@@ -77,7 +77,7 @@ function onCheckOff(quest: Quest) {
       <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
     </div>
     <p class="section-caption">One-off tasks</p>
-    <SealedNotice v-if="!open" />
+    <SealedNotice v-if="!open" :level="QUESTS_UNLOCK_LEVEL" />
     <ul v-else-if="questStore.quests.length">
       <li
         v-for="quest in sortedQuests"

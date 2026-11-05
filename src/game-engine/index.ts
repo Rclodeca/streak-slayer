@@ -163,12 +163,20 @@ export {
   applyChallengeEvent,
   challengeProgress,
   CHALLENGE_DEFS,
+  claimableChallenges,
   doneChallenges,
   drawChallenge,
   getChallengeDef,
+  markChallengeClaimed,
+  migrateTrialUnlock,
+  milestoneTrial,
   offerableChallenges,
   recordBadCheck,
   takeChallenge,
+  trialsOpen,
+  TRIALS_UNLOCK_LEVEL,
+  trialUnlockPending,
+  unlockTrials,
 } from './challenges';
 
 export { formatCompact } from './format';

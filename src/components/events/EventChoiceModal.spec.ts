@@ -25,8 +25,9 @@ describe('EventChoiceModal side-quest card', () => {
     const characterStore = useCharacterStore();
     characterStore.setCharacter({
       ...characterStore.character,
-      level: 3,
+      level: 4,
       questsUnlocked: true,
+      trialsUnlocked: true,
       pendingEventPicks: 1,
       takenEventIds: [],
       sideQuestPicksMissed: TUNING.SIDE_QUEST_GUARANTEE_LEVELS,

@@ -438,6 +438,9 @@ describe('relics', () => {
     // A done entry's relic is no longer promised (it was granted or is owned/earned by then).
     expect(ids).toContain(d);
     expect(ids).toHaveLength(relicIds.length - 3);
+    // A finished one still waiting to be claimed keeps its relic promised.
+    const waiting = challenges.map((c) => (c.id === 'rank-up' ? { ...c, unclaimed: true } : c));
+    expect(availableRelics({ ...character, challenges: waiting }).map((i) => i.id)).not.toContain(d);
     // Once that challenge is gone, its relic is available again.
     expect(availableRelics({ ...character, challenges: [] }).map((i) => i.id)).toContain(c);
   });

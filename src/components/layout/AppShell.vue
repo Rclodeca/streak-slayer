@@ -22,6 +22,7 @@ import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
 import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
 import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
+import TrialUnlockPopup from '../quests/TrialUnlockPopup.vue';
 import EventChoiceModal from '../events/EventChoiceModal.vue';
 import ReviveNotice from '../ui/ReviveNotice.vue';
 import BossSkillPopup from '../boss/BossSkillPopup.vue';
@@ -108,6 +109,7 @@ watch(
     <BossSkillPopup />
     <QuestCompletePopup />
     <QuestUnlockPopup />
+    <TrialUnlockPopup />
     <ReviveNotice />
 
     <HighScorePage v-if="showHighScores" />

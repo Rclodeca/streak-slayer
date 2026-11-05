@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { Lock } from 'lucide-vue-next';
-import { QUESTS_UNLOCK_LEVEL } from '../../game-engine';
+
+// Quests and Trials each seal until their own level.
+defineProps<{ level: number }>();
 </script>
 
 <template>
-  <!-- Quests and Trials, sealed until QUESTS_UNLOCK_LEVEL: two blurred placeholder rows under a lock. -->
+  <!-- Quests or Trials, sealed until `level`: two blurred placeholder rows under a lock. -->
   <div class="lock-area">
     <div class="lock-ghost" aria-hidden="true"><i /><i /></div>
     <div class="lock-seal">
       <span class="lock-mark"><Lock :size="18" /></span>
-      <p class="lock-text">Sealed until level {{ QUESTS_UNLOCK_LEVEL }}</p>
+      <p class="lock-text">Sealed until level {{ level }}</p>
     </div>
   </div>
 </template>

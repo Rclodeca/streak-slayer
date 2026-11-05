@@ -1567,6 +1567,36 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
   }
 
+  // Finished and waiting: a brass rim round the card, as on the level-up's
+  // side card, and a yellow (brass) Claim button in the prize's place.
+  .challenge.ready {
+    box-shadow:
+      inset 2px 2px 0 var(--card-hi),
+      inset -2px -2px 0 var(--card-lo),
+      inset 0 0 0 3px color-mix(in srgb, #{$brass} 55%, #000);
+  }
+
+  // The gift takes the button's dark ink, not its own gold.
+  .challenge .challenge-claim .stat-icon {
+    color: var(--on-brass);
+  }
+
+  .challenge .challenge-claim {
+    align-self: center;
+    gap: 6px;
+    @include stone-button;
+    color: var(--on-brass);
+    background: var(--brass-solid);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    @include lip-press(color-mix(in srgb, var(--brass-solid) 55%, #000));
+
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--brass-solid) 88%, #fff);
+      }
+    }
+  }
+
   // The level-up pick's side card (Rim): a brass rim round the card, a
   // brass-ringed socket, a small brass caption, and the challenge name in
   // brass at the head of the deed line.
@@ -3163,7 +3193,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--stat-color);
   }
 
-  // ---------- Quests: sealed until level 3, then the unlock popup ----------
+  // ---------- Quests: sealed until level 2, then the unlock popup ----------
 
   .lock-ghost {
     filter: none;

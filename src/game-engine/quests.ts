@@ -6,7 +6,7 @@ import type { Rng } from './rng';
 import type { Boss, Character, Difficulty, Quest, QuestWeek } from './types';
 
 /** The player level at which the quests section opens, each run. */
-export const QUESTS_UNLOCK_LEVEL = 3;
+export const QUESTS_UNLOCK_LEVEL = 2;
 
 /** Whether the quests section is open: unlocked this run, or at the unlock level with its popup up. */
 export function questsOpen(character: Character): boolean {

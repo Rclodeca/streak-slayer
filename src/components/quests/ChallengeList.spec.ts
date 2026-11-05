@@ -7,6 +7,8 @@ import { createRng } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useItemDropQueue } from '../../composables/useItemDropQueue';
+import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useHabitStore } from '../../store/habitStore';
 import ChallengeList from './ChallengeList.vue';
 
@@ -77,6 +79,33 @@ describe('ChallengeList', () => {
     give([entry('rank-up', { doneDayKey: '2026-11-02' }), entry('resist'), entry('enchant')]);
     const names = mountList().findAll('li.challenge .challenge-name').map((n) => n.text());
     expect(names).toEqual(['Hold the line', 'Enchanted', 'Rank up']);
+  });
+
+  it('a finished trial waits on a Claim button, first in the list, with its relic still hidden', async () => {
+    give([entry('resist'), entry('rank-up', { progress: 1, doneDayKey: '2026-11-02', unclaimed: true }), entry('enchant', { progress: 1, doneDayKey: '2026-11-02' })]);
+    const wrapper = mountList();
+    const cards = wrapper.findAll('li.challenge');
+    expect(cards.map((c) => c.get('.challenge-name').text())).toEqual(['Rank up', 'Hold the line', 'Enchanted']);
+    expect(cards[0].classes()).toContain('ready');
+    expect(cards[0].classes()).not.toContain('done');
+    expect(cards[0].text()).not.toContain('Ember Heart');
+    expect(cards[0].find('.challenge-gift').exists()).toBe(false);
+    expect(wrapper.findAll('.challenge-claim')).toHaveLength(1);
+  });
+
+  it('tapping Claim pays the trial: the card sinks and names the relic', async () => {
+    give([entry('rank-up', { progress: 1, doneDayKey: '2026-11-02', unclaimed: true })]);
+    const wrapper = mountList();
+
+    await wrapper.get('.challenge-claim').trigger('click');
+
+    const card = wrapper.get('li.challenge');
+    expect(card.classes()).toContain('done');
+    expect(card.find('.challenge-claim').exists()).toBe(false);
+    expect(card.text()).toContain('Ember Heart');
+    expect(useCharacterStore().character.ownedItemIds).toContain('ember-heart');
+    useItemDropQueue().dismiss();
+    useQuestCompleteQueue().dismiss();
   });
 
   it('shows the empty line with no challenges, or a character from before challenges', () => {

@@ -4,12 +4,20 @@ import {
   applyChallengeEvent,
   challengeProgress,
   CHALLENGE_DEFS,
+  claimableChallenges,
   doneChallenges,
   drawChallenge,
   getChallengeDef,
+  markChallengeClaimed,
+  migrateTrialUnlock,
+  milestoneTrial,
   offerableChallenges,
   recordBadCheck,
   takeChallenge,
+  trialsOpen,
+  TRIALS_UNLOCK_LEVEL,
+  trialUnlockPending,
+  unlockTrials,
 } from './challenges';
 import type { ChallengeEntry, ChallengeId } from './challenges';
 import { ITEM_CATALOG } from './items';
@@ -138,6 +146,34 @@ describe('activeChallenges / doneChallenges', () => {
   });
 });
 
+describe('claimableChallenges / markChallengeClaimed', () => {
+  const waiting = entry('rank-up', { progress: 1, doneDayKey: '2026-11-02', unclaimed: true });
+
+  it('lists only the finished ones still waiting to be claimed', () => {
+    const character = makeCharacter({ challenges: [entry('resist'), waiting, entry('enchant', { progress: 1, doneDayKey: '2026-11-02' })] });
+    expect(claimableChallenges(character).map((e) => e.id)).toEqual(['rank-up']);
+    expect(claimableChallenges(makeCharacter())).toEqual([]);
+  });
+
+  it('clears the waiting mark and leaves the rest alone', () => {
+    const character = makeCharacter({ challenges: [entry('resist'), waiting] });
+    const claimed = markChallengeClaimed(character, 'rank-up');
+    expect(claimed.challenges![1]).toEqual({ ...waiting, unclaimed: undefined });
+    expect('unclaimed' in claimed.challenges![1]).toBe(false);
+    expect(claimed.challenges![0]).toBe(character.challenges![0]);
+    expect(claimableChallenges(claimed)).toEqual([]);
+    expect(doneChallenges(claimed).map((e) => e.id)).toEqual(['rank-up']);
+  });
+
+  it('is the same character back for one that is active, already claimed or unknown', () => {
+    const character = makeCharacter({ challenges: [entry('resist'), entry('enchant', { doneDayKey: '2026-11-02' })] });
+    expect(markChallengeClaimed(character, 'resist')).toBe(character);
+    expect(markChallengeClaimed(character, 'enchant')).toBe(character);
+    expect(markChallengeClaimed(character, 'untouched')).toBe(character);
+    expect(markChallengeClaimed(makeCharacter(), 'resist').challenges).toBeUndefined();
+  });
+});
+
 // ---- events, day-end and progress text (Task 3) ----
 
 const ENDED = new Date('2026-11-10T20:00:00Z'); // the day that just ended
@@ -190,7 +226,7 @@ describe('applyChallengeEvent: counted challenges', () => {
     }
     const last = applyChallengeEvent(character, { type: 'bad-resisted' }, TODAY);
     expect(last.completed.map((e) => e.id)).toEqual(['resist']);
-    expect(only(last)).toMatchObject({ progress: 5, doneDayKey: TODAY });
+    expect(only(last)).toMatchObject({ progress: 5, doneDayKey: TODAY, unclaimed: true });
     // A done entry no longer reacts.
     expect(applyChallengeEvent(last.character, { type: 'bad-resisted' }, TODAY).character).toBe(last.character);
   });
@@ -422,5 +458,83 @@ describe('challengeProgress', () => {
 
   it('gives a plain line for the other one-shots', () => {
     expect(challengeProgress(entry('rank-up'), ctx())).toEqual({ kind: 'text', text: 'Not yet' });
+  });
+});
+
+describe('trial unlock', () => {
+  const rng = () => createRng(7);
+
+  it('stays sealed below the unlock level, then is due at it', () => {
+    const below = makeCharacter({ level: TRIALS_UNLOCK_LEVEL - 1, trialsUnlocked: false });
+    expect(trialsOpen(below)).toBe(false);
+    expect(trialUnlockPending(below)).toBe(false);
+    const at = makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false });
+    expect(trialsOpen(at)).toBe(true);
+    expect(trialUnlockPending(at)).toBe(true);
+  });
+
+  it('unlockTrials opens the section and hands over New discipline', () => {
+    const unlocked = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), rng(), '2026-11-05');
+    expect(unlocked.trialsUnlocked).toBe(true);
+    expect(trialUnlockPending(unlocked)).toBe(false);
+    expect(unlocked.challenges).toHaveLength(1);
+    expect(unlocked.challenges?.[0]).toMatchObject({ id: 'new-good', takenDayKey: '2026-11-05', progress: 0 });
+  });
+
+  it('unlockTrials stays open once taken, and never hands over a second first trial', () => {
+    const once = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), rng(), '2026-11-05');
+    expect(unlockTrials(once, rng(), '2026-11-06')).toBe(once);
+    expect(trialsOpen({ ...once, level: 1 })).toBe(true);
+  });
+
+  it('unlockTrials still opens the section when a new-good trial is already held', () => {
+    const held = makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false, challenges: [entry('new-good')] });
+    const unlocked = unlockTrials(held, rng(), '2026-11-05');
+    expect(unlocked.trialsUnlocked).toBe(true);
+    expect(unlocked.challenges).toHaveLength(1);
+  });
+
+  it('migrateTrialUnlock opens a save already at the level or holding a trial, with no popup', () => {
+    expect(migrateTrialUnlock(makeCharacter({ level: TRIALS_UNLOCK_LEVEL })).trialsUnlocked).toBe(true);
+    expect(migrateTrialUnlock(makeCharacter({ level: 2, challenges: [entry('resist')] })).trialsUnlocked).toBe(true);
+    expect(migrateTrialUnlock(makeCharacter({ level: 2 })).trialsUnlocked).toBe(false);
+  });
+
+  it('migrateTrialUnlock leaves a settled flag alone', () => {
+    const character = makeCharacter({ trialsUnlocked: false });
+    expect(migrateTrialUnlock(character)).toBe(character);
+  });
+});
+
+describe('milestoneTrial', () => {
+  const rng = () => createRng(11);
+  const open = (overrides: Partial<Character> = {}) => makeCharacter({ trialsUnlocked: true, ...overrides });
+
+  it('hands over a trial on boss 5 and boss 10', () => {
+    for (const index of [5, 10]) {
+      const next = milestoneTrial(open(), index, rng(), '2026-11-05');
+      expect(next.challenges).toHaveLength(1);
+      expect(next.challenges?.[0].takenDayKey).toBe('2026-11-05');
+    }
+  });
+
+  it('does nothing on other bosses', () => {
+    const character = open();
+    for (const index of [1, 4, 6, 9, 11]) expect(milestoneTrial(character, index, rng(), '2026-11-05')).toBe(character);
+  });
+
+  it('does nothing while two trials are active', () => {
+    const character = open({ challenges: [entry('resist'), entry('new-bad')] });
+    expect(milestoneTrial(character, 5, rng(), '2026-11-05')).toBe(character);
+  });
+
+  it('counts a finished trial as no longer active', () => {
+    const character = open({ challenges: [entry('resist'), entry('new-bad', { doneDayKey: '2026-11-04', unclaimed: true })] });
+    expect(milestoneTrial(character, 5, rng(), '2026-11-05').challenges).toHaveLength(3);
+  });
+
+  it('does nothing while trials are sealed', () => {
+    const character = makeCharacter({ level: 1, trialsUnlocked: false });
+    expect(milestoneTrial(character, 5, rng(), '2026-11-05')).toBe(character);
   });
 });

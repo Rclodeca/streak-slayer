@@ -1044,6 +1044,25 @@ describe('useCombatActions', () => {
       while (completions.current.value) completions.dismiss();
     });
 
+    function slayBoss(index: number) {
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      const { addHabit, checkOffHabit } = useCombatActions();
+      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0, trialsUnlocked: true });
+      bossStore.setBoss({ ...bossStore.boss, index, health: 0.0001, armor: 0 });
+      checkOffHabit(addHabit('Gym', 'daily', 'medium', false).id);
+    }
+
+    it('slaying boss 5 hands over a free trial', () => {
+      slayBoss(5);
+      expect(useCharacterStore().character.challenges).toHaveLength(1);
+    });
+
+    it('slaying a boss that is no milestone hands over nothing', () => {
+      slayBoss(4);
+      expect(useCharacterStore().character.challenges ?? []).toHaveLength(0);
+    });
+
     it('a live crit advances a taken Crit streak', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
@@ -1057,23 +1076,53 @@ describe('useCombatActions', () => {
       expect(entryOf('land-crits')?.progress).toBe(1);
     });
 
-    it('a kill with no hit taken completes Untouched: relic granted, medium EXP paid, no weekly slot used', () => {
+    it('a kill with no hit taken completes Untouched, but pays nothing until it is claimed', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
       take('untouched', 'ember-heart');
       bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: undefined });
       const habit = strikeHabit();
-      const questWeekBefore = characterStore.character.questWeek;
 
       useCombatActions().checkOffHabit(habit.id);
 
-      expect(entryOf('untouched')).toMatchObject({ doneDayKey: dayKey(), progress: 1 });
-      expect(characterStore.character.ownedItemIds).toContain('ember-heart');
+      expect(entryOf('untouched')).toMatchObject({ doneDayKey: dayKey(), progress: 1, unclaimed: true });
+      expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
+      expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toBeUndefined();
+      expect(useQuestCompleteQueue().current.value).toBeNull();
+    });
+
+    it('claiming pays the relic and medium EXP, uses no weekly slot, and only once', () => {
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      take('untouched', 'ember-heart');
+      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: undefined });
+      const { checkOffHabit, claimChallenge } = useCombatActions();
+      checkOffHabit(strikeHabit().id);
+      const questWeekBefore = characterStore.character.questWeek;
+
+      claimChallenge('untouched');
+      claimChallenge('untouched');
+
+      expect(entryOf('untouched')?.unclaimed).toBeUndefined();
+      expect(characterStore.character.ownedItemIds.filter((id) => id === 'ember-heart')).toHaveLength(1);
       expect(characterStore.character.earnedRelicIds).toContain('ember-heart');
       expect(characterStore.character.questWeek).toBe(questWeekBefore);
-      const logged = useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed');
-      expect(logged).toMatchObject({ kind: 'challenge-completed', name: 'Untouched', amount: questSlotExp(20, 'medium', 0), itemName: 'Ember Heart' });
+      const logged = useActivityLogStore().entries.filter((e) => e.kind === 'challenge-completed');
+      expect(logged).toHaveLength(1);
+      expect(logged[0]).toMatchObject({ name: 'Untouched', amount: questSlotExp(20, 'medium', 0), itemName: 'Ember Heart' });
+      expect(useItemDropQueue().current.value?.id).toBe('ember-heart');
       expect(useQuestCompleteQueue().current.value).toMatchObject({ description: 'Untouched', difficulty: 'medium', amount: questSlotExp(20, 'medium', 0) });
+    });
+
+    it('claiming a trial that is still active or unknown does nothing', () => {
+      const characterStore = useCharacterStore();
+      take('untouched', 'ember-heart');
+      const before = characterStore.character;
+
+      useCombatActions().claimChallenge('untouched');
+      useCombatActions().claimChallenge('resist');
+
+      expect(characterStore.character).toBe(before);
     });
 
     it('a kill of a boss that already hurt the player leaves Untouched open', () => {
@@ -1182,16 +1231,19 @@ describe('useCombatActions', () => {
       expect(entryOf('quest-run')?.progress).toBe(0);
     });
 
-    it('finishing a challenge whose relic is already owned still completes, with no second grant and no crash', () => {
+    it('claiming a challenge whose relic is already owned still completes, with no second grant and no crash', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
       take('untouched', 'ember-heart');
       characterStore.setCharacter({ ...characterStore.character, ownedItemIds: ['ember-heart'], equippedItemIds: ['ember-heart'] });
       bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
 
-      useCombatActions().checkOffHabit(strikeHabit().id);
+      const { checkOffHabit, claimChallenge } = useCombatActions();
+      checkOffHabit(strikeHabit().id);
+      claimChallenge('untouched');
 
       expect(entryOf('untouched')?.doneDayKey).toBe(dayKey());
+      expect(entryOf('untouched')?.unclaimed).toBeUndefined();
       expect(characterStore.character.ownedItemIds.filter((id) => id === 'ember-heart')).toHaveLength(1);
       expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toMatchObject({ amount: questSlotExp(20, 'medium', 0) });
       expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).not.toHaveProperty('itemName');

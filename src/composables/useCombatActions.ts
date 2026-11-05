@@ -31,6 +31,7 @@ import {
   addExpAndResolveLevelUps,
   applyChallengeEvent,
   chooseHero,
+  claimableChallenges,
   completeHabit,
   createRng,
   dailyPeriodKey,
@@ -40,6 +41,8 @@ import {
   describeItemBonus,
   doneChallenges,
   getChallengeDef,
+  markChallengeClaimed,
+  milestoneTrial,
   HERO_CLASSES,
   heroClassFor,
   ITEM_CATALOG,
@@ -65,7 +68,7 @@ import {
   unlockQuests,
   weeklyPeriodKey,
 } from '../game-engine';
-import type { Character, ChallengeEntry, ChallengeEvent, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
+import type { Character, ChallengeEntry, ChallengeEvent, ChallengeId, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -183,15 +186,23 @@ export function useCombatActions() {
   }
 
   /**
-   * Feeds one happening to the character's challenges and pays out any it
-   * finishes. A no-op for a character with no challenges. Reads the character
-   * fresh, so call it between steps that already wrote theirs back.
+   * Feeds one happening to the character's challenges; a finished one waits
+   * to be claimed (claimChallenge). A no-op for a character with no
+   * challenges. Reads the character fresh, so call it between steps that
+   * already wrote theirs back.
    */
   function reportChallenge(event: ChallengeEvent, todayKey: string = dailyPeriodKey(debugClockStore.now())): void {
     const result = applyChallengeEvent(characterStore.character, event, todayKey);
     if (result.character === characterStore.character) return;
     characterStore.setCharacter(result.character);
-    for (const entry of result.completed) payChallenge(entry);
+  }
+
+  /** The player's claim of a finished challenge: pays it, once. A no-op for one not waiting to be claimed. */
+  function claimChallenge(id: ChallengeId): void {
+    const entry = claimableChallenges(characterStore.character).find((e) => e.id === id);
+    if (!entry) return;
+    characterStore.setCharacter(markChallengeClaimed(characterStore.character, id));
+    payChallenge(entry);
   }
 
   /**
@@ -341,6 +352,7 @@ export function useCombatActions() {
     grantEventPicks(defeatResult.levelsGained);
 
     reportChallenge({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
+    characterStore.setCharacter(milestoneTrial(characterStore.character, slain.index, rng, dailyPeriodKey(debugClockStore.now())));
     if (defeatResult.itemsDropped.some((item) => item.rarity === 'epic')) reportChallenge({ type: 'epic-dropped' });
     reportChallenge({ type: 'state-changed', habits: habitStore.habits });
 
@@ -448,7 +460,7 @@ export function useCombatActions() {
       characterStore.setCharacter(recordBadCheck(characterStore.character, dailyPeriodKey(debugClockStore.now())));
     } else result = applyReward(habitId, currentPeriodKey);
 
-    // A finished challenge pays a relic and EXP, which Undo couldn't take back cleanly.
+    // A finished challenge isn't offered to Undo.
     const plain =
       !fell &&
       characterStore.character.level === before.character.level &&
@@ -584,7 +596,7 @@ export function useCombatActions() {
       // reads this to say who fell where.
       recordFallen({ name: character.name ?? DEFAULT_HERO_NAME, bossIndex: bossIndexAtDeath });
       // Quests survive a death; if any carried over, the new run starts with
-      // them open (and never shows the level-3 "Quests unlocked" popup).
+      // them open (and never shows the level-2 "Quests unlocked" popup).
       characterStore.setCharacter(questStore.quests.length > 0 ? unlockQuests(deathResult.character) : deathResult.character);
       bossStore.setBoss(deathResult.boss);
       habitStore.setHabits(deathResult.habits);
@@ -706,6 +718,7 @@ export function useCombatActions() {
     addHabit,
     addQuest,
     reportChallenge,
+    claimChallenge,
     restart,
     beginRun,
     completeQuest,

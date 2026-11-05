@@ -128,6 +128,11 @@ export interface Character {
   // once if quests carried over from the last run (useCombatActions.restart).
   // Undefined only on a save from before the lock; migrateQuestUnlock settles it.
   questsUnlocked?: boolean;
+  // Whether the Trials section is open this run (see trialsOpen in
+  // challenges.ts). It opens at TRIALS_UNLOCK_LEVEL when the "Trials unlocked"
+  // popup is dismissed, which also hands over the first trial. Undefined only
+  // on a save from before the lock; migrateTrialUnlock settles it.
+  trialsUnlocked?: boolean;
   // Side-quest challenges for this run (see challenges.ts): every one taken,
   // active and done, so a finished one is never offered again. A death starts
   // a fresh run with none. Undefined on a save from before challenges.
@@ -176,6 +181,8 @@ export interface ChallengeEntry {
   pending?: PendingAddition[];
   /** Set the day the challenge finished; absent while active. */
   doneDayKey?: string;
+  /** True from the finish until the player claims the reward; absent on a paid one (and on a save from before claiming). */
+  unclaimed?: boolean;
 }
 
 // Discriminated on `type`. Intentionally a plain union rather than a

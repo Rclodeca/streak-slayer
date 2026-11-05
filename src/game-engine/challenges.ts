@@ -72,12 +72,84 @@ export function takeChallenge(character: Character, id: ChallengeId, rng: Rng, t
   return { ...character, challenges: [...(character.challenges ?? []), entry], offeredChallengeId: undefined };
 }
 
+/** The player level at which the Trials section opens, each run. */
+export const TRIALS_UNLOCK_LEVEL = 4;
+
+/** The trial handed over when Trials open, so the tab never opens empty. */
+export const FIRST_TRIAL: ChallengeId = 'new-good';
+
+/** Slaying one of these bosses hands over a free trial (see milestoneTrial). */
+export const TRIAL_MILESTONE_BOSSES: readonly number[] = [5, 10];
+
+/** A milestone trial is only handed over while fewer than this many trials are active. */
+export const MILESTONE_ACTIVE_CAP = 2;
+
+/** Whether the Trials section is open: unlocked this run, or at the unlock level with its popup up. */
+export function trialsOpen(character: Character): boolean {
+  return character.trialsUnlocked === true || character.level >= TRIALS_UNLOCK_LEVEL;
+}
+
+/** Whether the "Trials unlocked" popup is due: the unlock level reached this run and the section not yet opened. */
+export function trialUnlockPending(character: Character): boolean {
+  return !character.trialsUnlocked && character.level >= TRIALS_UNLOCK_LEVEL;
+}
+
+/**
+ * Opens the Trials section for the rest of the run and hands over the first
+ * trial. The same character back if it is already open.
+ */
+export function unlockTrials(character: Character, rng: Rng, todayKey: string): Character {
+  if (character.trialsUnlocked) return character;
+  return takeChallenge({ ...character, trialsUnlocked: true }, FIRST_TRIAL, rng, todayKey);
+}
+
+/**
+ * Settles `trialsUnlocked` on a save from before the trial lock: a hero
+ * already at the unlock level, or holding a trial, was already using them, so
+ * they stay open with no popup. Anyone else is sealed like any new run.
+ */
+export function migrateTrialUnlock(character: Character): Character {
+  if (character.trialsUnlocked !== undefined) return character;
+  const holds = (character.challenges ?? []).length > 0;
+  return { ...character, trialsUnlocked: character.level >= TRIALS_UNLOCK_LEVEL || holds };
+}
+
+/**
+ * A free trial for slaying boss `bossIndex`, if it is a milestone boss, Trials
+ * are open, fewer than MILESTONE_ACTIVE_CAP trials are active, and one is left
+ * to draw. The same character back otherwise.
+ */
+export function milestoneTrial(character: Character, bossIndex: number, rng: Rng, todayKey: string): Character {
+  if (!TRIAL_MILESTONE_BOSSES.includes(bossIndex)) return character;
+  if (!trialsOpen(character) || activeChallenges(character).length >= MILESTONE_ACTIVE_CAP) return character;
+  const id = drawChallenge(character, rng);
+  return id === null ? character : takeChallenge(character, id, rng, todayKey);
+}
+
 export function activeChallenges(character: Character): ChallengeEntry[] {
   return (character.challenges ?? []).filter((e) => !e.doneDayKey);
 }
 
 export function doneChallenges(character: Character): ChallengeEntry[] {
   return (character.challenges ?? []).filter((e) => e.doneDayKey);
+}
+
+/** Finished challenges whose reward waits for the player to claim it. */
+export function claimableChallenges(character: Character): ChallengeEntry[] {
+  return (character.challenges ?? []).filter((e) => e.unclaimed);
+}
+
+/** Marks a finished challenge claimed. The same character back if it is not waiting to be claimed. */
+export function markChallengeClaimed(character: Character, id: ChallengeId): Character {
+  const entries = character.challenges ?? [];
+  if (!entries.some((e) => e.id === id && e.unclaimed)) return character;
+  const claimed = entries.map((e) => {
+    if (e.id !== id) return e;
+    const paid = { ...e };
+    delete paid.unclaimed;
+    return paid;
+  });
+  return { ...character, challenges: claimed };
 }
 
 const C = TUNING.CHALLENGES;
@@ -209,8 +281,9 @@ const HANDLERS: Record<ChallengeId, Handler> = {
 
 /**
  * Feeds one event to every active challenge. A finished one gets
- * `doneDayKey: todayKey` and is returned in `completed` for the caller to pay
- * out. The same character back when nothing changed.
+ * `doneDayKey: todayKey` and `unclaimed`, and is returned in `completed`; its
+ * reward is paid when the player claims it. The same character back when
+ * nothing changed.
  */
 export function applyChallengeEvent(
   character: Character,
@@ -227,7 +300,7 @@ export function applyChallengeEvent(
     if (updated === entry) return entry;
     const goal = getChallengeDef(entry.id).goal;
     if (updated.progress < goal) return updated;
-    const done: ChallengeEntry = { ...updated, progress: goal, doneDayKey: todayKey };
+    const done: ChallengeEntry = { ...updated, progress: goal, doneDayKey: todayKey, unclaimed: true };
     completed.push(done);
     return done;
   });

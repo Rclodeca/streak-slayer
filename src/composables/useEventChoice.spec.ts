@@ -134,8 +134,9 @@ describe('useEventChoice', () => {
 
     events.choose('double-item');
 
+    expect(characterStore.character.challenges?.[0]).toMatchObject({ unclaimed: true });
     expect(characterStore.character.challenges?.[0].doneDayKey).toBeDefined();
-    expect(characterStore.character.ownedItemIds).toContain('ember-heart');
+    expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
     useItemDropQueue().dismiss();
   });
 
@@ -151,17 +152,18 @@ describe('useEventChoice', () => {
 
     events.choose('item-drop');
 
-    expect(characterStore.character.challenges?.[0].doneDayKey).toBeDefined();
-    expect(characterStore.character.ownedItemIds).toContain('ember-heart');
+    expect(characterStore.character.challenges?.[0]).toMatchObject({ unclaimed: true });
+    expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
   });
 
   describe('side-quest challenge card', () => {
-    /** Level 3 with the guarantee due, so the side-quest card is always rolled. */
+    /** Level 4 (Trials open) with the guarantee due, so the side-quest card is always rolled. */
     function setupSide(overrides: Partial<Parameters<ReturnType<typeof useCharacterStore>['setCharacter']>[0]> = {}) {
       const characterStore = useCharacterStore();
       characterStore.setCharacter({
         ...characterStore.character,
-        level: 3,
+        level: 4,
+        trialsUnlocked: true,
         pendingEventPicks: 1,
         takenEventIds: [],
         sideQuestPicksMissed: TUNING.SIDE_QUEST_GUARANTEE_LEVELS,
@@ -247,7 +249,7 @@ describe('useEventChoice', () => {
       expect(characterStore.character.sideQuestPicksMissed).toBe(0);
     });
 
-    it('a state challenge that is already true completes at once and pays out', () => {
+    it('a state challenge that is already true completes at once and waits to be claimed', () => {
       const { characterStore, events } = setupSide({ offeredChallengeId: 'streak-all' });
       const habit = useHabitStore().habits[0];
       useHabitStore().updateHabit({ ...habit, streakCount: 5 });
@@ -256,9 +258,9 @@ describe('useEventChoice', () => {
 
       const [entry] = characterStore.character.challenges!;
       expect(entry.id).toBe('streak-all');
+      expect(entry).toMatchObject({ unclaimed: true });
       expect(entry.doneDayKey).toBeDefined();
-      expect(characterStore.character.ownedItemIds).toContain(entry.relicId);
-      useItemDropQueue().dismiss();
+      expect(characterStore.character.ownedItemIds).not.toContain(entry.relicId);
     });
   });
 });

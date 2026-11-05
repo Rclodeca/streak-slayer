@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { activeChallenges, challengeProgress, doneChallenges, getChallengeDef, ITEM_CATALOG } from '../../game-engine';
+import { activeChallenges, challengeProgress, claimableChallenges, doneChallenges, getChallengeDef, ITEM_CATALOG } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
+import { useCombatActions } from '../../composables/useCombatActions';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
@@ -15,32 +16,35 @@ const habitStore = useHabitStore();
 const bossStore = useBossStore();
 const debugClockStore = useDebugClockStore();
 const trialSeen = useTrialSeenStore();
+const { claimChallenge } = useCombatActions();
 
-// Active first, finished ones sink to the bottom. One that was new when the
-// phone's Trials tab opened says so (trialSeenStore).
+// Ready to claim first, then active, and paid ones sink to the bottom. One that
+// was new when the phone's Trials tab opened says so (trialSeenStore).
 const cards = computed(() => {
   const { character } = characterStore;
   const context = { habits: habitStore.habits, boss: bossStore.boss, todayDate: debugClockStore.now() };
   const card = (entry: ChallengeEntry) => ({
     entry,
     def: getChallengeDef(entry.id),
-    done: !!entry.doneDayKey,
+    done: !!entry.doneDayKey && !entry.unclaimed,
+    ready: !!entry.unclaimed,
     fresh: trialSeen.fresh.includes(trialKey(entry)),
     relicName: ITEM_CATALOG.find((item) => item.id === entry.relicId)?.name ?? '',
     progress: challengeProgress(entry, context),
   });
-  return [...activeChallenges(character), ...doneChallenges(character)].map(card);
+  const paid = doneChallenges(character).filter((entry) => !entry.unclaimed);
+  return [...claimableChallenges(character), ...activeChallenges(character), ...paid].map(card);
 });
 </script>
 
 <template>
   <ul v-if="cards.length" class="challenge-list">
-    <li v-for="card in cards" :key="card.entry.id" class="challenge" :class="{ done: card.done }">
+    <li v-for="card in cards" :key="card.entry.id" class="challenge" :class="{ done: card.done, ready: card.ready }">
       <span class="challenge-socket"><component :is="challengeIcon(card.def.icon)" :size="22" /></span>
       <div class="challenge-body">
         <span class="challenge-name">{{ card.def.name }}<span v-if="card.fresh" class="challenge-new">New</span></span>
         <span class="challenge-deed">{{ card.def.deed }}</span>
-        <template v-if="!card.done">
+        <template v-if="!card.done && !card.ready">
           <span v-if="card.progress.kind === 'bar'" class="challenge-progress">
             <span class="challenge-bar"><i :style="{ width: `${(card.progress.cur / card.progress.max) * 100}%` }" /></span>
             <span class="challenge-count">{{ card.progress.cur }} / {{ card.progress.max }}</span>
@@ -48,7 +52,8 @@ const cards = computed(() => {
           <span v-else class="challenge-status">{{ card.progress.text }}</span>
         </template>
       </div>
-      <span v-if="!card.done" class="challenge-gift" role="img" aria-label="An unknown item"><StatIcon name="gift" :size="20" /><span class="mark">?</span></span>
+      <button v-if="card.ready" type="button" class="challenge-claim" @click="claimChallenge(card.entry.id)"><StatIcon name="gift" :size="18" />Claim</button>
+      <span v-else-if="!card.done" class="challenge-gift" role="img" aria-label="An unknown item"><StatIcon name="gift" :size="20" /><span class="mark">?</span></span>
       <span v-else class="challenge-relic">{{ card.relicName }}</span>
     </li>
   </ul>
@@ -133,6 +138,15 @@ const cards = computed(() => {
   align-items: center;
   flex: none;
   gap: 0.15rem;
+}
+
+.challenge-claim {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.9rem;
 }
 
 .challenge-relic {

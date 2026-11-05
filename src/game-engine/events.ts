@@ -3,14 +3,13 @@
 // id in useEventChoice (src/composables).
 
 import type { HeroClass } from './character';
-import { offerableChallenges } from './challenges';
+import { offerableChallenges, trialsOpen } from './challenges';
 import { TUNING } from './constants/tuning';
 import { healingAllowed, rerollDamageType } from './habits';
 import { availableRelics, doublableItems, equippedDoubledItemIds, unownedDroppableItems } from './items';
 import type { ItemDef } from './items';
 import { effectiveStat } from './leveling';
 import { assignSpecialIfEligible, assignUltIfEligible, grantOverdrive } from './levelRewards';
-import { questsOpen } from './quests';
 import { shuffle, type Rng } from './rng';
 import type { Character, CritBoostStatusEffect, Habit, HealBoostStatusEffect, Quest } from './types';
 
@@ -36,7 +35,7 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: 'Earn a rare and powerful item.',
     minLevel: 1,
     oneTime: false,
-    isEligible: (character) => questsOpen(character) && offerableChallenges(character).length > 0 && availableRelics(character).length > 0,
+    isEligible: (character) => trialsOpen(character) && offerableChallenges(character).length > 0 && availableRelics(character).length > 0,
   },
   {
     id: 'special',

@@ -62,6 +62,29 @@ describe('TabBar', () => {
     expect(tab(wrapper, 'trials').find('.tab-pip').exists()).toBe(false);
   });
 
+  it('counts the finished trials waiting to be claimed on Trials, even while on that tab, and it outranks the new-trial pip', async () => {
+    const ready = (id: ChallengeEntry['id']): ChallengeEntry => ({ ...entry(id), progress: 1, doneDayKey: '2026-11-02', unclaimed: true });
+    unseal([entry('resist'), ready('rank-up'), ready('enchant'), { ...entry('epic-find'), progress: 1, doneDayKey: '2026-11-02' }]);
+    const wrapper = mount(TabBar);
+    expect(tab(wrapper, 'trials').find('.tab-count').text()).toBe('2');
+    expect(tab(wrapper, 'trials').find('.tab-pip').exists()).toBe(false);
+
+    await tab(wrapper, 'trials').trigger('click');
+    expect(tab(wrapper, 'trials').find('.tab-count').text()).toBe('2');
+  });
+
+  it('shows the new-trial pip again once the last claim is taken', async () => {
+    unseal([entry('resist'), { ...entry('rank-up'), progress: 1, doneDayKey: '2026-11-02', unclaimed: true }]);
+    const wrapper = mount(TabBar);
+    expect(tab(wrapper, 'trials').find('.tab-pip').exists()).toBe(false);
+
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, challenges: [entry('resist')] });
+    await wrapper.vm.$nextTick();
+    expect(tab(wrapper, 'trials').find('.tab-count').exists()).toBe(false);
+    expect(tab(wrapper, 'trials').find('.tab-pip').exists()).toBe(true);
+  });
+
   it('greys Quests and Trials out under a lock while sealed, with no badges, but still opens them', async () => {
     const characterStore = useCharacterStore();
     characterStore.setCharacter({ ...characterStore.character, challenges: [entry('resist')] });
@@ -77,5 +100,13 @@ describe('TabBar', () => {
 
     await tab(wrapper, 'quests').trigger('click');
     expect(useTabStore().tab).toBe('quests');
+  });
+
+  it('seals Trials past the level Quests open at', () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 2, questsUnlocked: true, trialsUnlocked: false });
+    const wrapper = mount(TabBar);
+    expect(tab(wrapper, 'quests').classes()).not.toContain('sealed');
+    expect(tab(wrapper, 'trials').classes()).toContain('sealed');
   });
 });

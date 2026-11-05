@@ -39,7 +39,7 @@ describe('useModalPriority', () => {
 
     it('stays visible for an enchant reveal even with no picks left', () => {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 10, questsUnlocked: true, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], pendingEventPicks: 1 });
+      characterStore.setCharacter({ ...characterStore.character, level: 10, questsUnlocked: true, trialsUnlocked: true, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], pendingEventPicks: 1 });
       const events = useEventChoice();
       events.choose('double-item');
       expect(characterStore.character.pendingEventPicks).toBe(0);
@@ -153,7 +153,7 @@ describe('useModalPriority', () => {
   describe('questUnlockVisible', () => {
     function reachUnlockLevel() {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 3, questsUnlocked: false, pendingEventPicks: 1 });
+      characterStore.setCharacter({ ...characterStore.character, level: 2, questsUnlocked: false, pendingEventPicks: 1 });
     }
 
     it('waits for the level-up beat to finish playing', () => {
@@ -165,7 +165,7 @@ describe('useModalPriority', () => {
       expect(questUnlockVisible.value).toBe(true);
     });
 
-    it('shows on reaching level 3, ahead of the level-up pick', () => {
+    it('shows on reaching level 2, ahead of the level-up pick', () => {
       reachUnlockLevel();
       const { questUnlockVisible, eventChoiceVisible } = useModalPriority();
       expect(questUnlockVisible.value).toBe(true);
@@ -184,6 +184,44 @@ describe('useModalPriority', () => {
       reachUnlockLevel();
       useItemDropQueue().enqueueDrops([ITEM_CATALOG[0]]);
       expect(useModalPriority().questUnlockVisible.value).toBe(false);
+    });
+  });
+
+  describe('trialUnlockVisible', () => {
+    function reachTrialLevel() {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 4, questsUnlocked: true, trialsUnlocked: false, pendingEventPicks: 1 });
+    }
+
+    it('shows on reaching level 4, ahead of the level-up pick', () => {
+      reachTrialLevel();
+      const { trialUnlockVisible, eventChoiceVisible } = useModalPriority();
+      expect(trialUnlockVisible.value).toBe(true);
+      expect(eventChoiceVisible.value).toBe(false);
+    });
+
+    it('waits for the quest popup if that is still up', () => {
+      reachTrialLevel();
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, questsUnlocked: false });
+      expect(useModalPriority().trialUnlockVisible.value).toBe(false);
+    });
+
+    it('waits for the level-up beat to finish playing', () => {
+      reachTrialLevel();
+      useCelebration().celebrateLevelUp(3);
+      expect(useModalPriority().trialUnlockVisible.value).toBe(false);
+      useCelebration().clear();
+      expect(useModalPriority().trialUnlockVisible.value).toBe(true);
+    });
+
+    it('hands over to the level-up pick once trials are unlocked, with the first trial in hand', () => {
+      reachTrialLevel();
+      useCharacterStore().unlockTrials('2026-11-05', createRng(3));
+      const { trialUnlockVisible, eventChoiceVisible } = useModalPriority();
+      expect(trialUnlockVisible.value).toBe(false);
+      expect(eventChoiceVisible.value).toBe(true);
+      expect(useCharacterStore().character.challenges?.map((e) => e.id)).toEqual(['new-good']);
     });
   });
 

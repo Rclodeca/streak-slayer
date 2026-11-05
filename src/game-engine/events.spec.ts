@@ -49,9 +49,9 @@ describe('eligibleEvents', () => {
   });
 
   it('offers the side quest once the quests section is open', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 3 }), []))).toContain('side-quest');
-    expect(ids(eligibleEvents(makeCharacter({ level: 1, questsUnlocked: true }), []))).toContain('side-quest');
-    expect(ids(eligibleEvents(makeCharacter({ level: 2, questsUnlocked: false }), []))).not.toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4 }), []))).toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 1, trialsUnlocked: true }), []))).toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 3, trialsUnlocked: false }), []))).not.toContain('side-quest');
   });
 
   it('offers heal only when below max health', () => {
@@ -68,7 +68,7 @@ describe('eligibleEvents', () => {
 
   it('gates events by level', () => {
     const habits = [makeHabit({ id: 'd' }), makeHabit({ id: 'w', period: 'weekly' })];
-    expect(ids(eligibleEvents(makeCharacter({ level: TUNING.SPECIAL_LEVEL }), habits))).toEqual(['crit-boost', 'heal', 'heal-boost', 'item-drop', 'overdrive', 'reroll-skill', 'side-quest', 'special']);
+    expect(ids(eligibleEvents(makeCharacter({ level: TUNING.SPECIAL_LEVEL, trialsUnlocked: true }), habits))).toEqual(['crit-boost', 'heal', 'heal-boost', 'item-drop', 'overdrive', 'reroll-skill', 'side-quest', 'special']);
     expect(ids(eligibleEvents(makeCharacter({ level: TUNING.ULT_LEVEL }), habits))).toContain('ult');
     expect(ids(eligibleEvents(makeCharacter({ level: 6 }), habits))).not.toContain('item-slots');
     expect(ids(eligibleEvents(makeCharacter({ level: 7 }), habits))).toContain('item-slots');
@@ -121,30 +121,30 @@ describe('side-quest event', () => {
   const relicIds = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
 
   it('is ineligible once every relic is earned, at any level, and eligible while one is left', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 3, earnedRelicIds: relicIds }), []))).not.toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, earnedRelicIds: relicIds }), []))).not.toContain('side-quest');
     expect(ids(eligibleEvents(makeCharacter({ level: 30, earnedRelicIds: relicIds }), []))).not.toContain('side-quest');
-    expect(ids(eligibleEvents(makeCharacter({ level: 3, earnedRelicIds: relicIds.slice(1) }), []))).toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, earnedRelicIds: relicIds.slice(1) }), []))).toContain('side-quest');
   });
 
   it('is ineligible once every relic is owned or promised to an active challenge', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 3, ownedItemIds: relicIds }), []))).not.toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, ownedItemIds: relicIds }), []))).not.toContain('side-quest');
     const challenges = CHALLENGE_DEFS.map((d, i) => ({ id: d.id, relicId: relicIds[i], takenDayKey: '2026-11-01', progress: 0 }));
-    expect(ids(eligibleEvents(makeCharacter({ level: 3, challenges }), []))).not.toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, challenges }), []))).not.toContain('side-quest');
     // One challenge left and one relic left: still eligible.
-    expect(ids(eligibleEvents(makeCharacter({ level: 3, challenges: challenges.slice(1) }), []))).toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, challenges: challenges.slice(1) }), []))).toContain('side-quest');
   });
 
   it('is ineligible when no challenge can be offered, even with relics left', () => {
     const done = CHALLENGE_DEFS.map((d) => ({ id: d.id, relicId: 'gone', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' }));
-    expect(ids(eligibleEvents(makeCharacter({ level: 3, challenges: done }), []))).not.toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, challenges: done }), []))).not.toContain('side-quest');
   });
 
   it('is ineligible while the quests section is sealed', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 2, questsUnlocked: false }), []))).not.toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 3, trialsUnlocked: false }), []))).not.toContain('side-quest');
   });
 
   it('a regular quest does not promise a relic', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 3 }), [], [createQuest('a', 'easy', '2099-01-01')]))).toContain('side-quest');
+    expect(ids(eligibleEvents(makeCharacter({ level: 4 }), [], [createQuest('a', 'easy', '2099-01-01')]))).toContain('side-quest');
   });
 
   it('is forced into the choices once SIDE_QUEST_GUARANTEE_LEVELS picks passed without it', () => {

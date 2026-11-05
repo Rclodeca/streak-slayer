@@ -257,11 +257,11 @@ export function unownedDroppableItems(character: Character): ItemDef[] {
 /**
  * Relics a new challenge could reserve: not yet earned this run (earned is
  * earned, even if later dropped), not owned, and not already promised to an
- * active challenge.
+ * active challenge or a finished one still waiting to be claimed.
  */
 export function availableRelics(character: Character): ItemDef[] {
   const earned = character.earnedRelicIds ?? [];
-  const promised = (character.challenges ?? []).filter((c) => !c.doneDayKey).map((c) => c.relicId);
+  const promised = (character.challenges ?? []).filter((c) => !c.doneDayKey || c.unclaimed).map((c) => c.relicId);
   return ITEM_CATALOG.filter(
     (item) =>
       item.rarity === 'relic' &&

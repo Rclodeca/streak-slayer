@@ -25,6 +25,7 @@ import {
   recordRelicEarned,
   rollItemDrops,
   unlockQuests,
+  unlockTrials,
 } from '../game-engine';
 import type { Boss, Character, Habit, ItemDef, Rng } from '../game-engine';
 
@@ -68,6 +69,11 @@ export const useCharacterStore = defineStore('character', {
     /** Opens the quests section for the rest of the run (the "Quests unlocked" popup's Onward). */
     unlockQuests() {
       this.character = unlockQuests(this.character);
+    },
+
+    /** Opens the Trials section for the rest of the run and hands over the first trial (the "Trials unlocked" popup's Onward). */
+    unlockTrials(todayKey: string, rng: Rng = createRng()) {
+      this.character = unlockTrials(this.character, rng, todayKey);
     },
 
     /** Equips an owned item into an empty slot. No-op if not owned, already equipped, or all slots are full (see maxEquipSlots). */
