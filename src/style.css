@@ -91,10 +91,13 @@ body {
   min-height: 100vh;
 }
 
+/* viewport-fit=cover (index.html) lets the page run under a phone's notch and
+   home bar, so the safe-area insets are real: a phone turned sideways, wide
+   enough for this layout, keeps the content clear of its notch. */
 #app {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem max(2rem, env(safe-area-inset-right, 0px)) 2rem max(2rem, env(safe-area-inset-left, 0px));
   text-align: center;
 }
 

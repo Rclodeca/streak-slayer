@@ -56,10 +56,12 @@ const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(ac
 
 <style scoped>
 /* Base layout only; the Pixel-cut look is in themes/ashen.scss. The bar runs
-   under the home indicator, its tabs clear of it. */
+   under an iPhone's home bar, its tabs clear of it (the safe-area inset, real
+   with index.html's viewport-fit=cover), and keeps a little air under its
+   labels on phones without one. */
 .tab-bar {
   display: flex;
-  padding: 0 6px env(safe-area-inset-bottom, 0px);
+  padding: 0 6px max(14px, env(safe-area-inset-bottom, 0px));
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
