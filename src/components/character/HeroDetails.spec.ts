@@ -3,8 +3,9 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng, ITEM_CATALOG } from '../../game-engine';
+import { createRng, dailyPeriodKey, ITEM_CATALOG } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
+import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import HeroDetails from './HeroDetails.vue';
 
@@ -45,5 +46,39 @@ describe('HeroDetails', () => {
     const wrapper = mount(HeroDetails, { props: { page: true } });
     expect(wrapper.find('.gear-row .gear-name').text()).toBe(item.name);
     expect(wrapper.findAll('.gear-row.empty').length).toBeGreaterThan(0);
+  });
+
+  describe('a stat a boss skill is lowering', () => {
+    const tile = (wrapper: ReturnType<typeof mount>, label: string) =>
+      wrapper.findAll('.tiles .stat-tile').find((t) => t.find('.tile-label').text() === label)!;
+    const afflict = (type: 'blind' | 'sunder') =>
+      (useCharacterStore().character.statusEffects = [{ type, appliedDayKey: dailyPeriodKey(useDebugClockStore().now()), durationDays: 2 }]);
+
+    it('shows crit crossed out with 0% beside it while Blind runs', () => {
+      useCharacterStore().character.critChance = 0.2;
+      afflict('blind');
+      const crit = tile(mount(HeroDetails, { props: { page: true } }), 'Crit chance');
+      expect(crit.classes()).toContain('reduced');
+      expect(crit.find('s.tile-usual').text()).toBe('20%');
+      expect(crit.find('.tile-now').text()).toBe('0%');
+      expect(crit.find('.tile-note').text()).toBe('Blinded');
+    });
+
+    it('shows armor halved beside the usual value while Sunder runs', () => {
+      const store = useCharacterStore();
+      store.character.ownedItemIds = ['iron-buckler'];
+      store.character.equippedItemIds = ['iron-buckler'];
+      afflict('sunder');
+      const armor = tile(mount(HeroDetails, { props: { page: true } }), 'Armor');
+      expect(armor.find('s.tile-usual').text()).toBe('75');
+      expect(armor.find('.tile-now').text()).toBe('38');
+      expect(armor.find('.tile-note').text()).toBe('Sundered');
+    });
+
+    it('leaves the tile alone when nothing is lowering it', () => {
+      const crit = tile(mount(HeroDetails, { props: { page: true } }), 'Crit chance');
+      expect(crit.classes()).not.toContain('reduced');
+      expect(crit.find('s').exists()).toBe(false);
+    });
   });
 });

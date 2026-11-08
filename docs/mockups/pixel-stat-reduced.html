@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — reduced stats on the Hero tab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Pixel-cut on Moonlit. Tokens and well shapes copied from pixel-tabs-final.html. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 70px; max-width: 1100px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 36px 30px; justify-content: center; }
+.col { width: 390px; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-bottom: 3px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.col p { margin: 0 0 10px; font-size: 14.5px; min-height: 44px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a;
+  --bad: #d4574a; --good: #7fc17a; --phys: #e5705c; --magic: #a98be0; --heal: #7fc17a; --true: #f1e9d6;
+  --crit: #d6a24f; --steel: #a8a092; --arcane: #8d9bd1; --blood: #d0475a; --health: #e0604f;
+  --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508; --card-lip: #05060a;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; height: 640px; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); position: relative;
+}
+.phone svg { flex: none; }
+.scroll { height: 100%; overflow-y: auto; padding: 22px 0 30px; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+
+.fx { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 12px; }
+.ef { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; clip-path: var(--px2); font: 700 12.5px 'Alegreya Sans', sans-serif; background: rgba(212,87,74,.12); color: #e7a198; }
+.ef svg { width: 13px; height: 13px; }
+.lbl { margin: 18px 14px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 0 12px; }
+.well { display: flex; flex-direction: column; gap: 1px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); padding: 9px 12px; }
+.well .tl { display: flex; align-items: center; gap: 5px; font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--text); }
+.well .tl svg { width: 13px; height: 13px; }
+.well .tv { display: flex; align-items: baseline; gap: 4px; font: 700 18px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.well .tv em { font-style: normal; font-size: 12.5px; color: var(--good); margin-left: 4px; }
+.well .tn { font-size: 12px; color: var(--dim); }
+
+/* The proposal: the usual value struck through and dimmed, what it is now in red beside it. */
+.tv s { color: var(--dim); font-weight: 600; font-size: 15px; text-decoration-thickness: 2px; text-decoration-color: var(--bad); }
+.tv .now { color: var(--bad); }
+.well.cut { box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi), inset 0 0 0 1px rgba(212,87,74,.35); }
+.well.cut .tn { color: #c58880; }
+
+/* The stage's own stat line stays as it is. */
+.stage { margin: 0 12px 16px; padding: 10px 12px; background: #0c0f17; clip-path: var(--px); }
+.stage .uname { font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.stage .stats { display: flex; flex-wrap: wrap; gap: 2px 8px; margin-top: 4px; font: 500 11.2px/1.2 'Alegreya Sans', sans-serif; color: var(--text); }
+.stage .stats span { display: inline-flex; align-items: center; gap: 3px; }
+.stage .stats svg { width: 12px; height: 12px; opacity: .8; }
+.stage .cap { margin-top: 6px; font-size: 11px; color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>REDUCED STATS ON THE HERO TAB</h1>
+  <p class="lede">While a boss skill is lowering a stat, the Hero tab shows your usual value crossed out and what it is right now beside it, in red. The stage keeps showing just the live number.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const DROP = '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>';
+const LU = {
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  health: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  lifesteal: DROP,
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: SHIELD, magicResist: SHIELD + '<path d="M12 22V2"/>',
+  blind: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  sever: DROP + '<path d="m2 2 20 20"/>',
+  sunder: SHIELD + '<path d="m14.5 9.5-5 5"/><path d="m9.5 9.5 5 5"/>',
+};
+const COLOR = { physical: 'var(--phys)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', health: 'var(--health)', lifesteal: 'var(--blood)', crit: 'var(--crit)', armor: 'var(--steel)', magicResist: 'var(--arcane)' };
+const icon = (name, color = COLOR[name] || 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${color}">${LU[name]}</svg>`;
+
+// [icon, label, usual, now (only when a boss skill is lowering it), note under it, gear gain]
+const stats = [
+  ['health', 'Max health', '3.1K', null, null, '+1.2K'],
+  ['physical', 'Physical', '1.1K', null, null, '+640'],
+  ['magic', 'Magic', '288', null, null, '+90'],
+  ['true', 'True', '74', null, null, null],
+  ['healing', 'Healing', '141', null, null, '+40'],
+  ['crit', 'Crit chance', '20%', '0%', 'Blinded', '+12%'],
+  ['armor', 'Armor', '158', '79', 'Sundered', null, '24.0% less damage'],
+  ['magicResist', 'Magic resist', '223', '112', 'Sundered', null, '31.5% less damage'],
+  ['lifesteal', 'Lifesteal', '6%', '0%', 'Severed', null],
+];
+const effects = [['blind', 'Blinded · no crits · 2d'], ['sever', 'Severed · no lifesteal · 1d'], ['sunder', 'Sundered · armor & resist halved · 2d']];
+
+const tile = (s, proposed) => {
+  const [ic, label, usual, now, why, gain, note] = s;
+  const cut = proposed && now;
+  const value = cut ? `<s>${usual}</s><span class="now">${now}</span>` : (proposed || !now ? usual : now);
+  const shownNow = !proposed && now ? now : null; // today: only the reduced number, no hint it is temporary
+  const val = proposed ? value : (shownNow ?? usual);
+  const tn = cut ? why : note;
+  return `<div class="well${cut ? ' cut' : ''}"><span class="tl">${icon(ic)}${label}</span><span class="tv">${val}${gain && !cut ? `<em>${gain}</em>` : ''}</span>${tn ? `<span class="tn">${tn}</span>` : ''}</div>`;
+};
+const stage = `<div class="stage"><div class="uname">Ryn · stage stat line</div>
+  <div class="stats"><span>${icon('physical')}1.1K</span><span>${icon('magic')}288</span><span>${icon('armor')}79</span><span>${icon('magicResist')}112</span><span>${icon('crit')}0%</span></div>
+  <div class="cap">Unchanged: still the live numbers.</div></div>`;
+
+const phone = (proposed) => `<div class="phone"><div class="scroll">
+  ${stage}
+  <div class="fx">${effects.map(([ic, t]) => `<span class="ef">${icon(ic, 'currentColor')}${t}</span>`).join('')}</div>
+  <div class="lbl">Stats</div>
+  <div class="tiles">${stats.map((s) => tile(s, proposed)).join('')}</div></div></div>`;
+
+document.getElementById('grid').innerHTML = [
+  ['Today', 'Blinded', 'Crit just reads 0%, with nothing to say why or that it will come back.', false],
+  ['Proposed', 'Crossed out, then what it is now', 'The usual number struck through, the live one in red, and the skill named underneath. Covers Blind (crit), Sever (lifesteal) and Sunder (armor and magic resist).', true],
+].map(([tag, h, p, prop]) => `<div class="col"><div class="tag">${tag}</div><h2>${h}</h2><p>${p}</p>${phone(prop)}</div>`).join('');
+</script>
+</body>
+</html>

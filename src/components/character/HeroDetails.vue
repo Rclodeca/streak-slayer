@@ -100,13 +100,14 @@ const bestStreak = computed(() =>
     <section class="stat-group">
       <h4 class="group-label">Stats</h4>
       <div class="tiles">
-        <div v-for="stat in statTiles" :key="stat.label" class="stat-tile">
+        <div v-for="stat in statTiles" :key="stat.label" class="stat-tile" :class="{ reduced: stat.now }">
           <span class="tile-label"><StatIcon :name="stat.icon" />{{ stat.label }}</span>
           <span class="tile-value">
-            {{ stat.value }}
+            <template v-if="stat.now"><s class="tile-usual">{{ stat.value }}</s><span class="tile-now">{{ stat.now }}</span></template>
+            <template v-else>{{ stat.value }}</template>
             <span v-if="stat.gain" class="tile-gain">{{ stat.gain }}</span>
           </span>
-          <span v-if="stat.note" class="tile-note">{{ stat.note }}</span>
+          <span v-if="stat.reason || stat.note" class="tile-note">{{ stat.reason ?? stat.note }}</span>
         </div>
       </div>
     </section>
@@ -442,5 +443,22 @@ const bestStreak = computed(() =>
 .tile-note {
   color: var(--text);
   font-size: 0.75rem;
+}
+
+/* A stat a boss skill is lowering: the usual value struck through, what it is now beside it. */
+.tile-usual {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration-color: var(--damage-color);
+  text-decoration-thickness: 2px;
+}
+
+.tile-now {
+  color: var(--damage-color);
+}
+
+.stat-tile.reduced {
+  border-color: color-mix(in srgb, var(--damage-color) 40%, var(--border));
 }
 </style>

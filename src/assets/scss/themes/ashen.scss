@@ -2690,6 +2690,14 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     padding: 8px 10px;
   }
 
+  // A stat a boss skill is lowering: the bevel plus a faint red ring.
+  .tiles .stat-tile.reduced {
+    box-shadow:
+      inset 2px 2px 0 var(--sunk-hi),
+      inset -2px -2px 0 var(--sunk-lo),
+      inset 0 0 0 1px color-mix(in srgb, var(--damage-color) 35%, transparent);
+  }
+
   .tiles .tile-label {
     @include true-sans(0.78125rem, 600);
     gap: 5px;

@@ -13,6 +13,7 @@ import {
   activeSunder,
   activeWoundsEffect,
   bossSkillEffectText,
+  critChanceBeforeBlind,
   dailyPeriodKey,
   damageReductionPct,
   daysBetweenDayKeys,
@@ -39,6 +40,9 @@ export interface StatTile {
   icon: StatIconName;
   label: string;
   value: string;
+  // What a boss skill has the stat at right now, when it's lowering it: `value` is then the usual, shown crossed out.
+  now?: string;
+  reason?: string;
   gain?: string;
   note?: string;
 }
@@ -66,14 +70,14 @@ export function useHeroStats() {
   const healing = computed(() => effectiveStat(character.value, 'healing'));
   const trueDamage = computed(() => effectiveStat(character.value, 'trueDamage'));
   const critChance = computed(() => effectiveCritChance(character.value, currentDayKey.value));
+  // What Blind is holding down, for the details to show crossed out.
+  const usualCritChance = computed(() => critChanceBeforeBlind(character.value, currentDayKey.value));
 
   // Item-only stats: no base value exists, they come purely from equipped gear.
   // Armor/MR are flat and show their damage reduction against boss attacks;
   // pen is capped at TUNING.ARMOR_MAGIC_PEN_CAP_PCT (see effectiveResistAfterPen).
   const armor = computed(() => itemFlatBonus(character.value, 'armor'));
   const magicResist = computed(() => itemFlatBonus(character.value, 'magicResist'));
-  const armorReduction = computed(() => damageReductionPct(armor.value) * 100);
-  const magicResistReduction = computed(() => damageReductionPct(magicResist.value) * 100);
   const lifesteal = computed(() => itemBonusPercent(character.value, 'lifesteal'));
   const armorPen = computed(() => Math.min(itemBonusPercent(character.value, 'armorPen'), TUNING.ARMOR_MAGIC_PEN_CAP_PCT));
   const magicPen = computed(() => Math.min(itemBonusPercent(character.value, 'magicPen'), TUNING.ARMOR_MAGIC_PEN_CAP_PCT));
@@ -137,7 +141,21 @@ export function useHeroStats() {
   }
 
   const statTiles = computed<StatTile[]>(() => {
-    const crit = gain(critChance.value, baseCritChance.value, 100);
+    const blinded = !!blindEffect.value;
+    const severed = !!severEffect.value;
+    const sundered = !!sunderEffect.value;
+    const crit = gain(usualCritChance.value, baseCritChance.value, 100);
+    const sunderFactor = TUNING.BOSS_SKILLS.SUNDER_FACTOR;
+    // Armor and magic resist: the usual value, and Sunder's halved one beside it while it runs.
+    const resistTile = (icon: 'armor' | 'magicResist', label: string, usual: number): StatTile => {
+      const current = sundered ? usual * sunderFactor : usual;
+      return {
+        icon,
+        label,
+        value: formatCompact(usual),
+        ...(sundered ? { now: formatCompact(current), reason: 'Sundered' } : { note: `${(damageReductionPct(usual) * 100).toFixed(1)}% less damage` }),
+      };
+    };
     return [
       tile('health', 'Max health', maxHealth.value, baseHealth.value),
       tile('physical', 'Physical', physicalDamage.value, basePhysicalDamage.value),
@@ -147,16 +165,14 @@ export function useHeroStats() {
       {
         icon: 'crit' as const,
         label: 'Crit chance',
-        value: `${(critChance.value * 100).toFixed(0)}%`,
-        gain: crit > 0 ? `+${crit}%` : undefined,
+        value: `${(usualCritChance.value * 100).toFixed(0)}%`,
+        ...(blinded ? { now: `${(critChance.value * 100).toFixed(0)}%`, reason: 'Blinded' } : { gain: crit > 0 ? `+${crit}%` : undefined }),
       },
-      ...(armor.value > 0
-        ? [{ icon: 'armor' as const, label: 'Armor', value: formatCompact(armor.value), note: `${armorReduction.value.toFixed(1)}% less damage` }]
+      ...(armor.value > 0 ? [resistTile('armor', 'Armor', armor.value)] : []),
+      ...(magicResist.value > 0 ? [resistTile('magicResist', 'Magic resist', magicResist.value)] : []),
+      ...(lifesteal.value > 0
+        ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: `${lifesteal.value.toFixed(0)}%`, ...(severed ? { now: '0%', reason: 'Severed' } : {}) }]
         : []),
-      ...(magicResist.value > 0
-        ? [{ icon: 'magicResist' as const, label: 'Magic resist', value: formatCompact(magicResist.value), note: `${magicResistReduction.value.toFixed(1)}% less damage` }]
-        : []),
-      ...(lifesteal.value > 0 ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: `${lifesteal.value.toFixed(0)}%` }] : []),
       ...(armorPen.value > 0 ? [{ icon: 'armorPen' as const, label: 'Armor pen', value: `${armorPen.value.toFixed(0)}%` }] : []),
       ...(magicPen.value > 0 ? [{ icon: 'magicPen' as const, label: 'Magic pen', value: `${magicPen.value.toFixed(0)}%` }] : []),
     ];

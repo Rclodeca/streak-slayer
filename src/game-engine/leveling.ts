@@ -113,6 +113,11 @@ export function clampHealthToMax(character: Character): Character {
 export function effectiveCritChance(character: Character, currentDayKey?: string): number {
   // Blind (a boss skill) stops rolled crits; forced ones (isForcedCrit) still land.
   if (currentDayKey && activeBlind(character, currentDayKey)) return 0;
+  return critChanceBeforeBlind(character, currentDayKey);
+}
+
+/** The crit chance Blind is holding down: what effectiveCritChance returns without it. */
+export function critChanceBeforeBlind(character: Character, currentDayKey?: string): number {
   const boost = currentDayKey ? (activeCritBoost(character, currentDayKey)?.bonus ?? 0) : 0;
   const streak = currentDayKey ? critStreakStacks(character, currentDayKey) * TUNING.ITEM_EFFECTS.CRIT_STREAK_PER_CRIT : 0;
   const raw = character.critChance + itemBonusPercent(character, 'critChance') / 100 + boost + streak;
