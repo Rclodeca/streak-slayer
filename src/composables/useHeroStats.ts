@@ -107,6 +107,10 @@ export function useHeroStats() {
   const sunderDaysLeft = computed(() =>
     sunderEffect.value ? sunderEffect.value.durationDays - daysBetweenDayKeys(sunderEffect.value.appliedDayKey, currentDayKey.value) : 0,
   );
+  // What the stage shows: the stats with boss skills' cuts applied (the details show the usual beside them).
+  const currentHealing = computed(() => healing.value * (woundsEffect.value?.effectRate ?? 1));
+  const currentArmor = computed(() => armor.value * (sunderEffect.value ? TUNING.BOSS_SKILLS.SUNDER_FACTOR : 1));
+  const currentMagicResist = computed(() => magicResist.value * (sunderEffect.value ? TUNING.BOSS_SKILLS.SUNDER_FACTOR : 1));
   const doomDays = computed(() => doomDaysLeft(bossStore.boss, currentDayKey.value));
 
   // Pre-item-bonus values, shown alongside the buffed (post-item) ones in the
@@ -161,7 +165,10 @@ export function useHeroStats() {
       tile('physical', 'Physical', physicalDamage.value, basePhysicalDamage.value),
       tile('magic', 'Magic', magicDamage.value, baseMagicDamage.value),
       tile('true', 'True', trueDamage.value, baseTrueDamage.value),
-      tile('healing', 'Healing', healing.value, baseHealing.value),
+      {
+        ...tile('healing', 'Healing', healing.value, baseHealing.value),
+        ...(woundsEffect.value ? { now: formatCompact(currentHealing.value), reason: 'Wounded', gain: undefined } : {}),
+      },
       {
         icon: 'crit' as const,
         label: 'Crit chance',
@@ -208,8 +215,11 @@ export function useHeroStats() {
     healing,
     trueDamage,
     critChance,
+    currentHealing,
     armor,
     magicResist,
+    currentArmor,
+    currentMagicResist,
     lifesteal,
     armorPen,
     magicPen,

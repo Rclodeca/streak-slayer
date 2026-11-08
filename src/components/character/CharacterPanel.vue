@@ -42,11 +42,13 @@ const {
   displayExp,
   physicalDamage,
   magicDamage,
-  healing,
+  currentHealing,
   trueDamage,
   critChance,
   armor,
   magicResist,
+  currentArmor,
+  currentMagicResist,
   lifesteal,
   armorPen,
   magicPen,
@@ -144,12 +146,12 @@ onBeforeUnmount(() => {
       <p ref="statLine" class="stat-summary">
         <span v-if="has('physical')"><StatIcon name="physical" />{{ formatCompact(physicalDamage) }}</span>
         <span v-if="has('magic')"><StatIcon name="magic" />{{ formatCompact(magicDamage) }}</span>
-        <span v-if="has('healing')"><StatIcon name="healing" />{{ formatCompact(healing) }}</span>
+        <span v-if="has('healing')"><StatIcon name="healing" />{{ formatCompact(currentHealing) }}</span>
         <span v-if="has('trueDamage')"><StatIcon name="true" />{{ formatCompact(trueDamage) }}</span>
         <span><StatIcon name="crit" />{{ (critChance * 100).toFixed(0) }}%</span>
-        <span v-if="armor > 0"><StatIcon name="armor" />{{ formatCompact(armor) }}</span>
-        <span v-if="magicResist > 0"><StatIcon name="magicResist" />{{ formatCompact(magicResist) }}</span>
-        <span v-if="lifesteal > 0"><StatIcon name="lifesteal" />{{ lifesteal.toFixed(0) }}%</span>
+        <span v-if="armor > 0"><StatIcon name="armor" />{{ formatCompact(currentArmor) }}</span>
+        <span v-if="magicResist > 0"><StatIcon name="magicResist" />{{ formatCompact(currentMagicResist) }}</span>
+        <span v-if="lifesteal > 0 && !severEffect"><StatIcon name="lifesteal" />{{ lifesteal.toFixed(0) }}%</span>
         <span v-if="armorPen > 0"><StatIcon name="armorPen" />{{ armorPen.toFixed(0) }}%</span>
         <span v-if="magicPen > 0"><StatIcon name="magicPen" />{{ magicPen.toFixed(0) }}%</span>
         <span v-if="critBoost"><StatIcon name="critBoost" />+{{ (critBoost.bonus * 100).toFixed(0) }}% crit · {{ critBoostDaysLeft }}d</span>
