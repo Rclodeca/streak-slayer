@@ -32,9 +32,10 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           <StatIcon :name="entry.isTrueDamage ? 'true' : 'physical'" class="log-icon" /> Used "{{ entry.habitName }}" — dealt
           <span :class="entry.isTrueDamage ? 'log-true-damage' : 'log-damage'">{{ formatCompact(entry.amount) }}</span>
           damage
-          <span v-if="entry.crit || entry.lifesteal || entry.reflected || entry.milestoneExp" class="log-chips">
+          <span v-if="entry.crit || entry.lifesteal || entry.critHeal || entry.reflected || entry.milestoneExp" class="log-chips">
             <span v-if="entry.crit" class="log-chip crit"><StatIcon name="crit" :size="11" />Crit</span>
             <span v-if="entry.lifesteal" class="log-chip"><StatIcon name="lifesteal" :size="11" /><span class="log-heal">+{{ formatCompact(entry.lifesteal) }}</span>&nbsp;HP</span>
+            <span v-if="entry.critHeal" class="log-chip"><StatIcon name="crit" :size="11" /><span class="log-heal">+{{ formatCompact(entry.critHeal) }}</span>&nbsp;HP</span>
             <span v-if="entry.reflected" class="log-chip"><StatIcon name="reflect" :size="11" /><span class="log-damage">−{{ formatCompact(entry.reflected) }}</span>&nbsp;HP</span>
             <span v-if="entry.milestoneExp" class="log-chip"><span class="log-exp">+{{ formatCompact(entry.milestoneExp) }}</span>&nbsp;EXP</span>
           </span>

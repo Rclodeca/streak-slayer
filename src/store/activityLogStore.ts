@@ -13,8 +13,8 @@ export type ActivityLogEntry =
   // milestoneExp is the streak-milestone EXP bonus granted alongside this
   // action (see useCombatActions/applyReward) — undefined/0 when none fired.
   // crit/lifesteal/reflected ride on the blow's own entry and render as chips
-  // under it; lifesteal is what the hero healed, reflected what bounced back.
-  | { id: string; kind: 'skill-damage'; habitName: string; amount: number; isTrueDamage?: boolean; milestoneExp?: number; crit?: boolean; lifesteal?: number; reflected?: number }
+  // under it; lifesteal is what the hero healed, critHeal what a crit healed (Bloodcrystal Blade), reflected what bounced back.
+  | { id: string; kind: 'skill-damage'; habitName: string; amount: number; isTrueDamage?: boolean; milestoneExp?: number; crit?: boolean; lifesteal?: number; critHeal?: number; reflected?: number }
   | { id: string; kind: 'heal'; habitName: string; amount: number; milestoneExp?: number }
   // crit/lifesteal here are the boss's: its crit, and what it healed off the blow.
   | { id: string; kind: 'hit'; habitName: string; amount: number; attackType: 'physical' | 'magic'; crit?: boolean; lifesteal?: number }

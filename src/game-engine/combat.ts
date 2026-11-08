@@ -172,6 +172,8 @@ export type CombatResult = {
   // namely the activity log — can report these sub-effects separately,
   // without recomputing this function's formulas themselves.
   lifestealHealed?: number;
+  // Bloodcrystal Blade's heal on a crit — not lifesteal, so reported apart from it.
+  critHealed?: number;
   reflectedDamage?: number;
   // A boss skill this hit made fire (see resolveBreakpoints in bossSkills.ts).
   bossSkill?: FiredBossSkill;
@@ -310,7 +312,10 @@ function resolveCompletion(
   const maxHealth = effectiveStat(character, 'health');
   const bloodthornHeal = wasCrit && hasItemEffect(character, 'bloodthorn') ? maxHealth * (TUNING.ITEM_EFFECTS.BLOODTHORN_CRIT_HEAL_PCT / 100) : 0;
   // Both heals are cut by Wounds and raised by a Healing boost.
-  const healed = (dealt * (lifestealPct / 100) + bloodthornHeal) * healingMultiplier(character, currentDayKey);
+  const healMultiplier = healingMultiplier(character, currentDayKey);
+  const lifestealHealed = dealt * (lifestealPct / 100) * healMultiplier;
+  const critHealed = bloodthornHeal * healMultiplier;
+  const healed = lifestealHealed + critHealed;
   // Null Mirror resists Reflect when it fires (see bossSkills.ts); this also
   // covers a Reflect that fired before the mirror was equipped.
   const reflected =
@@ -329,7 +334,8 @@ function resolveCompletion(
     milestoneExp,
     damageDealt: dealt,
     wasCrit,
-    lifestealHealed: healed > 0 ? healed : undefined,
+    lifestealHealed: lifestealHealed > 0 ? lifestealHealed : undefined,
+    critHealed: critHealed > 0 ? critHealed : undefined,
     reflectedDamage: reflected > 0 ? reflected : undefined,
   };
 }
@@ -371,26 +377,10 @@ export function bossMissDamage(attackStat: number): number {
   return attackStat * TUNING.MISS_DAMAGE_FACTOR;
 }
 
-/**
- * Resolves missing a habit: resets its streak and damages the character
- * with a coin-flip between the boss's physical and magic attack (not their
- * average — the boss "attacks" with one or the other), scaled by the
- * habit's difficulty and, on a crit roll (using the boss's crit chance),
- * doubled. The boss's own lifesteal% (if any) heals it for a percent of
- * that same damage, capped at its max health. Boss hits never apply
- * Wounds: that's a boss skill now (see bossSkills.ts). `currentDayKey` must
- * be `dailyPeriodKey(now)`.
- */
-export function missHabit(
-  character: Character,
-  habit: Habit,
-  boss: Boss,
-  currentDayKey: string,
-  rng: Rng,
-): {
+/** What one boss attack on the player did — shared by a missed habit and a missed quest. */
+type BossStrike = {
   character: Character;
   boss: Boss;
-  updatedHabit: Habit;
   wasCrit: boolean;
   // Which of the boss's two attacks the roll below picked — surfaced
   // for the activity log so a boss hit reads as physical or magic.
@@ -398,17 +388,34 @@ export function missHabit(
   // Capped at the boss's maxHealth, so this is the actual health gained,
   // not the raw `damage * lifestealPct` — surfaced for the activity log.
   bossLifestealHealed?: number;
-} {
-  const updatedHabit = resetHabitStreak(habit);
+};
+
+/**
+ * One boss attack on the player: a coin-flip between the boss's physical and
+ * magic attack (not their average — the boss "attacks" with one or the
+ * other), scaled by `difficulty` and `damageMultiplier`, doubled on a crit
+ * roll (using the boss's crit chance), then cut by the player's armor or
+ * magic resist. The boss's own lifesteal% (if any) heals it for a percent of
+ * that same damage, capped at its max health. Boss hits never apply
+ * Wounds: that's a boss skill now (see bossSkills.ts). `currentDayKey` must
+ * be `dailyPeriodKey(now)`.
+ */
+function bossStrike(
+  character: Character,
+  boss: Boss,
+  difficulty: Difficulty,
+  damageMultiplier: number,
+  currentDayKey: string,
+  rng: Rng,
+): BossStrike {
   const attackType: 'physical' | 'magic' = rng() < (boss.physicalShare ?? 0.5) ? 'physical' : 'magic';
   const attack = attackType === 'physical' ? boss.physicalAttack : boss.magicAttack;
   // Rolled every miss (so the rng sequence is stable), but only a Frenzied boss can crit.
   const critRoll = rng();
   const wasCrit = frenzyActive(boss, currentDayKey) && critRoll < TUNING.BOSS_SKILLS.FRENZY_CRIT_CHANCE;
-  const weeklyMultiplier = habit.period === 'weekly' ? TUNING.WEEKLY_MISS_MULTIPLIER : 1;
   const damage =
-    attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[habit.difficulty] / 1.5) *
-    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1) * weeklyMultiplier;
+    attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[difficulty] / 1.5) *
+    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1) * damageMultiplier;
   // Sunder (a boss skill) halves the player's armor and magic resist.
   const sunderFactor = activeSunder(character, currentDayKey) ? TUNING.BOSS_SKILLS.SUNDER_FACTOR : 1;
   const playerResistStat =
@@ -434,11 +441,36 @@ export function missHabit(
   return {
     character: { ...hitCharacter, currentHealth: newHealth },
     boss: newBoss,
-    updatedHabit,
     wasCrit,
     attackType,
     bossLifestealHealed: bossLifestealHealed > 0 ? bossLifestealHealed : undefined,
   };
+}
+
+/**
+ * Resolves missing a habit: resets its streak and hits the character with a
+ * boss attack (see `bossStrike`); a missed weekly hits for
+ * WEEKLY_MISS_MULTIPLIER times as much.
+ */
+export function missHabit(
+  character: Character,
+  habit: Habit,
+  boss: Boss,
+  currentDayKey: string,
+  rng: Rng,
+): BossStrike & { updatedHabit: Habit } {
+  const weeklyMultiplier = habit.period === 'weekly' ? TUNING.WEEKLY_MISS_MULTIPLIER : 1;
+  const strike = bossStrike(character, boss, habit.difficulty, weeklyMultiplier, currentDayKey, rng);
+  return { ...strike, updatedHabit: resetHabitStreak(habit) };
+}
+
+/**
+ * Resolves missing a quest's due date: hits the character exactly as a missed
+ * daily of the same difficulty would (armor, magic resist, crit, lifesteal).
+ * The quest itself isn't touched here — the caller flags it overdue.
+ */
+export function missQuest(character: Character, quest: Quest, boss: Boss, currentDayKey: string, rng: Rng): BossStrike {
+  return bossStrike(character, boss, quest.difficulty, 1, currentDayKey, rng);
 }
 
 /**

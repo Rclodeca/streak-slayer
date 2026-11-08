@@ -275,7 +275,9 @@ export function useCombatActions() {
         hp: bossHpChange,
         bossIndex: bossBefore.index,
         ...(result.reflectedDamage ? { reflect: { amount: result.reflectedDamage, hp: reflectHp } } : {}),
-        ...(result.lifestealHealed ? { lifesteal: { amount: result.lifestealHealed, hp: healthAfter - healthBefore - reflectHp } } : {}),
+        ...(result.lifestealHealed || result.critHealed
+          ? { lifesteal: { amount: (result.lifestealHealed ?? 0) + (result.critHealed ?? 0), hp: healthAfter - healthBefore - reflectHp } }
+          : {}),
       });
     }
     if (skillHit > 0) landsInMs = playHit({ kind: 'hurt', amount: skillHit, hp: -skillHit });
@@ -305,6 +307,7 @@ export function useCombatActions() {
         milestoneExp: result.milestoneExp,
         ...(result.wasCrit && { crit: true }),
         ...(result.lifestealHealed && { lifesteal: result.lifestealHealed }),
+        ...(result.critHealed && { critHeal: result.critHealed }),
         ...(result.reflectedDamage && { reflected: result.reflectedDamage }),
       });
     }

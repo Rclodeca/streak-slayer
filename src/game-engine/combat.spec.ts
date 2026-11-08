@@ -1402,6 +1402,13 @@ describe('completeHabit — item effects', () => {
     expect(result.character.currentHealth).toBeCloseTo(expected, 10);
   });
 
+  it("Bloodthorn Blade's crit heal is reported apart from lifesteal", () => {
+    const result = hit(['bloodthorn-blade'], {}, {}, alwaysCritRng, { currentHealth: 1 });
+    const character = makeCharacter({ equippedItemIds: ['bloodthorn-blade'] });
+    expect(result.critHealed).toBeCloseTo(effectiveStat(character, 'health') * (E.BLOODTHORN_CRIT_HEAL_PCT / 100), 10);
+    expect(result.lifestealHealed).toBeUndefined();
+  });
+
   it("Wounds halve Bloodthorn Blade's crit heal, like any heal", () => {
     const wounds: WoundsStatusEffect = { type: 'wounds', appliedDayKey: DAY_KEY, durationDays: 2, effectRate: 0.5 };
     const result = hit(['bloodthorn-blade'], {}, {}, alwaysCritRng, { currentHealth: 1, statusEffects: [wounds] });
