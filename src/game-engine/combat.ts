@@ -13,7 +13,7 @@ import type { ItemDef } from './items';
 import type { Rng } from './rng';
 import { completeHabitStreak, rankBonus, rankMultiplier, resetHabitStreak, streakBonus } from './streaks';
 import { daysBetweenDayKeys } from './time';
-import type { Boss, Character, DamageType, Habit, Period, WoundsStatusEffect } from './types';
+import type { Boss, Character, DamageType, Difficulty, Habit, Period, Quest, WoundsStatusEffect } from './types';
 
 const REVIVE_ITEM_ID = 'phoenix-feather';
 const REVIVE_HEALTH_FRACTION = 0.5;

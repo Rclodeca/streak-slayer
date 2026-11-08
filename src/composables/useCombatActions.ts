@@ -49,12 +49,12 @@ import {
   isDueOn,
   itemDoubleFactor,
   missHabit,
+  missQuest,
   overdriveHabit,
   overdriveUsesRemaining,
   periodKeyFor,
   PERSONALITY_NAME,
   pickRandom,
-  questMissDamage,
   questOverdueExp,
   questRewardExp,
   questWeekFor,
@@ -68,7 +68,7 @@ import {
   unlockQuests,
   weeklyPeriodKey,
 } from '../game-engine';
-import type { Character, ChallengeEntry, ChallengeEvent, ChallengeId, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
+import type { Boss, Character, ChallengeEntry, ChallengeEvent, ChallengeId, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -363,16 +363,67 @@ export function useCombatActions() {
   }
 
   /**
-   * Shared penalty core: resolves boss-attack damage to the player exactly
-   * once via `missHabit`, writes the result back into the character, boss
-   * (a lifesteal boss heals off this same attack), and habit stores, then
-   * checks for death. Used for both a good habit's rollover-detected miss
-   * and a bad habit's checkbox tap. `stampPeriodKey` mirrors `applyReward`'s.
+   * Lands one boss attack on the player: writes the struck character and boss
+   * back, plays the boss's strike (so the boss visibly hits the hero), logs
+   * it, then checks for death. If the damage brought currentHealth to 0, an
+   * equipped Phoenix Feather is consumed and the hero revives at once (no
+   * death screen); otherwise the death screen is flagged and the actual
+   * reset waits for `restart()`. Shared by a missed habit and a missed quest.
    *
-   * If the damage brought currentHealth to 0, checks for an equipped
-   * Phoenix Feather: if present, it's consumed and the character revives
-   * immediately (no death screen); otherwise the death screen is flagged
-   * and the actual reset waits for `restart()`.
+   * Returns whether the hero fell (died, or the Feather revived them).
+   */
+  function landBossStrike(
+    result: { character: Character; boss: Boss; wasCrit: boolean; attackType: 'physical' | 'magic'; bossLifestealHealed?: number },
+    healthBefore: number,
+    bossBefore: Boss,
+    logEntry: (hit: { amount: number; attackType: 'physical' | 'magic'; crit?: true; lifesteal?: number }) => Parameters<typeof activityLogStore.addEntry>[0],
+  ): boolean {
+    characterStore.setCharacter(result.character);
+    bossStore.setBoss(result.boss);
+
+    const dealt = healthBefore - result.character.currentHealth;
+    playHit({
+      kind: 'strike',
+      by: 'boss',
+      type: result.attackType,
+      amount: dealt,
+      crit: result.wasCrit,
+      hp: -dealt,
+      bossIndex: bossBefore.index,
+      ...(result.bossLifestealHealed ? { lifesteal: { amount: result.bossLifestealHealed, hp: result.bossLifestealHealed } } : {}),
+    });
+
+    activityLogStore.addEntry(
+      logEntry({
+        amount: dealt,
+        attackType: result.attackType,
+        ...(result.wasCrit && { crit: true as const }),
+        ...(result.bossLifestealHealed && { lifesteal: result.bossLifestealHealed }),
+      }),
+    );
+
+    // Rounded, not the raw float: the health bar already displays
+    // Math.round(currentHealth), so a tiny positive remainder (e.g. 0.3)
+    // would otherwise show as "0 HP" without actually triggering death.
+    if (Math.round(result.character.currentHealth) <= 0) {
+      const reviveResult = reviveWithFeatherIfEquipped(result.character);
+      if (reviveResult.revived) {
+        characterStore.setCharacter(reviveResult.character);
+        showReviveNotice();
+      } else {
+        triggerDeath();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Shared penalty core: resolves boss-attack damage to the player exactly
+   * once via `missHabit`, updates the habit store, and lands the strike (see
+   * `landBossStrike`; a lifesteal boss heals off this same attack). Used for
+   * both a good habit's rollover-detected miss and a bad habit's checkbox
+   * tap. `stampPeriodKey` mirrors `applyReward`'s.
    *
    * Returns whether the hero fell (died, or the Feather revived them).
    */
@@ -389,45 +440,8 @@ export function useCombatActions() {
       ? { ...result.updatedHabit, lastCompletedPeriodKey: stampPeriodKey, lastCheckedPeriodKey: stampPeriodKey }
       : result.updatedHabit;
 
-    characterStore.setCharacter(result.character);
-    bossStore.setBoss(result.boss);
     habitStore.updateHabit(updatedHabit);
-
-    const dealt = healthBefore - result.character.currentHealth;
-    playHit({
-      kind: 'strike',
-      by: 'boss',
-      type: result.attackType,
-      amount: dealt,
-      crit: result.wasCrit,
-      hp: -dealt,
-      bossIndex: bossBefore.index,
-      ...(result.bossLifestealHealed ? { lifesteal: { amount: result.bossLifestealHealed, hp: result.bossLifestealHealed } } : {}),
-    });
-
-    activityLogStore.addEntry({
-      kind: 'hit',
-      habitName: habit.name,
-      amount: dealt,
-      attackType: result.attackType,
-      ...(result.wasCrit && { crit: true }),
-      ...(result.bossLifestealHealed && { lifesteal: result.bossLifestealHealed }),
-    });
-
-    // Rounded, not the raw float: the health bar already displays
-    // Math.round(currentHealth), so a tiny positive remainder (e.g. 0.3)
-    // would otherwise show as "0 HP" without actually triggering death.
-    if (Math.round(result.character.currentHealth) <= 0) {
-      const reviveResult = reviveWithFeatherIfEquipped(result.character);
-      if (reviveResult.revived) {
-        characterStore.setCharacter(reviveResult.character);
-        showReviveNotice();
-      } else {
-        triggerDeath();
-      }
-      return true;
-    }
-    return false;
+    return landBossStrike(result, healthBefore, bossBefore, (hit) => ({ kind: 'hit', habitName: habit.name, ...hit }));
   }
 
   /**
@@ -665,36 +679,26 @@ export function useCombatActions() {
   }
 
   /**
-   * Resolves a quest's missed due date (not overridden): applies
-   * questMissDamage to the character, checks for death (Phoenix Feather
-   * revive, same as applyPenalty), logs a quest-failed entry, and flags the
-   * quest overdue — it stays in the list, still finishable for half EXP. Called
-   * only from useQuestMissGate.acknowledge()
-   * for a quest the player didn't flag as "I actually did this".
+   * Resolves a quest's missed due date (not overridden): the boss hits the
+   * character exactly as for a missed daily of the same difficulty
+   * (`missQuest` + `landBossStrike`: armor, crit, lifesteal, the strike
+   * animation, the death check and Phoenix Feather revive), logs a
+   * quest-failed entry, and flags the quest overdue — it stays in the list,
+   * still finishable for half EXP. Called only from
+   * useQuestMissGate.acknowledge() for a quest the player didn't flag as
+   * "I actually did this".
    */
   function failQuest(questId: string): void {
     const quest = questStore.quests.find((q) => q.id === questId);
     if (!quest) return;
 
     const healthBefore = characterStore.character.currentHealth;
-    const amount = questMissDamage(quest, bossStore.boss, rng);
-    const newHealth = Math.max(0, healthBefore - amount);
-    characterStore.setCharacter({ ...characterStore.character, currentHealth: newHealth });
-    bossStore.setBoss({ ...bossStore.boss, hurtPlayer: true });
-    playHit({ kind: 'hurt', amount: healthBefore - newHealth, hp: newHealth - healthBefore });
+    const bossBefore = bossStore.boss;
+    const currentDayKey = dailyPeriodKey(debugClockStore.now());
+    const result = missQuest(characterStore.character, quest, bossBefore, currentDayKey, rng);
 
-    activityLogStore.addEntry({ kind: 'quest-failed', description: quest.description, amount });
     questStore.markOverdue(questId);
-
-    if (Math.round(newHealth) <= 0) {
-      const reviveResult = reviveWithFeatherIfEquipped(characterStore.character);
-      if (reviveResult.revived) {
-        characterStore.setCharacter(reviveResult.character);
-        showReviveNotice();
-      } else {
-        triggerDeath();
-      }
-    }
+    landBossStrike(result, healthBefore, bossBefore, (hit) => ({ kind: 'quest-failed', description: quest.description, ...hit }));
   }
 
   /**

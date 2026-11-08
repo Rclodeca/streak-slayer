@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { bossMissDamage } from './combat';
 import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { TUNING } from './constants/tuning';
 import { expToNextLevel } from './leveling';
@@ -9,7 +8,6 @@ import {
   cumulativeSlotWeight,
   migrateQuest,
   migrateQuestUnlock,
-  questMissDamage,
   questRewardExp,
   questOverdueExp,
   questsOpen,
@@ -22,7 +20,7 @@ import {
   unlockQuests,
 } from './quests';
 import { createRng } from './rng';
-import type { Boss, Quest } from './types';
+import type { Quest } from './types';
 
 function makeQuest(overrides: Partial<Quest> = {}): Quest {
   return {
@@ -30,21 +28,6 @@ function makeQuest(overrides: Partial<Quest> = {}): Quest {
     description: 'Test quest',
     difficulty: 'medium',
     dueDateKey: '2026-01-10',
-    ...overrides,
-  };
-}
-
-function makeBoss(overrides: Partial<Boss> = {}): Boss {
-  return {
-    index: 1,
-    personality: 'balanced',
-    maxHealth: 100,
-    health: 100,
-    physicalAttack: 20,
-    magicAttack: 20,
-    armor: 10,
-    magicResist: 10,
-    lifestealPct: 0,
     ...overrides,
   };
 }
@@ -155,40 +138,6 @@ describe('questOverdueExp', () => {
 
   it('pays nothing once the week\'s slots are used up', () => {
     expect(questOverdueExp(createCharacter(createRng(1)), 'medium', 20)).toBe(0);
-  });
-});
-
-describe('questMissDamage', () => {
-  it('matches a missed medium weekly habit exactly, for a medium quest', () => {
-    const boss = makeBoss({ physicalAttack: 100, magicAttack: 100 }); // equal, so the coin flip doesn't matter
-    const quest = makeQuest({ difficulty: 'medium' });
-    const expected = bossMissDamage(100) * TUNING.WEEKLY_MISS_MULTIPLIER * (DIFFICULTY_WEIGHT.medium / 1.5);
-    expect(questMissDamage(quest, boss, createRng(1))).toBeCloseTo(expected, 10);
-  });
-
-  it('scales proportionally down for easy and up for hard, relative to medium', () => {
-    const boss = makeBoss({ physicalAttack: 100, magicAttack: 100 });
-    const medium = questMissDamage(makeQuest({ difficulty: 'medium' }), boss, createRng(1));
-    const easy = questMissDamage(makeQuest({ difficulty: 'easy' }), boss, createRng(1));
-    const hard = questMissDamage(makeQuest({ difficulty: 'hard' }), boss, createRng(1));
-    expect(easy).toBeCloseTo(medium * (DIFFICULTY_WEIGHT.easy / DIFFICULTY_WEIGHT.medium), 10);
-    expect(hard).toBeCloseTo(medium * (DIFFICULTY_WEIGHT.hard / DIFFICULTY_WEIGHT.medium), 10);
-  });
-
-  it("uses the boss's physicalShare as the cutoff between a physical and a magic hit", () => {
-    const quest = makeQuest({ difficulty: 'medium' });
-    const roll = () => 0.4; // physical at 50/50 and at a 70% physical lean, magic at a 30% one
-    const leansMagic = makeBoss({ physicalAttack: 100, magicAttack: 10, physicalShare: 0.3 });
-    const leansPhysical = makeBoss({ physicalAttack: 100, magicAttack: 10, physicalShare: 0.7 });
-    expect(questMissDamage(quest, leansMagic, roll)).toBeCloseTo(bossMissDamage(10) * TUNING.WEEKLY_MISS_MULTIPLIER, 10);
-    expect(questMissDamage(quest, leansPhysical, roll)).toBeCloseTo(bossMissDamage(100) * TUNING.WEEKLY_MISS_MULTIPLIER, 10);
-  });
-
-  it('uses the CURRENT boss', () => {
-    const quest = makeQuest({ difficulty: 'medium' });
-    const weakBoss = makeBoss({ physicalAttack: 10, magicAttack: 10 });
-    const strongBoss = makeBoss({ physicalAttack: 1000, magicAttack: 1000 });
-    expect(questMissDamage(quest, strongBoss, createRng(1))).toBeGreaterThan(questMissDamage(quest, weakBoss, createRng(1)));
   });
 });
 

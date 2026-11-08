@@ -37,7 +37,7 @@ export type Hit =
       reflect?: HitPart;
     }
   | { kind: 'heal'; amount: number; hp: number }
-  // No attacker (a missed quest): just the hurt and its number.
+  // No attacker (Doom): just the hurt and its number.
   | { kind: 'hurt'; amount: number; hp: number };
 
 /** Plays a hit and returns how long until its main blow lands, in ms. */

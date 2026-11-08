@@ -213,7 +213,8 @@ describe('useCombatActions', () => {
       expect(useActivityLogStore().entries[1]).toMatchObject({ kind: 'wounds-applied', durationDays: 2, effectRate: 0.5 });
     });
 
-    it('sends a missed quest as a plain hurt', () => {
+    it("sends the boss's blow on a missed quest, like a missed daily", () => {
+      const bossStore = useBossStore();
       const characterStore = useCharacterStore();
       const questStore = useQuestStore();
       const { failQuest } = useCombatActions();
@@ -223,7 +224,8 @@ describe('useCombatActions', () => {
       failQuest(quest.id);
 
       const lost = heroBefore - characterStore.character.currentHealth;
-      expect(hits).toEqual([{ kind: 'hurt', amount: lost, hp: -lost }]);
+      expect(lost).toBeGreaterThan(0);
+      expect(hits).toEqual([expect.objectContaining({ kind: 'strike', by: 'boss', amount: lost, hp: -lost, bossIndex: bossStore.boss.index })]);
     });
 
     it('flags the boss as having hurt the player when a quest is missed', () => {
@@ -856,7 +858,7 @@ describe('useCombatActions', () => {
     expect(characterStore.character.exp).toBe(expBefore);
   });
 
-  it('failQuest damages the character via questMissDamage, logs quest-failed, and flags the quest overdue', () => {
+  it('failQuest hits the character like a missed daily, logs quest-failed, and flags the quest overdue', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
     const { failQuest } = useCombatActions();
@@ -869,7 +871,7 @@ describe('useCombatActions', () => {
 
     expect(characterStore.character.currentHealth).toBeLessThan(healthBefore);
     expect(questStore.quests).toEqual([{ ...quest, overdue: true }]);
-    expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-failed', description: 'Clean garage' });
+    expect(activityLogStore.entries[0]).toMatchObject({ kind: 'quest-failed', description: 'Clean garage', attackType: expect.stringMatching(/^(physical|magic)$/) });
   });
 
   it('failQuest flags the death screen instead of resetting immediately when it brings currentHealth to 0', () => {

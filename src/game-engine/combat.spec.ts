@@ -19,11 +19,12 @@ import {
   overdriveHabit,
   overdriveUsesRemaining,
   missHabit,
+  missQuest,
   resolveBossDefeatIfDead,
   resolvePlayerDeathIfDead,
   reviveWithFeatherIfEquipped,
 } from './combat';
-import type { Boss, Character, Habit, Period, WoundsStatusEffect } from './types';
+import type { Boss, Character, Habit, Period, Quest, WoundsStatusEffect } from './types';
 
 // What rankMultiplier gives an unranked skill at this streak.
 function unrankedMultiplier(streakCount: number, period: Period = 'daily'): number {
@@ -647,6 +648,61 @@ describe('missHabit', () => {
     const result = missHabit(character, habit, boss, DAY_KEY, noCritRng);
 
     expect(result.boss).toMatchObject({ ...boss, hurtPlayer: true });
+  });
+});
+
+describe('missQuest', () => {
+  const makeQuest = (overrides: Partial<Quest> = {}): Quest => ({
+    id: 'quest-id',
+    description: 'Test quest',
+    difficulty: 'medium',
+    dueDateKey: '2026-01-10',
+    ...overrides,
+  });
+
+  it('hits exactly as a missed daily of the same difficulty does, for every difficulty', () => {
+    const character = makeCharacter({ currentHealth: 100000 });
+    const boss = makeBoss({ physicalAttack: 100, magicAttack: 100 });
+    for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+      const quest = missQuest(character, makeQuest({ difficulty }), boss, DAY_KEY, noCritRng);
+      const daily = missHabit(character, makeHabit({ difficulty, period: 'daily' }), boss, DAY_KEY, noCritRng);
+      expect(quest.character.currentHealth).toBeCloseTo(daily.character.currentHealth, 10);
+    }
+  });
+
+  it('is not doubled like a missed weekly', () => {
+    const character = makeCharacter({ currentHealth: 100000 });
+    const boss = makeBoss({ physicalAttack: 100, magicAttack: 100 });
+    const quest = missQuest(character, makeQuest(), boss, DAY_KEY, noCritRng);
+    expect(character.currentHealth - quest.character.currentHealth).toBeCloseTo(bossMissDamage(100), 5);
+  });
+
+  it('mitigates through equipped armor like a habit miss', () => {
+    const character = makeCharacter({ currentHealth: 100000, equippedItemIds: ['juggernaut-carapace'] }); // +450 flat armor
+    const boss = makeBoss({ physicalAttack: 1000 });
+    const forcePhysicalNoCrit = () => 0.4;
+    const result = missQuest(character, makeQuest(), boss, DAY_KEY, forcePhysicalNoCrit);
+    expect(character.currentHealth - result.character.currentHealth).toBeCloseTo(applyResist(bossMissDamage(1000), 450), 5);
+  });
+
+  it('crits (doubling the hit) only while the boss is Frenzied, and reports it', () => {
+    const character = makeCharacter({ currentHealth: 100000 });
+    const frenzied = makeBoss({ physicalAttack: 20, magicAttack: 20, frenzyDayKey: DAY_KEY });
+    const normal = missQuest(character, makeQuest(), frenzied, DAY_KEY, noCritRng);
+    const crit = missQuest(character, makeQuest(), frenzied, DAY_KEY, alwaysCritRng);
+    expect(normal.wasCrit).toBe(false);
+    expect(crit.wasCrit).toBe(true);
+    expect(100000 - crit.character.currentHealth).toBeCloseTo((100000 - normal.character.currentHealth) * TUNING.CRIT_MULTIPLIER, 10);
+    expect(missQuest(character, makeQuest(), makeBoss(), DAY_KEY, alwaysCritRng).wasCrit).toBe(false);
+  });
+
+  it('reports the attack type, flags the boss as having hurt the player, and feeds its lifesteal', () => {
+    const character = makeCharacter({ currentHealth: 100000 });
+    const boss = makeBoss({ physicalAttack: 100, magicAttack: 10, health: 50, maxHealth: 100, lifestealPct: 0.5 });
+    const result = missQuest(character, makeQuest(), boss, DAY_KEY, () => 0.4);
+    expect(result.attackType).toBe('physical');
+    expect(result.boss.hurtPlayer).toBe(true);
+    expect(result.bossLifestealHealed).toBeGreaterThan(0);
   });
 });
 

@@ -98,22 +98,6 @@ export function recordQuestCompletion(questWeek: QuestWeek | undefined, weekKey:
   return { weekKey, completed: current.completed + 1 };
 }
 
-/**
- * Damage dealt for missing `quest`'s due date: the same attack-stat *
- * MISS_DAMAGE_FACTOR formula bossMissDamage (combat.ts) uses, inlined here
- * rather than imported to avoid a combat.ts <-> quests.ts import cycle
- * (combat.ts would otherwise import from this module). Uses the CURRENT
- * boss — consistent with missHabit, which always uses live boss state for
- * damage. Deliberately simpler than a full missHabit resolution: no crit
- * roll, no player armor/magicResist mitigation, no boss lifesteal — quests
- * are a flatter, simpler risk mechanic than habits by design.
- */
-export function questMissDamage(quest: Quest, boss: Boss, rng: Rng): number {
-  const attackType: 'physical' | 'magic' = rng() < (boss.physicalShare ?? 0.5) ? 'physical' : 'magic';
-  const attack = attackType === 'physical' ? boss.physicalAttack : boss.magicAttack;
-  return attack * TUNING.MISS_DAMAGE_FACTOR * TUNING.WEEKLY_MISS_MULTIPLIER * (DIFFICULTY_WEIGHT[quest.difficulty] / 1.5);
-}
-
 /** Builds a new Quest record with a generated id; `createdDayKey` is the day it was added. */
 export function createQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string): Quest {
   if (!dueDateKey) throw new Error('A quest needs a due date');

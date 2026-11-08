@@ -183,7 +183,12 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           <span class="log-exp">+{{ formatCompact(entry.amount) }}</span> EXP
         </template>
         <template v-else-if="entry.kind === 'quest-failed'">
-          <StatIcon name="quest" class="log-icon" /> Missed quest "{{ entry.description }}" — took <span class="log-damage">{{ formatCompact(entry.amount) }}</span> damage
+          <StatIcon :name="entry.attackType === 'physical' ? 'physical' : 'magic'" class="log-icon" /> Missed quest "{{ entry.description }}" — took
+          <span class="log-damage">{{ formatCompact(entry.amount) }}</span> damage
+          <span v-if="entry.crit || entry.lifesteal" class="log-chips">
+            <span v-if="entry.crit" class="log-chip crit"><StatIcon name="crit" :size="11" />Crit</span>
+            <span v-if="entry.lifesteal" class="log-chip"><StatIcon name="lifesteal" :size="11" />Boss&nbsp;<span class="log-heal">+{{ formatCompact(entry.lifesteal) }}</span>&nbsp;HP</span>
+          </span>
         </template>
       </li>
     </ul>
