@@ -441,14 +441,16 @@ describe('challengeProgress', () => {
     expect(challengeProgress(e, ctx())).toEqual({ kind: 'bar', cur: 2, max: 3 });
   });
 
-  it('Perfect day reads "<n> of <m> done today"', () => {
+  it('Perfect day is a bar of dailies done today, or a line when none are due', () => {
     const habits = [makeHabit({ id: 'a', lastCompletedPeriodKey: D }), makeHabit({ id: 'b' }), makeHabit({ id: 'c', isBad: true })];
-    expect(challengeProgress(entry('perfect-day'), ctx(habits))).toEqual({ kind: 'text', text: '1 of 2 done today' });
+    expect(challengeProgress(entry('perfect-day'), ctx(habits))).toEqual({ kind: 'bar', cur: 1, max: 2 });
+    expect(challengeProgress(entry('perfect-day'), ctx([]))).toEqual({ kind: 'text', text: 'Nothing due today' });
   });
 
-  it('Unbroken reads "<n> of <m> at 3+"', () => {
+  it('Unbroken is a bar of dailies at 3+, which falls when a streak breaks, or a line when there are none', () => {
     const habits = [makeHabit({ id: 'a', streakCount: 4 }), makeHabit({ id: 'b', streakCount: 1 }), makeHabit({ id: 'w', period: 'weekly' })];
-    expect(challengeProgress(entry('streak-all'), ctx(habits))).toEqual({ kind: 'text', text: '1 of 2 at 3+' });
+    expect(challengeProgress(entry('streak-all'), ctx(habits))).toEqual({ kind: 'bar', cur: 1, max: 2 });
+    expect(challengeProgress(entry('streak-all'), ctx([]))).toEqual({ kind: 'text', text: 'No daily skills' });
   });
 
   it('Untouched reads the boss number and whether it has struck', () => {

@@ -46,12 +46,12 @@ describe('ChallengeList', () => {
     expect(card.text()).toContain('Resist 5 bad habits.');
   });
 
-  it('shows a state challenge as its status text', () => {
+  it('shows Unbroken as a bar of dailies at 3+', () => {
     useHabitStore().addHabit('Daily', 'daily', 'easy', false, createRng(1));
     give([entry('streak-all')]);
     const card = mountList().get('li.challenge');
-    expect(card.find('.challenge-bar').exists()).toBe(false);
-    expect(card.get('.challenge-status').text()).toBe('0 of 1 at 3+');
+    expect(card.find('.challenge-bar').exists()).toBe(true);
+    expect(card.text()).toContain('0 / 1');
   });
 
   it('shows the boss number and whether it has struck for Untouched', () => {

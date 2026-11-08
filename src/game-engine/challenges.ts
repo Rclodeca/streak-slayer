@@ -315,7 +315,7 @@ export function recordBadCheck(character: Character, dayKey: string): Character 
 
 export type ChallengeProgress = { kind: 'bar'; cur: number; max: number } | { kind: 'text'; text: string };
 
-/** What a challenge card shows under its deed: a bar for counted ones, a short line for the rest. */
+/** What a challenge card shows under its deed: a bar for counted ones (and the live tallies of Perfect day and Unbroken, which can fall), a short line for the rest. */
 export function challengeProgress(entry: ChallengeEntry, ctx: { habits: Habit[]; boss: Boss; todayDate: Date }): ChallengeProgress {
   const def = getChallengeDef(entry.id);
   if (def.goal > 1) {
@@ -330,13 +330,13 @@ export function challengeProgress(entry: ChallengeEntry, ctx: { habits: Habit[];
         (h) => !h.isBad && isDueOn(h, ctx.todayDate) && !(h.createdDayKey !== undefined && h.createdDayKey >= today),
       );
       const done = due.filter((h) => h.lastCompletedPeriodKey === today).length;
-      return { kind: 'text', text: due.length === 0 ? 'Nothing due today' : `${done} of ${due.length} done today` };
+      return due.length === 0 ? { kind: 'text', text: 'Nothing due today' } : { kind: 'bar', cur: done, max: due.length };
     }
     case 'streak-all': {
       const daily = dailies(ctx.habits);
       if (daily.length === 0) return { kind: 'text', text: 'No daily skills' };
       const streaking = daily.filter((h) => h.streakCount >= C.STREAK_EVERYTHING_MIN).length;
-      return { kind: 'text', text: `${streaking} of ${daily.length} at ${C.STREAK_EVERYTHING_MIN}+` };
+      return { kind: 'bar', cur: streaking, max: daily.length };
     }
     case 'untouched':
       return { kind: 'text', text: `Boss ${ctx.boss.index} · ${ctx.boss.hurtPlayer ? 'struck' : 'untouched so far'}` };
