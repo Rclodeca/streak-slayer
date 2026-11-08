@@ -38,7 +38,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
     :disabled="disabled"
     @click.stop="emit('strike')"
   >
-    <span v-if="resist" class="face"><HeartMinus :size="16" aria-hidden="true" /><span>Give in</span></span>
+    <span v-if="resist" class="face"><HeartMinus :size="15" aria-hidden="true" /><span>Give in</span></span>
     <span v-else class="face"><StatIcon :name="DAMAGE_TYPE_ICON[damageType]" :size="13" /><b>{{ formatCompact(damage) }}</b></span>
   </button>
 </template>
@@ -143,50 +143,24 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   --ink-shadow: none;
 }
 
-/* Resist: a ghost key that says Give in, a thin red outline with no lip
-   (docs/mockups/pixel-resist-button.html, option C). Given in or resting, it
-   sinks into a well, like the reward plate beside it. */
+/* Resist: the skill key's build with a dark face, a red edge and a red lip
+   (docs/mockups/pixel-give-in-button.html, option D). Given in or resting, it
+   takes the plain grey of a struck skill: edge, lip and words all go. */
 .strike.resist {
   --flash: var(--damage-color);
 }
 
 .strike.resist.open {
+  --face: color-mix(in srgb, var(--damage-color) 8%, #121620);
+  --base: color-mix(in srgb, var(--damage-color) 60%, #000);
+  --bevel: inset 0 0 0 2px color-mix(in srgb, var(--damage-color) 70%, #000);
   --ink: color-mix(in srgb, var(--damage-color) 72%, var(--tint-to));
   --ink-shadow: none;
 }
 
-/* No lip, so no room kept for one: the outline is the whole face, centred
-   in the button. */
 .strike.resist .face {
-  width: 92px;
-  height: 34px;
-  padding-bottom: 0;
-}
-
-.strike.resist .face::before {
-  display: none;
-}
-
-.strike.resist .face::after {
-  top: 0;
-  bottom: 0;
-  background: transparent;
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--damage-color) 50%, transparent);
-}
-
-.strike.resist:active .face::after {
-  background: color-mix(in srgb, var(--damage-color) 12%, transparent);
-}
-
-.strike.resist:is(.struck, .resting) .face::after {
-  background: var(--well);
-  box-shadow:
-    inset 2px 2px 0 var(--sunk-hi),
-    inset -2px -2px 0 var(--sunk-lo);
-}
-
-.strike.resist .face > * {
-  transform: none;
+  gap: 3px;
+  font-size: 13.5px;
 }
 
 /* Struck: every trace of colour goes. */
