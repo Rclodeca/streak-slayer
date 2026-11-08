@@ -4,11 +4,13 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, dailyPeriodKey, effectiveStat, formatCompact, ITEM_CATALOG } from '../../game-engine';
+import { addDaysToDayKey, createRng, dailyPeriodKey, effectiveStat, formatCompact, ITEM_CATALOG } from '../../game-engine';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useHabitStore } from '../../store/habitStore';
 import { useTabStore } from '../../store/tabStore';
 import Modal from '../ui/Modal.vue';
+import StatIcon from '../ui/StatIcon.vue';
 import CharacterPanel from './CharacterPanel.vue';
 
 enableAutoUnmount(afterEach);
@@ -87,6 +89,22 @@ describe('CharacterPanel', () => {
     setClass(300, 600);
     await nextTick();
     expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 180');
+  });
+
+  it('shows a damage stat only while some skill uses its type', () => {
+    const habitStore = useHabitStore();
+    const icons = (type: 'physical' | 'trueDamage') => {
+      habitStore.habits = [{ ...habitStore.addHabit('Read', 'daily', 'easy', false, createRng(1)), damageType: type }];
+      return mount(CharacterPanel)
+        .find('.stat-summary')
+        .findAllComponents(StatIcon)
+        .map((icon) => icon.props('name'));
+    };
+    expect(icons('physical')).toContain('physical');
+    expect(icons('physical')).not.toContain('true');
+    expect(icons('physical')).not.toContain('magic');
+    expect(icons('trueDamage')).toContain('true');
+    expect(icons('trueDamage')).not.toContain('physical');
   });
 
   describe('boss-skill effects', () => {

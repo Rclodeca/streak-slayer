@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue';
-import { formatCompact, heroClassFor } from '../../game-engine';
+import { formatCompact, heroClassFor, type DamageType } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { useHeroStats } from '../../composables/useHeroStats';
 import { useHitFeed } from '../../composables/useHitFeed';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { usePress } from '../../composables/usePress';
+import { useHabitStore } from '../../store/habitStore';
 import { useTabStore } from '../../store/tabStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
@@ -22,6 +23,10 @@ import PlayerSprite from './PlayerSprite.vue';
 const showDetails = ref(false);
 const isPhone = usePhoneLayout();
 const tabStore = useTabStore();
+
+// A damage stat only shows while a skill of its type could use it (the details keep them all).
+const habitStore = useHabitStore();
+const has = (type: DamageType) => habitStore.habits.some((habit) => habit.damageType === type);
 
 function openDetails() {
   if (isPhone.value) tabStore.select('hero');
@@ -137,10 +142,10 @@ onBeforeUnmount(() => {
         <ExpBar :key="displayLevel" :current="displayExp" :max="expNeeded" />
       </div>
       <p ref="statLine" class="stat-summary">
-        <span><StatIcon name="physical" />{{ formatCompact(physicalDamage) }}</span>
-        <span><StatIcon name="magic" />{{ formatCompact(magicDamage) }}</span>
-        <span><StatIcon name="healing" />{{ formatCompact(healing) }}</span>
-        <span><StatIcon name="true" />{{ formatCompact(trueDamage) }}</span>
+        <span v-if="has('physical')"><StatIcon name="physical" />{{ formatCompact(physicalDamage) }}</span>
+        <span v-if="has('magic')"><StatIcon name="magic" />{{ formatCompact(magicDamage) }}</span>
+        <span v-if="has('healing')"><StatIcon name="healing" />{{ formatCompact(healing) }}</span>
+        <span v-if="has('trueDamage')"><StatIcon name="true" />{{ formatCompact(trueDamage) }}</span>
         <span><StatIcon name="crit" />{{ (critChance * 100).toFixed(0) }}%</span>
         <span v-if="armor > 0"><StatIcon name="armor" />{{ formatCompact(armor) }}</span>
         <span v-if="magicResist > 0"><StatIcon name="magicResist" />{{ formatCompact(magicResist) }}</span>
