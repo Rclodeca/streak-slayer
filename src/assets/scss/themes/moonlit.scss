@@ -5,34 +5,34 @@
 // stage, which stays Moonlit's night under Light's lists.
 
 @mixin palette {
-  --bg: #07080c;
-  --bg-rgb: 7 8 12;
-  --text: #a9adb6;
-  --text-h: #e8ebf0;
-  --border: #2a2f3b;
-  --code-bg: #12141b;
-  --frame: #141720;
-  --frame-rgb: 20 23 32;
-  --panel-fill: #141720;
+  --bg: #11121b;
+  --bg-rgb: 17 18 27;
+  --text: #d3d4e4;
+  --text-h: #f4f4fa;
+  --border: #3f405a;
+  --code-bg: #202030;
+  --frame: #232337;
+  --frame-rgb: 35 35 55;
+  --panel-fill: #232337;
   --ash-rgb: 150 141 126;
   --ash-mark: #6b6458;
   --ash-deep: #5c554a;
-  --moon: #dbe2ee;
-  --moon-solid: #a9b4c8;
-  --moon-tint-rgb: 170 185 215;
-  --moon-glow-rgb: 200 214 240;
+  --moon: #dfe0f0;
+  --moon-solid: #b0b1cb;
+  --moon-tint-rgb: 180 181 217;
+  --moon-glow-rgb: 208 210 244;
   --brass: #d2bb85;
   --brass-rgb: 210 187 133;
   --brass-solid: #b39a66;
-  --check-done: #3c4352;
-  --check-done-line: #566074;
-  --page-glow: rgba(150, 170, 210, 0.1);
+  --check-done: #565779;
+  --check-done-line: #7778a6;
+  --page-glow: rgba(165, 166, 201, 0.1);
   // The main button: pale silver on a grey lip, dark text
   // (docs/mockups/pixel-gear.html "Equip", pixel-forms.html).
-  --button-fill: #c8d0dd;
-  --button-fill-hover: #d6dde8;
+  --button-fill: #cdcedf;
+  --button-fill-hover: #dadbea;
   --button-line: rgba(255, 255, 255, 0.4); // the light along its top edge
-  --button-text: #12141a;
+  --button-text: #20202e;
   --stage-light:
     radial-gradient(ellipse 45% 55% at 68% 55%, rgba(215, 205, 185, 0.15), transparent 72%),
     radial-gradient(ellipse 90% 30% at 50% 100%, rgba(224, 120, 58, 0.18), transparent 70%);
@@ -41,52 +41,52 @@
   --hero-sprite-filter: none; // the hero stands as drawn on the boss's scene
 
   // Cast-blue odds and ends the rules reach for.
-  --spent-text: #6a6f7a; // a spent skill's name and damage
-  --day-on-rgb: 70 82 108; // a chosen weekday's disc
-  --bar-rgb: 19 22 30; // the top of the pinned boss bar
-  --plate: #0a0b10; // the level diamond in the boss bar
+  --spent-text: #686877; // a spent skill's name and damage
+  --day-on-rgb: 102 102 161; // a chosen weekday's disc
+  --bar-rgb: 34 34 52; // the top of the pinned boss bar
+  --plate: #151621; // the level diamond in the boss bar
 
   // Pixel-cut cards, buttons and panels (docs/mockups/pixel-done.html, option A).
   // An open card is lifted: a step brighter, with a bevel and a dark lip.
-  --card: #1b2030;
-  --card-hi: #333c52;
-  --card-lo: #0c0f15;
-  --card-lip: #05060a;
-  --card-ink: #f0f3f7; // an open skill's or quest's name
+  --card: #2d2c50;
+  --card-hi: #4d4c7e;
+  --card-lo: #191a28;
+  --card-lip: #0e0e19;
+  --card-ink: #f4f4fa; // an open skill's or quest's name
   // A struck card drops dark and flat; its button loses all colour.
-  --struck-card: #0e1117;
-  --struck-hi: #161a24;
-  --struck-lo: #07090d;
-  --struck-face: #1b1f28;
-  --struck-lip: #111319;
-  --struck-ink: #5b606b;
+  --struck-card: #1c1c2a;
+  --struck-hi: #26263d;
+  --struck-lo: #12131c;
+  --struck-face: #2c2d41;
+  --struck-lip: #1f1f2c;
+  --struck-ink: #5a5a68;
   // Quiet cards: Resist, and skills resting today.
-  --quiet-card: #161a24;
-  --quiet-hi: #1c2230;
-  --quiet-lo: #0a0c12;
-  --resting-face: #1b1f28; // a resting skill's flat button, as struck
+  --quiet-card: #26263d;
+  --quiet-hi: #2f2f4f;
+  --quiet-lo: #161624;
+  --resting-face: #2c2d41; // a resting skill's flat button, as struck
   // A panel's bevel (the log, popups, the menu).
-  --panel-hi: #232937;
-  --panel-lo: #0b0d12;
+  --panel-hi: #373857;
+  --panel-lo: #171823;
   // A well sunk into a panel: its bevel flipped (the hero and stat wells).
-  --sunk-hi: #05070a;
-  --sunk-lo: #1a1f2b;
-  --button-lip: #7d8595; // under a primary (silver) button
+  --sunk-hi: #0f1018;
+  --sunk-lo: #2c2c47;
+  --button-lip: #828398; // under a primary (silver) button
   // A stone button: a dark lifted face over a black lip (Replace, Drop).
-  --stone-face: #232a3a;
-  --stone-lip: #0a0c11;
+  --stone-face: #38385c;
+  --stone-lip: #161622;
   // A dark well for inputs, bars and checks, with its line and inner shadow.
-  --field: #07090d;
-  --field-line: #2a3140;
-  --field-shadow: #020305;
+  --field: #12131c;
+  --field-line: #414163;
+  --field-shadow: #080811;
   --check-bg: rgba(0, 0, 0, 0.4);
-  --selected-card: #141a28; // a picked card in a list
-  --selected-shadow: #0a0d14;
+  --selected-card: #252545; // a picked card in a list
+  --selected-shadow: #171727;
   --brass-on-face: #6e5418; // brass on a lit (pale) key
-  --on-brass: #14161c; // text on a brass chip
+  --on-brass: #222330; // text on a brass chip
   --well: rgba(0, 0, 0, 0.22); // a shallow well set into a panel or card
   --on-true-damage: #1e1c18; // text on true damage's pale key
-  --on-crimson: #e8ebf0; // text on the crimson Take the blow button
+  --on-crimson: #eaeaf1; // text on the crimson Take the blow button
   --input-fill: rgba(0, 0, 0, 0.35);
   --tint-to: #fff; // what red text is mixed toward to lift it off the card
 

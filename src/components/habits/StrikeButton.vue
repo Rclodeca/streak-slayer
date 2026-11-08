@@ -151,7 +151,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
 }
 
 .strike.resist.open {
-  --face: color-mix(in srgb, var(--damage-color) 8%, #121620);
+  --face: color-mix(in srgb, var(--damage-color) 8%, #212138);
   --base: color-mix(in srgb, var(--damage-color) 60%, #000);
   --bevel: inset 0 0 0 2px color-mix(in srgb, var(--damage-color) 70%, #000);
   --ink: color-mix(in srgb, var(--damage-color) 72%, var(--tint-to));

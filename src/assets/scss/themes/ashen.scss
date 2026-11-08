@@ -331,11 +331,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 @mixin socket($c, $rim: 2px, $depth: 4px, $glow: null) {
   border: 0;
   @include pixel-corners(3px);
-  background: radial-gradient(circle, color-mix(in srgb, #{$c} 20%, #07090d), #05060a 72%);
+  background: radial-gradient(circle, color-mix(in srgb, #{$c} 20%, #12131c), #0e0e19 72%);
   $shadows: (
     inset 0 0 0 $rim color-mix(in srgb, #{$c} 60%, #000),
-    inset $depth $depth 0 #020305,
-    inset (-$depth) (-$depth) 0 color-mix(in srgb, #{$c} 30%, #0b0d12)
+    inset $depth $depth 0 #080811,
+    inset (-$depth) (-$depth) 0 color-mix(in srgb, #{$c} 30%, #171823)
   );
   @if $glow {
     $shadows: append($shadows, $glow, comma);
@@ -501,7 +501,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // the same stage cut to a 76px strip (at every width): names on one line (a
   // long one cut with "…"), the bars at their usual height.
   .fight-stage {
-    background: #0c0f17;
+    background: #19192b;
     border-bottom: 3px solid var(--card-lip);
     box-shadow: 0 10px 18px -8px rgba(0, 0, 0, 0.7);
   }
@@ -521,7 +521,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       $stars: (10% 22%, 31% 8%, 59% 18%, 77% 5%, 90% 38%, 51% 46%, 23% 58%, 67% 62%, 85% 52%, 5% 44%);
       $layers: ();
       @each $x, $y in $stars {
-        $layers: append($layers, linear-gradient(#3a4358, #3a4358) $x $y / 2px 2px no-repeat, comma);
+        $layers: append($layers, linear-gradient(#555584, #555584) $x $y / 2px 2px no-repeat, comma);
       }
       background: $layers;
     }
@@ -535,8 +535,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       bottom: 0;
       height: 37%;
       background:
-        conic-gradient(#0b0e15 25%, transparent 0 50%, #0b0e15 0 75%, transparent 0) 0 0 / 4px 4px repeat-x,
-        conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px;
+        conic-gradient(#181828 25%, transparent 0 50%, #181828 0 75%, transparent 0) 0 0 / 4px 4px repeat-x,
+        conic-gradient(#252442 25%, #1e1e34 0 50%, #252442 0 75%, #1e1e34 0) 0 0 / 4px 4px;
       background-size:
         4px 8px,
         4px 4px;
@@ -566,12 +566,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // edge and a dark foot, in the scene's stone (FightStage sets --plinth*).
   .boss-plat,
   .hero-plat {
-    background: var(--plinth, #1f2534);
+    background: var(--plinth, #333254);
     clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 6px 3px);
     box-shadow:
-      inset 0 3px 0 var(--plinth-top, #3a4358),
-      inset 0 6px 0 var(--plinth-mid, #283041),
-      inset 0 -3px 0 var(--plinth-foot, #10141d);
+      inset 0 3px 0 var(--plinth-top, #555584),
+      inset 0 6px 0 var(--plinth-mid, #3f3f66),
+      inset 0 -3px 0 var(--plinth-foot, #1f1f34);
     transition:
       background 0.3s ease-out,
       box-shadow 0.3s ease-out;
@@ -661,7 +661,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // a lit top row and a dark foot, 2px in from the rim.
   .fight-stage .health-bar {
     padding: 2px;
-    background: #0a0c12;
+    background: #161624;
     border: 0;
     @include pixel-corners(2px);
     @include bevel(var(--sunk-hi), var(--sunk-lo));
@@ -728,11 +728,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .boss-panel:has(.tap:focus-visible) .boss-plat,
   .character-panel.pressed .hero-plat,
   .character-panel:has(.tap:focus-visible) .hero-plat {
-    background: color-mix(in srgb, var(--plinth, #1f2534) 92%, #fff);
+    background: color-mix(in srgb, var(--plinth, #333254) 92%, #fff);
     box-shadow:
       inset 0 3px 0 var(--moon),
-      inset 0 6px 0 var(--plinth-top, #3a4358),
-      inset 0 -3px 0 var(--plinth-foot, #10141d);
+      inset 0 6px 0 var(--plinth-top, #555584),
+      inset 0 -3px 0 var(--plinth-foot, #1f1f34);
   }
 
   .boss-panel.pressed .boss-name,
@@ -1647,7 +1647,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // with a mark along the top in its colour: silver, brass for Quests and
   // Trials. Sealed ones grey out under a small lock.
   .tab-bar {
-    --tab-bar-bg: #0c0f17;
+    --tab-bar-bg: #19192b;
     position: relative;
     z-index: 8;
     background: var(--tab-bar-bg);
@@ -2211,7 +2211,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-weight: 700;
     line-height: 1;
     color: $brass;
-    text-shadow: 0 2px 0 #05060a;
+    text-shadow: 0 2px 0 #0e0e19;
   }
 
   .level-emblem-label {
@@ -2801,7 +2801,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // An empty slot: a sunk well with a dim, empty socket
   // (docs/mockups/pixel-tabs-final.html).
   .gear-row.empty {
-    --rarity: #2a3140;
+    --rarity: #414163;
     align-items: center;
     @include sunk-well;
     @include true-sans(0.875rem);
@@ -3318,7 +3318,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // side (docs/mockups/pixel-desktop-dropdown.html, option A).
 
   .boss-bar {
-    background: #0c0f17;
+    background: #19192b;
     border-bottom: 3px solid var(--card-lip);
     box-shadow: 0 10px 18px -8px rgba(0, 0, 0, 0.7);
   }
@@ -3334,8 +3334,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     pointer-events: none;
     opacity: 0.55;
     background:
-      conic-gradient(#141926 25%, #0f131d 0 50%, #141926 0 75%, #0f131d 0) 0 0 / 4px 4px,
-      #0f131d;
+      conic-gradient(#252442 25%, #1e1e34 0 50%, #252442 0 75%, #1e1e34 0) 0 0 / 4px 4px,
+      #1e1e34;
   }
 
   .boss-bar .strip {
@@ -3371,7 +3371,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     margin: 0;
     padding: 2px;
     overflow: hidden;
-    background: #0a0c12;
+    background: #161624;
     border: 0;
     @include pixel-corners(2px);
     @include bevel(var(--sunk-hi), var(--sunk-lo));

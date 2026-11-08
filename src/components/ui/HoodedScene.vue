@@ -46,7 +46,7 @@ onBeforeUnmount(unlock);
   z-index: 1100;
   display: flex;
   flex-direction: column;
-  background: #0b0d14;
+  background: #171727;
 }
 
 .scene-layer > * {

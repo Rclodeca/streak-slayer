@@ -86,7 +86,7 @@ onBeforeUnmount(stopTyping);
   flex-direction: column;
   min-height: 100%;
   overflow: hidden;
-  background: linear-gradient(#120a10, #0b0d14 60%);
+  background: linear-gradient(#120a10, #171727 60%);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -151,8 +151,8 @@ onBeforeUnmount(stopTyping);
   position: absolute;
   inset: auto 0 0;
   height: 34px;
-  background: #0c0f17;
-  box-shadow: inset 0 3px 0 #1d2230;
+  background: #19192b;
+  box-shadow: inset 0 3px 0 #2f2f4e;
 }
 
 .died {
@@ -164,7 +164,7 @@ onBeforeUnmount(stopTyping);
   letter-spacing: 0.2em;
   text-align: center;
   text-indent: 0.2em;
-  text-shadow: 0 3px 0 #05070a;
+  text-shadow: 0 3px 0 #0f1018;
 }
 
 /* The line box: a silver frame cut with the same pixel corners as the popups. */
@@ -176,11 +176,11 @@ onBeforeUnmount(stopTyping);
   padding: 22px 16px 16px;
   border: 0;
   clip-path: var(--px3);
-  background: #07080c;
+  background: #11121b;
   box-shadow:
     inset 0 0 0 3px #c8d0dd,
-    inset 0 0 0 5px #07080c,
-    inset 0 0 0 6px #4a5266;
+    inset 0 0 0 5px #11121b,
+    inset 0 0 0 6px #676895;
   color: var(--text-h);
   cursor: pointer;
   font: inherit;
@@ -191,8 +191,8 @@ onBeforeUnmount(stopTyping);
   outline: 0;
   box-shadow:
     inset 0 0 0 3px #fff,
-    inset 0 0 0 5px #07080c,
-    inset 0 0 0 6px #4a5266;
+    inset 0 0 0 5px #11121b,
+    inset 0 0 0 6px #676895;
 }
 
 .speaker {
@@ -202,7 +202,7 @@ onBeforeUnmount(stopTyping);
   padding: 3px 10px;
   clip-path: var(--px2);
   background: #c8d0dd;
-  color: #12141a;
+  color: #20202e;
   font: 600 10px 'Cinzel', serif;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -257,7 +257,7 @@ onBeforeUnmount(stopTyping);
 .dots i {
   width: 5px;
   height: 5px;
-  background: #2a3140;
+  background: #414163;
 }
 
 .dots i.on {

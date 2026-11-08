@@ -131,7 +131,7 @@ const sparks = Array.from({ length: 14 }, () => ({
   flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: #050609;
+  background: #0e0f17;
 }
 
 .death-layer > * {
@@ -142,7 +142,7 @@ const sparks = Array.from({ length: 14 }, () => ({
 .bonfire {
   position: relative;
   padding: calc(70px + env(safe-area-inset-top)) 12px calc(28px + env(safe-area-inset-bottom));
-  background: radial-gradient(60% 34% at 50% 44%, rgba(224, 138, 60, 0.22), transparent 70%), #050609;
+  background: radial-gradient(60% 34% at 50% 44%, rgba(224, 138, 60, 0.22), transparent 70%), #0e0f17;
   overflow: hidden;
   text-align: center;
 }
@@ -172,23 +172,23 @@ const sparks = Array.from({ length: 14 }, () => ({
   height: 2px;
   background: transparent;
   box-shadow:
-    40px 20px #3a4358,
-    120px 12px #2c3446,
-    230px 30px #3a4358,
-    300px 10px #4a5470,
-    352px 52px #2c3446,
-    200px 60px #2c3446,
-    70px 70px #232a39,
-    330px 80px #3a4358,
-    20px 50px #2c3446;
+    40px 20px #555584,
+    120px 12px #44446c,
+    230px 30px #555584,
+    300px 10px #6968a6,
+    352px 52px #44446c,
+    200px 60px #44446c,
+    70px 70px #38385a,
+    330px 80px #555584,
+    20px 50px #44446c;
 }
 
 .mound {
   position: absolute;
   inset: auto -12px 0;
   height: 32px;
-  background: #0c0e14;
-  box-shadow: inset 0 3px 0 #171b25;
+  background: #191926;
+  box-shadow: inset 0 3px 0 #27283e;
 }
 
 .glow {
@@ -382,7 +382,7 @@ const sparks = Array.from({ length: 14 }, () => ({
   width: 104px;
   padding: 10px 6px 8px;
   clip-path: var(--px3);
-  background: #0e1017;
+  background: #1b1b2b;
   box-shadow:
     inset 0 0 0 1px #2a2418,
     inset 0 -18px 24px -12px rgba(224, 138, 60, 0.18);
@@ -422,11 +422,11 @@ const sparks = Array.from({ length: 14 }, () => ({
 
 /* A broken streak leaves the flame cold. */
 .ember.cold {
-  box-shadow: inset 0 0 0 1px #1b1f29;
+  box-shadow: inset 0 0 0 1px #2c2d43;
 }
 
 .ember.cold .fl {
-  color: #4a4f5a;
+  color: #66677f;
   filter: none;
   animation: none;
 }
