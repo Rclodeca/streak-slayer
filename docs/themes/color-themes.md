@@ -14,7 +14,7 @@ Hex values are copied from the source, not retyped. Lightness figures are OKLCH 
 ## Getting the original Moonlit back
 
 - **To build it:** `git checkout 8b88020 -- src/assets/scss/themes src/components/ui/DeathScreen.vue src/components/ui/HoodedSpeech.vue src/components/ui/HoodedScene.vue src/components/habits/StrikeButton.vue`
-  The palette below and the swap table are the source of truth if that commit ever goes stale (the history was rewritten once before).
+  (or paste the palette below into `moonlit.scss` and undo the hex swaps in the table).
 - **To mock it:** the "Moonlit" column of `docs/mockups/pixel-dark-options.html` is the original, untouched. `docs/mockups/pixel-tabs-final.html` has it too, hard-coded.
 
 ## Moonlit, original (commit 8b88020)
@@ -197,6 +197,16 @@ Violet-blue stone that lifts the page to about 19% light. Brass and EXP gold are
 Light cool greys (silver, button fills): same lightness, hue 283, chroma x 1.2 (max 0.05).
 Text: `--text` L 0.875, `--text-h` and `--card-ink` L 0.97, `--struck-ink` struck card + 0.24, `--spent-text` struck card + 0.29, all hue 283.
 
+**Type colours** (pushed apart so Magic stops blending into the indigo; picked 2026-11-08 from `docs/mockups/pixel-type-colours.html`, option B "Jewel tones"):
+
+| Token | Before | Midnight |
+| --- | --- | --- |
+| `--dmg-physical` | `#d0604f` | `#e86154` (vermilion, OKLCH L .66 C .17 H 28) |
+| `--dmg-magic` | `#ab8dd8` | `#c870d6` (orchid, L .68 C .17 H 322) |
+| `--dmg-healing`, `--heal-color` | `#92bf88` | `#4ac777` (emerald, L .74 C .16 H 152) |
+
+Not chosen: A "Brighter" (same hues, +0.04 L, chroma x1.3) and C "Vivid" (+0.06 L, chroma x1.7). The original Moonlit section above still shows the "Before" values.
+
 ```scss
 @mixin palette {
   --bg: #11121b;
@@ -286,13 +296,13 @@ Text: `--text` L 0.875, `--text-h` and `--card-ink` L 0.97, `--struck-ink` struc
 
   // The game's own colours: damage, icons, rarity.
   --damage-color: #c8402f;
-  --heal-color: #92bf88;
+  --heal-color: #4ac777;
   --stat-color: #d8cdb5;
   --true-damage-color: #f1e9d6;
   --exp-skill-color: #e6cf9a;
-  --dmg-physical: #d0604f;
-  --dmg-magic: #ab8dd8;
-  --dmg-healing: #92bf88;
+  --dmg-physical: #e86154;
+  --dmg-magic: #c870d6;
+  --dmg-healing: #4ac777;
   --dmg-true: #f1e9d6;
   --icon-health: #c33a2e;
   --icon-lifesteal: #b8433a;
