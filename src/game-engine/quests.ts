@@ -1,9 +1,7 @@
 import { TUNING } from './constants/tuning';
-import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { hasItemEffect } from './items';
 import { expToNextLevel } from './leveling';
-import type { Rng } from './rng';
-import type { Boss, Character, Difficulty, Quest, QuestWeek } from './types';
+import type { Character, Difficulty, Quest, QuestWeek } from './types';
 
 /** The player level at which the quests section opens, each run. */
 export const QUESTS_UNLOCK_LEVEL = 2;

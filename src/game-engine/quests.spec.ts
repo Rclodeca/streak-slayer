@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { TUNING } from './constants/tuning';
 import { expToNextLevel } from './leveling';
 import { createCharacter } from './character';
@@ -20,18 +19,6 @@ import {
   unlockQuests,
 } from './quests';
 import { createRng } from './rng';
-import type { Quest } from './types';
-
-function makeQuest(overrides: Partial<Quest> = {}): Quest {
-  return {
-    id: 'quest-id',
-    description: 'Test quest',
-    difficulty: 'medium',
-    dueDateKey: '2026-01-10',
-    ...overrides,
-  };
-}
-
 // A level whose expToNextLevel is exactly 100 would make the table readable,
 // but none is; instead set `fraction` so the weekly target is exactly 100.
 const target100 = (level: number) => 100 / expToNextLevel(level);

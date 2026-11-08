@@ -98,7 +98,7 @@ describe('CharacterPanel', () => {
       return mount(CharacterPanel)
         .find('.stat-summary')
         .findAllComponents(StatIcon)
-        .map((icon) => icon.props('name'));
+        .map((icon: { props: (key: string) => unknown }) => icon.props('name'));
     };
     expect(icons('physical')).toContain('physical');
     expect(icons('physical')).not.toContain('true');
