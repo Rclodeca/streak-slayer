@@ -199,7 +199,6 @@ export const TUNING = {
   // removed WEEKLY_REWARD_MULTIPLIER) so the UI can show it as its own
   // line in the stats modal instead of hiding it inside the base number.
   WEEKLY_BONUS_MULTIPLIER: 2,
-  WEEKLY_MISS_MULTIPLIER: 2, // a missed/failed weekly deals 2x damage to the player
   // Quests v2 (see quests.ts): a regular quest pays a share of the EXP needed
   // for the player's next level, decaying with each completion in the same
   // calendar week.

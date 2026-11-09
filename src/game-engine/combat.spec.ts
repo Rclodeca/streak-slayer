@@ -562,7 +562,7 @@ describe('missHabit', () => {
     expect(result.attackType).toBe('magic');
   });
 
-  it('deals 2x damage for a missed weekly habit compared to an otherwise-identical missed daily habit', () => {
+  it('deals the same damage for a missed weekly habit as an otherwise-identical missed daily habit', () => {
     const dailyCharacter = makeCharacter({ currentHealth: 1000 });
     const weeklyCharacter = makeCharacter({ currentHealth: 1000 });
     const daily = makeHabit({ period: 'daily', difficulty: 'medium' });
@@ -574,7 +574,7 @@ describe('missHabit', () => {
 
     const dailyDamage = dailyCharacter.currentHealth - dailyResult.character.currentHealth;
     const weeklyDamage = weeklyCharacter.currentHealth - weeklyResult.character.currentHealth;
-    expect(weeklyDamage).toBeCloseTo(dailyDamage * TUNING.WEEKLY_MISS_MULTIPLIER, 10);
+    expect(weeklyDamage).toBeCloseTo(dailyDamage, 10);
   });
 
   it('picks physicalAttack instead of magicAttack when the rng rolls below 0.5', () => {
@@ -670,7 +670,7 @@ describe('missQuest', () => {
     }
   });
 
-  it('is not doubled like a missed weekly', () => {
+  it('hits like a missed daily', () => {
     const character = makeCharacter({ currentHealth: 100000 });
     const boss = makeBoss({ physicalAttack: 100, magicAttack: 100 });
     const quest = missQuest(character, makeQuest(), boss, DAY_KEY, noCritRng);

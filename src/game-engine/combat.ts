@@ -371,7 +371,7 @@ export function overdriveHabit(
  * difficulty weight canceling out to 1 (medium's weight/1.5 == 1). The raw
  * stat alone overstates what actually lands (see `missHabit` for the full
  * formula), so the UI shows this instead: an easy miss deals ~0.67x this,
- * a hard miss ~1.33x, and any crit or missed weekly doubles it.
+ * a hard miss ~1.33x, and any crit doubles it.
  */
 export function bossMissDamage(attackStat: number): number {
   return attackStat * TUNING.MISS_DAMAGE_FACTOR;
@@ -393,7 +393,7 @@ type BossStrike = {
 /**
  * One boss attack on the player: a coin-flip between the boss's physical and
  * magic attack (not their average — the boss "attacks" with one or the
- * other), scaled by `difficulty` and `damageMultiplier`, doubled on a crit
+ * other), scaled by `difficulty`, doubled on a crit
  * roll (using the boss's crit chance), then cut by the player's armor or
  * magic resist. The boss's own lifesteal% (if any) heals it for a percent of
  * that same damage, capped at its max health. Boss hits never apply
@@ -404,7 +404,6 @@ function bossStrike(
   character: Character,
   boss: Boss,
   difficulty: Difficulty,
-  damageMultiplier: number,
   currentDayKey: string,
   rng: Rng,
 ): BossStrike {
@@ -415,7 +414,7 @@ function bossStrike(
   const wasCrit = frenzyActive(boss, currentDayKey) && critRoll < TUNING.BOSS_SKILLS.FRENZY_CRIT_CHANCE;
   const damage =
     attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[difficulty] / 1.5) *
-    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1) * damageMultiplier;
+    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1);
   // Sunder (a boss skill) halves the player's armor and magic resist.
   const sunderFactor = activeSunder(character, currentDayKey) ? TUNING.BOSS_SKILLS.SUNDER_FACTOR : 1;
   const playerResistStat =
@@ -449,8 +448,8 @@ function bossStrike(
 
 /**
  * Resolves missing a habit: resets its streak and hits the character with a
- * boss attack (see `bossStrike`); a missed weekly hits for
- * WEEKLY_MISS_MULTIPLIER times as much.
+ * boss attack (see `bossStrike`) — a missed weekly hits exactly as hard as
+ * a missed daily of the same difficulty.
  */
 export function missHabit(
   character: Character,
@@ -459,8 +458,7 @@ export function missHabit(
   currentDayKey: string,
   rng: Rng,
 ): BossStrike & { updatedHabit: Habit } {
-  const weeklyMultiplier = habit.period === 'weekly' ? TUNING.WEEKLY_MISS_MULTIPLIER : 1;
-  const strike = bossStrike(character, boss, habit.difficulty, weeklyMultiplier, currentDayKey, rng);
+  const strike = bossStrike(character, boss, habit.difficulty, currentDayKey, rng);
   return { ...strike, updatedHabit: resetHabitStreak(habit) };
 }
 
@@ -470,7 +468,7 @@ export function missHabit(
  * The quest itself isn't touched here — the caller flags it overdue.
  */
 export function missQuest(character: Character, quest: Quest, boss: Boss, currentDayKey: string, rng: Rng): BossStrike {
-  return bossStrike(character, boss, quest.difficulty, 1, currentDayKey, rng);
+  return bossStrike(character, boss, quest.difficulty, currentDayKey, rng);
 }
 
 /**

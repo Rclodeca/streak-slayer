@@ -200,7 +200,7 @@ const skillTiles = computed<StatTile[]>(() => [
       </section>
 
       <p class="stat-note">
-        Attack is what a missed medium daily deals. Easy ~0.67x, hard ~1.33x; a crit or missed weekly doubles it.
+        Attack is what a missed medium daily deals. Easy ~0.67x, hard ~1.33x; a crit doubles it.
         Armor and magic resist show the reduction your attacks face, after the pen on your gear.
       </p>
     </Modal>
