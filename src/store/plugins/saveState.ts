@@ -24,6 +24,10 @@ export interface SaveStateV5 {
   // nothing existing depends on this field, so an old save without it just
   // loads with zero pending quests instead of forcing a fresh start.
   quests?: Quest[];
+  // Optional, added after v5 shipped — same precedent: an old save has none
+  // and reads as the oldest. Epoch ms of the write, so a restored or synced
+  // copy can be compared against another by how recently it was saved.
+  savedAt?: number;
 }
 
 export function serializeSaveState(state: Omit<SaveStateV5, 'schemaVersion'>): string {
@@ -45,6 +49,6 @@ export function loadSaveState(): SaveStateV5 | null {
   return raw ? deserializeSaveState(raw) : null;
 }
 
-export function writeSaveState(state: Omit<SaveStateV5, 'schemaVersion'>): void {
-  storage.setItem(STORAGE_KEY, serializeSaveState(state));
+export function writeSaveState(state: Omit<SaveStateV5, 'schemaVersion'>, now: number = Date.now()): void {
+  storage.setItem(STORAGE_KEY, serializeSaveState({ ...state, savedAt: now }));
 }
