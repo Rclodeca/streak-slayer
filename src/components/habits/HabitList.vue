@@ -152,7 +152,7 @@ function checkOffFromHint() {
       <div class="habit-group">
         <div class="habit-group-head">
           <span class="habit-group-caption">Habits to keep</span>
-          <h3 class="habit-group-label">Daily</h3>
+          <h3 v-if="orderedDailyHabits.length" class="habit-group-label">Daily</h3>
         </div>
         <ul v-if="orderedDailyHabits.length">
           <HabitListItem v-for="habit in orderedDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
@@ -160,9 +160,9 @@ function checkOffFromHint() {
         <p v-else class="habit-group-empty">No daily habits yet.</p>
       </div>
 
-      <div class="habit-group">
+      <div v-if="weeklyHabits.length" class="habit-group">
         <div class="habit-group-head"><h3 class="habit-group-label">Weekly</h3></div>
-        <ul v-if="weeklyHabits.length">
+        <ul>
           <HabitListItem v-for="habit in weeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
       </div>
@@ -182,7 +182,7 @@ function checkOffFromHint() {
       <div class="habit-group">
         <div class="habit-group-head">
           <span class="habit-group-caption">Habits to break</span>
-          <h3 class="habit-group-label">Daily</h3>
+          <h3 v-if="resistDailyHabits.length" class="habit-group-label">Daily</h3>
         </div>
         <ul v-if="resistDailyHabits.length">
           <HabitListItem v-for="habit in resistDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
@@ -190,9 +190,9 @@ function checkOffFromHint() {
         <p v-else class="habit-group-empty">No daily habits yet.</p>
       </div>
 
-      <div class="habit-group">
+      <div v-if="resistWeeklyHabits.length" class="habit-group">
         <div class="habit-group-head"><h3 class="habit-group-label">Weekly</h3></div>
-        <ul v-if="resistWeeklyHabits.length">
+        <ul>
           <HabitListItem v-for="habit in resistWeeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
       </div>
