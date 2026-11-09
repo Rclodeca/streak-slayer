@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Option D vs B banners, real UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya+Sans:wght@500;700&display=swap" />
+<style>
+/* Each phone is a capture of the real app (dev build, Midnight, 390px), with option D or B applied on top.
+   Captures live in pixel-banner-d/; they are static, so each phone scrolls but doesn't react to taps. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #d3d4e4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1760px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #f4f4fa; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 18px; max-width: 760px; font-size: 15px; }
+.ctl { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 26px; margin: 0 0 26px; font: 700 13px 'Alegreya Sans', sans-serif; }
+.ctl .seg { display: flex; align-items: center; gap: 4px; } .ctl .seg span { margin-right: 6px; color: #9c9dac; }
+.ctl button { font: 700 13px 'Alegreya Sans', sans-serif; padding: 9px 16px; background: #232337; color: #d3d4e4; border: 0; cursor: pointer; }
+.ctl button.sel { background: #f4f4fa; color: #11121b; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 22px; justify-content: center; }
+.pair { display: flex; gap: 14px; }
+.col .tag { font: 600 11px 'Cinzel', serif; letter-spacing: .22em; color: #9c9dac; margin: 0 0 8px 6px; text-transform: uppercase; }
+.phone { width: 392px; height: 846px; border: 1px solid #000; border-radius: 34px; overflow: hidden; background: #11121b; box-shadow: 0 18px 44px rgba(0,0,0,.5); }
+.phone iframe { display: block; width: 390px; height: 844px; margin: 1px; border: 0; border-radius: 33px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Option D vs B, in the real app</h1>
+  <p class="lede">The app as it runs today (Midnight, phone width), the same save in every phone. Each tab shows D · Emblem on the left and B · Banner cloth on the right, both at the smaller size. Scroll a phone to see Resist under Skills. Either side can show Before.</p>
+  <div class="ctl" id="ctl"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const TABS = ['skills', 'quests', 'trials', 'hero'];
+const MODES = [['d', 'D · Emblem'], ['b', 'B · Cloth'], ['before', 'Before']];
+const side = { L: 'd', R: 'b' };
+const name = (m) => MODES.find((x) => x[0] === m)[1];
+document.getElementById('ctl').innerHTML = ['L', 'R'].map((k) => `<div class="seg" data-k="${k}"><span>${k === 'L' ? 'Left' : 'Right'}</span>`
+  + MODES.map(([m, l]) => `<button type="button" data-m="${m}"${side[k] === m ? ' class="sel"' : ''}>${l}</button>`).join('') + '</div>').join('');
+const grid = document.getElementById('grid');
+const phone = (k, t) => `<div class="col"><div class="tag" data-k="${k}">${t} · ${name(side[k])}</div><div class="phone"><iframe data-k="${k}" data-t="${t}" src="pixel-banner-d/${side[k]}-${t}.html" title="${t}"></iframe></div></div>`;
+grid.innerHTML = TABS.map((t) => `<div class="pair">${phone('L', t)}${phone('R', t)}</div>`).join('');
+document.getElementById('ctl').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const k = b.closest('.seg').dataset.k; side[k] = b.dataset.m;
+  b.closest('.seg').querySelectorAll('button').forEach((x) => x.classList.toggle('sel', x === b));
+  grid.querySelectorAll(`iframe[data-k="${k}"]`).forEach((f) => { f.src = `pixel-banner-d/${side[k]}-${f.dataset.t}.html`; });
+  grid.querySelectorAll(`.tag[data-k="${k}"]`).forEach((g, i) => { g.textContent = `${TABS[i]} · ${name(side[k])}`; });
+});
+</script>
+</body>
+</html>
