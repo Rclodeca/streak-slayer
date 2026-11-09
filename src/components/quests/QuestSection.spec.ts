@@ -36,6 +36,10 @@ describe('QuestSection', () => {
     expect(wrapper.find('.add-button').exists()).toBe(false);
   });
 
+  it('titles itself with a banner', () => {
+    expect(mountSection().find('h2.section-title .cloth').text()).toBe('Quests');
+  });
+
   it('lists only the quests the player wrote, with +: the challenges are Trials now', () => {
     openSection();
     const wrapper = mountSection();

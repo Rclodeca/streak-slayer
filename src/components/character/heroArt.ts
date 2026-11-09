@@ -37,6 +37,15 @@ export const HERO_BASE: Record<HeroClass, number> = {
   ranger: 112,
 };
 
+// Where each hero's head is in its base build, in art px: its middle across
+// and the top of the head (or hood). The Hero tab's title medallion centres
+// on it for the hero's portrait.
+export const HERO_FACE: Record<HeroClass, { x: number; y: number }> = {
+  warrior: { x: 48, y: 9 },
+  cleric: { x: 50, y: 24 },
+  ranger: { x: 56, y: 9 },
+};
+
 // HERO_PLACEMENT for the phone stage's smaller heroes: the same spots,
 // scaled to their base size.
 export const HERO_PHONE_PLACEMENT: Record<HeroClass, HeroPlacement> = {

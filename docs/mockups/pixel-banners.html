@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Section banners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Section titles (Skills, Resist, Quests, Trials, the hero's name) on Midnight, Pixel-cut.
+   In the app each sits at the top of its own tab; here they are stacked so you can compare. Same cards under every option. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #d3d4e4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 70px; max-width: 1700px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #f4f4fa; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 28px; max-width: 720px; font-size: 15px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; }
+.col { width: 390px; max-width: 100%; }
+.col > .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #9c9dac; margin-bottom: 3px; }
+.col > h3 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #f4f4fa; margin: 0 0 4px; text-transform: uppercase; }
+.col > p { margin: 0 0 10px; min-height: 58px; font-size: 14.5px; }
+
+/* ---- Midnight tokens ---- */
+.screen {
+  --bg: #11121b; --ink: #f4f4fa; --text: #d3d4e4; --dim: #9c9dac; --touch: #dbdcf2; --moon: #dfe0f0;
+  --brass: #d2bb85; --exp: #c8a96e; --bad: #c8402f; --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --streak-i: #8d8475;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19;
+  --s-card: #1c1c2a; --s-hi: #26263d; --s-lo: #12131c; --s-face: #2c2d41; --s-base: #1f1f2c; --s-ink: #5a5a68;
+  --q-card: #26263d; --q-hi: #2f2f4f; --q-lo: #161624; --well: #161624;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  background: var(--bg); color: var(--text); padding: 14px 0 22px; border: 1px solid #000; overflow: hidden;
+}
+button { font: inherit; }
+svg { flex: none; }
+.sect { margin-top: 22px; } .sect:first-child { margin-top: 0; }
+.sect[data-s='skills'], .sect[data-s='hero'] { --c: var(--moon); }
+.sect[data-s='resist'] { --c: var(--bad); }
+.sect[data-s='quests'], .sect[data-s='trials'] { --c: var(--brass); }
+
+/* ---- Cards (as built) ---- */
+ul { list-style: none; margin: 0 12px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.row { --face: color-mix(in srgb, var(--t) 88%, #000); --base: color-mix(in srgb, var(--t) 36%, #000);
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px;
+  clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.nt { flex: 1; min-width: 0; font: 600 16.5px 'Alegreya', Georgia, serif; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.streak svg { width: 12px; height: 12px; }
+.press { --l: 3px; position: relative; flex: none; min-width: 58px; height: calc(34px + var(--l)); padding: 0 10px var(--l); display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  background: none; border: 0; font: 700 14.5px 'Alegreya Sans', sans-serif; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.press::before, .press::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.press::before { top: var(--l); bottom: 0; background: var(--base); }
+.press::after { top: 0; bottom: var(--l); background: var(--face); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(0,0,0,.25); }
+.press > * { position: relative; z-index: 1; } .press svg { width: 13px; height: 13px; }
+.row.on { --face: var(--s-face); --base: var(--s-base); background: var(--s-card); box-shadow: inset 2px 2px 0 var(--s-hi), inset -2px -2px 0 var(--s-lo); }
+.row.on .nt { color: var(--s-ink); } .row.on .press { color: var(--s-ink); text-shadow: none; } .row.on .press::after { top: var(--l); bottom: 0; box-shadow: none; } .row.on .press > * { transform: translateY(var(--l)); } .row.on .streak { opacity: .45; }
+.resist .row:not(.on) { --face: #1d1d30; --base: color-mix(in srgb, var(--bad) 55%, #000); background: var(--q-card); box-shadow: inset 2px 2px 0 var(--q-hi), inset -2px -2px 0 var(--q-lo); }
+.resist .row:not(.on) .press { color: color-mix(in srgb, var(--bad) 72%, #fff); text-shadow: none; }
+.resist .nt { color: var(--text); font-weight: 500; }
+.quest { padding-left: 4px; gap: 6px; }
+.qchk { flex: none; width: 44px; height: 44px; display: grid; place-items: center; }
+.qchk i { width: 20px; height: 20px; clip-path: var(--px2); background: rgba(0,0,0,.4); border: 2px solid var(--touch); }
+.qb { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.qb .nt { font-size: 16px; } .qm { display: flex; gap: 6px; align-items: center; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--exp); }
+.qpips { display: inline-flex; gap: 3px; } .qpips i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--brass); } .qpips i.lit { background: var(--brass); }
+.reward { flex: none; display: flex; flex-direction: column; align-items: center; padding-right: 6px; font: 700 11px 'Alegreya Sans', sans-serif; color: var(--exp); } .reward svg { width: 18px; height: 18px; }
+.trial { gap: 12px; padding: 10px 12px 10px 10px; }
+.tsock { flex: none; width: 44px; height: 44px; display: grid; place-items: center; clip-path: var(--px); background: var(--well); color: var(--brass); box-shadow: inset 2px 2px 0 #0b0b13, inset -2px -2px 0 #2f2f4f; }
+.tsock svg { width: 22px; height: 22px; }
+.tdeed { display: block; font-size: 13.5px; color: var(--text); }
+.tgift { color: var(--exp); padding-right: 4px; } .tgift svg { width: 22px; height: 22px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 12px; }
+.well { display: flex; flex-direction: column; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 #0b0b13, inset -2px -2px 0 #2f2f4f; padding: 9px 12px; }
+.well .tl { font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--text); } .well .tv { font: 700 18px 'Alegreya Sans', sans-serif; color: var(--ink); } .well .tv.brass { color: var(--brass); }
+
+/* ================= Banner: shared bones ================= */
+.bn { position: relative; display: flex; align-items: center; gap: 9px; min-height: 44px; margin: 0 12px 8px; }
+.bn-ic { flex: none; display: grid; place-items: center; color: var(--c); }
+.bn-ic svg { width: 16px; height: 16px; }
+.bn-ic img { display: none; image-rendering: pixelated; }
+.sect[data-s='hero'] .bn-ic { position: relative; }
+.sect[data-s='hero'] .bn-ic img { position: absolute; z-index: 1; width: 112px; height: 112px; left: calc(50% - 54px); top: -4px; }
+.oA .sect[data-s='hero'] .bn-ic img, .oB .sect[data-s='hero'] .bn-ic img, .oD .sect[data-s='hero'] .bn-ic img { display: block; }
+.oD .sect[data-s='hero'] .bn-ic img { top: -3px; }
+.bn-tx { display: flex; flex-direction: column; min-width: 0; }
+.bn h2 { margin: 0; font: 600 13.6px/1.1 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+.bn small { display: none; font: 500 12.5px/1.2 'Alegreya Sans', sans-serif; color: var(--dim); }
+.bn-ct { display: none; margin-left: auto; font: 700 12px 'Alegreya Sans', sans-serif; color: var(--text); } .bn-ct b { color: var(--ink); }
+.sect[data-s='hero'] .bn-ct b { color: var(--brass); }
+.bn-add { flex: none; margin-left: auto; width: 44px; height: 44px; margin-right: -7px; display: grid; place-items: center; padding: 0; background: none; border: 0; color: var(--c); cursor: pointer; }
+.bn-ct + .bn-add { margin-left: 0; }
+.bn-add::before { content: ''; grid-area: 1 / 1; width: 30px; height: 30px; background: color-mix(in srgb, var(--c) 10%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c) 55%, transparent); clip-path: var(--px2); }
+.bn-add svg { grid-area: 1 / 1; width: 16px; height: 16px; stroke-width: 2.6; }
+.bn-add[hidden] { display: none; }
+
+/* ---- A · Plaque: a raised stone plate, the icon in a sunk socket, a coloured foot ---- */
+.oA .bn { padding: 5px 5px 5px 5px; gap: 10px; clip-path: var(--px); background: linear-gradient(180deg, #2a2a47, #222239);
+  border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 #43436b, inset -2px -2px 0 #15151f, inset 0 -5px 0 color-mix(in srgb, var(--c) 55%, #15151f); }
+.oA .bn-ic { width: 36px; height: 36px; clip-path: var(--px2); background: #12121c; box-shadow: inset 2px 2px 0 #08080e, inset -2px -2px 0 #2c2c47; }
+.oA .bn-ic svg { width: 19px; height: 19px; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 45%, transparent)); }
+.oA .bn h2 { font-size: 15px; text-shadow: 0 2px 0 rgba(0,0,0,.55); }
+.oA .bn-ct { display: block; }
+.oA .bn-add { margin-right: 0; }
+.oA .sect[data-s='hero'] .bn-ic { overflow: hidden; } .oA .sect[data-s='hero'] .bn-ic svg { display: none; }
+
+
+/* ---- B · Banner cloth: a pixel pennant with a swallowtail, the icon on a medallion pinned to it ---- */
+.oB .bn { gap: 0; }
+.oB .bn-ic { position: relative; z-index: 2; width: 40px; height: 40px; clip-path: var(--px2); color: #fff;
+  background: color-mix(in srgb, var(--c) 62%, #000); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.35); }
+.oB .sect[data-s='skills'] .bn-ic, .oB .sect[data-s='hero'] .bn-ic { background: #a9aac6; color: #20202e; }
+.oB .sect[data-s='quests'] .bn-ic, .oB .sect[data-s='trials'] .bn-ic { background: #b39a66; color: #2a2010; }
+.oB .bn-ic svg { width: 20px; height: 20px; }
+.oB .bn-tx { margin-left: -6px; padding: 8px 28px 9px 16px; background: color-mix(in srgb, var(--c) 30%, #1c1c30);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c) 50%, #2a2a44), inset 0 -3px 0 color-mix(in srgb, var(--c) 18%, #0e0e19); }
+.oB .bn h2 { font-size: 14.5px; text-shadow: 0 2px 0 rgba(0,0,0,.5); }
+.oB .bn-ct { display: block; margin-left: 10px; }
+.oB .bn-ct ~ .bn-add, .oB .bn-add { margin-left: auto; }
+.oB .sect[data-s='hero'] .bn-ic { overflow: hidden; background: #1a1a2b; } .oB .sect[data-s='hero'] .bn-ic svg { display: none; }
+
+
+/* ---- C · Forged: big metal-cast letters with a hard shadow, a stepped rule to the add button ---- */
+.oC .bn { gap: 10px; min-height: 50px; }
+.oC .bn-ic svg { width: 21px; height: 21px; filter: drop-shadow(0 2px 0 #000); }
+.oC .bn h2 { font: 700 19px/1 'Cinzel', serif; letter-spacing: .14em;
+  background: linear-gradient(180deg, #fff 0 18%, color-mix(in srgb, var(--c) 70%, #fff) 18% 50%, color-mix(in srgb, var(--c) 80%, #000) 50% 72%, color-mix(in srgb, var(--c) 95%, #fff) 72%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #050509); }
+.oC .bn-ct { display: flex; flex: 1; align-items: center; margin-left: 4px; }
+.oC .bn-ct > b { margin-left: 8px; }
+.oC .bn-ct::before { content: ''; flex: 1; margin-right: 0; height: 4px; background:
+  linear-gradient(90deg, color-mix(in srgb, var(--c) 55%, transparent) 0 2px, transparent 2px 6px) 0 0 / 6px 2px repeat-x,
+  linear-gradient(color-mix(in srgb, var(--c) 30%, transparent), color-mix(in srgb, var(--c) 30%, transparent)) 0 2px / 100% 2px no-repeat; }
+.oC .sect[data-s='hero'] .bn h2 { font-size: 21px; }
+
+/* ---- D · Emblem: the icon on a pressed coloured tile, the title larger, a line under it ---- */
+.oD .bn { gap: 11px; min-height: 52px; }
+.oD .bn-ic { position: relative; width: 42px; height: 45px; padding-bottom: 3px; color: #fff; }
+.oD .bn-ic::before, .oD .bn-ic::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.oD .bn-ic::before { top: 3px; bottom: 0; background: color-mix(in srgb, var(--c) 36%, #000); }
+.oD .bn-ic::after { top: 0; bottom: 3px; background: color-mix(in srgb, var(--c) 82%, #000); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25); }
+.oD .sect[data-s='skills'] .bn-ic, .oD .sect[data-s='hero'] .bn-ic { color: #20202e; }
+.oD .sect[data-s='skills'] .bn-ic::after, .oD .sect[data-s='hero'] .bn-ic::after { background: #cdcedf; }
+.oD .sect[data-s='skills'] .bn-ic::before, .oD .sect[data-s='hero'] .bn-ic::before { background: #6c6d8a; }
+.oD .sect[data-s='quests'] .bn-ic, .oD .sect[data-s='trials'] .bn-ic { color: #2a2010; }
+.oD .bn-ic svg, .oD .bn-ic img { position: relative; z-index: 1; width: 21px; height: 21px; }
+.oD .bn h2 { font-size: 16px; letter-spacing: .18em; }
+.oD .bn small { display: block; margin-top: 3px; }
+.oD .bn-ct { display: block; }
+.oD .sect[data-s='hero'] .bn-ic { overflow: hidden; } .oD .sect[data-s='hero'] .bn-ic svg { display: none; }
+.oD .sect[data-s='hero'] .bn-ic::after { background: #1a1a2b; box-shadow: inset 0 0 0 2px #cdcedf; }
+
+
+/* ---- E · Lit band: a full-width strip of the section's colour, fading out in steps ---- */
+.oE .bn { margin: 0 0 10px; padding: 0 12px 0 16px; min-height: 50px; gap: 10px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 24%, transparent) 0 48%, color-mix(in srgb, var(--c) 16%, transparent) 48% 64%,
+    color-mix(in srgb, var(--c) 9%, transparent) 64% 78%, color-mix(in srgb, var(--c) 4%, transparent) 78% 90%, transparent 90%);
+  box-shadow: inset 4px 0 0 var(--c), inset 0 2px 0 color-mix(in srgb, var(--c) 40%, transparent); }
+.oE .bn-ic svg { width: 19px; height: 19px; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 70%, transparent)); }
+.oE .bn h2 { font-size: 15.5px; text-shadow: 0 2px 0 rgba(0,0,0,.6); }
+.oE .bn-ct { display: block; }
+.oE .bn-add { margin-right: -7px; }
+
+/* ---- F · Lintel: a sunk stone slot, title carved in the middle between stepped wings ---- */
+.oF .bn { padding: 0 4px; min-height: 46px; clip-path: var(--px); background: #161624; box-shadow: inset 2px 2px 0 #0a0a12, inset -2px -2px 0 #2f2f4f; }
+.oF .bn::before { content: ''; width: 44px; flex: none; }
+.oF .bn-tx { flex: 1; flex-direction: row; justify-content: center; align-items: center; gap: 10px; }
+.oF .bn-tx::before, .oF .bn-tx::after { content: ''; width: 26px; height: 8px; flex: none; background: color-mix(in srgb, var(--c) 60%, transparent);
+  clip-path: polygon(0 3px, 18px 3px, 18px 0, 22px 0, 22px 2px, 26px 2px, 26px 6px, 22px 6px, 22px 8px, 18px 8px, 18px 5px, 0 5px); }
+.oF .bn-tx::before { transform: scaleX(-1); order: -2; }
+.oF .bn-ic { display: none; }
+.oF .bn h2 { font-size: 15px; color: color-mix(in srgb, var(--c) 55%, #e4e4f2); text-shadow: 0 -1px 0 #000, 0 1px 0 rgba(255,255,255,.1); }
+.oF .bn-add { margin: 0; }
+.oF .bn-add::before { box-shadow: none; background: color-mix(in srgb, var(--c) 14%, transparent); }
+.oF .bn-add[hidden] { display: grid; visibility: hidden; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Pixel-cut · Midnight, section banners</h1>
+  <p class="lede">Six ways to make the titles pop, next to what's live. In the app each title heads its own tab; here they're stacked to compare. Same cards under each. The hero's banner is the Hero tab's name.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SHIELD = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+const LU = {
+  sword: '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>',
+  shield: SHIELD,
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  gift: '<rect x="3" y="7" width="18" height="4" rx="1"/><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/>',
+  user: '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  physical: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  streak: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  exp: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  sunrise: '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+};
+const icon = (n, c = 'currentColor') => `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${c}">${LU[n]}</svg>`;
+const TYPE = { phys: 'physical', magic: 'magic', heal: 'healing' };
+
+const row = (n, t, d, s, on) => `<li class="row${on ? ' on' : ''}" style="--t: var(--${t})"><span class="nt">${n}</span>
+  <span class="streak">${s >= 3 ? icon('streak', 'var(--streak-i)') + s : ''}</span><button class="press" type="button">${icon(TYPE[t])}<b>${d}</b></button></li>`;
+const banner = (s, ic, title, sub, ct, add) => `<header class="bn"><span class="bn-ic">${icon(ic)}${s === 'hero' ? '<img src="../../public/sprites/player/warrior.png" alt="">' : ''}</span>
+  <span class="bn-tx"><h2>${title}</h2><small>${sub}</small></span><span class="bn-ct">${ct}</span>
+  <button class="bn-add" type="button" aria-label="Add"${add ? '' : ' hidden'}>${icon('plus')}</button></header>`;
+
+const screen = `<div class="screen">
+  <section class="sect" data-s="skills">${banner('skills', 'sword', 'Skills', 'Habits to keep', '<b>3</b>/7', true)}
+    <ul>${row('Morning run', 'phys', '1.1K', 23, true)}${row('Read 20 pages', 'magic', '288', 9)}${row('Stretch', 'heal', '141', 12)}</ul></section>
+  <section class="sect resist" data-s="resist">${banner('resist', 'shield', 'Resist', 'Habits to break', '<b>1</b>/3', true)}
+    <ul>${row('Doomscroll', 'phys', '110', 9)}</ul></section>
+  <section class="sect" data-s="quests">${banner('quests', 'scroll', 'Quests', 'One due today', '<b>1</b> due', true)}
+    <ul><li class="row quest"><span class="qchk"><i></i></span><span class="qb"><span class="nt">Renew passport</span><span class="qm"><span class="qpips"><i class="lit"></i><i class="lit"></i><i></i></span>2 days left</span></span><span class="reward">${icon('exp')}+EXP</span></li></ul></section>
+  <section class="sect" data-s="trials">${banner('trials', 'gift', 'Trials', 'Three sworn', '<b>3</b> sworn', false)}
+    <ul><li class="row trial"><span class="tsock">${icon('sunrise')}</span><span class="qb"><span class="nt">Early riser</span><span class="tdeed">Check off a hard skill before noon.</span></span><span class="tgift">${icon('gift')}</span></li></ul></section>
+  <section class="sect" data-s="hero">${banner('hero', 'user', 'Aldric', 'Warrior', 'Level <b>12</b>', false)}
+    <div class="tiles"><div class="well"><span class="tl">Level</span><span class="tv brass">12</span></div><div class="well"><span class="tl">Best streak</span><span class="tv">23</span></div></div></section>
+</div>`;
+
+const OPTS = [
+  ['o0', 'Now', 'As built', 'Small engraved caps and a tinted icon. Quiet: it reads as a label, not a heading.'],
+  ['oA', 'A', 'Plaque', 'A raised stone plate like the cards, a shade darker. The icon sits sunk in a socket and glows; a foot of the section colour runs along the bottom. The hero gets a portrait in the socket.'],
+  ['oB', 'B', 'Banner cloth', 'A pixel pennant with a swallowtail, dyed the section colour, pinned by a solid medallion carrying the icon. The most "RPG". The hero\'s medallion is a portrait.'],
+  ['oC', 'C', 'Forged', 'No box: big cast-metal letters (two-tone, hard shadow) and a stepped rule running out to the add button. Pops by size alone.'],
+  ['oD', 'D', 'Emblem', 'The icon on a pressed, coloured tile like a strike button, a larger title, and a short line under it. Ties the title to the buttons below. Hero tile is a portrait.'],
+  ['oE', 'E', 'Lit band', 'A full-width strip of the section\'s colour that fades out in pixel steps, with a solid edge and a glowing icon. Each tab gets a clear colour at the top.'],
+  ['oF', 'F', 'Lintel', 'A sunk stone slot with the title carved in the middle between stepped wings, tinted the section colour. Calm and formal.'],
+];
+document.getElementById('grid').innerHTML = OPTS.map(([cls, tag, name, text]) =>
+  `<div class="col ${cls}"><div class="tag">${tag === 'Now' ? 'NOW' : 'OPTION ' + tag}</div><h3>${name}</h3><p>${text}</p>${screen}</div>`).join('');
+</script>
+</body>
+</html>

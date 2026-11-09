@@ -15,6 +15,7 @@ import { useHintStore } from '../../store/hintStore';
 import type { HintId } from '../../store/hintStore';
 import { useTabStore } from '../../store/tabStore';
 import AddHabitModal from './AddHabitModal.vue';
+import SectionTitle from '../ui/SectionTitle.vue';
 import SpotlightHint from '../ui/SpotlightHint.vue';
 import HabitListItem from './HabitListItem.vue';
 import HabitStatsModal from './HabitStatsModal.vue';
@@ -68,6 +69,15 @@ const resistWeeklyHabits = computed(() =>
 
 // One popup for the whole list, by id, so it stays open when changing a
 // skill's days moves its row down to the resting ones.
+// Struck out of due, by the title: a skill resting today doesn't count.
+function tally(habits: Habit[]) {
+  const now = debugClockStore.now();
+  const due = habits.filter((habit) => isDueOn(habit, now));
+  return { struck: due.filter((habit) => habit.lastCompletedPeriodKey === periodKeyFor(habit.period, now)).length, due: due.length };
+}
+const skillTally = computed(() => tally(goodHabits.value));
+const resistTally = computed(() => tally(badHabits.value));
+
 const openHabitId = ref<string | null>(null);
 const openHabit = computed(() => habitStore.habits.find((habit) => habit.id === openHabitId.value));
 
@@ -139,7 +149,8 @@ function checkOffFromHint() {
 <template>
   <section ref="listEl" class="habit-list skill-list">
     <div class="habit-list-header">
-      <h2><Sword :size="16" class="section-icon" />Skills</h2>
+      <SectionTitle title="Skills"><Sword :size="18" class="section-icon" /></SectionTitle>
+      <span v-if="skillTally.due" class="section-tally"><b>{{ skillTally.struck }}</b>/{{ skillTally.due }}</span>
       <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="openAdd(false)"><Plus :size="16" /></button>
     </div>
 
@@ -170,7 +181,8 @@ function checkOffFromHint() {
 
   <section ref="resistEl" class="habit-list resist-list">
     <div class="habit-list-header">
-      <h2><Shield :size="16" class="section-icon" />Resist</h2>
+      <SectionTitle title="Resist"><Shield :size="18" class="section-icon" /></SectionTitle>
+      <span v-if="resistTally.due" class="section-tally"><b>{{ resistTally.struck }}</b>/{{ resistTally.due }}</span>
       <button type="button" class="add-button" aria-label="Add habit to resist" @click="openAdd(true)"><Plus :size="16" /></button>
     </div>
     <template v-if="!badHabits.length">

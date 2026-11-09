@@ -45,6 +45,10 @@ describe('TrialSection', () => {
     expect(wrapper.find('.add-button').exists()).toBe(false);
   });
 
+  it('titles itself with a banner', () => {
+    expect(mount(TrialSection).find('h2.section-title .cloth').text()).toBe('Trials');
+  });
+
   it('says so with none sworn', () => {
     openTrials();
     expect(mount(TrialSection).find('.section-empty').text()).toBe('Nothing sworn.');

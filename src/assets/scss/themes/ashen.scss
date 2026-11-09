@@ -1054,25 +1054,117 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   :is(.habit-list-header, .quest-header, .hero-page-header) {
     position: relative;
-    height: 44px;
+    height: 50px;
     min-height: 0;
     margin-bottom: 0;
     padding: 0 2px;
   }
 
-  :is(.habit-list-header, .quest-header, .hero-page-header) h2 {
+  // The title is a banner (docs/mockups/pixel-banners.html, option B): the
+  // name on a pixel pennant with a swallowtail, dyed the section's colour,
+  // pinned by a solid medallion carrying the icon. The cloth stays dark in
+  // every theme, so its letters are always pale.
+  :is(.habit-list-header, .quest-header, .hero-page-header) h2.section-title {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 0;
+    min-width: 0;
     margin: 0;
-    @include engraved($caps-lg, 0.22em);
-    color: var(--text-h);
+    @include engraved(0.9rem, 0.2em);
   }
 
-  // The title's icon takes its section's colour.
+  .section-title {
+    --medal: color-mix(in srgb, var(--spine) 62%, #000);
+    --medal-ink: #fff;
+  }
+
+  // Skills and the hero: a silver medallion with a dark icon. Quests and
+  // Trials: a brass one.
+  :is(.skill-list, .hero-page) .section-title {
+    --medal: var(--moon-solid);
+    --medal-ink: var(--bg);
+  }
+
+  :is(.quest-section, .trial-section) .section-title {
+    --medal: var(--brass-solid);
+    --medal-ink: #2a2010;
+  }
+
+  // Sealed: the banner goes grey round its lock.
+  .locked .section-title {
+    --spine: var(--spent-text);
+    --medal: color-mix(in srgb, var(--spent-text) 62%, #000);
+    --medal-ink: rgba(255, 255, 255, 0.75);
+  }
+
+  .section-title .medal {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    background: var(--medal);
+    color: var(--medal-ink);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 2px 0 0 rgba(255, 255, 255, 0.12),
+      inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+    @include pixel-corners(2px);
+  }
+
+  .section-title .cloth {
+    margin-left: -6px;
+    padding: 7px 24px 8px 15px;
+    overflow: hidden;
+    line-height: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #f4f4fa;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+    background: color-mix(in srgb, var(--spine) 30%, #1c1c30);
+    box-shadow:
+      inset 0 2px 0 color-mix(in srgb, var(--spine) 50%, #2a2a44),
+      inset 0 -3px 0 color-mix(in srgb, var(--spine) 18%, #0e0e19);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
+  }
+
+  // The hero's medallion is a portrait: the base build at its file size, its
+  // head (HERO_FACE) in the middle, a silver ring round it.
+  .hero-page .section-title .medal {
+    --medal: #1a1a2b;
+    box-shadow: inset 0 0 0 2px var(--moon-solid);
+  }
+
+  .section-title .portrait {
+    position: absolute;
+    top: calc(4px - var(--face-y));
+    left: calc(50% - var(--face-x));
+    width: auto;
+    max-width: none;
+    image-rendering: pixelated;
+  }
+
+  // The icon in the medallion takes its ink.
   .section-icon {
     flex-shrink: 0;
-    color: var(--spine);
+    color: var(--medal-ink);
+  }
+
+  // Struck out of due, just after the banner.
+  .section-tally {
+    margin: 0 auto 0 10px;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+
+    b {
+      color: var(--text-h);
+    }
   }
 
   // Add: a ghost plus in the section's colour. The tap area is 44px; the

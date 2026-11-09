@@ -31,6 +31,7 @@ describe('HeroDetails', () => {
     const wrapper = mount(HeroDetails, { props: { page: true } });
     expect(wrapper.find('.hero').exists()).toBe(false);
     expect(wrapper.find('.hero-page-header h2').text()).toBe('Ash');
+    expect(wrapper.find('.hero-page-header .medal img.portrait').exists()).toBe(true);
     const [level, streak] = wrapper.findAll('.hero-head .stat-tile');
     expect(level.find('.tile-value').text()).toBe(String(useCharacterStore().character.level));
     expect(level.find('.tile-note').text()).toContain('EXP to next');

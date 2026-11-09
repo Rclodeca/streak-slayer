@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { UserRound } from 'lucide-vue-next';
-import { describeItemBonus, describeItemBonusParts, formatCompact, itemDoubleFactor } from '../../game-engine';
+import { describeItemBonus, describeItemBonusParts, formatCompact, heroClassFor, itemDoubleFactor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useHeroStats } from '../../composables/useHeroStats';
 import { useHabitStore } from '../../store/habitStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
+import SectionTitle from '../ui/SectionTitle.vue';
+import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON } from '../ui/statIcons';
+import { HERO_FACE } from './heroArt';
 import PlayerSprite from './PlayerSprite.vue';
 
 // The hero's details: what's running on them, their gear and their stats.
@@ -21,6 +23,11 @@ const baseUrl = import.meta.env.BASE_URL;
 
 const { character, heroName, maxHealth, displayLevel, expNeeded, displayExp, activeEffects, equippedItems, emptySlotCount, statTiles } = useHeroStats();
 
+// The page's title banner carries the hero's portrait: the base build at its
+// file size (whole device pixels on every screen), its head in the medallion.
+const heroClass = computed(() => heroClassFor(character.value));
+const portraitStyle = computed(() => ({ '--face-x': `${HERO_FACE[heroClass.value].x}px`, '--face-y': `${HERO_FACE[heroClass.value].y}px` }));
+
 const habitStore = useHabitStore();
 // The longest streak running now, and whose it is.
 const bestStreak = computed(() =>
@@ -32,7 +39,7 @@ const bestStreak = computed(() =>
   <div class="hero-details" :class="{ 'hero-page': page }">
     <template v-if="page">
       <div class="hero-page-header">
-        <h2><UserRound :size="16" class="section-icon" />{{ heroName }}</h2>
+        <SectionTitle :title="heroName"><img class="portrait" :src="baseSpriteUrl(`player/${heroClass}`)" :style="portraitStyle" alt="" /></SectionTitle>
       </div>
       <div class="tiles hero-head">
         <div class="stat-tile">

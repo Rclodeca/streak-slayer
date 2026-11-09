@@ -4,7 +4,7 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
-import { createRng, dayOfWeekIndex } from '../../game-engine';
+import { createRng, dayOfWeekIndex, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { TUNING } from '../../game-engine/constants/tuning';
 import { useDebugClockStore } from '../../store/debugClockStore';
@@ -50,6 +50,25 @@ describe('HabitList', () => {
     expect(names(wrapper, '.skill-list')).toEqual(['Run', 'Hike']);
     expect(wrapper.find('.resist-list h2').text()).toBe('Resist');
     expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Takeout']);
+  });
+
+  it('titles each list with a banner and counts its struck skills out of those due', () => {
+    const habitStore = useHabitStore();
+    const now = new Date();
+    addDaily(undefined, { lastCompletedPeriodKey: periodKeyFor('daily', now) });
+    addDaily();
+    addDaily([(today + 1) % 7]); // resting today: not counted
+    habitStore.addHabit('Doomscroll', 'daily', 'medium', true, createRng(2));
+    const wrapper = mountList();
+    expect(wrapper.find('.skill-list h2.section-title .cloth').text()).toBe('Skills');
+    expect(wrapper.find('.skill-list .section-tally').text()).toBe('1/2');
+    expect(wrapper.find('.resist-list .section-tally').text()).toBe('0/1');
+  });
+
+  it('shows no count by an empty list', () => {
+    const wrapper = mountList();
+    expect(wrapper.find('.skill-list .section-tally').exists()).toBe(false);
+    expect(wrapper.find('.resist-list .section-tally').exists()).toBe(false);
   });
 
   it('draws no panel frame around Skills or Resist', () => {

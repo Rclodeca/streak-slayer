@@ -9,6 +9,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
 import Modal from '../ui/Modal.vue';
+import SectionTitle from '../ui/SectionTitle.vue';
 import QuestDetailModal from './QuestDetailModal.vue';
 import QuestForm from './QuestForm.vue';
 import SealedNotice from './SealedNotice.vue';
@@ -73,7 +74,7 @@ function onCheckOff(quest: Quest) {
 <template>
   <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
-      <h2><Lock v-if="!open" :size="16" class="section-icon lock-icon" /><ScrollText v-else :size="16" class="section-icon" />Quests</h2>
+      <SectionTitle title="Quests"><Lock v-if="!open" :size="18" class="section-icon lock-icon" /><ScrollText v-else :size="18" class="section-icon" /></SectionTitle>
       <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
     </div>
     <p class="section-caption">One-off tasks</p>
