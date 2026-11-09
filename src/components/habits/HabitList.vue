@@ -69,15 +69,6 @@ const resistWeeklyHabits = computed(() =>
 
 // One popup for the whole list, by id, so it stays open when changing a
 // skill's days moves its row down to the resting ones.
-// Struck out of due, by the title: a skill resting today doesn't count.
-function tally(habits: Habit[]) {
-  const now = debugClockStore.now();
-  const due = habits.filter((habit) => isDueOn(habit, now));
-  return { struck: due.filter((habit) => habit.lastCompletedPeriodKey === periodKeyFor(habit.period, now)).length, due: due.length };
-}
-const skillTally = computed(() => tally(goodHabits.value));
-const resistTally = computed(() => tally(badHabits.value));
-
 const openHabitId = ref<string | null>(null);
 const openHabit = computed(() => habitStore.habits.find((habit) => habit.id === openHabitId.value));
 
@@ -150,7 +141,6 @@ function checkOffFromHint() {
   <section ref="listEl" class="habit-list skill-list">
     <div class="habit-list-header">
       <SectionTitle title="Skills"><Sword :size="18" class="section-icon" /></SectionTitle>
-      <span v-if="skillTally.due" class="section-tally"><b>{{ skillTally.struck }}</b>/{{ skillTally.due }}</span>
       <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="openAdd(false)"><Plus :size="16" /></button>
     </div>
 
@@ -182,7 +172,6 @@ function checkOffFromHint() {
   <section ref="resistEl" class="habit-list resist-list">
     <div class="habit-list-header">
       <SectionTitle title="Resist"><Shield :size="18" class="section-icon" /></SectionTitle>
-      <span v-if="resistTally.due" class="section-tally"><b>{{ resistTally.struck }}</b>/{{ resistTally.due }}</span>
       <button type="button" class="add-button" aria-label="Add habit to resist" @click="openAdd(true)"><Plus :size="16" /></button>
     </div>
     <template v-if="!badHabits.length">

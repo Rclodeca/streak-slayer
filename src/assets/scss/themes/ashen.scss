@@ -1153,20 +1153,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--medal-ink);
   }
 
-  // Struck out of due, just after the banner.
-  .section-tally {
-    margin: 0 auto 0 10px;
-    font-family: var(--sans);
-    font-size: 0.75rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--text);
-
-    b {
-      color: var(--text-h);
-    }
-  }
-
   // Add: a ghost plus in the section's colour. The tap area is 44px; the
   // drawn square is 30px. (docs/mockups/pixel-add-together.html) It is
   // dropped 1px, and moved 7px right (the tap area's inset around the
