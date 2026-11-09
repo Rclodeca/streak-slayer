@@ -22,6 +22,17 @@ body {
   body {
     overscroll-behavior: none;
   }
+
+  // No scroll bars on phones: a native app shows none, and a desktop browser
+  // narrowed to this width would otherwise draw one on a list that barely
+  // overflows. Scrolling itself is untouched.
+  * {
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 #app {
