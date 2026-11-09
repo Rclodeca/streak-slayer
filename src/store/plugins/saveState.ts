@@ -3,6 +3,7 @@
 
 import type { Boss, Character, Habit, Quest } from '../../game-engine';
 import type { ActivityLogEntry } from '../activityLogStore';
+import { storage } from '../storage';
 
 // Bumped 4 -> 5: Habit gained a required `isBad` field (Bad Habit support).
 // No migration in MVP — a v4 save simply mismatches and the player starts
@@ -40,10 +41,10 @@ export function deserializeSaveState(raw: string): SaveStateV5 | null {
 }
 
 export function loadSaveState(): SaveStateV5 | null {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(STORAGE_KEY);
   return raw ? deserializeSaveState(raw) : null;
 }
 
 export function writeSaveState(state: Omit<SaveStateV5, 'schemaVersion'>): void {
-  localStorage.setItem(STORAGE_KEY, serializeSaveState(state));
+  storage.setItem(STORAGE_KEY, serializeSaveState(state));
 }

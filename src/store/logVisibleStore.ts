@@ -3,11 +3,12 @@
 // its own localStorage key, so it survives death resets and SaveState bumps.
 
 import { defineStore } from 'pinia';
+import { storage } from './storage';
 
 export const STORAGE_KEY = 'streak-slayer:show-log:v1';
 
 function loadLogVisible(): boolean {
-  return localStorage.getItem(STORAGE_KEY) === 'on';
+  return storage.getItem(STORAGE_KEY) === 'on';
 }
 
 export const useLogVisibleStore = defineStore('logVisible', {
@@ -15,7 +16,7 @@ export const useLogVisibleStore = defineStore('logVisible', {
   actions: {
     setOn(on: boolean) {
       this.on = on;
-      localStorage.setItem(STORAGE_KEY, on ? 'on' : 'off');
+      storage.setItem(STORAGE_KEY, on ? 'on' : 'off');
     },
   },
 });

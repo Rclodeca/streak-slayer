@@ -9,6 +9,7 @@
 // and a Capacitor web view all report. The retired themes (Crypt, Hellforge, Minimalist) live on in git tag ashen-classic.
 
 import { defineStore } from 'pinia';
+import { storage } from './storage';
 
 export type Theme = 'moonlit' | 'light';
 export type ThemePreference = Theme | 'system';
@@ -33,7 +34,7 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
 function loadPreference(): ThemePreference {
   // A retired theme ('ashen', 'crypt', 'hellforge', 'minimalist') loads as the default.
   // Parchment and Bright were folded into Light.
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = storage.getItem(STORAGE_KEY);
   if (saved === 'system') return 'system';
   if (saved === 'parchment' || saved === 'bright') return 'light';
   return THEMES.some((t) => t.id === saved) ? (saved as Theme) : DEFAULT_PREFERENCE;
@@ -59,7 +60,7 @@ export const useThemeStore = defineStore('theme', {
   actions: {
     setTheme(preference: ThemePreference) {
       this.preference = preference;
-      localStorage.setItem(STORAGE_KEY, preference);
+      storage.setItem(STORAGE_KEY, preference);
       applyTheme(this.theme);
     },
     /** Re-applies the theme whenever the device flips between light and dark. */

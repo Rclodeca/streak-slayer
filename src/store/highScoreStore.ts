@@ -10,6 +10,7 @@
 import { defineStore } from 'pinia';
 import { daysBetweenDayKeys, DEFAULT_HERO_NAME, heroClassFor, rankForStreak } from '../game-engine';
 import type { DamageType, HeroClass, Period, Personality } from '../game-engine';
+import { storage } from './storage';
 
 export const STORAGE_KEY = 'streak-slayer:highscore:v1';
 export const RUNS_KEY = 'streak-slayer:highscore:runs:v1';
@@ -87,13 +88,13 @@ export function runHabitRank(habit: HighScoreRunHabit): number {
 }
 
 function loadHighestBossIndex(): number {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(STORAGE_KEY);
   const parsed = raw === null ? NaN : Number(raw);
   return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
 }
 
 function loadTopRuns(): HighScoreRun[] {
-  const raw = localStorage.getItem(RUNS_KEY);
+  const raw = storage.getItem(RUNS_KEY);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -104,7 +105,7 @@ function loadTopRuns(): HighScoreRun[] {
 }
 
 function loadRunStart(): string | null {
-  return localStorage.getItem(RUN_START_KEY);
+  return storage.getItem(RUN_START_KEY);
 }
 
 /** Boss index first, then level, then days lived — mirrors how far-progress is ranked everywhere else in this app (see the "Best: Boss #N" readout). */
@@ -128,14 +129,14 @@ export const useHighScoreStore = defineStore('highScore', {
     recordBossIndex(index: number) {
       if (index <= this.highestBossIndex) return;
       this.highestBossIndex = index;
-      localStorage.setItem(STORAGE_KEY, String(index));
+      storage.setItem(STORAGE_KEY, String(index));
     },
 
     /** Sets the in-progress run's start day, but only if one isn't already recorded — called once at app init so a brand-new save's very first run has a real start date. */
     ensureRunStarted(dayKey: string) {
       if (this.currentRunStartedDayKey) return;
       this.currentRunStartedDayKey = dayKey;
-      localStorage.setItem(RUN_START_KEY, dayKey);
+      storage.setItem(RUN_START_KEY, dayKey);
     },
 
     /**
@@ -162,10 +163,10 @@ export const useHighScoreStore = defineStore('highScore', {
         bossPersonality: input.bossPersonality,
       };
       this.topRuns = rankRuns([...this.topRuns, run]);
-      localStorage.setItem(RUNS_KEY, JSON.stringify(this.topRuns));
+      storage.setItem(RUNS_KEY, JSON.stringify(this.topRuns));
 
       this.currentRunStartedDayKey = input.endedDayKey;
-      localStorage.setItem(RUN_START_KEY, input.endedDayKey);
+      storage.setItem(RUN_START_KEY, input.endedDayKey);
     },
   },
 });

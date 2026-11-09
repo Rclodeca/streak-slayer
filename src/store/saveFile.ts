@@ -9,6 +9,7 @@ import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highSc
 import { suspendPersistence } from './plugins/localStoragePersistence';
 import { deserializeSaveState, STORAGE_KEY as SAVE_KEY } from './plugins/saveState';
 import { STORAGE_KEY as THEME_KEY } from './themeStore';
+import { storage } from './storage';
 
 const APP_ID = 'streak-slayer';
 const FORMAT = 1;
@@ -41,7 +42,7 @@ export interface SaveFileSummary {
 export function buildSaveFile(now: Date = new Date()): string {
   const entries: SaveFile['entries'] = {};
   for (const name of ENTRY_NAMES) {
-    const value = localStorage.getItem(ENTRY_KEYS[name]);
+    const value = storage.getItem(ENTRY_KEYS[name]);
     if (value !== null) entries[name] = value;
   }
   const file: SaveFile = { app: APP_ID, format: FORMAT, exportedAt: now.toISOString(), entries };
@@ -97,7 +98,7 @@ export function applySaveFile(file: SaveFile): void {
   suspendPersistence();
   for (const name of ENTRY_NAMES) {
     const value = file.entries[name];
-    if (value === undefined) localStorage.removeItem(ENTRY_KEYS[name]);
-    else localStorage.setItem(ENTRY_KEYS[name], value);
+    if (value === undefined) storage.removeItem(ENTRY_KEYS[name]);
+    else storage.setItem(ENTRY_KEYS[name], value);
   }
 }

@@ -6,6 +6,7 @@
 
 import { defineStore } from 'pinia';
 import type { ChallengeEntry } from '../game-engine';
+import { storage } from './storage';
 
 export const STORAGE_KEY = 'streak-slayer:trials-seen:v1';
 
@@ -13,7 +14,7 @@ export const trialKey = (entry: ChallengeEntry) => `${entry.id}@${entry.takenDay
 
 function loadSeen(): string[] {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+    const saved = JSON.parse(storage.getItem(STORAGE_KEY) ?? '[]');
     return Array.isArray(saved) ? saved.filter((key): key is string => typeof key === 'string') : [];
   } catch {
     return [];
@@ -33,7 +34,7 @@ export const useTrialSeenStore = defineStore('trialSeen', {
       this.fresh = [...this.fresh, ...keys.filter((key) => !this.seen.includes(key) && !this.fresh.includes(key))];
       // Only the active ones are kept: a finished trial never needs its tag again.
       this.seen = keys;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+      storage.setItem(STORAGE_KEY, JSON.stringify(keys));
     },
     /** Off the Trials tab: the tags come off. */
     leave() {

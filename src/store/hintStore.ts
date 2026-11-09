@@ -4,6 +4,7 @@
 // hint twice.
 
 import { defineStore } from 'pinia';
+import { storage } from './storage';
 
 /** The check-off hints: one for the first good habit due, one for the first bad habit. */
 export type HintId = 'checkGood' | 'checkBad';
@@ -14,7 +15,7 @@ type Seen = Record<HintId, boolean>;
 
 function loadSeen(): Seen | null {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
+    const saved = JSON.parse(storage.getItem(STORAGE_KEY) ?? 'null');
     return saved && typeof saved === 'object' ? { checkGood: saved.checkGood === true, checkBad: saved.checkBad === true } : null;
   } catch {
     return null;
@@ -39,7 +40,7 @@ export const useHintStore = defineStore('hint', {
       this.persist();
     },
     persist() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.seen));
+      storage.setItem(STORAGE_KEY, JSON.stringify(this.seen));
     },
   },
 });
