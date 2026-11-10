@@ -3662,7 +3662,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       inset -3px -3px 0 var(--sunk-lo);
   }
 
-  :is(.talent-section .cell, .talent-popup .nhead) {
+  :is(.talent-tree-view .cell, .talent-popup .nhead) {
     .sock {
       @include talent-sock;
     }
@@ -3718,13 +3718,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // The ★ node is a size up, and glows while it waits to be opened by the last
   // main node's final rank.
-  .talent-section .cell.top .sock svg,
-  .talent-section .cell.main .sock svg {
+  .talent-tree-view .cell.top .sock svg,
+  .talent-tree-view .cell.main .sock svg {
     width: 24px;
     height: 24px;
   }
 
-  .talent-section .cell.top.open .sock {
+  .talent-tree-view .cell.top.open .sock {
     box-shadow:
       inset 0 0 0 2px $brass,
       inset 4px 4px 0 rgba(0, 0, 0, 0.45),
@@ -3732,18 +3732,18 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .talent-section .cell.top.open .sock {
+    .talent-tree-view .cell.top.open .sock {
       animation: talent-glow 2.4s ease-in-out infinite;
     }
   }
 
-  .talent-section .lk {
+  .talent-tree-view .lk {
     width: 11px;
     height: 11px;
     color: var(--spent-text);
   }
 
-  .talent-section .nm {
+  .talent-tree-view .nm {
     @include name-serif(600);
     font-size: 0.85rem;
     line-height: 1.2;
@@ -3752,44 +3752,44 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     background: var(--bg);
   }
 
-  .talent-section .cell.locked .nm {
+  .talent-tree-view .cell.locked .nm {
     color: var(--spent-text);
   }
 
-  .talent-section .pips {
+  .talent-tree-view .pips {
     padding: 2px 4px;
     background: var(--bg);
   }
 
   // The trunk: stone until a rank lights it, then brass; the branches a shade
   // dimmer.
-  .talent-section .seg {
+  .talent-tree-view .seg {
     background: var(--sunk-lo);
   }
 
-  .talent-section .seg.lit {
+  .talent-tree-view .seg.lit {
     background: $brass;
   }
 
-  .talent-section .br {
+  .talent-tree-view .br {
     background: var(--sunk-lo);
   }
 
-  .talent-section .br.lit {
+  .talent-tree-view .br.lit {
     background: color-mix(in srgb, #{$brass} 70%, var(--sunk-lo));
   }
 
-  .talent-section .node {
+  .talent-tree-view .node {
     @include inset-focus;
   }
 
   // The points: a brass plate, as earned things are.
-  .talent-header .points {
+  :is(.talent-header, .talent-modal-points) .points {
     @include plain-label($label-md, 600);
     color: var(--text);
   }
 
-  .talent-header .count,
+  :is(.talent-header, .talent-modal-points) .count,
   .talent-unlock .emblem .count {
     @include brass-count;
     min-width: 26px;
@@ -3797,7 +3797,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-size: 0.95rem;
   }
 
-  .talent-header .count.zero {
+  :is(.talent-header, .talent-modal-points) .count.zero {
     color: var(--spent-text);
     background: $well;
     box-shadow: inset 2px 2px 0 var(--sunk-hi);
@@ -3923,11 +3923,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       box-shadow: inset 2px 2px 0 var(--sunk-hi);
       cursor: default;
       transform: none;
-    }
-
-    .warn {
-      @include plain-label(0.85rem, 500);
-      color: var(--spent-text);
     }
   }
 

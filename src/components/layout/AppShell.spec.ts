@@ -41,6 +41,17 @@ describe('AppShell', () => {
     expect(layout.find('.side activity-log-stub').exists()).toBe(true);
   });
 
+  it('puts Talents on the right under the progress boxes and above the log, not in the lists', () => {
+    useLogVisibleStore().setOn(true);
+    const wrapper = shallowMount(AppShell);
+    const side = wrapper.find('.side');
+    expect(side.find('talent-section-stub').exists()).toBe(true);
+    expect(wrapper.find('.main talent-section-stub').exists()).toBe(false);
+    const order = [...side.element.children].map((el) => el.tagName.toLowerCase());
+    expect(order.indexOf('progress-summary-stub')).toBeLessThan(order.indexOf('talent-section-stub'));
+    expect(order.indexOf('talent-section-stub')).toBeLessThan(order.indexOf('activity-log-stub'));
+  });
+
   it('hides the log until it is switched on', () => {
     const wrapper = shallowMount(AppShell);
     expect(wrapper.find('activity-log-stub').exists()).toBe(false);
@@ -74,6 +85,16 @@ describe('AppShell', () => {
       useTabStore().select('hero');
       await wrapper.vm.$nextTick();
       expect(current()[0].find('hero-details-stub').attributes('page')).toBe('true');
+    });
+
+    it('gives Talents a tab of its own, and none on the right', async () => {
+      const wrapper = shallowMount(AppShell);
+      expect(wrapper.find('.side talent-section-stub').exists()).toBe(false);
+      useTabStore().select('talents');
+      await wrapper.vm.$nextTick();
+      const current = wrapper.findAll('.tab-panel.current');
+      expect(current).toHaveLength(1);
+      expect(current[0].find('talent-section-stub').exists()).toBe(true);
     });
 
     it('opens the log in a popup from the menu', async () => {

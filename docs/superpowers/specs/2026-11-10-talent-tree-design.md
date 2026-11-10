@@ -1,6 +1,6 @@
 # Talent tree
 
-Status: design approved in chat 2026-11-10; trees reworked the same day (max 3 ranks, repeated II nodes). Engine and saving built and pushed (da686eb). Tab, node popup, unlock popup and the feed wording built 2026-11-10 to the Plinths mock; committed, not pushed until the user has seen it running. The base level-up heal flips to 10% in that same commit, not before (see Changes outside the tree).
+Status: design approved in chat 2026-11-10; trees reworked the same day (max 3 ranks, repeated II nodes). Built and pushed 2026-11-10: the engine and saving first (da686eb), then the tab, node popup, unlock popup and the feed wording to the Plinths mock, with the base level-up heal cut to 10% in that second push.
 
 ## Why
 
@@ -160,7 +160,7 @@ So a level-up heals 10% alone, 30% with the Codex, and 42% with the Codex and bo
 
 **Layout (picked 2026-11-10, `docs/mockups/pixel-talents.html`, Plinths):** one shoot at a time. The shoot's trunk grows up from its first node to its ★, offshoots branching to the sides (a lone offshoot alternates sides up the trunk, starting on the right; a pair takes both sides), and the trunk and branches turn brass up to the nodes with ranks. Three stone plinths at the foot of the tree (Damage · Tank · Support, each with its points spent) pick the shoot, in thumb reach; a brass root runs from the trunk into the picked plinth. The Talents banner with the unspent points stays pinned at the top and the plinths at the foot, above the bottom tab bar; only the tree scrolls between them. The tab opens scrolled to the bottom. A single merged tree with all three shoots was tried and rejected.
 
-**Wider screens** show every list at once today. Where the tree sits there is decided with the visuals.
+**Wider screens** show every list at once. Talents sits in the right column, under the progress boxes and above the log, as the banner, the points and an "Open tree" button; the tree opens in a modal, its plinths at the foot. Locked tabs (Quests, Trials, Talents) can't be tapped on a phone.
 
 **Copy:** node names are short. Effects state plainly what they do, the same as item effects.
 

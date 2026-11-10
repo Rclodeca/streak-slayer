@@ -110,7 +110,7 @@ describe('TabBar', () => {
     expect(tab(wrapper, 'trials').find('.tab-pip').exists()).toBe(true);
   });
 
-  it('greys Quests and Trials out under a lock while sealed, with no badges, but still opens them', async () => {
+  it('greys Quests and Trials out under a lock while sealed, with no badges, and does not open them', async () => {
     const characterStore = useCharacterStore();
     characterStore.setCharacter({ ...characterStore.character, challenges: [entry('resist')] });
     useQuestStore().addQuest('Today', 'easy', dailyPeriodKey(useDebugClockStore().now()));
@@ -124,7 +124,41 @@ describe('TabBar', () => {
     expect(tab(wrapper, 'skills').classes()).not.toContain('sealed');
 
     await tab(wrapper, 'quests').trigger('click');
-    expect(useTabStore().tab).toBe('quests');
+    expect(useTabStore().tab).toBe('skills');
+  });
+
+  it('does not open any sealed tab on a tap, and says so to assistive tech', async () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 1 });
+    const wrapper = mount(TabBar);
+    for (const id of ['quests', 'trials', 'talents']) {
+      expect(tab(wrapper, id).attributes('disabled')).toBeDefined();
+      await tab(wrapper, id).trigger('click');
+      expect(useTabStore().tab).toBe('skills');
+    }
+    expect(tab(wrapper, 'skills').attributes('disabled')).toBeUndefined();
+    expect(tab(wrapper, 'hero').attributes('disabled')).toBeUndefined();
+  });
+
+  it('opens a tab again once it unseals', async () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, trialsUnlocked: true });
+    const wrapper = mount(TabBar);
+    expect(tab(wrapper, 'talents').attributes('disabled')).toBeUndefined();
+    await tab(wrapper, 'talents').trigger('click');
+    expect(useTabStore().tab).toBe('talents');
+  });
+
+  it('drops back to Skills when the tab on show seals, as a death does', async () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 6, questsUnlocked: true, trialsUnlocked: true });
+    const wrapper = mount(TabBar);
+    await tab(wrapper, 'talents').trigger('click');
+    expect(useTabStore().tab).toBe('talents');
+
+    characterStore.setCharacter({ ...characterStore.character, level: 1, questsUnlocked: false, trialsUnlocked: false, talentsUnlocked: false });
+    await wrapper.vm.$nextTick();
+    expect(useTabStore().tab).toBe('skills');
   });
 
   it('seals Trials past the level Quests open at', () => {

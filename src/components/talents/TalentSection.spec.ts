@@ -10,11 +10,21 @@ import TalentSection from './TalentSection.vue';
 
 enableAutoUnmount(afterEach);
 
+// jsdom has no matchMedia, which usePhoneLayout reads as the desktop layout.
+function layout(phone: boolean) {
+  window.matchMedia = ((query: string) => ({ matches: phone, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+}
+
+afterEach(() => {
+  delete (window as { matchMedia?: unknown }).matchMedia;
+});
+
 describe('TalentSection', () => {
   beforeEach(() => {
     localStorage.clear();
     document.body.innerHTML = '';
     setActivePinia(createPinia());
+    layout(true);
   });
 
   const q = (selector: string) => document.body.querySelector<HTMLElement>(selector);
@@ -150,13 +160,12 @@ describe('TalentSection', () => {
       expect(node(wrapper, 'Precision').classes()).toContain('open');
     });
 
-    it('greys Learn out for a locked node and says what opens it', async () => {
+    it('greys Learn out for a locked node', async () => {
       const store = heroAt(9);
       const wrapper = mountSection();
       await node(wrapper, 'Precision').find('button').trigger('click');
       const learn = q('.talent-popup .learn') as HTMLButtonElement;
       expect(learn.disabled).toBe(true);
-      expect(q('.talent-popup .warn')?.textContent).toBe('Needs a rank in Might.');
       learn.click();
       expect(talentRank(store.character, 'precision')).toBe(0);
     });
@@ -166,7 +175,6 @@ describe('TalentSection', () => {
       const wrapper = mountSection();
       await node(wrapper, 'Precision').find('button').trigger('click');
       expect((q('.talent-popup .learn') as HTMLButtonElement).disabled).toBe(true);
-      expect(q('.talent-popup .warn')?.textContent).toBe('No points left.');
     });
 
     it('says a full node is full', async () => {
@@ -177,11 +185,74 @@ describe('TalentSection', () => {
       expect(q('.talent-popup .learn')?.textContent).toContain('Full');
     });
 
-    it('reminds the player that spent points stay spent', async () => {
-      heroAt(9);
+    it('has no line of small print under Learn, whatever the node’s state', async () => {
+      heroAt(5, { might: 3, precision: 1 });
       const wrapper = mountSection();
-      await node(wrapper, 'Might').find('button').trigger('click');
-      expect(q('.talent-popup .warn')?.textContent).toBe('Spent points stay spent.');
+      for (const name of ['Might', 'Precision', 'Brawn', 'Arcana']) {
+        await node(wrapper, name).find('button').trigger('click');
+        expect(q('.talent-popup .warn')).toBeNull();
+        q('.modal-close')!.click();
+        await wrapper.vm.$nextTick();
+      }
     });
+  });
+});
+
+describe('TalentSection on desktop', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.body.innerHTML = '';
+    setActivePinia(createPinia());
+    layout(false);
+  });
+
+  const q = (selector: string) => document.body.querySelector<HTMLElement>(selector);
+  const mountSection = () => mount(TalentSection, { attachTo: document.body });
+
+  function heroAt(level: number, talents?: Partial<Record<TalentId, number>>) {
+    const store = useCharacterStore();
+    store.setCharacter({ ...store.character, level, talents });
+    return store;
+  }
+
+  it('shows the banner, the points and an Open tree button, with no tree on the page', () => {
+    heroAt(9, { might: 2 });
+    const wrapper = mountSection();
+    expect(wrapper.find('.section-title').text()).toContain('Talents');
+    expect(wrapper.find('.points .count').text()).toBe('6');
+    expect(wrapper.find('.open-tree').exists()).toBe(true);
+    expect(wrapper.find('.cell').exists()).toBe(false);
+    expect(q('.talent-tree-view')).toBeNull();
+  });
+
+  it('opens the tree in a modal on the button, with the points and the plinths', async () => {
+    heroAt(9, { might: 2 });
+    const wrapper = mountSection();
+    await wrapper.find('.open-tree').trigger('click');
+    expect(q('.talent-tree-view')).not.toBeNull();
+    expect(q('.talent-tree-view .cell .nm')?.textContent).toBe('Executioner');
+    expect(document.body.querySelectorAll('.talent-tree-view .pl')).toHaveLength(3);
+    expect(q('.talent-modal-points .points .count')?.textContent).toBe('6');
+  });
+
+  it('is sealed under a lock before level 5, with no button', () => {
+    heroAt(4);
+    const wrapper = mountSection();
+    expect(wrapper.find('.talent-sealed').text()).toContain('Reach level 5');
+    expect(wrapper.find('.open-tree').exists()).toBe(false);
+  });
+
+  it('spends a point from a node popup opened over the tree', async () => {
+    const store = heroAt(9);
+    const wrapper = mountSection();
+    await wrapper.find('.open-tree').trigger('click');
+    const might = [...document.body.querySelectorAll<HTMLElement>('.talent-tree-view .cell')].find((cell) => cell.querySelector('.nm')?.textContent === 'Might')!;
+    might.querySelector('button')!.click();
+    await wrapper.vm.$nextTick();
+    expect(q('.talent-popup .nm')?.textContent).toBe('Might');
+    q('.talent-popup .learn')!.click();
+    await wrapper.vm.$nextTick();
+    expect(talentRank(store.character, 'might')).toBe(1);
+    expect(talentPointsUnspent(store.character)).toBe(7);
   });
 });

@@ -128,11 +128,12 @@ watch(
             <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'quests' }"><QuestSection /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'trials' }"><TrialSection /></div>
-            <div class="tab-panel" :class="{ current: tabStore.tab === 'talents' }"><TalentSection /></div>
+            <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'talents' }"><TalentSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'hero' }"><HeroDetails page /></div>
           </main>
           <aside class="side">
             <ProgressSummary class="progress" />
+            <TalentSection v-if="!isPhone" />
             <ActivityLog v-if="logVisible.on" />
             <div class="log-end" aria-hidden="true">
               <span class="log-end-rule" />

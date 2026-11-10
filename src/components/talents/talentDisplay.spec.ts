@@ -1,19 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { TALENT_DEFS } from '../../game-engine';
-import type { Character, TalentDef, TalentId } from '../../game-engine';
-import { SHOOT_LOOK, TALENT_LOOK, talentAmount, talentDescription, talentLockReason } from './talentDisplay';
+import type { TalentDef, TalentId } from '../../game-engine';
+import { SHOOT_LOOK, TALENT_LOOK, talentAmount, talentDescription } from './talentDisplay';
 
 const def = (id: TalentId): TalentDef => TALENT_DEFS.find((d) => d.id === id)!;
-const hero = (talents: Partial<Record<TalentId, number>> = {}): Character => ({
-  level: 20,
-  exp: 0,
-  starterStats: { physicalDamage: 10, magicDamage: 10, healing: 6, health: 50, trueDamage: 6 },
-  currentHealth: 50,
-  ownedItemIds: [],
-  equippedItemIds: [],
-  critChance: 0.01,
-  talents,
-});
 
 describe('talent icons', () => {
   it('give every node and every shoot an icon and colour', () => {
@@ -63,24 +53,5 @@ describe('talentAmount', () => {
     expect(talentAmount(def('unbroken'), 1)).toBe('10% dodge');
     expect(talentAmount(def('executioner'), 1)).toBe('+0.5×');
     expect(talentAmount(def('blessed'), 1)).toBe('Heal crits');
-  });
-});
-
-describe('talentLockReason', () => {
-  it('names the main node before a locked main node', () => {
-    expect(talentLockReason(hero(), def('precision'))).toBe('Needs a rank in Might.');
-    expect(talentLockReason(hero({ might: 1 }), def('precision'))).toBeNull();
-  });
-
-  it('names the parent of a locked offshoot', () => {
-    expect(talentLockReason(hero(), def('keen-edge'))).toBe('Needs a rank in Precision.');
-  });
-
-  it('asks for every main node full before a top node', () => {
-    expect(talentLockReason(hero({ might: 3 }), def('executioner'))).toBe('Needs every main node full.');
-  });
-
-  it('is null for an open node', () => {
-    expect(talentLockReason(hero(), def('might'))).toBeNull();
   });
 });

@@ -27,7 +27,7 @@ import {
   Zap,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
-import { isTalentUnlocked, talentRank, TALENT_DEFS } from '../../game-engine';
+import { isTalentUnlocked, talentRank } from '../../game-engine';
 import type { Character, TalentDef, TalentEffectId, TalentId, TalentShoot } from '../../game-engine';
 
 // How the Talents tab draws each node and shoot (docs/mockups/pixel-talents.html):
@@ -129,19 +129,6 @@ export function talentAmount(def: TalentDef, rank: number): string {
   if (first.percent !== undefined) return `+${trim(first.percent * rank)}%`;
   const flat = `+${trim((first.flat ?? 0) * rank)}`;
   return bonuses.length > 1 ? `${flat} each` : flat;
-}
-
-/** Why a node can't take a rank yet, or null when it is open. */
-export function talentLockReason(character: Pick<Character, 'talents'>, def: TalentDef): string | null {
-  if (isTalentUnlocked(character, def.id)) return null;
-  if (def.kind === 'top') return 'Needs every main node full.';
-  if (def.kind === 'offshoot') return `Needs a rank in ${nameOf(def.parent)}.`;
-  const mains = TALENT_DEFS.filter((other) => other.shoot === def.shoot && other.kind === 'main');
-  return `Needs a rank in ${mains[mains.findIndex((main) => main.id === def.id) - 1].name}.`;
-}
-
-function nameOf(id: TalentId | undefined): string {
-  return TALENT_DEFS.find((def) => def.id === id)?.name ?? '';
 }
 
 /** How a node reads on the tree: locked (sunk grey), open (silver, tap it), has (a rank or more, brass) or full (every rank, lit brass). */

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { canSpendTalent, talentPointsUnspent, talentRank } from '../../game-engine';
+import { canSpendTalent, talentRank } from '../../game-engine';
 import type { TalentDef } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import Modal from '../ui/Modal.vue';
-import { TALENT_LOOK, talentAmount, talentDescription, talentLockReason, talentState } from './talentDisplay';
+import { TALENT_LOOK, talentAmount, talentDescription, talentState } from './talentDisplay';
 
 // A node's popup (docs/mockups/pixel-talents.html, "Tap a node"): what it does,
 // what the rank in hand gives and what the next would. Spent points can't be
 // taken back, so Learn is the confirm: the tap on the node, then this one. It
-// stays up so the next rank is one more tap.
+// stays up so the next rank is one more tap, and greys out when it can't be taken.
 const props = defineProps<{ def: TalentDef | null }>();
 const emit = defineEmits<{ close: [] }>();
 const characterStore = useCharacterStore();
@@ -19,15 +19,6 @@ const look = computed(() => (props.def ? TALENT_LOOK[props.def.id] : null));
 const full = computed(() => !!props.def && rank.value >= props.def.maxRank);
 const state = computed(() => (props.def ? talentState(characterStore.character, props.def) : 'open'));
 const canLearn = computed(() => !!props.def && canSpendTalent(characterStore.character, props.def.id));
-const lockReason = computed(() => (props.def ? talentLockReason(characterStore.character, props.def) : null));
-
-/** The line under Learn: why it is grey, or the reminder that spending is for good. */
-const note = computed(() => {
-  if (full.value) return 'Fully learned.';
-  if (lockReason.value) return lockReason.value;
-  if (talentPointsUnspent(characterStore.character) <= 0) return 'No points left.';
-  return 'Spent points stay spent.';
-});
 
 function learn() {
   if (props.def) characterStore.spendTalent(props.def.id);
@@ -59,7 +50,6 @@ function learn() {
         <template v-if="full">Full</template>
         <template v-else>Learn <span class="count">1</span></template>
       </button>
-      <p class="warn">{{ note }}</p>
     </div>
   </Modal>
 </template>
@@ -129,11 +119,5 @@ function learn() {
   gap: 8px;
   width: 100%;
   min-height: 48px;
-}
-
-.warn {
-  margin: 8px 0 0;
-  text-align: center;
-  font-size: 0.85rem;
 }
 </style>

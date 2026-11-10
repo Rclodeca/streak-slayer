@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { Anvil, Gift, Lock, ScrollText, Sword, UserRound } from 'lucide-vue-next';
 import { activeChallenges, claimableChallenges, dailyPeriodKey, questsOpen, talentPointsUnspent, talentsOpen, trialsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
@@ -14,7 +14,7 @@ import { useTrialSeenStore } from '../../store/trialSeenStore';
 // new trial waits unseen (a claim outranks a new trial). Talents counts the
 // points still to spend. Sealed (before QUESTS_UNLOCK_LEVEL,
 // TRIALS_UNLOCK_LEVEL and TALENTS_UNLOCK_LEVEL) Quests, Trials and Talents each
-// grey out under a lock, with no badges, but still open onto their seal.
+// grey out under a lock, with no badges, and can't be tapped.
 const tabStore = useTabStore();
 const characterStore = useCharacterStore();
 const questStore = useQuestStore();
@@ -36,6 +36,14 @@ const talentsSealed = computed(() => !talentsOpen(characterStore.character));
 function isSealed(id: (typeof TABS)[number]['id']): boolean {
   return (id === 'quests' && questsSealed.value) || (id === 'trials' && trialsSealed.value) || (id === 'talents' && talentsSealed.value);
 }
+// A death can seal the tab on show again (the run starts over at level 1), so it
+// falls back to Skills rather than leaving its seal up with no way to tap it.
+watch(
+  () => TABS.find((tab) => tab.id === tabStore.tab && isSealed(tab.id)),
+  (sealed) => {
+    if (sealed) tabStore.select('skills');
+  },
+);
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
 // dueDateKey is YYYY-MM-DD, so it compares as text.
 const dueCount = computed(() => questStore.quests.filter((quest) => !quest.doneDayKey && (quest.overdue || quest.dueDateKey <= todayKey.value)).length);
@@ -54,6 +62,7 @@ const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(ac
       class="tab"
       :class="[`tab-${tab.id}`, { selected: tabStore.tab === tab.id, sealed: isSealed(tab.id) }]"
       :aria-selected="tabStore.tab === tab.id"
+      :disabled="isSealed(tab.id)"
       @click="tabStore.select(tab.id)"
     >
       <component :is="tab.icon" :size="21" class="tab-icon" />
