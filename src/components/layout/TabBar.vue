@@ -120,6 +120,9 @@ const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(ac
 }
 
 .tab-count {
+  /* Sized by its digits, not by the room left of its offset: some phone
+     browsers stretch an absolutely placed grid to fill that room. */
+  width: max-content;
   min-width: 16px;
   font-size: 0.7rem;
   font-weight: 800;
