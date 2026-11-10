@@ -48,8 +48,8 @@ const typeOptions: { value: 'good' | 'bad'; label: string; hint: string }[] = [
 
 const pledge = computed(() =>
   habitType.value === 'bad'
-    ? 'Resist it and the boss bleeds. Give in and you do.'
-    : 'Do it and the boss bleeds. Skip it and you do.',
+    ? `Resist it all ${period.value === 'weekly' ? 'week' : 'day'} and you strike the boss. Give in and the boss strikes you.`
+    : 'Do it and you strike the boss. Miss it and the boss strikes you.',
 );
 
 function onSubmit() {

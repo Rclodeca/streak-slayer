@@ -70,7 +70,7 @@ function endSwipe(event: PointerEvent) {
 
 const RULES: Rule[] = [
   { icon: Sword, tone: 'accent', title: 'Keep', text: 'A habit kept strikes the boss.' },
-  { icon: Swords, tone: 'danger', title: 'Break', text: 'A habit broken, the boss strikes back.' },
+  { icon: Swords, tone: 'danger', title: 'Break', text: 'Miss a habit and the boss strikes you.' },
   { icon: ChevronsUp, tone: 'solid', title: 'Rise', text: 'Each boss slain makes you stronger.' },
 ];
 

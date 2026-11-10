@@ -38,7 +38,7 @@ const allRedeemed = computed(() => misses.value.length > 0 && misses.value.every
         <div class="miss-side">
           <span class="outcome">
             <template v-if="isOverridden(miss.questId)">EXP</template>
-            <template v-else>Strikes back</template>
+            <template v-else>Boss strikes you</template>
           </span>
           <label class="redeem">
             <input type="checkbox" :checked="isOverridden(miss.questId)" @change="toggleOverride(miss.questId)" />

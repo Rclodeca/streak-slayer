@@ -36,7 +36,7 @@ const anyBlow = computed(
             </span>
           </div>
           <div class="side">
-            <span class="outcome">{{ strikesBack('penalty', miss.habitId) ? 'Strikes back' : 'Boss bleeds' }}</span>
+            <span class="outcome">{{ strikesBack('penalty', miss.habitId) ? 'Boss strikes you' : 'You strike' }}</span>
             <label class="pill" :class="{ on: isOverridden(miss.habitId) }">
               <input type="checkbox" :checked="isOverridden(miss.habitId)" @change="toggleOverride(miss.habitId)" />
               <span>I did this</span>
@@ -62,7 +62,7 @@ const anyBlow = computed(
             </span>
           </div>
           <div class="side">
-            <span class="outcome">{{ strikesBack('reward', reward.habitId) ? 'Strikes back' : 'Boss bleeds' }}</span>
+            <span class="outcome">{{ strikesBack('reward', reward.habitId) ? 'Boss strikes you' : 'You strike' }}</span>
             <label class="pill" :class="{ on: isOverridden(reward.habitId) }">
               <input type="checkbox" :checked="isOverridden(reward.habitId)" @change="toggleOverride(reward.habitId)" />
               <span>I gave in</span>
