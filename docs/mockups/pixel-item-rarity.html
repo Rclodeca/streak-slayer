@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — item rarity pop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* How loudly an item's slot and row shout its rarity. Option 0 is the app
+   today; 1 to 5 climb from a nudge to full foil cards. Each column shows the
+   whole ladder (common to relic) as gear rows, then the "new item" card. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0c12; color: #b8b9cc; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 700px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col .tag { font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8a8ba3; margin-bottom: 3px; text-transform: uppercase; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; }
+.col > p { margin: 0 0 12px; min-height: 68px; font-size: 15px; }
+
+.phone {
+  /* Moonlit/Midnight tokens, as in src/assets/scss/themes/moonlit.scss */
+  --bg: #11121b; --frame: #232337; --text: #d3d4e4; --ink: #f4f4fa; --dim: #7b7c96;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19;
+  --phys: #e86154; --magic: #c870d6; --lifesteal: #d9566a; --armor: #a8a092; --health: #c33a2e; --good: #4ac777;
+  --common: #8d8475; --uncommon: #86b08b; --rare: #7f9fd1; --epic: #ae8bd6; --relic: #ec8338;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 390px; padding: 14px 10px 16px; background: var(--bg); border: 1px solid #000; border-radius: 28px; box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text);
+}
+.phone + .phone { margin-top: 18px; }
+.panel { background: var(--frame); clip-path: var(--px); padding: 12px 10px 14px; box-shadow: inset 2px 2px 0 #373857, inset -2px -2px 0 #171823; }
+.lbl { margin: 2px 2px 10px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+svg.i { width: 14px; height: 14px; flex: none; }
+
+/* Palettes. 0 to 3 keep the app's rarity colours; 4 lifts them a little; 5 pushes them hard. */
+.o4 .phone { --common: #9d9382; --uncommon: #6cc47f; --rare: #5f95e6; --epic: #b57be8; --relic: #f58a35; }
+.o5 .phone { --common: #b3a893; --uncommon: #4fd47a; --rare: #4a90f5; --epic: #b25cf2; --relic: #ff8a24; }
+
+/* ---------- shared bones ---------- */
+.gear { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.gr { --r: var(--common); position: relative; }
+.surf { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px 8px 8px; overflow: hidden; }
+.slot { position: relative; flex: none; width: var(--s, 76px); height: var(--s, 76px); }
+.well { position: absolute; inset: 0; overflow: hidden; }
+.art { position: absolute; inset: 0; overflow: hidden; z-index: 2; }
+.art img { --rim: color-mix(in srgb, var(--r) 55%, #000); position: absolute; left: 50%; top: 50%; width: var(--a, 180px); height: var(--a, 180px); transform: translate(-50%, -50%); image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)) drop-shadow(0 0 6px color-mix(in srgb, var(--r) 45%, transparent)); }
+.gt { position: relative; z-index: 3; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 3px; }
+.gn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); line-height: 1.2; }
+.rar { font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--r); text-transform: capitalize; }
+.bons { display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.bons span { display: inline-flex; align-items: center; gap: 3px; }
+.bons small { font-weight: 500; font-size: 13px; color: var(--text); }
+.gfx { font-size: 13.5px; color: var(--text); }
+
+/* reveal card */
+.rv { --s: 150px; --a: 300px; flex-direction: column; align-items: center; text-align: center; padding: 20px 14px 18px; gap: 0; }
+.rv .slot { margin-bottom: 14px; }
+.rv .gt { align-items: center; padding: 0; }
+.rv .gn { font-size: 22px; }
+.rv .rar { font-size: 14px; }
+.rv .bons { justify-content: center; margin-top: 8px; font-size: 14px; }
+.rv .gfx { margin-top: 6px; max-width: 280px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes twinkle { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+@keyframes sweep { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+/* ====================== 0 · Today ====================== */
+.o0 .surf { background: #202030; border: 1px solid #3f405a; border-left: 3px solid var(--r); border-radius: 8px; }
+.o0 .well { border: 1px solid color-mix(in srgb, var(--r) 55%, transparent); border-radius: 4px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--r) 22%, transparent), rgba(0,0,0,.55) 72%);
+  box-shadow: inset 0 0 0 3px rgba(0,0,0,.55), inset 0 0 0 4px color-mix(in srgb, var(--r) 22%, transparent); }
+.o0 .slot { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--r) 30%, transparent)); }
+
+/* ====================== 1 · Lit socket ====================== */
+/* Same pixel socket, but the well is actually filled with rarity light, the
+   edge is a bright 2px line and the slot gives off a glow. Rows unchanged. */
+.o1 .surf { clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.o1 .well { clip-path: var(--px);
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--r) 58%, #0a0a14) 0, color-mix(in srgb, var(--r) 26%, #0a0a14) 58%, #07070e 100%);
+  box-shadow: inset 0 0 0 2px var(--r), inset 4px 4px 0 rgba(0,0,0,.5), inset -4px -4px 0 color-mix(in srgb, var(--r) 55%, #000); }
+.o1 .slot { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--r) 55%, transparent)); }
+
+/* ====================== 2 · Tinted card ====================== */
+/* The rarity bleeds out of the slot into the card: a wash from the left, a
+   lit top edge and a thick rarity bar down the side. */
+.o2 .surf { clip-path: var(--px); border-bottom: 3px solid color-mix(in srgb, var(--r) 35%, #000);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--r) 44%, #1a1a2c) 0, color-mix(in srgb, var(--r) 18%, var(--card)) 48%, var(--card) 100%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--r) 75%, #2d2c50), inset 4px 0 0 var(--r), inset -2px -2px 0 var(--lo); }
+.o2 .surf { padding-left: 12px; }
+.o2 .well { clip-path: var(--px);
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--r) 62%, #0a0a14) 0, color-mix(in srgb, var(--r) 28%, #0a0a14) 60%, #07070e 100%);
+  box-shadow: inset 0 0 0 2px var(--r), inset 4px 4px 0 rgba(0,0,0,.5), inset -4px -4px 0 color-mix(in srgb, var(--r) 55%, #000); }
+.o2 .rar { font-weight: 800; }
+.o2 .rv { padding-left: 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--r) 40%, #1a1a2c) 0, color-mix(in srgb, var(--r) 14%, var(--card)) 60%, var(--card) 100%); box-shadow: inset 0 3px 0 var(--r), inset -2px -2px 0 var(--lo); }
+
+/* ====================== 3 · Gem plate ====================== */
+/* The slot itself is the colour: a solid, bevelled rarity tile with a dark
+   pool behind the item so the art still reads. A gem on a lighter card. */
+.o3 .surf { clip-path: var(--px); border-bottom: 3px solid var(--lip);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--r) 22%, #1d1d33), var(--card) 70%);
+  box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--r) 40%, var(--hi)), inset -2px -2px 0 var(--lo); }
+.o3 .well { clip-path: var(--px);
+  background: radial-gradient(circle at 50% 50%, rgba(0,0,0,.42) 0, rgba(0,0,0,0) 62%),
+    linear-gradient(160deg, color-mix(in srgb, var(--r), #fff 28%) 0, var(--r) 42%, color-mix(in srgb, var(--r) 55%, #000) 100%);
+  box-shadow: inset 3px 3px 0 rgba(255,255,255,.4), inset -3px -3px 0 rgba(0,0,0,.38); }
+.o3 .slot { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--r) 65%, transparent)); }
+.o3 .art img { --rim: color-mix(in srgb, var(--r) 30%, #000); }
+
+/* ====================== 4 · Tiers climb ====================== */
+/* The effect itself grows with the tier. Common is a plain well; uncommon a
+   tint; rare a beam of light from the floor; epic slow rotating rays; relic
+   rays, a pulsing halo and pixel sparks. Rows warm up with the tier too. */
+.o4 .gr[data-r=common]   { --k: 10%; --k2: 6%; }
+.o4 .gr[data-r=uncommon] { --k: 24%; --k2: 12%; }
+.o4 .gr[data-r=rare]     { --k: 38%; --k2: 20%; }
+.o4 .gr[data-r=epic]     { --k: 52%; --k2: 28%; }
+.o4 .gr[data-r=relic]    { --k: 68%; --k2: 38%; }
+.o4 .surf { clip-path: var(--px); border-bottom: 3px solid color-mix(in srgb, var(--r) var(--k2), #000);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--r) var(--k2), #1a1a2c) 0, var(--card) 70%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--r) var(--k), var(--hi)), inset 2px 0 0 color-mix(in srgb, var(--r) var(--k2), var(--hi)), inset -2px -2px 0 var(--lo); }
+.o4 .well { clip-path: var(--px);
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--r) var(--k), #0a0a14) 0, #07070e 82%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) calc(var(--k) + 30%), #000), inset 4px 4px 0 rgba(0,0,0,.5), inset -4px -4px 0 color-mix(in srgb, var(--r) var(--k), #000); }
+.o4 .slot { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--r) var(--k), transparent)); }
+.o4 .gr[data-r=rare] .well::before { content: ''; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(0deg, color-mix(in srgb, var(--r) 55%, transparent) 0, transparent 60%); }
+.o4 .gr[data-r=epic] .well::before, .o4 .gr[data-r=relic] .well::before { content: ''; position: absolute; left: -50%; top: -50%; width: 200%; height: 200%; z-index: 1;
+  background: repeating-conic-gradient(color-mix(in srgb, var(--r) 55%, transparent) 0 7deg, transparent 7deg 22deg);
+  -webkit-mask: radial-gradient(circle, #000 8%, transparent 52%); mask: radial-gradient(circle, #000 8%, transparent 52%);
+  animation: spin 16s linear infinite; }
+.o4 .gr[data-r=relic] .well::before { background: repeating-conic-gradient(color-mix(in srgb, var(--r) 75%, #fff 10%) 0 8deg, transparent 8deg 20deg); animation-duration: 10s; }
+.o4 .gr[data-r=relic] .well::after { content: ''; position: absolute; inset: 0; z-index: 1; box-shadow: inset 0 0 18px color-mix(in srgb, var(--r) 90%, transparent); animation: pulse 2.4s ease-in-out infinite; }
+.o4 .gr[data-r=epic] .surf::after, .o4 .gr[data-r=relic] .surf::after { content: ''; position: absolute; left: 14px; top: 14px; width: 3px; height: 3px; z-index: 4; background: #fff;
+  box-shadow: 48px 22px 0 #fff, 22px 52px 0 var(--r), 56px 6px 0 var(--r); animation: twinkle 2.2s steps(2) infinite; }
+.o4 .rv .well { }
+.o4 .rv.surf::after { left: 100px; top: 28px; box-shadow: 130px 70px 0 #fff, 40px 110px 0 var(--r), 150px 10px 0 var(--r), 20px 20px 0 #fff; }
+.o4 .gr[data-r=common] .rar { color: var(--dim); }
+
+/* ====================== 5 · Foil ====================== */
+/* The whole card is the rarity: saturated colour, dithered like a printed
+   foil, a bright bevel and an outer glow. The slot is a dark window cut into
+   it. Epic and relic get a slow shine sweep. Loudest. */
+.o5 .gr { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--r) 45%, transparent)); }
+.o5 .surf { clip-path: var(--px); border-bottom: 3px solid color-mix(in srgb, var(--r) 40%, #000);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--r) 66%, #12121e) 0, color-mix(in srgb, var(--r) 36%, #12121e) 62%, color-mix(in srgb, var(--r) 48%, #12121e) 100%);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--r), #fff 45%), inset 3px 0 0 color-mix(in srgb, var(--r), #fff 25%), inset -3px -3px 0 rgba(0,0,0,.4); }
+.o5 .surf::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: repeating-conic-gradient(rgba(255,255,255,.07) 0 25%, transparent 0 50%) 0 0 / 4px 4px; }
+.o5 .gr[data-r=epic] .surf::after, .o5 .gr[data-r=relic] .surf::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.3) 50%, transparent 62%) 160% 0 / 250% 100% no-repeat; animation: sweep 3.6s linear infinite; }
+.o5 .well { clip-path: var(--px); background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--r) 45%, #0a0a14) 0, #060610 80%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r), #fff 35%), inset 4px 4px 0 rgba(0,0,0,.55), inset -4px -4px 0 color-mix(in srgb, var(--r) 70%, #000); }
+.o5 .gn { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.55); }
+.o5 .rar { color: color-mix(in srgb, var(--r), #fff 62%); text-shadow: 0 1px 0 rgba(0,0,0,.45); font-weight: 800; letter-spacing: .04em; }
+.o5 .bons { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.o5 .bons small, .o5 .gfx { color: rgba(255,255,255,.82); text-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.o5 .gr[data-r=common] .surf { background: linear-gradient(120deg, #4a4a5c 0, #34344a 62%, #3e3e54 100%); }
+
+.btns { display: flex; gap: 8px; margin-top: 16px; width: 100%; position: relative; z-index: 5; }
+.btn { --l: 3px; flex: 1; position: relative; height: calc(42px + var(--l)); padding-bottom: var(--l); border: 0; background: none; font: 700 15px 'Alegreya Sans', sans-serif; color: #20202e; }
+.btn::before, .btn::after { content: ''; position: absolute; left: 0; right: 0; clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)); }
+.btn::before { top: var(--l); bottom: 0; background: #828398; }
+.btn::after { top: 0; bottom: var(--l); background: #cdcedf; box-shadow: inset 0 2px 0 rgba(255,255,255,.4); }
+.btn span { position: relative; z-index: 1; }
+.btn.soft { color: #d3d4e4; }
+.btn.soft::before { background: #161622; }
+.btn.soft::after { background: #38385c; box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Item rarity · how loud</h1>
+  <p class="lede">Every column shows the same five items, common to relic, then the new-item card. 0 is the app today; each step is louder. Palettes: 0 to 3 keep the app’s rarity colours, 4 lifts them a little, 5 pushes them hard.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const LU = {
+  physical: '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>',
+  health: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  armor: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  lifesteal: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+};
+const COLOR = { physical: 'var(--phys)', health: 'var(--health)', armor: 'var(--armor)', lifesteal: 'var(--lifesteal)' };
+const icon = (n) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${COLOR[n]}">${LU[n]}</svg>`;
+
+const SPR = '../../public/sprites/items/';
+// Real catalog items, one per rarity (itemCatalog.ts).
+const items = [
+  { n: 'Godslayer Greatblade', ic: 'godslayer-greatblade', r: 'epic', b: [['physical', '+42%', 'physical'], ['health', '+20%', 'max health'], ['lifesteal', '+2%', 'lifesteal']], fx: '+30% damage to bosses above 75% HP.' },
+  { n: 'First Blood', ic: 'first-blood', r: 'relic', b: [['physical', '+25%', 'physical'], ['lifesteal', '+2%', 'lifesteal']], fx: 'First hit on each boss always crits.' },
+  { n: "Executioner's Axe", ic: 'executioners-axe', r: 'rare', b: [['physical', '+26%', 'physical'], ['armor', '+150', 'armor']] },
+  { n: 'Vampiric Fang', ic: 'vampiric-fang', r: 'uncommon', b: [['physical', '+6%', 'physical'], ['lifesteal', '+3%', 'lifesteal']] },
+  { n: 'Iron Buckler', ic: 'iron-buckler', r: 'common', b: [['armor', '+75', 'armor']] },
+];
+const ladder = ['common', 'uncommon', 'rare', 'epic', 'relic'].map((r) => items.find((i) => i.r === r));
+
+const bons = (it) => `<span class="bons">${it.b.map(([s, v, l]) => `<span>${icon(s)}<span>${v}</span> <small>${l}</small></span>`).join('')}</span>`;
+const slot = (it) => `<span class="slot"><span class="well"></span><span class="art"><img src="${SPR}${it.ic}.png" alt=""></span></span>`;
+const text = (it) => `<div class="gt"><span class="gn">${it.n}</span><span class="rar">${it.r}</span>${bons(it)}${it.fx ? `<span class="gfx">${it.fx}</span>` : ''}</div>`;
+const row = (it) => `<li class="gr" data-r="${it.r}" style="--r:var(--${it.r})"><div class="surf">${slot(it)}${text(it)}</div></li>`;
+const reveal = (it) => `<div class="gr" data-r="${it.r}" style="--r:var(--${it.r})"><div class="surf rv">${slot(it)}${text(it)}
+  <div class="btns"><button class="btn soft"><span>Leave it</span></button><button class="btn"><span>Equip</span></button></div></div></div>`;
+
+const options = [
+  ['o0', '0 · Today', 'The app as it is: a faint 22% radial in the slot, a hairline edge, a thin bar down the row.'],
+  ['o1', '1 · Lit socket', 'A small step. Same pixel socket, but the well is filled with rarity light, the edge is a bright 2px line and the slot glows.'],
+  ['o2', '2 · Tinted card', 'The colour spills out of the slot into the whole card: a wash from the left, a lit top edge, a thick rarity bar down the side.'],
+  ['o3', '3 · Gem plate', 'The slot itself becomes the colour: a solid bevelled tile with a dark pool behind the item. Reads from across the room.'],
+  ['o4', '4 · Tiers climb', 'Creative: the effect grows with the tier. Plain, tint, light beam, rotating rays, then rays + pulsing halo + sparks for relic. Colours lifted a little.'],
+  ['o5', '5 · Foil', 'Dramatic: the whole card is saturated foil with dither, bright bevel and glow. Epic and relic get a shine sweep. Colours pushed hard.'],
+];
+document.getElementById('grid').innerHTML = options.map(([cls, h, p]) =>
+  `<div class="col ${cls}"><div class="tag">Option</div><h2>${h}</h2><p>${p}</p>
+   <div class="phone"><div class="panel"><div class="lbl">Equipment</div><ul class="gear">${ladder.map(row).join('')}</ul></div></div>
+   <div class="phone"><div class="panel"><div class="lbl">New item</div>${reveal(items[0])}</div></div>
+   <div class="phone"><div class="panel"><div class="lbl">New item</div>${reveal(items[1])}</div></div></div>`).join('');
+</script>
+</body>
+</html>

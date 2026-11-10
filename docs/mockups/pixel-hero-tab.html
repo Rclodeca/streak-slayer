@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Hero tab, rarity + banners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The phone's Hero tab, today (left) and with item option 4 (tiers climb)
+   plus banner titles on Equipment and Stats (right). Midnight tokens from
+   src/assets/scss/themes/moonlit.scss; banner shapes from ashen.scss. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #d3d4e4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #f4f4fa; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 28px; justify-content: center; align-items: flex-start; }
+.tag { font: 600 11px 'Cinzel', serif; letter-spacing: .22em; color: #9c9dac; margin: 0 0 8px 6px; text-transform: uppercase; }
+
+.phone {
+  --bg: #11121b; --text: #d3d4e4; --ink: #f4f4fa; --dim: #7b7c96; --moon-solid: #b0b1cb; --accent: #b0b1cb; --brass: #d2bb85;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19; --well: rgba(0,0,0,.22); --sunk-hi: #0f1018; --sunk-lo: #2c2c47;
+  --phys: #e86154; --magic: #c870d6; --lifesteal: #d9566a; --armor: #a8a092; --health: #c33a2e; --good: #4ac777; --crit: #d6a24f; --arcane: #8d9bd1; --heal: #4ac777; --true: #f1e9d6;
+  --common: #8d8475; --uncommon: #86b08b; --rare: #7f9fd1; --epic: #ae8bd6; --relic: #ec8338;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; padding: 14px 12px 20px; background: radial-gradient(70% 20% at 50% 0, rgba(165,166,201,.1), transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 30px; box-shadow: 0 18px 44px rgba(0,0,0,.5); position: relative;
+}
+svg.i { width: 14px; height: 14px; flex: none; }
+.sec { margin-top: 18px; }
+
+/* ---------- Banner (ashen.scss .section-title) ---------- */
+.banner { height: 50px; display: flex; align-items: center; padding: 0 2px; }
+.section-title { --spine: var(--accent); --medal: var(--moon-solid); --medal-ink: var(--bg); display: inline-flex; align-items: center; margin: 0; font: 600 14.4px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; }
+.medal { position: relative; z-index: 1; display: grid; place-items: center; flex: none; width: 36px; height: 36px; overflow: hidden; background: var(--medal); color: var(--medal-ink); clip-path: var(--px2);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.35); }
+.medal svg { width: 19px; height: 19px; }
+.cloth { margin-left: -6px; padding: 7px 24px 8px 15px; line-height: 1; white-space: nowrap; color: #f4f4fa; text-shadow: 0 2px 0 rgba(0,0,0,.5);
+  background: color-mix(in srgb, var(--spine) 30%, #1c1c30);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--spine) 50%, #2a2a44), inset 0 -3px 0 color-mix(in srgb, var(--spine) 18%, #0e0e19);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%); }
+.medal.hero { --medal: #1a1a2b; box-shadow: inset 0 0 0 2px var(--moon-solid); }
+.medal.hero img { position: absolute; top: calc(4px - 9px); left: calc(50% - 48px); image-rendering: pixelated; max-width: none; }
+
+/* Today's small group label */
+.glabel { margin: 0 2px 8px; font: 600 10px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--text); }
+
+/* ---------- Stat tiles ---------- */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.tl { display: flex; align-items: center; gap: 5px; font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--text); }
+.tv { font: 700 18px 'Alegreya Sans', sans-serif; color: var(--ink); display: flex; align-items: baseline; gap: 4px; }
+.tv em { font-style: normal; font-size: 12.5px; color: var(--good); }
+.tv.brass { color: var(--brass); }
+.tn { font-size: 12px; color: var(--dim); }
+
+/* ---------- Gear rows ---------- */
+.gear { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.gr { --r: var(--common); position: relative; }
+.surf { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px 8px 8px; overflow: hidden; }
+.slot { position: relative; flex: none; width: 76px; height: 76px; }
+.well { position: absolute; inset: 0; overflow: hidden; }
+.art { position: absolute; inset: 0; overflow: hidden; z-index: 2; }
+.art img { --rim: color-mix(in srgb, var(--r) 55%, #000); position: absolute; left: 50%; top: 50%; width: 180px; height: 180px; transform: translate(-50%, -50%); image-rendering: pixelated;
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)) drop-shadow(0 0 6px color-mix(in srgb, var(--r) 45%, transparent)); }
+.gt { position: relative; z-index: 3; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 3px; }
+.gn { font: 600 16px 'Alegreya', Georgia, serif; color: var(--ink); line-height: 1.2; }
+.rar { font: 600 12.5px 'Alegreya Sans', sans-serif; color: var(--r); text-transform: capitalize; }
+.ench { font: 700 12.5px 'Alegreya Sans', sans-serif; }
+.bons { display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 13px 'Alegreya Sans', sans-serif; color: var(--ink); }
+.bons span { display: inline-flex; align-items: center; gap: 3px; }
+.bons small { font-weight: 500; font-size: 13px; color: var(--text); }
+.gfx { font-size: 13.5px; color: var(--text); }
+.opal { background: linear-gradient(90deg, transparent 30%, #8ff5ea 40%, #fff 50%, #f0b0ff 60%, transparent 70%) 0 0 / 300% 100% no-repeat, linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc);
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: opal 5.5s linear infinite; }
+.empty .surf { align-items: center; color: var(--dim); font-size: 14px; }
+
+@keyframes opal { from { background-position: 100% 0, 0 0; } to { background-position: -200% 0, 0 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes twinkle { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+/* Today */
+.before .surf { background: #202030; border: 1px solid #3f405a; border-left: 3px solid var(--r); border-radius: 8px; }
+.before .well { border: 1px solid color-mix(in srgb, var(--r) 55%, transparent); border-radius: 4px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--r) 22%, transparent), rgba(0,0,0,.55) 72%);
+  box-shadow: inset 0 0 0 3px rgba(0,0,0,.55), inset 0 0 0 4px color-mix(in srgb, var(--r) 22%, transparent); }
+.before .slot { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--r) 30%, transparent)); }
+.before .empty .surf { background: #202030; border: 1px dashed #3f405a; border-radius: 8px; }
+.before .empty .well { border: 1px dashed #3f405a; border-radius: 4px; background: none; box-shadow: none; }
+
+/* Option 1 · Lit socket (docs/mockups/pixel-item-rarity.html), the app's own rarity colours */
+.lit .surf { clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.lit .well { clip-path: var(--px);
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--r) 58%, #0a0a14) 0, color-mix(in srgb, var(--r) 26%, #0a0a14) 58%, #07070e 100%);
+  box-shadow: inset 0 0 0 2px var(--r), inset 4px 4px 0 rgba(0,0,0,.5), inset -4px -4px 0 color-mix(in srgb, var(--r) 55%, #000); }
+.lit .slot { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--r) 55%, transparent)); }
+.lit .empty .surf { background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); border: 0; }
+.lit .empty .well { background: #0c0c15; box-shadow: inset 2px 2px 0 #05050a, inset -2px -2px 0 #1f1f33; }
+.lit .empty .slot { filter: none; }
+
+/* Option 4 · Tiers climb (docs/mockups/pixel-item-rarity.html), colours lifted a little */
+.after { --common: #9d9382; --uncommon: #6cc47f; --rare: #5f95e6; --epic: #b57be8; --relic: #f58a35; }
+.after .gr[data-r=common]   { --k: 10%; --k2: 6%; }
+.after .gr[data-r=uncommon] { --k: 24%; --k2: 12%; }
+.after .gr[data-r=rare]     { --k: 38%; --k2: 20%; }
+.after .gr[data-r=epic]     { --k: 52%; --k2: 28%; }
+.after .gr[data-r=relic]    { --k: 68%; --k2: 38%; }
+.after .surf { clip-path: var(--px); border-bottom: 3px solid color-mix(in srgb, var(--r) var(--k2), #000);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--r) var(--k2), #1a1a2c) 0, var(--card) 70%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--r) var(--k), var(--hi)), inset 2px 0 0 color-mix(in srgb, var(--r) var(--k2), var(--hi)), inset -2px -2px 0 var(--lo); }
+.after .well { clip-path: var(--px);
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--r) var(--k), #0a0a14) 0, #07070e 82%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) calc(var(--k) + 30%), #000), inset 4px 4px 0 rgba(0,0,0,.5), inset -4px -4px 0 color-mix(in srgb, var(--r) var(--k), #000); }
+.after .slot { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--r) var(--k), transparent)); }
+.after .gr[data-r=rare] .well::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(0deg, color-mix(in srgb, var(--r) 55%, transparent) 0, transparent 60%); }
+.after .gr[data-r=relic] .well::after { content: ''; position: absolute; inset: 0; z-index: 1; box-shadow: inset 0 0 16px color-mix(in srgb, var(--r) 80%, transparent); }
+.after .sp { position: absolute; z-index: 1; left: var(--x); top: var(--y); width: 8px; height: 8px; margin: -4px 0 0 -4px; color: var(--c, #fff); pointer-events: none; opacity: 0;
+  background: linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat, linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat;
+  animation: spark var(--t) ease-in-out var(--d) infinite; }
+@keyframes spark { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1); } }
+.after .gr[data-r=common] .rar { color: var(--dim); }
+.after .empty .surf { clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); border: 0; }
+.after .empty .well { clip-path: var(--px); background: #0c0c15; box-shadow: inset 2px 2px 0 #05050a, inset -2px -2px 0 #1f1f33; }
+.after .empty .slot { filter: none; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Hero tab · rarity + banners</h1>
+  <p class="lede">Left is today. Right has option 4 (tiers climb) on the gear and banner titles on Equipment and Stats, so all three sections match the Hero banner at the top. Phone width, Midnight.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const P = {
+  sword: '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>',
+  chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  health: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  healing: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  crit: '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+  armor: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  lifesteal: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  level: '<path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/>',
+  streak: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+};
+const C = { physical: 'var(--phys)', health: 'var(--health)', magic: 'var(--magic)', true: 'var(--true)', healing: 'var(--heal)', crit: 'var(--crit)', armor: 'var(--armor)', lifesteal: 'var(--lifesteal)', level: 'var(--brass)', streak: '#8d8475' };
+const ICON = { physical: 'sword' };
+const icon = (n) => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:${C[n]}">${P[ICON[n] || n]}</svg>`;
+const raw = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${P[p]}</svg>`;
+
+const SPR = '../../public/sprites/';
+const items = [
+  { n: 'Godslayer Greatblade', ic: 'godslayer-greatblade', r: 'epic', ench: true, b: [['physical', '+84%', 'physical'], ['health', '+40%', 'max health'], ['lifesteal', '+4%', 'lifesteal']], fx: '+30% damage to bosses above 75% HP.' },
+  { n: 'First Blood', ic: 'first-blood', r: 'relic', b: [['physical', '+25%', 'physical'], ['lifesteal', '+2%', 'lifesteal']], fx: 'First hit on each boss always crits.' },
+  { n: "Executioner's Axe", ic: 'executioners-axe', r: 'rare', b: [['physical', '+26%', 'physical'], ['armor', '+150', 'armor']] },
+  { n: 'Vampiric Fang', ic: 'vampiric-fang', r: 'uncommon', b: [['physical', '+6%', 'physical'], ['lifesteal', '+3%', 'lifesteal']] },
+  { n: 'Iron Buckler', ic: 'iron-buckler', r: 'common', b: [['armor', '+75', 'armor']] },
+];
+const stats = [
+  ['health', 'Max health', '4.2K', '+1.6K'], ['physical', 'Physical', '1.1K', '+640'], ['magic', 'Magic', '210'],
+  ['true', 'True', '96'], ['healing', 'Healing', '340'], ['crit', 'Crit chance', '18%'],
+  ['armor', 'Armor', '225', null, '18.4% less damage'], ['lifesteal', 'Lifesteal', '9%'],
+];
+
+const bons = (it) => `<span class="bons">${it.b.map(([s, v, l]) => `<span>${icon(s)}<span class="${it.ench ? 'opal' : ''}">${v}</span> <small>${l}</small></span>`).join('')}</span>`;
+// Sparks sit in the slot's corners behind the art, each on its own timing so they never flash together.
+const SPOTS = [[9, 11], [66, 9], [67, 60], [10, 64], [38, 6]];
+const sparks = (it, row) => ({ epic: 3, relic: 5 }[it.r] ? SPOTS.slice(0, { epic: 3, relic: 5 }[it.r]).map(([x, y], i) =>
+  `<i class="sp" style="--x:${x}px;--y:${y}px;--t:${(2.4 + (i % 3) * 0.55).toFixed(2)}s;--d:${(-(i * 0.97 + row * 0.63)).toFixed(2)}s;--c:${i % 2 ? 'var(--r)' : '#fff'}"></i>`).join('') : '');
+const row = (it, n) => `<li class="gr" data-r="${it.r}" style="--r:var(--${it.r})"><div class="surf">
+  <span class="slot"><span class="well">${sparks(it, n)}</span><span class="art"><img src="${SPR}items/${it.ic}.png" alt=""></span></span>
+  <div class="gt"><span class="gn">${it.n}</span><span><span class="rar">${it.r}</span>${it.ench ? ' <span class="ench opal">· Enchanted</span>' : ''}</span>${bons(it)}${it.fx ? `<span class="gfx">${it.fx}</span>` : ''}</div></div></li>`;
+const empty = `<li class="gr empty" style="--r:#2a3140"><div class="surf"><span class="slot" style="width:56px;height:56px"><span class="well"></span></span>Empty slot</div></li>`;
+const banner = (title, p, hero) => `<div class="banner"><h2 class="section-title"><span class="medal${hero ? ' hero' : ''}">${hero ? `<img src="${SPR}player/warrior.png" alt="">` : raw(p)}</span><span class="cloth">${title}</span></h2></div>`;
+
+const head = `<div class="tiles">
+  <div class="tile"><span class="tl">${icon('level')}Level</span><span class="tv brass">23</span><span class="tn">1.2K EXP to next</span></div>
+  <div class="tile"><span class="tl">${icon('streak')}Best streak</span><span class="tv">41</span><span class="tn">Morning run</span></div></div>`;
+const statTiles = `<div class="tiles">${stats.map(([ic, l, v, g, note]) => `<div class="tile"><span class="tl">${icon(ic)}${l}</span><span class="tv">${v}${g ? `<em>${g}</em>` : ''}</span>${note ? `<span class="tn">${note}</span>` : ''}</div>`).join('')}</div>`;
+
+const phone = (cls, after) => `<div class="phone ${cls}">
+  ${banner('Aldric', null, true)}
+  <div style="margin-top:6px">${head}</div>
+  <div class="sec">${after ? banner('Equipment', 'sword') : '<div class="glabel">Equipment</div>'}<ul class="gear">${items.map(row).join('')}${empty}</ul></div>
+  <div class="sec">${after ? banner('Stats', 'chart') : '<div class="glabel">Stats</div>'}${statTiles}</div>
+</div>`;
+
+document.getElementById('grid').innerHTML =
+  `<div><div class="tag">Today</div>${phone('before', false)}</div><div><div class="tag">Option 1 · Lit socket + banners</div>${phone('lit', true)}</div><div><div class="tag">Option 4 · Tiers climb + banners</div>${phone('after', true)}</div>`;
+</script>
+</body>
+</html>
