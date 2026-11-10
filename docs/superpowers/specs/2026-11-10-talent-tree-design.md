@@ -1,6 +1,6 @@
 # Talent tree
 
-Status: design approved in chat 2026-11-10; trees reworked the same day (max 3 ranks, repeated II nodes). Not built. Tab layout picked, see Where it lives.
+Status: design approved in chat 2026-11-10; trees reworked the same day (max 3 ranks, repeated II nodes). Engine and saving built and pushed (da686eb). Tab, node popup, unlock popup and the feed wording built 2026-11-10 to the Plinths mock; committed, not pushed until the user has seen it running. The base level-up heal flips to 10% in that same commit, not before (see Changes outside the tree).
 
 ## Why
 

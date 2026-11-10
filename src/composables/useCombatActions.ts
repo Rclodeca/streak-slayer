@@ -294,6 +294,7 @@ export function useCombatActions() {
         habitName: habit.name,
         amount: healthAfter - healthBefore,
         milestoneExp: result.milestoneExp,
+        ...(result.healCrit && { crit: true }),
       });
     } else if (result.damageDealt !== undefined) {
       // Boss skill pushed first so the "skill used" entry — the headline of
@@ -346,6 +347,7 @@ export function useCombatActions() {
 
     activityLogStore.addEntry({ kind: 'boss-defeated', bossIndex: slain.index, amount: defeatResult.expReward });
     if (defeatResult.itemHealed) activityLogStore.addEntry({ kind: 'item-heal', itemName: 'Soul Lantern', amount: defeatResult.itemHealed });
+    if (defeatResult.talentHealed) activityLogStore.addEntry({ kind: 'item-heal', itemName: 'Second Wind', amount: defeatResult.talentHealed });
     // Queued before the level-up beat below so the panels swap to the slain
     // boss in the same render the store swaps to the next one.
     celebrateBossKill(slain, defeatResult.boss, landsInMs);
@@ -373,13 +375,20 @@ export function useCombatActions() {
    * Returns whether the hero fell (died, or the Feather revived them).
    */
   function landBossStrike(
-    result: { character: Character; boss: Boss; wasCrit: boolean; attackType: 'physical' | 'magic'; bossLifestealHealed?: number },
+    result: { character: Character; boss: Boss; wasCrit: boolean; attackType: 'physical' | 'magic'; bossLifestealHealed?: number; dodged?: true },
     healthBefore: number,
     bossBefore: Boss,
+    name: string,
     logEntry: (hit: { amount: number; attackType: 'physical' | 'magic'; crit?: true; lifesteal?: number }) => Parameters<typeof activityLogStore.addEntry>[0],
   ): boolean {
     characterStore.setCharacter(result.character);
     bossStore.setBoss(result.boss);
+
+    // Unbroken: nothing lands, so nothing plays on the stage; the log says so.
+    if (result.dodged) {
+      activityLogStore.addEntry({ kind: 'dodged', name });
+      return false;
+    }
 
     const dealt = healthBefore - result.character.currentHealth;
     playHit({
@@ -441,7 +450,7 @@ export function useCombatActions() {
       : result.updatedHabit;
 
     habitStore.updateHabit(updatedHabit);
-    return landBossStrike(result, healthBefore, bossBefore, (hit) => ({ kind: 'hit', habitName: habit.name, ...hit }));
+    return landBossStrike(result, healthBefore, bossBefore, habit.name, (hit) => ({ kind: 'hit', habitName: habit.name, ...hit }));
   }
 
   /**
@@ -698,7 +707,7 @@ export function useCombatActions() {
     const result = missQuest(characterStore.character, quest, bossBefore, currentDayKey, rng);
 
     questStore.markOverdue(questId);
-    landBossStrike(result, healthBefore, bossBefore, (hit) => ({ kind: 'quest-failed', description: quest.description, ...hit }));
+    landBossStrike(result, healthBefore, bossBefore, quest.description, (hit) => ({ kind: 'quest-failed', description: quest.description, ...hit }));
   }
 
   /**

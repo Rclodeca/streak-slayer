@@ -35,6 +35,7 @@ import {
   Target,
   Undo2,
   WandSparkles,
+  Wind,
   Zap,
   ChevronsUp,
 } from 'lucide-vue-next';
@@ -59,6 +60,7 @@ export const STAT_ICONS = {
   wounds: { icon: Bandage, color: 'var(--dmg-physical)' },
   streak: { icon: Flame, color: 'var(--icon-streak)' },
   reflect: { icon: Undo2, color: 'var(--icon-steel)' },
+  dodge: { icon: Wind, color: 'var(--icon-steel)' },
   skull: { icon: Skull, color: 'var(--dmg-physical)' },
   exp: { icon: Sparkles, color: 'var(--icon-exp)' },
   levelUp: { icon: ChevronsUp, color: 'var(--icon-exp)' },

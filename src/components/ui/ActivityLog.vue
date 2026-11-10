@@ -42,6 +42,7 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
         </template>
         <template v-else-if="entry.kind === 'heal'">
           <StatIcon name="healing" class="log-icon" /> Healed <span class="log-heal">+{{ formatCompact(entry.amount) }}</span> HP using "{{ entry.habitName }}"
+          <span v-if="entry.crit" class="log-chips"><span class="log-chip crit"><StatIcon name="crit" :size="11" />Crit</span></span>
           <template v-if="entry.milestoneExp">
             · <span class="log-exp">+{{ formatCompact(entry.milestoneExp) }}</span> EXP
           </template>
@@ -53,6 +54,9 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
             <span v-if="entry.crit" class="log-chip crit"><StatIcon name="crit" :size="11" />Crit</span>
             <span v-if="entry.lifesteal" class="log-chip"><StatIcon name="lifesteal" :size="11" />Boss&nbsp;<span class="log-heal">+{{ formatCompact(entry.lifesteal) }}</span>&nbsp;HP</span>
           </span>
+        </template>
+        <template v-else-if="entry.kind === 'dodged'">
+          <StatIcon name="dodge" class="log-icon" /> Missed "{{ entry.name }}" — dodged the blow
         </template>
         <template v-else-if="entry.kind === 'level-up'">
           <StatIcon name="levelUp" class="log-icon" /> Leveled up to Lv. {{ entry.newLevel }}! Healed

@@ -170,9 +170,9 @@ export const TUNING = {
     [50, 49],
   ] as [number, number][],
   BOSS_ATTACK_LEVEL_FOLLOW: 0.5,
-  // Unconditional per-level heal on top of any lifesteal-item bonus (see
-  // addExpAndResolveLevelUps) — applied once per level gained in a grant.
-  LEVEL_UP_HEAL_PCT: 20,
+  // Unconditional per-level heal (see addExpAndResolveLevelUps) — applied once
+  // per level gained in a grant. Sage's Codex and the Renewal talents add to it.
+  LEVEL_UP_HEAL_PCT: 10,
   // The Heal event restores this % of max health.
   EVENT_HEAL_PCT: 10,
   // The Crit boost event adds CRIT_BOOST_BONUS to crit chance (crit chance

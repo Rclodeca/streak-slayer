@@ -31,7 +31,7 @@ describe('TabBar', () => {
   it('opens on Skills and switches tabs', async () => {
     const wrapper = mount(TabBar);
     const tabs = wrapper.findAll('[role="tab"]');
-    expect(tabs.map((t) => t.find('.tab-label').text())).toEqual(['Skills', 'Quests', 'Trials', 'Hero']);
+    expect(tabs.map((t) => t.find('.tab-label').text())).toEqual(['Skills', 'Quests', 'Trials', 'Talents', 'Hero']);
     expect(tab(wrapper, 'skills').attributes('aria-selected')).toBe('true');
 
     await tab(wrapper, 'hero').trigger('click');
@@ -50,6 +50,31 @@ describe('TabBar', () => {
     questStore.addQuest('Done', 'easy', today);
     questStore.quests[3].doneDayKey = today;
     expect(tab(mount(TabBar), 'quests').find('.tab-count').text()).toBe('2');
+  });
+
+  it('greys Talents out under a lock before level 5, with no badge', () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 4 });
+    const talents = tab(mount(TabBar), 'talents');
+    expect(talents.classes()).toContain('sealed');
+    expect(talents.find('.tab-lock').exists()).toBe(true);
+    expect(talents.find('.tab-count').exists()).toBe(false);
+  });
+
+  it('counts the unspent talent points on Talents from level 5, and drops the count at 0', async () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 5 });
+    const wrapper = mount(TabBar);
+    expect(tab(wrapper, 'talents').classes()).not.toContain('sealed');
+    expect(tab(wrapper, 'talents').find('.tab-count').text()).toBe('4');
+
+    characterStore.spendTalent('might');
+    await wrapper.vm.$nextTick();
+    expect(tab(wrapper, 'talents').find('.tab-count').text()).toBe('3');
+
+    characterStore.setCharacter({ ...characterStore.character, talents: { might: 3, precision: 1 } });
+    await wrapper.vm.$nextTick();
+    expect(tab(wrapper, 'talents').find('.tab-count').exists()).toBe(false);
   });
 
   it('puts a pip on Trials while a new trial waits unseen', async () => {

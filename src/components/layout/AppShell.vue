@@ -12,6 +12,8 @@ import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
 import QuestSection from '../quests/QuestSection.vue';
 import TrialSection from '../quests/TrialSection.vue';
+import TalentSection from '../talents/TalentSection.vue';
+import TalentUnlockPopup from '../talents/TalentUnlockPopup.vue';
 import ProgressSummary from './ProgressSummary.vue';
 import ActivityLog from '../ui/ActivityLog.vue';
 import DeathScreen from '../ui/DeathScreen.vue';
@@ -110,6 +112,7 @@ watch(
     <QuestCompletePopup />
     <QuestUnlockPopup />
     <TrialUnlockPopup />
+    <TalentUnlockPopup />
     <ReviveNotice />
 
     <HighScorePage v-if="showHighScores" />
@@ -120,11 +123,12 @@ watch(
         <FightStage>
           <AppMenu @high-scores="showHighScores = true" @log="showLog = true" />
         </FightStage>
-        <div ref="scrollBody" class="scroll-body">
+        <div ref="scrollBody" class="scroll-body" :class="{ 'talents-view': isPhone && tabStore.tab === 'talents' }">
           <main class="main">
             <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'quests' }"><QuestSection /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'trials' }"><TrialSection /></div>
+            <div class="tab-panel" :class="{ current: tabStore.tab === 'talents' }"><TalentSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'hero' }"><HeroDetails page /></div>
           </main>
           <aside class="side">
@@ -300,6 +304,14 @@ watch(
 
   .main {
     display: contents;
+  }
+
+  /* The Talents tab pins its banner and plinths and scrolls only the tree, so the
+     box hands it the whole height instead of scrolling itself. */
+  .scroll-body.talents-view {
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+    padding: 0.25rem 0.75rem 0.5rem;
   }
 
   .tab-panel:not(.current),

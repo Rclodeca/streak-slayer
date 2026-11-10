@@ -26,7 +26,7 @@ import { useItemDropQueue } from './useItemDropQueue';
 import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useUndoCheck } from './useUndoCheck';
 import { setHitPlayer } from './useHitFeed';
-import type { ChallengeEntry, ChallengeId, Habit, Quest } from '../game-engine';
+import type { Character, ChallengeEntry, ChallengeId, Habit, Quest } from '../game-engine';
 import type { Hit } from './useHitFeed';
 import { useReviveNotice } from './useReviveNotice';
 
@@ -255,6 +255,101 @@ describe('useCombatActions', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  describe('talents in the feed', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    function withTalents(talents: Character['talents']) {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 12, talents });
+      return characterStore;
+    }
+
+    it('a dodged bad-habit hit sends nothing to the stage, costs no health, and is logged as a dodge', () => {
+      const hits: Hit[] = [];
+      setHitPlayer((hit) => (hits.push(hit), 480));
+      vi.spyOn(Math, 'random').mockReturnValue(0);
+      const characterStore = withTalents({ unbroken: 1 });
+      characterStore.setCharacter({ ...characterStore.character, currentHealth: 40 });
+      const habitStore = useHabitStore();
+      const habit = habitStore.addHabit('Skip dessert', 'daily', 'medium', true, createRng());
+      habitStore.updateHabit({ ...habit, streakCount: 4 });
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(characterStore.character.currentHealth).toBe(40);
+      expect(hits).toEqual([]);
+      expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'dodged', name: 'Skip dessert' });
+      expect(habitStore.habits[0].streakCount).toBe(0);
+    });
+
+    it('a dodged missed quest is logged as a dodge too, and the quest still goes overdue', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0);
+      const characterStore = withTalents({ unbroken: 1 });
+      const before = characterStore.character.currentHealth;
+      const questStore = useQuestStore();
+      const quest = questStore.addQuest('Clean garage', 'medium', '2026-02-01');
+
+      useCombatActions().failQuest(quest.id);
+
+      expect(characterStore.character.currentHealth).toBe(before);
+      expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'dodged', name: 'Clean garage' });
+      expect(questStore.quests[0].overdue).toBe(true);
+    });
+
+    it('a hit that is not dodged is logged as a hit', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      withTalents({ unbroken: 1 });
+      const habitStore = useHabitStore();
+      const habit = habitStore.addHabit('Skip dessert', 'daily', 'medium', true, createRng());
+      useCombatActions().checkOffHabit(habit.id);
+      expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'hit', habitName: 'Skip dessert' });
+    });
+
+    it('a heal that crits through Blessed is logged as a crit', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0);
+      const characterStore = withTalents({ blessed: 1 });
+      characterStore.setCharacter({ ...characterStore.character, currentHealth: 5 });
+      const habitStore = useHabitStore();
+      const habit = habitStore.addHabit('Stretch', 'daily', 'medium', false, createRng());
+      habitStore.updateHabit({ ...habit, damageType: 'healing' });
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(useActivityLogStore().entries.find((e) => e.kind === 'heal')).toMatchObject({ kind: 'heal', crit: true });
+    });
+
+    it('a heal with no crit carries no crit flag', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.99);
+      const characterStore = withTalents({ blessed: 1 });
+      characterStore.setCharacter({ ...characterStore.character, currentHealth: 5 });
+      const habitStore = useHabitStore();
+      const habit = habitStore.addHabit('Stretch', 'daily', 'medium', false, createRng());
+      habitStore.updateHabit({ ...habit, damageType: 'healing' });
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      expect(useActivityLogStore().entries.find((e) => e.kind === 'heal')).not.toHaveProperty('crit');
+    });
+
+    it('Second Wind logs what it healed when a boss falls, under its own name', () => {
+      const characterStore = withTalents({ 'second-wind': 3 });
+      characterStore.setCharacter({ ...characterStore.character, currentHealth: 1 });
+      const habitStore = useHabitStore();
+      const bossStore = useBossStore();
+      const habit = habitStore.addHabit('Slay the boss', 'daily', 'hard', false, createRng());
+      habitStore.updateHabit({ ...habit, damageType: 'physical' });
+      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
+
+      useCombatActions().checkOffHabit(habit.id);
+
+      const entry = useActivityLogStore().entries.find((e) => e.kind === 'item-heal');
+      expect(entry).toMatchObject({ kind: 'item-heal', itemName: 'Second Wind' });
+      expect((entry as { amount: number }).amount).toBeGreaterThan(0);
     });
   });
 

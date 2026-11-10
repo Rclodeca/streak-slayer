@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Gift, Lock, ScrollText, Sword, UserRound } from 'lucide-vue-next';
-import { activeChallenges, claimableChallenges, dailyPeriodKey, questsOpen, trialsOpen } from '../../game-engine';
+import { Anvil, Gift, Lock, ScrollText, Sword, UserRound } from 'lucide-vue-next';
+import { activeChallenges, claimableChallenges, dailyPeriodKey, questsOpen, talentPointsUnspent, talentsOpen, trialsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
@@ -11,9 +11,10 @@ import { useTrialSeenStore } from '../../store/trialSeenStore';
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
 // shows under the stage. Quests counts what's due today or overdue; Trials
 // counts the finished trials waiting to be claimed, or else wears a pip while a
-// new trial waits unseen (a claim outranks a new trial). Sealed (before
-// QUESTS_UNLOCK_LEVEL and TRIALS_UNLOCK_LEVEL) Quests and Trials each grey out
-// under a lock, with no badges, but still open onto their seal.
+// new trial waits unseen (a claim outranks a new trial). Talents counts the
+// points still to spend. Sealed (before QUESTS_UNLOCK_LEVEL,
+// TRIALS_UNLOCK_LEVEL and TALENTS_UNLOCK_LEVEL) Quests, Trials and Talents each
+// grey out under a lock, with no badges, but still open onto their seal.
 const tabStore = useTabStore();
 const characterStore = useCharacterStore();
 const questStore = useQuestStore();
@@ -24,18 +25,21 @@ const TABS = [
   { id: 'skills', label: 'Skills', icon: Sword },
   { id: 'quests', label: 'Quests', icon: ScrollText },
   { id: 'trials', label: 'Trials', icon: Gift },
+  { id: 'talents', label: 'Talents', icon: Anvil },
   { id: 'hero', label: 'Hero', icon: UserRound },
 ] as const;
 
 const questsSealed = computed(() => !questsOpen(characterStore.character));
 const trialsSealed = computed(() => !trialsOpen(characterStore.character));
+const talentsSealed = computed(() => !talentsOpen(characterStore.character));
 /** Whether a tab is greyed out under its lock. */
 function isSealed(id: (typeof TABS)[number]['id']): boolean {
-  return (id === 'quests' && questsSealed.value) || (id === 'trials' && trialsSealed.value);
+  return (id === 'quests' && questsSealed.value) || (id === 'trials' && trialsSealed.value) || (id === 'talents' && talentsSealed.value);
 }
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
 // dueDateKey is YYYY-MM-DD, so it compares as text.
 const dueCount = computed(() => questStore.quests.filter((quest) => !quest.doneDayKey && (quest.overdue || quest.dueDateKey <= todayKey.value)).length);
+const points = computed(() => talentPointsUnspent(characterStore.character));
 const claimCount = computed(() => claimableChallenges(characterStore.character).length);
 const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(activeChallenges(characterStore.character)));
 </script>
@@ -58,6 +62,7 @@ const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(ac
       <span v-else-if="tab.id === 'quests' && dueCount" class="tab-count">{{ dueCount }}</span>
       <span v-else-if="tab.id === 'trials' && claimCount" class="tab-count" aria-label="Ready to claim">{{ claimCount }}</span>
       <span v-else-if="tab.id === 'trials' && newTrial" class="tab-pip" role="img" aria-label="New" />
+      <span v-else-if="tab.id === 'talents' && points" class="tab-count" aria-label="Points to spend">{{ points }}</span>
     </button>
   </div>
 </template>

@@ -1,0 +1,187 @@
+// @vitest-environment jsdom
+
+import { enableAutoUnmount, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { talentPointsUnspent, talentRank } from '../../game-engine';
+import type { TalentId } from '../../game-engine';
+import { useCharacterStore } from '../../store/characterStore';
+import TalentSection from './TalentSection.vue';
+
+enableAutoUnmount(afterEach);
+
+describe('TalentSection', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.body.innerHTML = '';
+    setActivePinia(createPinia());
+  });
+
+  const q = (selector: string) => document.body.querySelector<HTMLElement>(selector);
+  const mountSection = () => mount(TalentSection, { attachTo: document.body });
+  const node = (wrapper: ReturnType<typeof mount>, name: string) => wrapper.findAll('.cell').find((cell) => cell.find('.nm').text() === name)!;
+  const plinth = (wrapper: ReturnType<typeof mount>, name: string) => wrapper.findAll('.pl').find((pl) => pl.text().startsWith(name))!;
+
+  function heroAt(level: number, talents?: Partial<Record<TalentId, number>>) {
+    const store = useCharacterStore();
+    store.setCharacter({ ...store.character, level, talents });
+    return store;
+  }
+
+  it('is sealed under a lock before level 5, with no tree', () => {
+    heroAt(4);
+    const wrapper = mountSection();
+    expect(wrapper.find('.talent-sealed').text()).toContain('Reach level 5');
+    expect(wrapper.find('.cell').exists()).toBe(false);
+  });
+
+  it('shows the banner with the points to spend', () => {
+    heroAt(9, { might: 2 });
+    const wrapper = mountSection();
+    expect(wrapper.find('.section-title').text()).toContain('Talents');
+    expect(wrapper.find('.points .count').text()).toBe('6');
+  });
+
+  it('greys the points when none are left', () => {
+    heroAt(5, { might: 3, precision: 1 });
+    expect(mountSection().find('.points .count').classes()).toContain('zero');
+  });
+
+  it('shows the Damage shoot from its top node down, a node each with its name', () => {
+    heroAt(9);
+    const names = mountSection().findAll('.cell .nm').map((n) => n.text());
+    expect(names[0]).toBe('Executioner');
+    expect(names.at(-1)).toBe('Might');
+    expect(names).toContain('Weekly Might');
+    expect(names).not.toContain('Vigor');
+  });
+
+  it('marks a node open, ranked, full or locked', () => {
+    heroAt(20, { might: 3, precision: 1 });
+    const wrapper = mountSection();
+    expect(node(wrapper, 'Might').classes()).toContain('full');
+    expect(node(wrapper, 'Precision').classes()).toContain('has');
+    expect(node(wrapper, 'Brawn').classes()).toContain('open');
+    expect(node(wrapper, 'Arcana').classes()).toContain('locked');
+    expect(node(wrapper, 'Executioner').classes()).toContain('locked');
+  });
+
+  it('lights one pip a rank learned', () => {
+    heroAt(20, { might: 3, precision: 1 });
+    const wrapper = mountSection();
+    expect(node(wrapper, 'Might').findAll('.pip.lit')).toHaveLength(3);
+    expect(node(wrapper, 'Precision').findAll('.pip.lit')).toHaveLength(1);
+    expect(node(wrapper, 'Precision').findAll('.pip')).toHaveLength(3);
+    expect(node(wrapper, 'Keen Edge').findAll('.pip')).toHaveLength(2);
+  });
+
+  it('puts a lone offshoot on the right, then the left, and a pair on both sides', () => {
+    heroAt(20);
+    const wrapper = mountSection();
+    const side = (name: string) => ['lft', 'rgt'].find((cls) => node(wrapper, name).classes().includes(cls));
+    expect(side('Keen Edge')).toBe('rgt');
+    expect(side('Armor Break')).toBe('lft');
+    expect(side('Spell Break')).toBe('rgt');
+    expect(side('Truestrike')).toBe('rgt');
+    expect(side('Weekly Might')).toBe('lft');
+    expect(side('Armor Break II')).toBe('rgt');
+    expect(side('Spell Break II')).toBe('lft');
+  });
+
+  it('opens on the plinth of the shoot with the most points, Damage on a tie', () => {
+    heroAt(20);
+    expect(mountSection().find('.pl.on').text()).toContain('Damage');
+    heroAt(20, { vigor: 3 });
+    expect(mountSection().find('.pl.on').text()).toContain('Tank');
+  });
+
+  it('counts each shoot’s spent points on its plinth', () => {
+    heroAt(20, { might: 3, precision: 1, vigor: 2 });
+    const wrapper = mountSection();
+    expect(plinth(wrapper, 'Damage').text()).toContain('4 spent');
+    expect(plinth(wrapper, 'Tank').text()).toContain('2 spent');
+    expect(plinth(wrapper, 'Support').text()).toContain('0 spent');
+  });
+
+  it('swaps the tree when another plinth is picked', async () => {
+    heroAt(9);
+    const wrapper = mountSection();
+    await plinth(wrapper, 'Support').trigger('click');
+    const names = wrapper.findAll('.cell .nm').map((n) => n.text());
+    expect(names[0]).toBe('Blessed');
+    expect(names).toContain('Mending');
+    expect(names).not.toContain('Might');
+    expect(plinth(wrapper, 'Support').classes()).toContain('on');
+  });
+
+  describe('the node popup', () => {
+    it('opens on a tap with the effect and the Now and Next plates', async () => {
+      heroAt(9, { might: 3, precision: 1 });
+      const wrapper = mountSection();
+      await node(wrapper, 'Precision').find('button').trigger('click');
+      expect(q('.talent-popup')).not.toBeNull();
+      expect(q('.talent-popup .nm')?.textContent).toBe('Precision');
+      expect(q('.talent-popup .desc')?.textContent).toBe('+1% crit chance per rank.');
+      expect(q('.talent-popup .plate.now')?.textContent).toContain('Now · 1/3');
+      expect(q('.talent-popup .plate.now')?.textContent).toContain('+1%');
+      expect(q('.talent-popup .plate.next')?.textContent).toContain('Next · 2/3');
+      expect(q('.talent-popup .plate.next')?.textContent).toContain('+2%');
+    });
+
+    it('spends a point with Learn, and shows the new rank', async () => {
+      const store = heroAt(9);
+      const wrapper = mountSection();
+      await node(wrapper, 'Might').find('button').trigger('click');
+      q('.talent-popup .learn')!.click();
+      await wrapper.vm.$nextTick();
+      expect(talentRank(store.character, 'might')).toBe(1);
+      expect(talentPointsUnspent(store.character)).toBe(7);
+      expect(q('.talent-popup .plate.now')?.textContent).toContain('Now · 1/3');
+      expect(node(wrapper, 'Might').findAll('.pip.lit')).toHaveLength(1);
+    });
+
+    it('opens the next node once the one before has a rank', async () => {
+      heroAt(9);
+      const wrapper = mountSection();
+      expect(node(wrapper, 'Precision').classes()).toContain('locked');
+      await node(wrapper, 'Might').find('button').trigger('click');
+      q('.talent-popup .learn')!.click();
+      await wrapper.vm.$nextTick();
+      expect(node(wrapper, 'Precision').classes()).toContain('open');
+    });
+
+    it('greys Learn out for a locked node and says what opens it', async () => {
+      const store = heroAt(9);
+      const wrapper = mountSection();
+      await node(wrapper, 'Precision').find('button').trigger('click');
+      const learn = q('.talent-popup .learn') as HTMLButtonElement;
+      expect(learn.disabled).toBe(true);
+      expect(q('.talent-popup .warn')?.textContent).toBe('Needs a rank in Might.');
+      learn.click();
+      expect(talentRank(store.character, 'precision')).toBe(0);
+    });
+
+    it('greys Learn out with no points left', async () => {
+      heroAt(5, { might: 3, precision: 1 });
+      const wrapper = mountSection();
+      await node(wrapper, 'Precision').find('button').trigger('click');
+      expect((q('.talent-popup .learn') as HTMLButtonElement).disabled).toBe(true);
+      expect(q('.talent-popup .warn')?.textContent).toBe('No points left.');
+    });
+
+    it('says a full node is full', async () => {
+      heroAt(9, { might: 3 });
+      const wrapper = mountSection();
+      await node(wrapper, 'Might').find('button').trigger('click');
+      expect((q('.talent-popup .learn') as HTMLButtonElement).disabled).toBe(true);
+      expect(q('.talent-popup .learn')?.textContent).toContain('Full');
+    });
+
+    it('reminds the player that spent points stay spent', async () => {
+      heroAt(9);
+      const wrapper = mountSection();
+      await node(wrapper, 'Might').find('button').trigger('click');
+      expect(q('.talent-popup .warn')?.textContent).toBe('Spent points stay spent.');
+    });
+  });
+});

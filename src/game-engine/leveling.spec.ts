@@ -279,6 +279,36 @@ describe('effectiveCritChance', () => {
   });
 });
 
+describe('the level-up heal adds up from its sources', () => {
+  const start = (overrides: Partial<Character> = {}): Character => ({
+    level: 1,
+    exp: 0,
+    starterStats: { physicalDamage: 10, magicDamage: 10, healing: 6, health: 50, trueDamage: 6 },
+    currentHealth: 1,
+    ownedItemIds: [],
+    equippedItemIds: [],
+    critChance: 0.01,
+    ...overrides,
+  });
+  const healedPct = (character: Character) => {
+    const result = addExpAndResolveLevelUps(character, 25);
+    return ((result.character.currentHealth - 1) / effectiveStat(result.character, 'health')) * 100;
+  };
+
+  it('is 10% of max HP on its own', () => {
+    expect(healedPct(start())).toBeCloseTo(10, 8);
+  });
+
+  it('is 30% with Sage’s Codex', () => {
+    expect(healedPct(start({ equippedItemIds: ['sages-codex'], ownedItemIds: ['sages-codex'] }))).toBeCloseTo(30, 8);
+  });
+
+  it('is 42% with the Codex and both Renewals full', () => {
+    const codex = { equippedItemIds: ['sages-codex'], ownedItemIds: ['sages-codex'], talents: { renewal: 3, 'renewal-2': 3 } };
+    expect(healedPct(start(codex))).toBeCloseTo(42, 8);
+  });
+});
+
 describe('effectiveStat — drawbacks and all damage', () => {
   it("Sage's Codex adds to the level-up heal rather than replacing it", () => {
     const character = makeCharacter({ currentHealth: 1, equippedItemIds: ['sages-codex'] });
