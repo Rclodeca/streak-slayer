@@ -45,7 +45,7 @@ The talent tree gives each run its own build. You earn points by levelling, spen
 
 ## The tree
 
-Values are per rank unless "Full" says otherwise. Starting values, to be checked by a sim (see Balance).
+Values are per rank unless "Full" says otherwise.
 
 ### Damage — 35 points, 16 to the top
 
@@ -60,7 +60,7 @@ Values are per rank unless "Full" says otherwise. Starting values, to be checked
 | ↳ Armor Break | Brawn | 5 | +2% armor pen | +10% |
 | **Arcana** | | 3 | +3% magic damage | +9% |
 | ↳ Spell Break | Arcana | 5 | +2% magic pen | +10% |
-| ★ **Executioner** | | 1 | crits deal 2.5× (2.7× with full Keen Edge) | |
+| ★ **Executioner** | | 1 | crits deal +0.5× | |
 
 Main order: Might → Precision → Brawn → Arcana → Executioner.
 
@@ -84,10 +84,10 @@ Main order: Vigor → Plating → Warding → Bulwark → Unbroken.
 | Node | Off | Ranks | Per rank | Full |
 |---|---|---|---|---|
 | **Mending** | | 5 | +3% healing | +15% |
-| ↳ Second Wind | Mending | 3 | heal 2% of max HP when a boss falls | 6% |
+| ↳ Second Wind | Mending | 3 | heal +2% of max HP when a boss falls | +6% |
 | **Insight** | | 3 | +2% EXP | +6% |
 | ↳ Wisdom | Insight | 2 | +3% quest EXP | +6% |
-| **Renewal** | | 5 | +2% level-up heal | 20% → 30% |
+| **Renewal** | | 5 | level-ups heal +2% of max HP | +10% |
 | ↳ Scavenger | Renewal | 3 | +5% chance of one extra item when a boss falls | 15% |
 | **Leech** | | 2 | +0.5% lifesteal | +1% |
 | ★ **Blessed** | | 1 | heal skills can crit, for double healing | |
@@ -102,7 +102,7 @@ These follow the existing engine (`src/game-engine/`). Where a node meets an ite
 
 **Weekly Might:** multiplies damage (not healing) from weekly skills, on top of `WEEKLY_BONUS_MULTIPLIER`. Stacks multiplicatively with Moonwell Staff.
 
-**Keen Edge and Executioner:** the hero's crit multiplier becomes `CRIT_MULTIPLIER` (2) + 0.1 per Keen Edge rank, or 2.5 + 0.1 per Keen Edge rank with Executioner. Voidcaller's Scepter's magic crits use whichever is higher, its 3× or this. *(Claude's call.)* Boss crits (Frenzy) are unaffected.
+**Keen Edge and Executioner:** everything stacks. They add to whatever crit multiplier a hit already has: `CRIT_MULTIPLIER` (2×) for most crits, Voidcaller's Scepter's 3× for magic crits. Full Keen Edge plus Executioner adds +0.7×, so 2.7× for most crits and 3.7× for Scepter magic crits. Boss crits (Frenzy) are unaffected.
 
 **Last Stand:** checks HP before the hit lands. Applies to boss hits (missed skills and quests) and to boss-skill HP hits (Rend, Ravage, Doom).
 
@@ -113,15 +113,25 @@ These follow the existing engine (`src/game-engine/`). Where a node meets an ite
 
 Boss skills (Rend, Ravage, Doom and the rest) can't be dodged. Roll the dodge every strike so the rng sequence stays stable, as the boss crit roll already does.
 
-**Second Wind:** when a boss falls, heal 2% of max HP per rank. With Soul Lantern equipped, use whichever is higher, not both. *(Claude's call.)*
+**Second Wind:** when a boss falls, heal 2% of max HP per rank. Stacks with Soul Lantern's 30% (36% with both).
 
-**Renewal:** the per-level heal (`LEVEL_UP_HEAL_PCT`, 20%) gains 2% per rank. With Sage's Codex (40%), use whichever is higher.
+**Renewal:** the per-level heal gains 2% of max HP per rank. Everything stacks: base 10% + Sage's Codex 20% + Renewal 10% = 40% at most (see Changes outside the tree).
 
 **Wisdom:** multiplies quest EXP, on top of Quill's double EXP.
 
 **Scavenger:** on each boss kill, one roll at 5% per rank for one extra item drop. It may go past `ITEM_DROP_MAX_COUNT`. At most one extra item per kill.
 
-**Blessed:** heal skills (which never crit today) roll a crit at the hero's crit chance + 10%. A heal crit is a flat 2×: Keen Edge and Executioner raise damage crits only. Blind stops heal crits too, as it stops damage crits. Overhealing from a heal crit still counts for Wellspring. *(Claude's call: the +10% wasn't in the shortlist the user approved, but a review raised that without it Blessed almost never fires for a hero who skips the Damage crit nodes. Drop it if unwanted.)*
+**Blessed:** heal skills (which never crit today) roll a crit at the hero's normal crit chance. A heal crit is a flat 2×: Keen Edge and Executioner raise damage crits only. Blind stops heal crits too, as it stops damage crits. Overhealing from a heal crit still counts for Wellspring.
+
+## Changes outside the tree
+
+The level-up heal is reworked so its sources add up:
+
+- **Base level-up heal** (`LEVEL_UP_HEAL_PCT`): 20% → **10%** of max HP.
+- **Sage's Codex** (`sages-insight`): from "heal 40% instead of 20%" to **+20%** on top of the base. New effect text: "Level-ups heal +20% of max HP." `SAGES_INSIGHT_LEVEL_UP_HEAL_PCT` becomes a bonus (20), not a replacement (40).
+- **Renewal** adds up to +10% on top.
+
+So a level-up heals 10% alone, 30% with the Codex, and 40% with the Codex and full Renewal. This is a small cut for heroes without the Codex (20% → 10%) and for Codex holders without Renewal (40% → 30%), which the user chose.
 
 ## Where it lives
 
@@ -145,7 +155,7 @@ Boss skills (Rend, Ravage, Doom and the rest) can't be dodged. Roll the dodge ev
 
 ## Balance
 
-At level 20 a hero can have about +10–15% power that today's boss tuning doesn't expect. Before shipping, run one quick time-capped sim (tiny model, hard time cap) on a sensible pick order per shoot, against the current boss scaling. If deaths drop clearly, nudge boss HP or the node values, and recompute `EXPECTED_LEVEL_BY_BOSS_INDEX` if EXP changes enough to move it (Insight and Wisdom add up to about +6–12% EXP).
+At level 20 a hero can have about +10–15% power that today's boss tuning doesn't expect. That's intended: the user wanted a small player buff anyway. No balance sim and no boss retuning.
 
 Known lopsided spots, accepted for now:
 - **Pen nodes** add little against normal bosses (10–35% resist) and a lot against heavily armored or warded ones. Points can't move, so pen is a gamble on which bosses come.
@@ -153,12 +163,11 @@ Known lopsided spots, accepted for now:
 
 ## Rollout
 
-Nothing goes live until the visuals are done and the sim is in. Pushing main deploys, and the first live push hands every hero `level − 1` points at once, which can't be taken back once spent. Order:
+Nothing goes live until the visuals are done. Pushing main deploys, and the first live push hands every hero `level − 1` points at once, which can't be taken back once spent. Order:
 
 1. **Visual mock** of the Talents tab and the unlock popup (Pixel-cut, Moonlit), picked before any UI is built.
 2. **Engine and saving**, with tests. Fine to push: nothing reads it yet.
-3. **Balance sim**, then any value changes.
-4. **The tab and unlock popup**, built to the picked mock. This is the push that turns it on.
+3. **The tab and unlock popup**, built to the picked mock. This is the push that turns it on.
 
 ## Monetization
 
