@@ -6,6 +6,7 @@ import { talentPointsUnspent } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import Modal from '../ui/Modal.vue';
 import RuleList from '../ui/RuleList.vue';
+import { TALENTS_TAB_ICON } from './talentDisplay';
 import type { Rule } from '../ui/RuleList.vue';
 
 // Shown every run on reaching TALENTS_UNLOCK_LEVEL (see talentUnlockPending), and
@@ -30,7 +31,7 @@ function onward() {
   <Modal :model-value="talentUnlockVisible" :dismissible="false" title="Talents unlocked" max-width="440px">
     <div class="talent-unlock">
       <div class="emblem" aria-hidden="true">
-        <Sprout :size="34" :stroke-width="1.5" />
+        <component :is="TALENTS_TAB_ICON" :size="34" :stroke-width="1.5" />
         <span class="count">{{ points }}</span>
       </div>
       <p class="tagline">Every level leaves its mark.</p>

@@ -38,6 +38,12 @@ describe('TalentUnlockPopup', () => {
     expect(q('.talent-unlock')?.textContent).toContain('Every level leaves its mark.');
   });
 
+  it('wears the Talents anvil on its emblem, as the tab and banner do', () => {
+    reachLevel5();
+    mount(TalentUnlockPopup, { attachTo: document.body });
+    expect(q('.talent-unlock .emblem svg')?.getAttribute('class')).toContain('anvil');
+  });
+
   it('shows once to a save already past level 5, with every point it has earned', () => {
     const store = useCharacterStore();
     store.setCharacter({ ...store.character, level: 14, questsUnlocked: true, trialsUnlocked: true });
