@@ -178,7 +178,7 @@ export function useHeroStats() {
       ...(armor.value > 0 ? [resistTile('armor', 'Armor', armor.value)] : []),
       ...(magicResist.value > 0 ? [resistTile('magicResist', 'Magic resist', magicResist.value)] : []),
       ...(lifesteal.value > 0
-        ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: `${lifesteal.value.toFixed(0)}%`, ...(severed ? { now: '0%', reason: 'Severed' } : {}) }]
+        ? [{ icon: 'lifesteal' as const, label: 'Lifesteal', value: `${+lifesteal.value.toFixed(1)}%`, ...(severed ? { now: '0%', reason: 'Severed' } : {}) }]
         : []),
       ...(armorPen.value > 0 ? [{ icon: 'armorPen' as const, label: 'Armor pen', value: `${armorPen.value.toFixed(0)}%` }] : []),
       ...(magicPen.value > 0 ? [{ icon: 'magicPen' as const, label: 'Magic pen', value: `${magicPen.value.toFixed(0)}%` }] : []),

@@ -151,7 +151,7 @@ onBeforeUnmount(() => {
         <span><StatIcon name="crit" />{{ (critChance * 100).toFixed(0) }}%</span>
         <span v-if="armor > 0"><StatIcon name="armor" />{{ formatCompact(currentArmor) }}</span>
         <span v-if="magicResist > 0"><StatIcon name="magicResist" />{{ formatCompact(currentMagicResist) }}</span>
-        <span v-if="lifesteal > 0 && !severEffect"><StatIcon name="lifesteal" />{{ lifesteal.toFixed(0) }}%</span>
+        <span v-if="lifesteal > 0 && !severEffect"><StatIcon name="lifesteal" />{{ +lifesteal.toFixed(1) }}%</span>
         <span v-if="armorPen > 0"><StatIcon name="armorPen" />{{ armorPen.toFixed(0) }}%</span>
         <span v-if="magicPen > 0"><StatIcon name="magicPen" />{{ magicPen.toFixed(0) }}%</span>
         <span v-if="critBoost"><StatIcon name="critBoost" />+{{ (critBoost.bonus * 100).toFixed(0) }}% crit · {{ critBoostDaysLeft }}d</span>
