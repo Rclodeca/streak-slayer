@@ -308,7 +308,7 @@ const P = {"sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 
 "check":"<path d=\"M20 6 9 17l-5-5\"/>",
 "plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>",
 "x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>"};
-Object.assign(P, {"castle":"<path d=\"M10 5V3\"/><path d=\"M14 5V3\"/><path d=\"M15 21v-3a3 3 0 0 0-6 0v3\"/><path d=\"M18 3v8\"/><path d=\"M18 5H6\"/><path d=\"M22 11H2\"/><path d=\"M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9\"/><path d=\"M6 3v8\"/>","milestone":"<path d=\"M12 13v8\"/><path d=\"M12 3v3\"/><path d=\"M4 6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h13a2 2 0 0 0 1.152-.365l3.424-2.317a1 1 0 0 0 0-1.635l-3.424-2.318A2 2 0 0 0 17 6z\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>"});
+Object.assign(P, {"anvil":"<path d=\"M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4\"/><path d=\"M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z\"/><path d=\"M9 12v5\"/><path d=\"M15 12v5\"/><path d=\"M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1\"/>","castle":"<path d=\"M10 5V3\"/><path d=\"M14 5V3\"/><path d=\"M15 21v-3a3 3 0 0 0-6 0v3\"/><path d=\"M18 3v8\"/><path d=\"M18 5H6\"/><path d=\"M22 11H2\"/><path d=\"M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9\"/><path d=\"M6 3v8\"/>","milestone":"<path d=\"M12 13v8\"/><path d=\"M12 3v3\"/><path d=\"M4 6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h13a2 2 0 0 0 1.152-.365l3.424-2.317a1 1 0 0 0 0-1.635l-3.424-2.318A2 2 0 0 0 17 6z\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>"});
 const svg = (n, c, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="${c || 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
 
 // The tree, in the spec's order (max 3 ranks; a stat worth more shows up again
@@ -376,13 +376,13 @@ const LEFT = 2;
 const pips = (n) => `<span class="pips">${Array.from({ length: n.max }, (_, i) => `<i class="pip${i < n.r ? ' lit' : ''}"></i>`).join('')}</span>`;
 const sock = (n) => `<span class="sock" style="--c:${n.c}">${svg(n.ic)}${n.st === 'locked' ? svg('lock', null, 'lk') : ''}</span>`;
 const banner = (title, icon, spine, right, shoot) => `<div class="banner"><h2 class="section-title${shoot ? ' shoot' : ''}" style="--spine:${spine}"><span class="medal">${svg(icon)}</span><span class="cloth">${title}</span></h2>${right || ''}</div>`;
-const pointsHead = banner('Talents', 'sprout', 'var(--accent)', `<span class="points"><span class="count">${LEFT}</span>points</span>`);
+const pointsHead = banner('Talents', 'anvil', 'var(--accent)', `<span class="points"><span class="count">${LEFT}</span>points</span>`);
 
 const focus = `<div class="focus">
   <div class="fbar"><span class="fname">Aldric <b>15</b></span><span class="ftrack" style="--c:var(--heal)"><i style="width:72%"></i></span></div>
   <div class="fbar"><span class="fname">The Hollow King <b>9</b></span><span class="ftrack" style="--c:var(--phys)"><i style="width:41%"></i></span></div></div>`;
 
-const TABS = [['Skills', 'sword'], ['Quests', 'scroll-text', 1], ['Trials', 'gift', 1], ['Talents', 'sprout'], ['Hero', 'user-round']];
+const TABS = [['Skills', 'sword'], ['Quests', 'scroll-text', 1], ['Trials', 'gift', 1], ['Talents', 'anvil'], ['Hero', 'user-round']];
 const tabbar = (sel, opts = {}) => `<div class="tabbar">${TABS.map(([l, ic, brassy]) => {
   const sealed = l === 'Talents' && opts.sealed;
   const badge = l === 'Talents' && !sealed && opts.badge ? `<span class="badge">${opts.badge}</span>` : '';

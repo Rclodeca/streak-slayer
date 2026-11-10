@@ -152,7 +152,7 @@ So a level-up heals 10% alone, 30% with the Codex, and 42% with the Codex and bo
 
 ## Where it lives
 
-**Phone:** a fifth bottom tab, **Talents**, between Trials and Hero: Skills · Quests · Trials · Talents · Hero. Five tabs at 375px are 75px each, so tap targets are fine. `TabId` in `src/store/tabStore.ts` gains `'talents'`. The stage drops to the Focus strip on this tab, as it does on Hero.
+**Phone:** a fifth bottom tab, **Talents** (lucide `Anvil` icon, also on the tab's banner; the unlock popup keeps a sprout), between Trials and Hero: Skills · Quests · Trials · Talents · Hero. Five tabs at 375px are 75px each, so tap targets are fine. `TabId` in `src/store/tabStore.ts` gains `'talents'`. The stage drops to the Focus strip on this tab, as it does on Hero.
 
 **Badge:** the tab shows the unspent point count as a number (1, 2, 3…), not a dot. It goes away at 0.
 
