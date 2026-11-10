@@ -1526,6 +1526,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   @mixin brass-count {
     display: inline-grid;
     place-items: center;
+    box-sizing: border-box;
     min-width: 20px;
     height: 20px;
     padding: 0 5px;
@@ -1793,9 +1794,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .tab .tab-count {
+    @include brass-count;
     min-width: 16px;
     height: 16px;
-    @include brass-count;
+    padding: 0 4px;
     font-size: 0.65rem;
   }
 
