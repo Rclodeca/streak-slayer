@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { ChartColumn, Swords } from 'lucide-vue-next';
 import { describeItemBonus, describeItemBonusParts, formatCompact, heroClassFor, itemDoubleFactor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useHeroStats } from '../../composables/useHeroStats';
 import { useHabitStore } from '../../store/habitStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
+import ItemSparks from '../ui/ItemSparks.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
 import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
@@ -72,15 +74,17 @@ const bestStreak = computed(() =>
     </div>
 
     <section class="stat-group">
-      <h4 class="group-label">Equipment</h4>
+      <div v-if="page" class="hero-page-header"><SectionTitle title="Equipment"><Swords :size="18" class="section-icon" /></SectionTitle></div>
+      <h4 v-else class="group-label">Equipment</h4>
       <ul class="gear-list">
         <li
-          v-for="item in equippedItems"
+          v-for="(item, index) in equippedItems"
           :key="item.id"
           class="gear-row"
           :class="[`rarity-${item.rarity}`, { enchanted: itemDoubleFactor(character, item.id) > 1 }]"
         >
           <span class="gear-icon">
+            <ItemSparks :rarity="item.rarity" :seed="index" />
             <span class="gear-art">
               <img :src="`${baseUrl}sprites/${item.icon}.png`" :alt="item.name" />
             </span>
@@ -105,7 +109,8 @@ const bestStreak = computed(() =>
     </section>
 
     <section class="stat-group">
-      <h4 class="group-label">Stats</h4>
+      <div v-if="page" class="hero-page-header"><SectionTitle title="Stats"><ChartColumn :size="18" class="section-icon" /></SectionTitle></div>
+      <h4 v-else class="group-label">Stats</h4>
       <div class="tiles">
         <div v-for="stat in statTiles" :key="stat.label" class="stat-tile" :class="{ reduced: stat.now }">
           <span class="tile-label"><StatIcon :name="stat.icon" />{{ stat.label }}</span>

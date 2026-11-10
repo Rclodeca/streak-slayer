@@ -5,6 +5,7 @@ import { useCelebration } from '../../composables/useCelebration';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { useCharacterStore } from '../../store/characterStore';
 import ItemHero from './ItemHero.vue';
+import ItemSparks from './ItemSparks.vue';
 import Modal from './Modal.vue';
 import StatIcon from './StatIcon.vue';
 import { BOOST_STAT_ICON } from './statIcons';
@@ -52,12 +53,13 @@ const isCurrentEquipped = computed(
         <p class="replace-label">Replace</p>
         <ul class="replace-list">
           <li
-            v-for="item in equippedItems"
+            v-for="(item, index) in equippedItems"
             :key="item.id"
             class="gear-row"
             :class="[`rarity-${item.rarity}`, { enchanted: doubleFactor(item.id) > 1 }]"
           >
             <span class="gear-icon">
+              <ItemSparks :rarity="item.rarity" :seed="index" />
               <span class="gear-art">
                 <img :src="`${baseUrl}sprites/${item.icon}.png`" :alt="item.name" />
               </span>

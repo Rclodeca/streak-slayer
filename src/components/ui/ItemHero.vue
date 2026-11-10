@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { describeItemBonus, describeItemBonusParts } from '../../game-engine';
 import type { ItemDef } from '../../game-engine';
+import ItemSparks from './ItemSparks.vue';
 import StatIcon from './StatIcon.vue';
 import { BOOST_STAT_ICON } from './statIcons';
 
@@ -15,6 +16,7 @@ const enchanted = computed(() => props.factor > 1);
 <template>
   <div class="hero" :class="[`rarity-${item.rarity}`, { enchanted }]">
     <div class="icon-frame">
+      <ItemSparks :rarity="item.rarity" />
       <img class="icon" :src="`${baseUrl}sprites/${item.icon}.png`" :alt="item.name" />
     </div>
     <span class="rarity">{{ item.rarity }}</span>
@@ -67,6 +69,7 @@ const enchanted = computed(() => props.factor > 1);
 }
 
 .icon-frame {
+  position: relative;
   width: 150px;
   height: 150px;
   display: flex;
@@ -82,6 +85,7 @@ const enchanted = computed(() => props.factor > 1);
   /* Sized for the icons' grid (see main.scss) so every art pixel is a whole
      number of device pixels: the item is about 100px. Its transparent padding
      overflows the frame. */
+  position: relative; /* over the sparks */
   flex-shrink: 0;
   width: var(--item-card-art);
   height: var(--item-card-art);

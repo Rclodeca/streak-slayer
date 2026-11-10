@@ -343,6 +343,24 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   box-shadow: $shadows;
 }
 
+// An item's socket lit by its rarity (docs/mockups/pixel-hero-tab.html): the
+// well fills with the rarity's light as the tier climbs (--tier, set by
+// .rarity-* below), edged in a brighter line. $rim and $depth as in socket.
+@mixin tier-socket($rim: 2px, $depth: 4px, $glow: null) {
+  border: 0;
+  @include pixel-corners(3px);
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--rarity) var(--tier), #0a0a14) 0, #07070e 82%);
+  $shadows: (
+    inset 0 0 0 $rim color-mix(in srgb, var(--rarity) calc(var(--tier) + 30%), #000),
+    inset $depth $depth 0 rgba(0, 0, 0, 0.5),
+    inset (-$depth) (-$depth) 0 color-mix(in srgb, var(--rarity) var(--tier), #000)
+  );
+  @if $glow {
+    $shadows: append($shadows, $glow, comma);
+  }
+  box-shadow: $shadows;
+}
+
 // Embers drifting upward, for a ::before inside an overflow-hidden stage.
 @mixin embers {
   inset: 0 0 auto;
@@ -1133,7 +1151,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // The hero's medallion is a portrait: the base build at its file size, its
   // head (HERO_FACE) in the middle, a silver ring round it.
-  .hero-page .section-title .medal {
+  .hero-page .section-title .medal:has(> .portrait) {
     --medal: #1a1a2b;
     box-shadow: inset 0 0 0 2px var(--moon-solid);
   }
@@ -2346,7 +2364,16 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     height: 150px;
     margin: 0 0 14px;
     overflow: hidden;
-    @include socket(var(--rarity), 3px, 6px);
+    @include tier-socket(3px, 6px);
+  }
+
+  // A soft light behind the frame, as strong as the tier.
+  .hero:has(> .icon-frame) {
+    background: radial-gradient(
+      circle at 50% 100px,
+      color-mix(in srgb, var(--rarity) calc(var(--tier) * 0.6), transparent) 0,
+      transparent 150px
+    );
   }
 
   .hero .rarity {
@@ -2848,6 +2875,50 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     padding: 8px 10px 8px 8px;
   }
 
+  // The tier climbs with the rarity: how much of its colour the slot, the
+  // row and the reveal card take (docs/mockups/pixel-hero-tab.html).
+  :is(.gear-row, .hero).rarity-common {
+    --tier: 10%;
+    --tier-soft: 6%;
+  }
+
+  :is(.gear-row, .hero).rarity-uncommon {
+    --tier: 24%;
+    --tier-soft: 12%;
+  }
+
+  :is(.gear-row, .hero).rarity-rare {
+    --tier: 38%;
+    --tier-soft: 20%;
+  }
+
+  :is(.gear-row, .hero).rarity-epic {
+    --tier: 52%;
+    --tier-soft: 28%;
+  }
+
+  :is(.gear-row, .hero).rarity-relic {
+    --tier: 68%;
+    --tier-soft: 38%;
+  }
+
+  // The row warms with the tier: a wash from the slot, a lit top edge and a
+  // soft glow round the slot.
+  .gear-row:not(.empty) {
+    background:
+      radial-gradient(
+        circle at 44px 50%,
+        color-mix(in srgb, var(--rarity) calc(var(--tier) * 0.6), transparent) 0,
+        transparent 66px
+      ),
+      linear-gradient(100deg, color-mix(in srgb, var(--rarity) var(--tier-soft), var(--card-lo)) 0, var(--card) 70%);
+    border-bottom-color: color-mix(in srgb, var(--rarity) var(--tier-soft), var(--card-lip));
+    box-shadow:
+      inset 0 2px 0 color-mix(in srgb, var(--rarity) var(--tier), var(--card-hi)),
+      inset 2px 0 0 color-mix(in srgb, var(--rarity) var(--tier-soft), var(--card-hi)),
+      inset -2px -2px 0 var(--card-lo);
+  }
+
   .gear-text {
     gap: 3px;
     padding-top: 3px;
@@ -2890,6 +2961,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include socket(var(--rarity));
   }
 
+  .gear-row:not(.empty) .gear-icon {
+    @include tier-socket;
+  }
+
   .gear-name,
   .run-gear-name {
     @include name-serif;
@@ -2909,7 +2984,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // running through them, and the slot glows pale
   // (docs/mockups/enchanted-opal.html, shimmering).
   .gear-row.enchanted .gear-icon {
-    @include socket(var(--rarity), $glow: inset 0 0 18px rgba(170, 220, 240, 0.35));
+    @include tier-socket($glow: inset 0 0 18px rgba(170, 220, 240, 0.35));
   }
 
   .gear-enchanted {
@@ -2933,7 +3008,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // The same on the popup that reveals an enchant: its title, the doubled
   // values and a pale light inside the socket.
   .hero.enchanted .icon-frame {
-    @include socket(var(--rarity), 3px, 6px, inset 0 0 26px rgba(170, 220, 240, 0.4));
+    @include tier-socket(3px, 6px, inset 0 0 26px rgba(170, 220, 240, 0.4));
   }
 
   // Only as wide as the word, so the whole opal shows across it.
