@@ -24,10 +24,12 @@ import {
   resolvePlayerDeathIfDead,
   recordRelicEarned,
   rollItemDrops,
+  spendTalent,
   unlockQuests,
+  unlockTalents,
   unlockTrials,
 } from '../game-engine';
-import type { Boss, Character, Habit, ItemDef, Rng } from '../game-engine';
+import type { Boss, Character, Habit, ItemDef, Rng, TalentId } from '../game-engine';
 
 export const useCharacterStore = defineStore('character', {
   state: () => ({
@@ -74,6 +76,16 @@ export const useCharacterStore = defineStore('character', {
     /** Opens the Trials section for the rest of the run and hands over the first trial (the "Trials unlocked" popup's Onward). */
     unlockTrials(todayKey: string, rng: Rng = createRng()) {
       this.character = unlockTrials(this.character, rng, todayKey);
+    },
+
+    /** Opens the Talents tab for the rest of the run (the "Talents unlocked" popup's Onward). */
+    unlockTalents() {
+      this.character = unlockTalents(this.character);
+    },
+
+    /** Spends one point on a talent. No-op if the node is locked or full, or no point is free (see canSpendTalent). Spent points never move. */
+    spendTalent(id: TalentId) {
+      this.character = clampHealthToMax(spendTalent(this.character, id));
     },
 
     /** Equips an owned item into an empty slot. No-op if not owned, already equipped, or all slots are full (see maxEquipSlots). */

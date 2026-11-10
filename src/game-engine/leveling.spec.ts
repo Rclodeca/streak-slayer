@@ -280,11 +280,11 @@ describe('effectiveCritChance', () => {
 });
 
 describe('effectiveStat — drawbacks and all damage', () => {
-  it("Sage's Codex makes a level-up heal 40% instead of 20%", () => {
+  it("Sage's Codex adds to the level-up heal rather than replacing it", () => {
     const character = makeCharacter({ currentHealth: 1, equippedItemIds: ['sages-codex'] });
     const result = addExpAndResolveLevelUps(character, 25);
     const maxHealth = effectiveStat(result.character, 'health');
-    expect(result.character.currentHealth).toBeCloseTo(1 + maxHealth * (TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT / 100), 10);
+    expect(result.character.currentHealth).toBeCloseTo(1 + maxHealth * ((TUNING.LEVEL_UP_HEAL_PCT + TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT) / 100), 10);
   });
 
   function makeCharacter(overrides: Partial<Character> = {}): Character {

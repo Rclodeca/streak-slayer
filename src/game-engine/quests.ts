@@ -1,6 +1,7 @@
 import { TUNING } from './constants/tuning';
 import { hasItemEffect } from './items';
 import { expToNextLevel } from './leveling';
+import { questExpMultiplier } from './talents';
 import type { Character, Difficulty, Quest, QuestWeek } from './types';
 
 /** The player level at which the quests section opens, each run. */
@@ -77,7 +78,8 @@ export function questSlotExp(
 /** questSlotExp at the character's level, ×QUILL_EXP_MULTIPLIER with Quill of Oaths equipped. */
 export function questRewardExp(character: Character, difficulty: Difficulty, completedThisWeek: number): number {
   const exp = questSlotExp(character.level, difficulty, completedThisWeek);
-  return hasItemEffect(character, 'quill-of-oaths') ? exp * TUNING.ITEM_EFFECTS.QUILL_EXP_MULTIPLIER : exp;
+  const quilled = hasItemEffect(character, 'quill-of-oaths') ? exp * TUNING.ITEM_EFFECTS.QUILL_EXP_MULTIPLIER : exp;
+  return quilled * questExpMultiplier(character);
 }
 
 /** EXP for finishing an overdue quest: the next slot's pay at `QUEST_OVERDUE_EXP_FRACTION`. */

@@ -6,7 +6,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { availableRelics, createCharacter, createRng, effectiveStat, heroClassFor } from '../game-engine';
+import { availableRelics, createCharacter, createRng, effectiveStat, generateBoss, heroClassFor, talentPointsUnspent, talentUnlockPending } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useCharacterStore } from './characterStore';
 
@@ -205,5 +205,61 @@ describe('characterStore.initFromSave', () => {
     store.initFromSave(original, createRng(2));
 
     expect(store.character.starterStats.physicalDamage).toBe(original.starterStats.physicalDamage);
+  });
+});
+
+describe('characterStore talents', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  function heroAt(level: number) {
+    const store = useCharacterStore();
+    store.character = { ...store.character, level };
+    return store;
+  }
+
+  it('spends a rank and uses up a point', () => {
+    const store = heroAt(5);
+    store.spendTalent('might');
+    expect(store.character.talents).toEqual({ might: 1 });
+    expect(talentPointsUnspent(store.character)).toBe(3);
+  });
+
+  it('does nothing for a locked node or with no points left', () => {
+    const store = heroAt(5);
+    const before = store.character;
+    store.spendTalent('precision');
+    expect(store.character).toBe(before);
+
+    store.character = { ...before, talents: { might: 3, precision: 1 } };
+    const spentOut = store.character;
+    store.spendTalent('precision');
+    expect(store.character).toBe(spentOut);
+  });
+
+  it('does not heal when Vigor raises max health, as equipping a health item does not', () => {
+    const store = heroAt(10);
+    store.character = { ...store.character, currentHealth: 5 };
+    store.spendTalent('vigor');
+    expect(store.character.currentHealth).toBe(5);
+    expect(effectiveStat(store.character, 'health')).toBeGreaterThan(effectiveStat({ ...store.character, talents: {} }, 'health'));
+  });
+
+  it('opens the tab for the rest of the run with the unlock popup’s Onward', () => {
+    const store = heroAt(5);
+    expect(talentUnlockPending(store.character)).toBe(true);
+    store.unlockTalents();
+    expect(talentUnlockPending(store.character)).toBe(false);
+    expect(store.character.talentsUnlocked).toBe(true);
+  });
+
+  it('starts a fresh run with an empty tree', () => {
+    const store = heroAt(12);
+    store.character = { ...store.character, talents: { might: 3 }, talentsUnlocked: true, currentHealth: 0 };
+    store.resolvePlayerDeathIfDead(generateBoss(5, createRng(1)), [], createRng(2));
+    expect(store.character.talents).toBeUndefined();
+    expect(store.character.talentsUnlocked).toBe(false);
+    expect(store.character.level).toBe(1);
   });
 });

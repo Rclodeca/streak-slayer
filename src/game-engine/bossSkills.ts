@@ -5,6 +5,8 @@
 
 import { TUNING } from './constants/tuning';
 import { hasItemEffect } from './items';
+import { effectiveStat } from './stats';
+import { lastStandFactor } from './talents';
 import type { ItemEffectId } from './items';
 import { pickRandom, pickWeighted } from './rng';
 import type { Rng } from './rng';
@@ -241,7 +243,7 @@ function applySkill(skill: BossSkillId, boss: Boss, character: Character, curren
     }
     case 'rend':
     case 'ravage': {
-      const taken = hpHitDamage(character.currentHealth, (skill === 'rend' ? S.REND_PCT : S.RAVAGE_PCT) * halved);
+      const taken = hpHitDamage(character.currentHealth, (skill === 'rend' ? S.REND_PCT : S.RAVAGE_PCT) * halved * lastStandFactor(character, effectiveStat(character, 'health')));
       return landed({ character: { ...character, currentHealth: character.currentHealth - taken }, boss: taken > 0 ? { ...boss, hurtPlayer: true } : boss, amount: taken });
     }
     case 'doom':
@@ -309,7 +311,7 @@ export function spendPassedBreakpoints(boss: Boss): Boss {
 export function resolveDoom(character: Character, boss: Boss, currentDayKey: string): { character: Character; boss: Boss; amount?: number } {
   if (!boss.doomDueDayKey || daysBetweenDayKeys(boss.doomDueDayKey, currentDayKey) < 0) return { character, boss };
   if (Math.round(character.currentHealth) <= 0) return { character, boss };
-  const amount = hpHitDamage(character.currentHealth, doomPct(character));
+  const amount = hpHitDamage(character.currentHealth, doomPct(character) * lastStandFactor(character, effectiveStat(character, 'health')));
   const cleared = { ...boss };
   delete cleared.doomDueDayKey;
   if (amount > 0) cleared.hurtPlayer = true;

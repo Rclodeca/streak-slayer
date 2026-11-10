@@ -8,9 +8,10 @@ import { TUNING } from './constants/tuning';
 import { crowdingFactor, rerollAllDamageTypes, resetLevelRewards, skillBaseDamage } from './habits';
 import { activeHealBoost, addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { bumpCritStreak, bumpSpellweave, critMultiplierFor, effectDamageMultiplier, effectUsedToday, hasItemEffect, isForcedCrit, stampEffectDay, starfallReady } from './itemEffects';
-import { itemBonusPercent, itemFlatBonus, rollItemDrops } from './items';
+import { itemBonusPercent, itemFlatBonus, rollItemDrops, rollScavengerDrop } from './items';
 import type { ItemDef } from './items';
 import type { Rng } from './rng';
+import { bossKillHealPct, dodgeChancePct, healsCanCrit, HEAL_CRIT_MULTIPLIER, lastStandFactor, milestoneExpMultiplier, weeklyMightMultiplier } from './talents';
 import { completeHabitStreak, rankBonus, rankMultiplier, resetHabitStreak, streakBonus } from './streaks';
 import { daysBetweenDayKeys } from './time';
 import type { Boss, Character, DamageType, Difficulty, Habit, Period, Quest, WoundsStatusEffect } from './types';
@@ -102,7 +103,7 @@ export type HabitDamageBreakdown = {
   streakBonus: number;
   /** 1 + rankBonus + streakBonus — see rankMultiplier. */
   rankMultiplier: number;
-  /** WEEKLY_BONUS_MULTIPLIER for a weekly habit, 1 (no-op) for a daily one — see `weeklyBonusMultiplier`. */
+  /** WEEKLY_BONUS_MULTIPLIER for a weekly habit (times Weekly Might's share for damage), 1 (no-op) for a daily one — see `weeklyBonusMultiplier`. */
   weeklyMultiplier: number;
   bonusMultiplier: number;
   /** Conditional item effects right now (see effectDamageMultiplier) — 1 when none apply, or without a boss. */
@@ -133,7 +134,7 @@ export function habitDamageBreakdown(
   const baseDamage = skillBaseDamage(habit, allHabits, rawStat);
   const itemMultiplier = itemStatMultiplier(character, statField);
   const rankMult = rankMultiplier(habit);
-  const weeklyMult = weeklyBonusMultiplier(habit.period);
+  const weeklyMult = weeklyBonusMultiplier(habit.period) * weeklyMightMultiplier(character, habit);
   const bonusMultiplier = levelRewardMultiplier(habit);
   const effectMultiplier = boss && currentDayKey ? effectDamageMultiplier(character, habit, boss, currentDayKey) : 1;
   return {
@@ -174,6 +175,8 @@ export type CombatResult = {
   lifestealHealed?: number;
   // Bloodcrystal Blade's heal on a crit — not lifesteal, so reported apart from it.
   critHealed?: number;
+  // Blessed: a heal skill's crit doubled its healing. Kept apart from wasCrit, which counts damage crits (challenges, the log).
+  healCrit?: true;
   reflectedDamage?: number;
   // A boss skill this hit made fire (see resolveBreakpoints in bossSkills.ts).
   bossSkill?: FiredBossSkill;
@@ -245,12 +248,12 @@ function resolveCompletion(
   // (full damage with Dynamo Core).
   const streakResult = isOverdriveUse ? { habit, milestoneExp: 0 } : completeHabitStreak(habit);
   const updatedHabit = streakResult.habit;
-  const milestoneExp = hasItemEffect(character, 'banner')
-    ? streakResult.milestoneExp * TUNING.ITEM_EFFECTS.BANNER_MILESTONE_MULTIPLIER
-    : streakResult.milestoneExp;
+  const milestoneExp =
+    (hasItemEffect(character, 'banner') ? streakResult.milestoneExp * TUNING.ITEM_EFFECTS.BANNER_MILESTONE_MULTIPLIER : streakResult.milestoneExp) *
+    milestoneExpMultiplier(character);
   // The rank and streak before this completion bumps them.
   const multiplier = rankMultiplier(habit);
-  const weeklyMult = weeklyBonusMultiplier(habit.period);
+  const weeklyMult = weeklyBonusMultiplier(habit.period) * weeklyMightMultiplier(character, habit);
   const bonusMultiplier = isOverdriveUse ? 1 : levelRewardMultiplier(habit);
   const overdriveFactor = isOverdriveUse && !hasItemEffect(character, 'dynamo') ? TUNING.OVERDRIVE_DAMAGE_FACTOR : 1;
   const effectMultiplier = effectDamageMultiplier(character, habit, boss, currentDayKey);
@@ -264,7 +267,9 @@ function resolveCompletion(
       hasItemEffect(character, 'titans-mending') && character.currentHealth < maxHealth * TUNING.ITEM_EFFECTS.TITANS_MENDING_BELOW_PCT
         ? TUNING.ITEM_EFFECTS.TITANS_MENDING_MULTIPLIER
         : 1;
-    const woundedAmount = amount * healingMultiplier(character, currentDayKey) * mending;
+    // Blessed: a heal skill rolls a crit at the hero's crit chance (Blind stops it). Rolled only with the talent, so rng use is unchanged without it.
+    const healCrit = healsCanCrit(character) && rng() < effectiveCritChance(character, currentDayKey);
+    const woundedAmount = amount * healingMultiplier(character, currentDayKey) * mending * (healCrit ? HEAL_CRIT_MULTIPLIER : 1);
     const healed = Math.min(character.currentHealth + woundedAmount, maxHealth);
     // Censer of Wrath: the heal (before the max-health cap, so it works at
     // full health) also hits the boss, as true damage — no crit, no resist.
@@ -281,6 +286,7 @@ function resolveCompletion(
       updatedHabit,
       milestoneExp,
       damageDealt: bossDamage > 0 ? bossDamage : undefined,
+      ...(healCrit && { healCrit: true as const }),
     };
   }
 
@@ -388,6 +394,8 @@ type BossStrike = {
   // Capped at the boss's maxHealth, so this is the actual health gained,
   // not the raw `damage * lifestealPct` — surfaced for the activity log.
   bossLifestealHealed?: number;
+  // Unbroken: the hit was dodged. The streak still resets and it counts as a miss everywhere else.
+  dodged?: true;
 };
 
 /**
@@ -412,6 +420,9 @@ function bossStrike(
   // Rolled every miss (so the rng sequence is stable), but only a Frenzied boss can crit.
   const critRoll = rng();
   const wasCrit = frenzyActive(boss, currentDayKey) && critRoll < TUNING.BOSS_SKILLS.FRENZY_CRIT_CHANCE;
+  // Unbroken: rolled every strike too. A dodged hit does nothing: no damage, no boss lifesteal or Bloodlust heal, Dawnguard Helm kept, hero not flagged as hurt.
+  const dodgeRoll = rng();
+  if (dodgeRoll * 100 < dodgeChancePct(character)) return { character, boss, wasCrit: false, attackType, dodged: true };
   const damage =
     attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[difficulty] / 1.5) *
     (wasCrit ? TUNING.CRIT_MULTIPLIER : 1);
@@ -421,7 +432,9 @@ function bossStrike(
     (attackType === 'physical' ? itemFlatBonus(character, 'armor') : itemFlatBonus(character, 'magicResist')) * sunderFactor;
   // Dawnguard Helm: the first hit each day is softened.
   const dawnguard = hasItemEffect(character, 'dawnguard') && !effectUsedToday(character, 'dawnguard', currentDayKey);
-  const mitigatedDamage = applyResist(damage, playerResistStat) * (dawnguard ? TUNING.ITEM_EFFECTS.DAWNGUARD_FACTOR : 1);
+  // Last Stand softens a hit that lands while the hero is already low.
+  const lastStand = lastStandFactor(character, effectiveStat(character, 'health'));
+  const mitigatedDamage = applyResist(damage, playerResistStat) * (dawnguard ? TUNING.ITEM_EFFECTS.DAWNGUARD_FACTOR : 1) * lastStand;
   const newHealth = Math.max(0, character.currentHealth - mitigatedDamage);
   // Bloodbound Carapace (bosses can't heal) blocks both the boss's lifesteal
   // and Bloodlust's flat heal, which the log and popup show as lifesteal too.
@@ -522,6 +535,8 @@ export function resolveBossDefeatIfDead(
   levelsGained: number;
   itemsDropped: ItemDef[];
   itemHealed?: number;
+  /** Health the Second Wind talent restored (Soul Lantern's is itemHealed). */
+  talentHealed?: number;
   /** The pre-item EXP the kill granted at the slayer's level; 0 when the boss isn't dead. */
   expReward: number;
 } {
@@ -537,10 +552,15 @@ export function resolveBossDefeatIfDead(
     ? Math.min(leveled.currentHealth + maxHealth * (TUNING.ITEM_EFFECTS.SOUL_LANTERN_HEAL_PCT / 100), maxHealth)
     : leveled.currentHealth;
   const itemHealed = lanternHealth - leveled.currentHealth;
-  const itemsDropped = rollItemDrops(leveled, boss.index, rng);
+  // Second Wind heals on top of the Lantern, still capped at max.
+  const windHealth = Math.min(lanternHealth + maxHealth * (bossKillHealPct(leveled) / 100), maxHealth);
+  const talentHealed = windHealth - lanternHealth;
+  const dropped = rollItemDrops(leveled, boss.index, rng);
+  // Scavenger: one more roll for one extra item, past the usual cap.
+  const itemsDropped = [...dropped, ...rollScavengerDrop(leveled, dropped, rng)];
   const withItems: Character = {
     ...leveled,
-    currentHealth: lanternHealth,
+    currentHealth: windHealth,
     ownedItemIds: [...leveled.ownedItemIds, ...itemsDropped.map((item) => item.id)],
   };
   // Base (pre-item) health anchors the next boss's attack — see
@@ -553,7 +573,7 @@ export function resolveBossDefeatIfDead(
   const carried = hasItemEffect(withItems, 'echoing-blade') ? Math.min(boss.overkill ?? 0, generated.health - 1) : 0;
   // Breakpoints the carry passes are spent without firing.
   const nextBoss = carried > 0 ? spendPassedBreakpoints({ ...generated, health: generated.health - carried }) : generated;
-  return { character: withItems, boss: nextBoss, defeated: true, levelsGained, itemsDropped, expReward, ...(itemHealed > 0 && { itemHealed }) };
+  return { character: withItems, boss: nextBoss, defeated: true, levelsGained, itemsDropped, expReward, ...(itemHealed > 0 && { itemHealed }), ...(talentHealed > 0 && { talentHealed }) };
 }
 
 /**

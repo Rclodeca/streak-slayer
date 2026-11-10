@@ -1,9 +1,13 @@
 import { activeBlind } from './bossSkills';
 import { TUNING } from './constants/tuning';
 import { isDueOn } from './habits';
-import { hasItemEffect, itemBonusPercent, itemFlatBonus } from './items';
+import { hasItemEffect, itemBonusPercent } from './items';
+import { effectiveStat, itemStatMultiplier, statAtLevel } from './stats';
+import { levelUpHealBonusPct } from './talents';
 import { daysBetweenDayKeys } from './time';
 import type { Character, CritBoostStatusEffect, Habit, HealBoostStatusEffect } from './types';
+
+export { effectiveStat, itemStatMultiplier, statAtLevel };
 
 export function expToNextLevel(level: number): number {
   if (level < 5) return 25 * level;
@@ -43,8 +47,9 @@ export function addExpAndResolveLevelUps(
   let currentHealth = character.currentHealth;
   if (levelsGained > 0) {
     const maxHealth = effectiveStat({ ...character, level }, 'health');
-    // Sage's Codex raises the per-level heal.
-    const healPct = hasItemEffect(character, 'sages-insight') ? TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT : TUNING.LEVEL_UP_HEAL_PCT;
+    // Sage's Codex and the Renewal talents each add to the base per-level heal.
+    const codexPct = hasItemEffect(character, 'sages-insight') ? TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT : 0;
+    const healPct = TUNING.LEVEL_UP_HEAL_PCT + codexPct + levelUpHealBonusPct(character);
     currentHealth = Math.min(currentHealth + maxHealth * (healPct / 100) * levelsGained, maxHealth);
   }
 
@@ -65,34 +70,6 @@ export function skillCompletionExp(level: number, habit: Habit, habits: Habit[],
   }
   const dailies = habits.filter((h) => h.period === 'daily' && (isDueOn(h, date) || h.id === habit.id)).length;
   return (expToNextLevel(level) * TUNING.DAILY_SKILL_LEVEL_SHARE) / Math.max(1, dailies);
-}
-
-/** A starter stat grown to `level`: health and healing at LEVEL_HEALTH_HEALING_GROWTH_RATE, the damage stats at LEVEL_STAT_GROWTH_RATE. */
-export function statAtLevel(starterStatValue: number, level: number, stat: keyof Character['starterStats']): number {
-  const rate = stat === 'health' || stat === 'healing' ? TUNING.LEVEL_HEALTH_HEALING_GROWTH_RATE : TUNING.LEVEL_STAT_GROWTH_RATE;
-  return starterStatValue * Math.pow(1 + rate, level - 1);
-}
-
-/**
- * The character's equipped-item bonus for `stat`, expressed as a multiplier
- * (e.g. 1.06 for a +6% item). The three damage stats also get any
- * `allDamage` bonus; drawbacks (negative percents) pull it below 1.
- */
-export function itemStatMultiplier(
-  character: Character,
-  stat: 'physicalDamage' | 'magicDamage' | 'healing' | 'health' | 'trueDamage',
-): number {
-  const allDamage = stat === 'healing' || stat === 'health' ? 0 : itemBonusPercent(character, 'allDamage');
-  return 1 + (itemBonusPercent(character, stat) + allDamage) / 100;
-}
-
-/** statAtLevel(...) scaled by the character's equipped-item bonus for `stat`. */
-export function effectiveStat(
-  character: Character,
-  stat: 'physicalDamage' | 'magicDamage' | 'healing' | 'health' | 'trueDamage',
-): number {
-  const baseWithFlat = statAtLevel(character.starterStats[stat], character.level, stat) + itemFlatBonus(character, stat);
-  return baseWithFlat * itemStatMultiplier(character, stat);
 }
 
 /**

@@ -96,7 +96,7 @@ export const ITEM_CATALOG: ItemDef[] = [
   { id: 'font-of-renewal', name: 'Staff of Renewal', icon: 'items/font-of-renewal', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'healing', percent: 25 }, { stat: 'expGain', percent: 5 }] },
   { id: 'adventurers-sigil', name: "Adventurer's Crest", icon: 'items/adventurers-sigil', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'expGain', percent: 15 }, { stat: 'health', percent: 10 }] },
   { id: 'titans-lifeblood', name: "Titan's Lifeblood", icon: 'items/titans-lifeblood', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'healing', percent: 20 }, { stat: 'health', percent: 20 }], effect: 'titans-mending', effectText: 'Heals 50% more while below half HP.' },
-  { id: 'sages-codex', name: "Sage's Codex", icon: 'items/sages-codex', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'expGain', percent: 25 }, { stat: 'health', percent: 10 }], effect: 'sages-insight', effectText: 'Level-ups heal 40% of max HP instead of 20%.' },
+  { id: 'sages-codex', name: "Sage's Codex", icon: 'items/sages-codex', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'expGain', percent: 25 }, { stat: 'health', percent: 10 }], effect: 'sages-insight', effectText: 'Level-ups heal +20% of max HP.' },
 
   // --- Endgame epics: the two strongest (Worldbreaker is stat-only), and three more stat-only ---
   { id: 'starfall-staff', name: 'Moonstar Staff', icon: 'items/starfall-staff', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'magicDamage', percent: 75 }, { stat: 'health', percent: -20 }], effect: 'starfall', effectText: 'First magic skill each day always crits.' },

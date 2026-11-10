@@ -181,6 +181,36 @@ export {
   unlockTrials,
 } from './challenges';
 
+export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './talents';
+export {
+  bossKillHealPct,
+  canSpendTalent,
+  dodgeChancePct,
+  healsCanCrit,
+  isTalentUnlocked,
+  lastStandFactor,
+  levelUpHealBonusPct,
+  milestoneExpMultiplier,
+  questExpMultiplier,
+  spendTalent,
+  talentBonusFlat,
+  talentBonusPercent,
+  talentCritBonus,
+  talentEffectValue,
+  TALENT_DEFS,
+  talentPointsInShoot,
+  talentPointsSpent,
+  talentPointsTotal,
+  talentPointsUnspent,
+  talentRank,
+  talentsOpen,
+  TALENT_SHOOTS,
+  talentUnlockPending,
+  TALENTS_UNLOCK_LEVEL,
+  unlockTalents,
+  weeklyMightMultiplier,
+} from './talents';
+
 export { formatCompact } from './format';
 
 export type { BoostableStat, DropRarity, ItemBonus, ItemDef, ItemEffectId, ItemRarity } from './items';
@@ -197,6 +227,7 @@ export {
   maxEquipSlots,
   recordRelicEarned,
   rollItemDrops,
+  rollScavengerDrop,
 } from './items';
 
 export {

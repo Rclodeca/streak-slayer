@@ -2,6 +2,7 @@ import { ITEM_CATALOG } from './constants/itemCatalog';
 import { TUNING } from './constants/tuning';
 import { formatCompact } from './format';
 import { pickRandom, pickWeighted, type Rng } from './rng';
+import { talentBonusFlat, talentBonusPercent, talentEffectValue } from './talents';
 import type { Character } from './types';
 
 export { ITEM_CATALOG };
@@ -150,8 +151,9 @@ export function doublableItems(character: Character): ItemDef[] {
 
 /**
  * Sums bonus.percent across every equipped item's `bonuses` entries matching
- * `stat`. 0 if none equipped/matching. A drawback (negative percent) counts
- * as-is — an enchanted item doubles only its positive bonuses.
+ * `stat`, plus the character's talents for it (see talentBonusPercent). 0 if
+ * none equipped/matching. A drawback (negative percent) counts as-is — an
+ * enchanted item doubles only its positive bonuses, and never a talent.
  */
 export function itemBonusPercent(character: Character, stat: BoostableStat): number {
   let total = 0;
@@ -162,12 +164,13 @@ export function itemBonusPercent(character: Character, stat: BoostableStat): num
       if (bonus.stat === stat && bonus.percent) total += bonus.percent > 0 ? enchantedAmount(stat, bonus.percent, itemDoubleFactor(character, id)) : bonus.percent;
     }
   }
-  return total;
+  return total + talentBonusPercent(character, stat);
 }
 
 /**
  * Sums bonus.flat across every equipped item's `bonuses` entries matching
- * `stat`. 0 if none equipped/matching. See combat.ts/leveling.ts for where
+ * `stat`, plus the character's talents for it (see talentBonusFlat). 0 if
+ * none equipped/matching. See combat.ts/leveling.ts for where
  * this is added into a stat's level-scaled base before any percent
  * multiplier applies.
  */
@@ -180,7 +183,7 @@ export function itemFlatBonus(character: Character, stat: BoostableStat): number
       if (bonus.stat === stat && bonus.flat) total += bonus.flat > 0 ? bonus.flat * itemDoubleFactor(character, id) : bonus.flat;
     }
   }
-  return total;
+  return total + talentBonusFlat(character, stat);
 }
 
 const STAT_SHORT_LABEL: Record<BoostableStat, string> = {
@@ -296,6 +299,19 @@ export function rollItemDrops(character: Character, bossIndex: number, rng: Rng,
   );
   const count = Math.min(desiredCount, unowned.length);
   return pickDrops(unowned, count, dropRarityShares(character.level, hasItemEffect(character, 'magpie')), rng);
+}
+
+/**
+ * Scavenger: one roll, at its percent chance, for one extra item on top of the
+ * `dropped` ones a boss kill just paid. Never an item the character owns or was
+ * just dealt. It may go past ITEM_DROP_MAX_COUNT. Rolls nothing, and uses no
+ * rng, without the talent.
+ */
+export function rollScavengerDrop(character: Character, dropped: ItemDef[], rng: Rng): ItemDef[] {
+  const chancePct = talentEffectValue(character, 'extraDrop');
+  if (chancePct <= 0 || rng() * 100 >= chancePct) return [];
+  const taken = [...character.ownedItemIds, ...dropped.map((item) => item.id)];
+  return pickDrops(unownedDroppableItems({ ...character, ownedItemIds: taken }), 1, dropRarityShares(character.level, hasItemEffect(character, 'magpie')), rng);
 }
 
 /** The most equip slots a character can ever have (the item grid always shows this many, locked or not). */

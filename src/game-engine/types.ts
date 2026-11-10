@@ -1,3 +1,5 @@
+import type { TalentId } from './constants/talentTree';
+
 export type DamageType = 'physical' | 'magic' | 'healing' | 'trueDamage';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -133,6 +135,15 @@ export interface Character {
   // popup is dismissed, which also hands over the first trial. Undefined only
   // on a save from before the lock; migrateTrialUnlock settles it.
   trialsUnlocked?: boolean;
+  // Whether the Talents tab is open this run (see talentsOpen in talents.ts).
+  // It opens at TALENTS_UNLOCK_LEVEL when the "Talents unlocked" popup is
+  // dismissed. A save from before talents has none and gets the popup once
+  // at that level, so nothing migrates it.
+  talentsUnlocked?: boolean;
+  // Ranks spent per talent node this run (see talents.ts). Points are never
+  // stored: unspent = (level - 1) - the ranks here. A fresh character
+  // (createCharacter, so a death too) has none; a Phoenix revive keeps them.
+  talents?: Partial<Record<TalentId, number>>;
   // Side-quest challenges for this run (see challenges.ts): every one taken,
   // active and done, so a finished one is never offered again. A death starts
   // a fresh run with none. Undefined on a save from before challenges.

@@ -382,7 +382,7 @@ export const TUNING = {
     MOONWELL_MULTIPLIER: 2,
     BANNER_MILESTONE_MULTIPLIER: 2,
     DAWNGUARD_FACTOR: 0.5,
-    SAGES_INSIGHT_LEVEL_UP_HEAL_PCT: 40,
+    SAGES_INSIGHT_LEVEL_UP_HEAL_PCT: 20, // added to the base level-up heal (and Renewal), not a replacement
     EMBER_HEART_HEAL_PCT: 5,
     SOUL_LANTERN_HEAL_PCT: 30,
     QUILL_EXP_MULTIPLIER: 2,

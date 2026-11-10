@@ -7,6 +7,7 @@
 import { TUNING } from './constants/tuning';
 import { hasItemEffect } from './items';
 import { effectiveStat } from './leveling';
+import { talentCritBonus } from './talents';
 import type { Boss, Character, Habit } from './types';
 
 export { hasItemEffect };
@@ -77,9 +78,10 @@ export function isForcedCrit(character: Character, habit: Habit, boss: Boss, cur
   return starfallReady(character, habit, currentDayKey);
 }
 
-/** A crit's damage multiplier: ×3 for magic with Voidcaller's Scepter, TUNING.CRIT_MULTIPLIER otherwise. */
+/** A crit's damage multiplier: ×3 for magic with Voidcaller's Scepter, TUNING.CRIT_MULTIPLIER otherwise, plus whatever Keen Edge and Executioner add. */
 export function critMultiplierFor(character: Character, habit: Habit): number {
-  return habit.damageType === 'magic' && hasItemEffect(character, 'void-crits') ? E.VOID_CRIT_MULTIPLIER : TUNING.CRIT_MULTIPLIER;
+  const base = habit.damageType === 'magic' && hasItemEffect(character, 'void-crits') ? E.VOID_CRIT_MULTIPLIER : TUNING.CRIT_MULTIPLIER;
+  return base + talentCritBonus(character);
 }
 
 /**
