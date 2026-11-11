@@ -1,11 +1,12 @@
 # New art with Pixellab: plan (2026-11-11)
 
-Goal: replace the free online art (heroes, bosses, items) with original art in one matching style, generated with the Pixellab MCP. Nothing here is built yet. Needs a Pixellab subscription: the trial's 40 generations are spent (38 used, 2 left).
+Goal: replace the free online art (heroes, bosses, items) with original art in one matching style, generated with the Pixellab MCP. Heroes and bosses are generated and picked; nothing is in the game yet. Subscription: Pixel Apprentice, 2000 generations a month (resets 2026-12-11), about 1895 left.
 
-## What we learned on the trial
+## What we learned
 
-- **The tool that works:** `create_image_pro` with a style image, a short description of *what* to draw (the style comes from the image), and a small canvas. `create_character` (standard and v3) looked bad: wrong proportions, too many pixels for chibi.
-- **Canvas size controls the look.** At 128px the model draws realistic adults with too much detail; at 64px it draws the chunky, big-headed style of the reference sheet.
+- **The tool that works:** `create_image_pro` with a style image, a short description of *what* to draw (the style comes from the image), and a small canvas. `create_character` (standard and v3) looked bad: wrong proportions, too many pixels.
+- **Style image: the hero sheet** (`assets/pixellab/2026-11-11-heroes/sheet.png`) for everything. A boss sheet as the anchor made bosses too serious and realistic next to the heroes.
+- **Canvas size controls the look.** 64px draws the chunky hero style; 85px gives bosses about 1.5x a hero's height; 128px draws realistic, over-detailed figures.
 - **Price per call, not per image.** A small canvas buys more candidates for the same price:
 
   | Canvas | Cost | Candidates |
@@ -13,51 +14,101 @@ Goal: replace the free online art (heroes, bosses, items) with original art in o
   | 32x32 | 10 generations | 64 |
   | 64x64 | 10 generations | 16 |
   | 65-84 (e.g. 80x80) | 15 generations | 9 |
+  | 85x85 | 15 generations | 16 |
   | 86-128 | 10 generations | 4 |
 
-- **A clean style image matters.** The blurry screenshot of the reference sheet gave muddy colours (~250 per figure). Use crisp Pixellab output as the anchor from now on.
-- **A labelled reference image keeps a design.** Passing the current warrior as a `reference_images` entry ("character design: ...") gave 16 versions of him in the new style.
-- **One call, one description.** You can't ask for a different thing per candidate, but a broad description ("warriors, mages and rangers") spreads variety across them.
-- **Gotcha: candidates are cut from one sheet.** The 16 (or 64) candidates are one big sheet sliced on a grid, and the model doesn't draw on the grid, so tiles chop figures. Fix (free, local): put the tiles back together in order, then split out each figure as a connected blob of pixels. Done for the hero batch.
-- **No facing control.** Figures mostly face forward.
+- **One run, several types.** A description listing 3-4 types ("troll, dragon, serpent, wraith") splits the 16 candidates about evenly between them. One combined run per batch, not one run per type.
+- **Wording:**
+  - "filling the canvas" makes figures big, but wide ones (dragons) get cut off at the edge.
+  - "each whole body in frame" keeps them whole but smaller; add "towering" or "tall" to keep the size.
+  - Describe what you want, not what you don't ("jaws closed", not "no fire").
+  - A naga has arms, so it gets spears; "coiled serpent" doesn't.
+- **Gotcha: candidates are cut from one sheet.** The 16 candidates are one big sheet sliced on a grid, and the model doesn't always draw on the grid, so tiles can chop figures. Fix (free, local): put the tiles back together in order, then split out each figure as a connected blob of pixels, folding small strays (flames, sparks) into the nearest figure. Some runs stay inside their tiles; then each tile is one figure.
+- **No facing control.** Figures face forward; bosses are mirrored to face the hero.
+- **Small fixes by hand, free.** Eyes were fixed pixel by pixel on a numbered zoom grid of the face (cell names like "K5"), which works better than an AI repaint.
 - **Free and good:** `vfx_workbench` effects (crit hit, coin burst, level up, death shatter), worth using later.
-- **Rule:** before any paid generation, show every input (style image, description, size, cost) and wait for a clear go.
+- **Rule:** before any paid generation, show every input (style image, exact description, size, number of runs, total cost) and wait for a clear go. Re-confirm after any change.
 
-## Pixel size in the app
+## Size on the stage
 
-One art pixel must land on whole device pixels on phones.
+Checked with a mock in the real app (both art sets swapped onto the phone stage):
 
-- New heroes and bosses: **3 CSS px per art pixel** = 6 device px on 2x, 9 on 3x. One build works on every phone (no @3x files).
-- Hero: ~48 px tall in a 64 box -> ~144 CSS px on screen (today 148).
-- Boss box today is 192 CSS px = exactly 64 art px.
+- **Phone stage:** 1.5 CSS px per art pixel on 2x screens (3 device px), 4/3 CSS px on 3x screens (4 device px). Every pixel is exact, the same two-build rule today's sprites use (`spriteUrl.ts`). On 3x phones the fighters are about 11% smaller.
+  - Hero: ~72 CSS px tall on 2x, ~64 on 3x (today ~98).
+  - Boss: ~115 CSS px on 2x, ~105 on 3x (today ~120).
+  - At 2 CSS px per art pixel the bosses ran into the boss name, HP bar and menu button.
+- **Placement:** each fighter centred on its plinth; boss feet 4px below the plinth's top, hero feet 8px below. Bosses mirrored to face left.
+- **Odd screen ratios** (some Androids, e.g. 2.625): no pixel art is exact there, today's included. Later fix: size art from the exact device pixel ratio so it always lands on whole pixels.
+- Warlord art with a raised greatsword can touch the menu button once mirrored; watch for that when picking.
 
-## Heroes (done)
+## Heroes (generated, picks open)
 
-- Batch kept: `assets/pixellab/2026-11-11-heroes/` (assets/ is git-ignored, so back it up).
-  - `fixed/figure-01..16.png`: whole figures, each centred and foot-aligned in a 64 box. 4 knights, 4 mages, 4 rangers, 4 mixed (viking, witch, white-hooded archer, big-shield knight).
-  - `sheet.png`: the rebuilt 256x256 sheet: **use this as the style anchor for bosses and items.**
-  - `hero-01..16.png`: the original chopped tiles.
-- To do: user feedback was "a good bit less chibi". A rerun would say "heroic proportions, slightly stylised" in the description (10 generations).
-- To do: colour cleanup (free), and pick one per class.
+All in `assets/pixellab/` (git-ignored, so back it up):
+
+- `2026-11-11-heroes/fixed/figure-01..16.png`: 4 knights, 4 mages, 4 rangers, 4 mixed. `sheet.png` there is the style anchor.
+- `2026-11-11-heroes/eyes/figure-05..08.png`: the final mages (06 and 07 with fixed eyes, 05 and 08 original).
+- `2026-11-11-classes/`: 16 rogues, 16 paladins (`fixed/`), 16 necromancers (`whole/`), for possible new classes.
+- To do: user picks one per class; colour cleanup if needed.
 
 ## Bosses
 
-Bosses must use the same pixel size as the heroes, so "larger" means more pixels tall.
+### Families
 
-- **Size:** start with the 64 box, bosses filling it (~58-62 px tall, ~180 CSS px, 1.3-1.5x the hero). Fits today's stage. Optional 80 box (~220 CSS px) for the rare 5x set pieces, which needs the stage layout adjusted.
-- **Style image:** the hero `sheet.png`.
-- **One batch per family** (18 bosses: armored, warded, brute, arcane in base/3x/4x/5x, plus balanced and tank):
-  - Armored: "towering armored warlord bosses, dark plate, glowing eyes, from rusted brute to golden juggernaut"
-  - Arcane: "sorcerer bosses, from robed adept to void-calling eldritch caster"
-  - Brute: "savage beast and berserker bosses, from wild brute to apex monster"
-  - Warded: "magical guardian bosses, from stone warden to radiant ethereal sovereign"
-  - Mixed: "hooded rogue boss and huge troll chief boss"
-- **Cost:** ~5 batches x 10 = 50 generations, plan for 60-80 with retries.
-- They don't need to look like today's bosses.
+Each family has several images. A new boss gets a random image from its family, so a golem always means the same kind of boss but doesn't look identical each time. Names and stages stay per tier.
+
+| Family | Emphasis | Art (kept) | Count |
+|---|---|---|---|
+| Armored | Armor | Trolls | 4 |
+| Warded | Magic resist | Golems | 4 |
+| Brute | Physical attack | Horned beasts | 4 |
+| Arcane | Magic attack | Liches + dark wizards | 9 |
+| Balanced (Drifter) | Nothing | Giant spiders | 6 |
+| Tank (Colossus) | Health | Bearded giant kings | 4 |
+| **New:** Armor + physical | Armor, physical attack | Warlords (dark + crimson) | 7 |
+| **New:** Armor + magic | Armor, magic attack | Dragons | 5 |
+| **New:** MR + physical | Magic resist, physical attack | Coiled serpents | 4 |
+| **New:** MR + magic | Magic resist, magic attack | Wraiths | 4 |
+
+51 images in all. Where they are (`assets/pixellab/`):
+
+- Armored: `2026-11-11-bosses-run-a2/whole/` 01-04
+- Warded: `2026-11-11-bosses/whole/` 13-16
+- Brute: `2026-11-11-bosses/whole/` 09-12
+- Arcane:
+  - liches: `2026-11-11-bosses/eyes/` 05-08 (eyes hand-fixed)
+  - wizards: `2026-11-11-bosses-run-c/whole/` 03, 06, 09, 12, 15
+- Drifter: `2026-11-11-bosses-run-c/whole/` 01, 04, 07, 10, 13, 16
+- Colossus: `2026-11-11-bosses-run-b/whole/` 09, 11, 12, 15
+- Armor + physical: `2026-11-11-bosses/whole/` 01-04, plus `2026-11-11-bosses-run-c/whole/` 02, 05, 14
+- Armor + magic: `2026-11-11-bosses-run-b/whole/` 01-04, 13
+- MR + physical: `2026-11-11-bosses-run-a2/whole/` 09-12
+- MR + magic: `2026-11-11-bosses-run-a/tiles-boxed/` 13-16 (drawn with the boss sheet, a little more detailed)
+
+Rejected art is kept in each run's `rejected/` folder.
+
+### Hybrid balance (not decided)
+
+- Armor + physical is hard for physical builds twice over (hard to hurt and hits them hard); MR + magic does the same to magic builds. Runs lean one damage type, so these could wall a run.
+- Suggestion: hybrids get two tiers (base and 3x), about 2x each stat instead of 3-5x, and are a little rarer.
+- Check with a small, time-capped sim first.
+
+### To build
+
+1. Hybrid families in the engine: personalities, stats, names, weights.
+2. Boss art by family:
+   - pick a random image when a boss is made;
+   - save it on the boss (so a reload keeps it) and on high-score runs;
+   - never the same image twice in a row.
+3. Stage scenes for the four new families (painted in code, free).
+4. Sprite pipeline for native pixel art (below).
+
+### Making more
+
+85x85 canvas, hero sheet, one run per batch of 3-4 types, 15 generations per run. Ideas for later families: demons, vampires, treants, krakens, mimics.
 
 ## Items
 
-- **Size:** 32x32, shown at 2 CSS px per art pixel = a 64 CSS px icon (today 63), 4 device px on 2x and 6 on 3x. Today's 40 grid would be twice as fine as the new heroes. 32 only looked distorted before because it shrank big painted art; native 32 art won't.
+- **Size:** 32x32 at 2 CSS px per art pixel = a 64 CSS px icon (today 63), 4 device px on 2x and 6 on 3x. Today's 40 grid would be finer than the new heroes. 32 only looked distorted before because it shrank big painted art; native 32 art won't.
 - **Style image:** the hero `sheet.png` at first, then the best icons from the first item batch.
 - **One batch per type** (~94 items), 64 candidates each:
   - Swords and blades: "fantasy swords and daggers, from rusty iron to glowing legendary blades"
@@ -72,16 +123,17 @@ Bosses must use the same pixel size as the heroes, so "larger" means more pixels
 ## After every batch (free, local)
 
 1. Rebuild the sheet from the tiles and split out whole figures.
-2. Colour cleanup to a small palette.
+2. Fix small flaws by hand (numbered zoom grid).
 3. User picks.
 4. Add credits to `CREDITS.md`.
 
 ## Pipeline changes needed
 
-- `npm run sprites` resamples art to 1.5 CSS px per art pixel with two builds. New hero/boss art at 3 CSS px needs a path that copies native art 1:1 (no resampling, one build), plus the stage/hero sizes updated to match.
+- `npm run sprites` resamples painted art to 1.5 CSS px per art pixel with a 2x and a @3x build. Native pixel art should be scaled by whole steps instead (3 device px per art pixel for the 2x build, 4 for @3x), not resampled. Check how the phone stage's base-build sizing combines with that when wiring it up.
+- Boss sprites are drawn mirrored (flip in the build, not in CSS, so effects and hit areas stay simple).
 - Items: `npm run item-icons -- --grid 32` and the `main.scss` slot sizes per grid; check whether Pixellab's own outline makes the pipeline's added outline redundant.
-- The split script (tiles -> whole figures) was a scratch file; add it under `scripts/` when this starts.
+- The scratch scripts (tiles -> sheet, blob split, tile boxing, eye grid) go under `scripts/` when this starts.
 
 ## Budget
 
-Roughly 110-180 generations for bosses and items together. Check a plan's monthly generations against that. Plans (as quoted by Pixellab's help on 2026-11-11): Pixel Apprentice $12/mo, Pixel Artisan $24/mo, Pixel Architect $50/mo.
+Used so far: 38 trial generations, then 30 (hero classes) + 75 (bosses) on the subscription. Items need about 60-100 more; plenty left this month.
