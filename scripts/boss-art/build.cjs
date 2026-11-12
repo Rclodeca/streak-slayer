@@ -5,22 +5,21 @@
 // to face left (the figures all face forward; the hero stands on the left;
 // an entry marked mirror: false in families.json already faces that way),
 // padded with empty pixels (the feet stay on the bottom row) to a width and
-// height of whole sixes, so its CSS size is whole at both densities (1.5 px per
-// art pixel on 2x, 4/3 on 3x: a browser lays out in 64ths of a px, and an
-// art pixel count that isn't a multiple of 3 gives a size that can't be
-// held exactly, which shifts rows of art by a device pixel), and scaled
-// by whole steps, 3x for public/sprites/bosses/<family>/<n>.png (3 device px per
-// art pixel, drawn at 1.5 CSS px on 2x screens) and 4x for <n>@3x.png (4 device
-// px, drawn at 4/3 CSS px on 3x screens). An <img> with srcset "x.png 2x,
+// height of whole sixes (kept from when art pixels were 1.5 CSS px and a count
+// that wasn't a multiple of 3 gave a size a browser couldn't hold exactly), and
+// scaled by whole steps, 4x for public/sprites/bosses/<family>/<n>.png (4 device
+// px per art pixel, drawn at 2 CSS px on 2x screens) and 6x for <n>@3x.png (6
+// device px, drawn at 2 CSS px on 3x screens). An <img> with srcset "x.png 2x,
 // x@3x.png 3x" sizes itself from that: a file's width divided by its density.
-// (spriteUrl.ts has the same two builds for the hero and old boss sprites.)
+// 2 CSS px per art pixel is the hero's size on the phone stage and the stage
+// scenes' (heroArt.ts, stage/painter.ts).
 const fs = require('fs')
 const path = require('path')
 const { decode, encode } = require('../item-icons/pnglib.cjs')
 
 const root = path.join(__dirname, '../..')
 const families = require('./families.json')
-const SCALES = [{ suffix: '', step: 3 }, { suffix: '@3x', step: 4 }]
+const SCALES = [{ suffix: '', step: 4 }, { suffix: '@3x', step: 6 }]
 
 // An entry is a path, or { src, mirror: false } for art that already faces the hero.
 const entry = (e) => (typeof e === 'string' ? { src: e, mirror: true } : { mirror: true, ...e })
@@ -65,4 +64,4 @@ for (const [family, sources] of Object.entries(families)) {
     count++
   })
 }
-console.log(`built ${count} boss sprites in ${Object.keys(families).length} families, each as <n>.png (3x) and <n>@3x.png (4x)`)
+console.log(`built ${count} boss sprites in ${Object.keys(families).length} families, each as <n>.png (4x) and <n>@3x.png (6x)`)

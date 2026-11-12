@@ -224,9 +224,10 @@ const skillTiles = computed<StatTile[]>(() => [
 
 /* The plinth's width, centred over it, the boss's feet 4px below its top (the
    stage is 212px tall on phones, the plinth's top 14px + 116 * --u down).
-   The sprite is native pixel art, drawn at its own size (spriteSrcset: 1.5 CSS
-   px per art pixel on 2x screens, 4/3 on 3x) and a multiple of six art pixels
-   in each direction, so its size and centring are whole device pixels. No z-index, so its kill effects
+   The sprite is native pixel art, drawn at its own size (spriteSrcset: 2 CSS
+   px per art pixel, 4 device px on 2x screens and 6 on 3x, like the hero and
+   the stage scenes) and a multiple of six art pixels in each direction, so
+   its size and centring are whole device pixels. No z-index, so its kill effects
    and the plain sprite stack with the blocks. Below the menu button, which
    sits in the stage's top-right corner. */
 .boss-figure {

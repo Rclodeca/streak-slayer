@@ -376,7 +376,7 @@ onBeforeUnmount(() => {
 .fight-stage.focus :deep(.hero-figure) {
   left: 12px;
   bottom: 8px;
-  width: calc(var(--hero-pw) * var(--u) / 2);
+  width: calc(48 * var(--u));
 }
 
 .fight-stage.focus :deep(.boss-block) {

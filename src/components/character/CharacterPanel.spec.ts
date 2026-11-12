@@ -86,8 +86,8 @@ describe('CharacterPanel', () => {
     setClass(600, 300);
     const wrapper = mount(CharacterPanel);
     const style = () => wrapper.find('.hero-figure').attributes('style');
-    // The canvas is drawn at its own size (96 CSS px) with the feet 8px below the plinth's top.
-    expect(style()).toContain('--hero-pw: 96');
+    // The phone canvas is drawn at its own size (128 CSS px) with the feet 8px below the plinth's top.
+    expect(style()).toContain('--hero-pw: 128');
     expect(style()).toContain('--hero-py: 12');
     const warrior = style();
     setClass(300, 600);

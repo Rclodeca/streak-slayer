@@ -7,10 +7,11 @@
 import { computed } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import type { Character } from '../../game-engine';
-import { spriteUrl } from '../ui/spriteUrl';
+import { PHONE_STAGE_MEDIA, baseSpriteUrl, spriteUrl } from '../ui/spriteUrl';
 import { HERO_CANVAS } from './heroArt';
 
-// `stage` is kept for the stage's call; every screen draws the same build now.
+// On the fight stage, phones draw the hero at 2 CSS px per art pixel (see
+// HERO_PHONE_PLACEMENT), which only the base build keeps whole on 2x and 3x.
 const props = defineProps<{ character: Character; stage?: boolean }>();
 
 const heroClass = computed(() => heroClassFor(props.character));
@@ -18,7 +19,11 @@ const heroClass = computed(() => heroClassFor(props.character));
 
 <template>
   <div class="player-sprite" :style="{ '--hero-canvas': `${HERO_CANVAS}px` }">
-    <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="Player" />
+    <picture v-if="stage">
+      <source :media="PHONE_STAGE_MEDIA" :srcset="baseSpriteUrl(`player/${heroClass}`)" />
+      <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="Player" />
+    </picture>
+    <img v-else class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="Player" />
   </div>
 </template>
 
@@ -27,6 +32,10 @@ const heroClass = computed(() => heroClassFor(props.character));
   position: relative;
   width: 96px;
   height: 96px;
+}
+
+picture {
+  display: block;
 }
 
 .hero {

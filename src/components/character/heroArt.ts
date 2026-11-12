@@ -28,13 +28,17 @@ export const HERO_PLACEMENT: Record<HeroClass, HeroPlacement> = {
   ranger: STAGE_PLACEMENT,
 };
 
-// The phone stage draws the same size (the old art had a smaller build there).
-// Phones centre the canvas on the plinth in CharacterPanel's CSS, so only the
-// width and the feet's height are read from here.
+// The phone stage draws the hero larger: 2 CSS px per art pixel, which is 4
+// device px on 2x and 6 on 3x from the base (64 px) build alone, so PlayerSprite
+// uses that build there instead of the @3x one. The fighters beside it stay at
+// 1.5, so the hero's pixels are a little chunkier. Phones centre the canvas on
+// the plinth in CharacterPanel's CSS, so only the width and the feet's height
+// are read from here.
+export const HERO_STAGE_CANVAS = 128;
 export const HERO_PHONE_PLACEMENT: Record<HeroClass, HeroPlacement> = {
-  warrior: { width: HERO_CANVAS, left: 0, bottom: 12 },
-  cleric: { width: HERO_CANVAS, left: 0, bottom: 12 },
-  ranger: { width: HERO_CANVAS, left: 0, bottom: 12 },
+  warrior: { width: HERO_STAGE_CANVAS, left: 0, bottom: 12 },
+  cleric: { width: HERO_STAGE_CANVAS, left: 0, bottom: 12 },
+  ranger: { width: HERO_STAGE_CANVAS, left: 0, bottom: 12 },
 };
 
 // The width the Focus strip draws a hero's canvas at (a fitted, not a whole
