@@ -4,7 +4,7 @@ import type { ItemDef } from '../../game-engine';
 
 // Twinkling pluses in the corners of an epic or relic item's slot
 // (docs/mockups/pixel-hero-tab.html): three for epic, five for relic. Put it
-// first in a positioned slot so the art paints over it. Each spark has its
+// in a positioned slot; the sparks paint over the art. Each spark has its
 // own timing, and `seed` (the row's index) offsets them so rows never pulse
 // together. Only opacity and scale animate.
 const props = withDefaults(defineProps<{ rarity: ItemDef['rarity']; seed?: number }>(), { seed: 0 });
@@ -47,6 +47,7 @@ const sparks = computed(() =>
   height: 8px;
   margin: -4px 0 0 -4px;
   color: #fff;
+  z-index: 1; /* over the art */
   pointer-events: none;
   opacity: 0;
   background:
