@@ -3,7 +3,6 @@ import App from './App.vue';
 import { initializeStores, pinia } from './store';
 import { migrateLegacyStorageKeys } from './store/plugins/legacyStorageKeys';
 import { applyTheme, useThemeStore } from './store/themeStore';
-import itemIconGrid from './assets/item-icon-grid.json';
 // Ashen's typefaces, bundled so the installed PWA doesn't depend on a font CDN.
 import '@fontsource/cinzel/500.css';
 import '@fontsource/cinzel/600.css';
@@ -17,8 +16,6 @@ import './assets/scss/main.scss';
 import './assets/scss/themes/index.scss';
 
 migrateLegacyStorageKeys();
-// The grid the item icons were built at picks their sizes (see main.scss).
-document.documentElement.dataset.itemGrid = String(itemIconGrid.grid);
 
 const app = createApp(App);
 

@@ -2,7 +2,7 @@
 // Crops the artwork, area-averages it onto a <grid> x <grid> pixel grid, snaps it to
 // <colors> colors, and draws each pixel <scale> px wide, centred on a <canvas> square.
 const fs = require('fs')
-const { decode, encode } = require('./pnglib.cjs')
+const { decode, encode } = require('../lib/pnglib.cjs')
 const [inFile, outFile, gridArg, colorsArg, scaleArg, canvasArg] = process.argv.slice(2)
 const N = Number(gridArg), K = Number(colorsArg), SC = Number(scaleArg), CANVAS = Number(canvasArg)
 // A grid cell keeps its pixel when at least this share of it is covered by art.

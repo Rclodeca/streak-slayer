@@ -298,15 +298,15 @@ function skillGroups(run: HighScoreRun) {
   opacity: 0.7;
 }
 
-/* An item's art in a frame of its rarity's colour. */
+/* An item's art in a frame of its rarity's colour. The art is native 32x32 pixel art, drawn at 1 CSS px per
+   art pixel (2 device px on 2x screens, 3 on 3x), so the chip is the art plus its 1px border. */
 .gear-chip {
-  --size: 18px;
   box-sizing: border-box;
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: var(--size);
-  height: var(--size);
+  width: 34px;
+  height: 34px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--rarity) 55%, transparent);
   border-radius: 3px;
@@ -314,11 +314,9 @@ function skillGroups(run: HighScoreRun) {
 }
 
 .gear-chip img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: 32px;
+  height: 32px;
   image-rendering: pixelated;
-  transform: scale(1.4);
 }
 
 /* ---------- The run's sheet ---------- */
@@ -422,10 +420,6 @@ function skillGroups(run: HighScoreRun) {
   gap: 0.6rem;
   padding: 0.2rem 0;
   font-size: 0.9em;
-}
-
-.run-gear .gear-chip {
-  --size: 28px;
 }
 
 .run-gear-name {

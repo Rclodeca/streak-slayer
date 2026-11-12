@@ -39,7 +39,7 @@ export function bumpSpellweave(character: Character, habit: Habit, currentDayKey
   return { ...character, spellweave: { dayKey: currentDayKey, count: count + 1 } };
 }
 
-/** Counts one more crit landed today for Void Arbalest (see critStreakStacks); the same character when it isn't equipped. */
+/** Counts one more crit landed today for Void Longbow (see critStreakStacks); the same character when it isn't equipped. */
 export function bumpCritStreak(character: Character, currentDayKey: string): Character {
   if (!hasItemEffect(character, 'crit-streak')) return character;
   const count = character.critStreak?.dayKey === currentDayKey ? character.critStreak.count : 0;

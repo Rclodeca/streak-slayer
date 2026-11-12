@@ -1384,7 +1384,7 @@ describe('completeHabit — item effects', () => {
     expect(physical.character.spellweave).toEqual({ dayKey: DAY_KEY, count: 2 });
   });
 
-  it('Void Arbalest counts a crit toward later hits, and only a crit', () => {
+  it('Void Longbow counts a crit toward later hits, and only a crit', () => {
     const crit = hit(['void-arbalest'], {}, {}, alwaysCritRng);
     expect(crit.wasCrit).toBe(true);
     expect(crit.character.critStreak).toEqual({ dayKey: DAY_KEY, count: 1 });
@@ -1440,7 +1440,7 @@ describe('completeHabit — item effects', () => {
     expect(without / (completeHabit(makeCharacter(), habit, [habit], boss, DAY_KEY, noCritRng).damageDealt ?? 1)).toBeCloseTo(TUNING.OVERDRIVE_DAMAGE_FACTOR, 10);
   });
 
-  it('Banner of Endurance doubles streak-milestone EXP', () => {
+  it('Standard of Endurance doubles streak-milestone EXP', () => {
     expect(hit(['banner-of-endurance'], { streakCount: 4 }, {}).milestoneExp).toBe(MILESTONE_EXP[5] * E.BANNER_MILESTONE_MULTIPLIER);
     expect(hit([], { streakCount: 4 }, {}).milestoneExp).toBe(MILESTONE_EXP[5]);
   });

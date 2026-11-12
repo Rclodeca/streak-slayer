@@ -49,11 +49,11 @@ function hasPositive(item: ItemDef, stat: BoostableStat): boolean {
 }
 
 describe('ITEM_CATALOG', () => {
-  it('has 95 items with unique ids: 16 common, 17 uncommon, 29 rare, 16 epic, 17 relics', () => {
-    expect(ITEM_CATALOG).toHaveLength(95);
-    expect(new Set(ITEM_CATALOG.map((i) => i.id)).size).toBe(95);
+  it('has 94 items with unique ids: 16 common, 17 uncommon, 28 rare, 16 epic, 17 relics', () => {
+    expect(ITEM_CATALOG).toHaveLength(94);
+    expect(new Set(ITEM_CATALOG.map((i) => i.id)).size).toBe(94);
     const count = (rarity: string) => ITEM_CATALOG.filter((i) => i.rarity === rarity).length;
-    expect(['common', 'uncommon', 'rare', 'epic', 'relic'].map(count)).toEqual([16, 17, 29, 16, 17]);
+    expect(['common', 'uncommon', 'rare', 'epic', 'relic'].map(count)).toEqual([16, 17, 28, 16, 17]);
   });
 
   it('has no level gates left on any item', () => {
@@ -103,12 +103,6 @@ describe('ITEM_CATALOG', () => {
     for (const item of epics.filter((i) => i.effect)) {
       expect(item.effectText, item.id).toBeTruthy();
     }
-  });
-
-  it('has exactly one consumable item: the Phoenix Feather', () => {
-    const consumables = ITEM_CATALOG.filter((item) => item.type === 'consumable');
-    expect(consumables).toHaveLength(1);
-    expect(consumables[0].id).toBe('phoenix-feather');
   });
 
   it('has an icon file for every catalog item', () => {
@@ -217,12 +211,6 @@ describe('itemBonusPercent', () => {
     const character = makeCharacter({ equippedItemIds: ['rusty-blade', 'battlemage-gauntlets'] });
     expect(itemBonusPercent(character, 'physicalDamage')).toBe(3 + 4);
   });
-
-  it('returns 0 for every stat when only the consumable is equipped', () => {
-    const character = makeCharacter({ equippedItemIds: ['phoenix-feather'] });
-    expect(itemBonusPercent(character, 'critChance')).toBe(0);
-    expect(itemBonusPercent(character, 'physicalDamage')).toBe(0);
-  });
 });
 
 describe('itemFlatBonus', () => {
@@ -253,10 +241,6 @@ describe('describeItemBonus', () => {
 
   it("appends an epic's effect text", () => {
     expect(describeItemBonus(itemNamed('godslayer-greatblade'))).toBe('Physical +42%, Health +20%, Lifesteal +2% \u00b7 +30% damage to bosses above 75% HP.');
-  });
-
-  it('describes the consumable distinctly, with no stat percentages', () => {
-    expect(describeItemBonus(itemNamed('phoenix-feather'))).toContain('revive');
   });
 });
 
@@ -391,12 +375,6 @@ describe('describeItemBonusParts', () => {
 
   it('renders a drawback with a minus sign', () => {
     expect(describeItemBonusParts(itemById('void-crystal'))).toContainEqual({ stat: 'health', text: '\u221210%', label: 'Max health' });
-  });
-
-  it('has no parts for a consumable', () => {
-    const feather = ITEM_CATALOG.find((i) => i.type === 'consumable');
-    if (!feather) throw new Error('missing fixture item');
-    expect(describeItemBonusParts(feather)).toEqual([]);
   });
 });
 

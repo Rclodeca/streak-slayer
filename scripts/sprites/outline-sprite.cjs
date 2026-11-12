@@ -1,16 +1,16 @@
-// node scripts/item-icons/outline-sprite.cjs <sprite.png> <art-pixel-size>
+// node scripts/sprites/outline-sprite.cjs <sprite.png> <art-pixel-size>
 // Gives an already-pixelated sprite (e.g. public/sprites/player/*.png, 2 file px
 // per art pixel) the item icons' 1-art-pixel dark outline, in place: every empty
 // art pixel touching the figure (4-neighbour) turns dark. A sprite whose edge is
 // already all outline is left as is, so running it twice is safe.
 const fs = require('fs')
-const { decode, encode } = require('./pnglib.cjs')
+const { decode, encode } = require('../lib/pnglib.cjs')
 
 const OUTLINE = [14, 11, 11]
 const [file, sizeArg] = process.argv.slice(2)
 const S = Number(sizeArg)
 if (!file || !S) {
-  console.error('usage: node scripts/item-icons/outline-sprite.cjs <sprite.png> <art-pixel-size>')
+  console.error('usage: node scripts/sprites/outline-sprite.cjs <sprite.png> <art-pixel-size>')
   process.exit(1)
 }
 

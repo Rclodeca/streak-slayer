@@ -15,7 +15,7 @@
 // scenes' (heroArt.ts, stage/painter.ts).
 const fs = require('fs')
 const path = require('path')
-const { decode, encode } = require('../item-icons/pnglib.cjs')
+const { decode, encode } = require('../lib/pnglib.cjs')
 
 const root = path.join(__dirname, '../..')
 const families = require('./families.json')

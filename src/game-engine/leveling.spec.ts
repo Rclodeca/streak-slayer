@@ -266,7 +266,7 @@ describe('effectiveCritChance', () => {
     expect(effectiveCritChance(character)).toBe(1);
   });
 
-  it("Void Arbalest adds crit chance per crit today, capped, and only on today's key", () => {
+  it("Void Longbow adds crit chance per crit today, capped, and only on today's key", () => {
     const E = TUNING.ITEM_EFFECTS;
     const twoCrits = makeCharacter({ equippedItemIds: ['void-arbalest'], critStreak: { dayKey: '2026-01-01', count: 2 } });
     const itemOnly = effectiveCritChance(twoCrits);

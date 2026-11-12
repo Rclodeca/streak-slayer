@@ -33,7 +33,7 @@ h2 small { font: italic 500 15px/1 'Cormorant Garamond', Georgia, serif; letter-
 .card.hide { display: none; }
 
 /* The gear list's slot: rarity hairline, inner bevel, glow, gold corner ticks. */
-.icon { position: relative; flex-shrink: 0; width: 76px; height: 76px; border: 1px solid color-mix(in srgb, var(--rc) 55%, transparent);
+.icon { position: relative; flex-shrink: 0; width: 72px; height: 72px; border: 1px solid color-mix(in srgb, var(--rc) 55%, transparent);
   background: radial-gradient(circle, color-mix(in srgb, var(--rc) 22%, transparent), rgba(0,0,0,.55) 72%);
   box-shadow: inset 0 0 0 3px rgba(0,0,0,.55), inset 0 0 0 4px color-mix(in srgb, var(--rc) 22%, transparent), 0 0 14px -6px var(--rc); }
 .icon::before { content: ''; position: absolute; inset: -1px; pointer-events: none; opacity: .9;
@@ -43,7 +43,7 @@ h2 small { font: italic 500 15px/1 'Cormorant Garamond', Georgia, serif; letter-
     linear-gradient(var(--gold), var(--gold)) bottom left / 7px 1px no-repeat, linear-gradient(var(--gold), var(--gold)) bottom left / 1px 7px no-repeat,
     linear-gradient(var(--gold), var(--gold)) bottom right / 7px 1px no-repeat, linear-gradient(var(--gold), var(--gold)) bottom right / 1px 7px no-repeat; }
 .art { position: absolute; inset: 0; overflow: hidden; }
-.art img { --rim: color-mix(in srgb, var(--rc) 55%, #000); position: absolute; left: 50%; top: 50%; width: 180px; height: 180px; transform: translate(-50%, -50%); image-rendering: pixelated;
+.art img { --rim: color-mix(in srgb, var(--rc) 55%, #000); position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; transform: translate(-50%, -50%); image-rendering: pixelated;
   filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim)) drop-shadow(0 0 6px color-mix(in srgb, var(--rc) 45%, transparent)); }
 
 .body { min-width: 0; }
@@ -61,7 +61,7 @@ li.neg, li.neg b { color: var(--bad); }
 <body>
 <div class="page">
 <h1>Item catalog</h1>
-<p class="sub">95 items · grouped by rarity, sorted by theme</p>
+<p class="sub">94 items · grouped by rarity, sorted by theme</p>
 <div class="filters"><button type="button" data-t="All" class="on">All</button><button type="button" data-t="Physical" class="">Physical</button><button type="button" data-t="Magic" class="">Magic</button><button type="button" data-t="True" class="">True</button><button type="button" data-t="Crit" class="">Crit</button><button type="button" data-t="Tank" class="">Tank</button><button type="button" data-t="Support" class="">Support</button><button type="button" data-t="All damage" class="">All damage</button><button type="button" data-t="Consumable" class="">Consumable</button></div>
 <section><h2>Common <small>16 · drops 75% at L1 · 30% at L10 · 0% at L30</small></h2><div class="grid"><article class="card r-common" data-theme="Crit">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/lucky-dagger.png" alt=""></span></div>
@@ -122,7 +122,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-common" data-theme="Support">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/novices-charm.png" alt=""></span></div>
     <div class="body">
-      <h3>Novice's Rose</h3>
+      <h3>Novice's Charm</h3>
       <div class="meta"><span class="rarity">common</span><span class="tag">Support</span></div>
       <ul><li class=""><b>+3%</b> Healing</li></ul>
       
@@ -130,7 +130,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-common" data-theme="Support">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/blessed-censer.png" alt=""></span></div>
     <div class="body">
-      <h3>Sunstaff</h3>
+      <h3>Blessed Censer</h3>
       <div class="meta"><span class="rarity">common</span><span class="tag">Support</span></div>
       <ul><li class=""><b>+6%</b> Healing</li></ul>
       
@@ -162,7 +162,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-common" data-theme="Tank">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/chainmail-hauberk.png" alt=""></span></div>
     <div class="body">
-      <h3>Chainmail Hauberk</h3>
+      <h3>Leafmail Hauberk</h3>
       <div class="meta"><span class="rarity">common</span><span class="tag">Tank</span></div>
       <ul><li class=""><b>+6%</b> Max health</li></ul>
       
@@ -258,7 +258,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-uncommon" data-theme="Support">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/sacred-chalice.png" alt=""></span></div>
     <div class="body">
-      <h3>Sacred Cauldron</h3>
+      <h3>Sacred Chalice</h3>
       <div class="meta"><span class="rarity">uncommon</span><span class="tag">Support</span></div>
       <ul><li class=""><b>+18%</b> Healing</li></ul>
       
@@ -266,7 +266,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-uncommon" data-theme="Support">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/rebirth-orb.png" alt=""></span></div>
     <div class="body">
-      <h3>Rebirth Orb</h3>
+      <h3>Rebirth Seed</h3>
       <div class="meta"><span class="rarity">uncommon</span><span class="tag">Support</span></div>
       <ul><li class=""><b>+15%</b> EXP gain</li></ul>
       
@@ -274,7 +274,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-uncommon" data-theme="Support">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/serene-lotus-charm.png" alt=""></span></div>
     <div class="body">
-      <h3>Serene Glowcap</h3>
+      <h3>Serene Emerald</h3>
       <div class="meta"><span class="rarity">uncommon</span><span class="tag">Support</span></div>
       <ul><li class=""><b>+12%</b> Healing</li><li class=""><b>+12%</b> EXP gain</li></ul>
       
@@ -327,15 +327,7 @@ li.neg, li.neg b { color: var(--bad); }
       <ul><li class=""><b>+18%</b> True damage</li></ul>
       
     </div>
-  </article></div></section><section><h2>Rare <small>29 · drops 3% at L1 · 27% at L10 · 51% at L30</small></h2><div class="grid"><article class="card r-rare" data-theme="Consumable">
-    <div class="icon"><span class="art"><img src="../../public/sprites/items/phoenix-feather.png" alt=""></span></div>
-    <div class="body">
-      <h3>Phoenix Feather</h3>
-      <div class="meta"><span class="rarity">rare</span><span class="tag">Consumable</span></div>
-      <ul><li>Consumable — grants one free revive on death, while equipped</li></ul>
-      
-    </div>
-  </article><article class="card r-rare" data-theme="Magic">
+  </article></div></section><section><h2>Rare <small>28 · drops 3% at L1 · 27% at L10 · 51% at L30</small></h2><div class="grid"><article class="card r-rare" data-theme="Magic">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/stormcaller-staff.png" alt=""></span></div>
     <div class="body">
       <h3>Stormcaller Staff</h3>
@@ -474,7 +466,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-rare" data-theme="Support">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/penitents-hauberk.png" alt=""></span></div>
     <div class="body">
-      <h3>Penitent's Cuirass</h3>
+      <h3>Penitent's Cloak</h3>
       <div class="meta"><span class="rarity">rare</span><span class="tag">Support</span></div>
       <ul><li class=""><b>+150</b> Armor</li><li class=""><b>+18%</b> Healing</li></ul>
       
@@ -498,7 +490,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-rare" data-theme="Tank">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/dragons-heart.png" alt=""></span></div>
     <div class="body">
-      <h3>Dragon's Heart</h3>
+      <h3>Dragonscale Shield</h3>
       <div class="meta"><span class="rarity">rare</span><span class="tag">Tank</span></div>
       <ul><li class=""><b>+20%</b> Max health</li><li class=""><b>+10%</b> Physical damage</li></ul>
       
@@ -674,7 +666,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-epic" data-theme="True">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/sunpiercer-bow.png" alt=""></span></div>
     <div class="body">
-      <h3>Frostpiercer Crossbow</h3>
+      <h3>Frostpiercer Bow</h3>
       <div class="meta"><span class="rarity">epic</span><span class="tag">True</span></div>
       <ul><li class=""><b>+60%</b> True damage</li><li class=""><b>+12%</b> Crit chance</li><li class=""><b>+15%</b> Max health</li></ul>
       
@@ -682,7 +674,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-epic" data-theme="True">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/void-arbalest.png" alt=""></span></div>
     <div class="body">
-      <h3>Void Arbalest</h3>
+      <h3>Void Longbow</h3>
       <div class="meta"><span class="rarity">epic</span><span class="tag">True</span></div>
       <ul><li class=""><b>+60%</b> True damage</li><li class=""><b>+10%</b> Crit chance</li></ul>
       <p class="effect">+5% crit chance per crit today (max +25%).</p>
@@ -746,7 +738,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-relic" data-theme="Physical">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/banner-of-endurance.png" alt=""></span></div>
     <div class="body">
-      <h3>Banner of Endurance</h3>
+      <h3>Standard of Endurance</h3>
       <div class="meta"><span class="rarity">relic</span><span class="tag">Physical</span></div>
       <ul><li class=""><b>+32%</b> Physical damage</li><li class=""><b>+30%</b> Max health</li></ul>
       <p class="effect">Streak milestones give double EXP.</p>
@@ -794,7 +786,7 @@ li.neg, li.neg b { color: var(--bad); }
   </article><article class="card r-relic" data-theme="Tank">
     <div class="icon"><span class="art"><img src="../../public/sprites/items/scales-of-fate.png" alt=""></span></div>
     <div class="body">
-      <h3>Scales of Fate</h3>
+      <h3>Coin of Fate</h3>
       <div class="meta"><span class="rarity">relic</span><span class="tag">Tank</span></div>
       <ul><li class=""><b>+28%</b> Max health</li><li class=""><b>+15%</b> EXP gain</li></ul>
       <p class="effect">Boss skills have a 50% chance to fail.</p>

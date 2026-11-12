@@ -333,7 +333,7 @@ describe('Waymark', () => {
     expect(milestone(hero({ waymark: 3 }))).toBeCloseTo(5 * 1.15, 10);
   });
 
-  it('stacks with Banner of Endurance', () => {
+  it('stacks with Standard of Endurance', () => {
     expect(milestone(hero({ waymark: 3 }, ['banner-of-endurance']))).toBeCloseTo(5 * 2 * 1.15, 10);
   });
 });

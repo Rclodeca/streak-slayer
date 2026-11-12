@@ -123,7 +123,7 @@ describe('bumpSpellweave', () => {
 });
 
 describe('bumpCritStreak', () => {
-  it("counts crits per day while Void Arbalest is equipped, and is a no-op otherwise", () => {
+  it("counts crits per day while Void Longbow is equipped, and is a no-op otherwise", () => {
     const plain = makeCharacter();
     expect(bumpCritStreak(plain, DAY_KEY)).toBe(plain);
     const c = makeCharacter({ equippedItemIds: ['void-arbalest'] });

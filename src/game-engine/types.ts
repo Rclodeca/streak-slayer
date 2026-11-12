@@ -136,7 +136,7 @@ export interface Character {
   undoDayKey?: string;
   // Magic skills used today while Spellweave is equipped (see spellweaveStacks).
   spellweave?: { dayKey: string; count: number };
-  // Crits landed today while Void Arbalest is equipped (see critStreakStacks).
+  // Crits landed today while Void Longbow is equipped (see critStreakStacks).
   critStreak?: { dayKey: string; count: number };
   // Consecutive level-up picks where the side-quest event was eligible but
   // not offered — drives the guarantee in rollEventChoices.

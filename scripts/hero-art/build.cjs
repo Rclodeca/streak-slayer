@@ -11,7 +11,7 @@
 // art is drawn, so they aren't mirrored.
 const fs = require('fs')
 const path = require('path')
-const { decode, encode } = require('../item-icons/pnglib.cjs')
+const { decode, encode } = require('../lib/pnglib.cjs')
 
 const root = path.join(__dirname, '../..')
 const heroes = require('./heroes.json')

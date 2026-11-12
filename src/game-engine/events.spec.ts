@@ -287,13 +287,6 @@ describe('double-item event', () => {
     expect(ids(eligibleEvents(character, []))).not.toContain('double-item');
   });
 
-  it('is not offered when only a consumable is equipped', () => {
-    const feather = ITEM_CATALOG.find((i) => i.type === 'consumable');
-    if (!feather) throw new Error('missing fixture item');
-    const character = makeCharacter({ level: 10, equippedItemIds: [feather.id], ownedItemIds: [feather.id] });
-    expect(ids(eligibleEvents(character, []))).not.toContain('double-item');
-  });
-
   it('doubles one equipped item\'s bonuses and no other', () => {
     const base = makeCharacter({ level: 10, equippedItemIds: ['rusty-blade'], ownedItemIds: ['rusty-blade'] });
     const before = itemBonusPercent(base, 'physicalDamage');

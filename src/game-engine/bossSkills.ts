@@ -264,7 +264,7 @@ function applySkill(skill: BossSkillId, boss: Boss, character: Character, curren
  * `healthBefore` its health before. An Undying boss (fired earlier today)
  * is held at its floor first. Every unspent breakpoint the hit crossed is
  * spent, but only the highest fires — a big hit is rewarded — and nothing
- * fires on a kill. Scales of Fate can make the fired skill fail, and Empower
+ * fires on a kill. Coin of Fate can make the fired skill fail, and Empower
  * rolls which stat it doubles; those are the only rng() calls this makes, so
  * combat's seeded rolls are untouched.
  */

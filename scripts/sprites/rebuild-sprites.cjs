@@ -12,7 +12,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { execFileSync } = require('child_process')
-const { decode, encode } = require('./pnglib.cjs')
+const { decode, encode } = require('../lib/pnglib.cjs')
 
 // CSS px per art pixel for each build.
 const BUILDS = [

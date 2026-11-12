@@ -85,7 +85,7 @@ export function clampHealthToMax(character: Character): Character {
 /**
  * The character's crit chance (0-1) after equipped-item bonuses, topping out
  * at 100% (every hit crits). Pass `currentDayKey` to include an active Crit
- * boost and Void Arbalest's crits today.
+ * boost and Void Longbow's crits today.
  */
 export function effectiveCritChance(character: Character, currentDayKey?: string): number {
   // Blind (a boss skill) stops rolled crits; forced ones (isForcedCrit) still land.
@@ -102,7 +102,7 @@ export function critChanceBeforeBlind(character: Character, currentDayKey?: stri
 }
 
 /**
- * Void Arbalest stacks for a hit now: crits already landed today, capped; 0
+ * Void Longbow stacks for a hit now: crits already landed today, capped; 0
  * when it isn't equipped. Lives here rather than in itemEffects.ts because
  * itemEffects imports this module. bumpCritStreak counts the crits.
  */

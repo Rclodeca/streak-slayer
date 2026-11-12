@@ -441,7 +441,7 @@ describe('resolveBreakpoints', () => {
     expect(sunder.character.statusEffects).toEqual([{ type: 'sunder', appliedDayKey: DAY, durationDays: 2 }]);
   });
 
-  it('only rolls rng for Scales of Fate and for the stat Empower doubles', () => {
+  it('only rolls rng for Coin of Fate and for the stat Empower doubles', () => {
     const rolls = (skill: BossSkillId) => {
       const rng = Object.assign(() => {
         rng.calls += 1;

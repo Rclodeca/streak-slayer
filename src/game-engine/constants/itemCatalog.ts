@@ -43,23 +43,22 @@ export const ITEM_CATALOG: ItemDef[] = [
   { id: 'chaos-blade', name: 'Chaos Blade', icon: 'items/chaos-blade', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'physicalDamage', percent: 15 }, { stat: 'magicDamage', percent: 15 }] },
   // --- Tank ---
   { id: 'padded-vest', name: 'Leather Vest', icon: 'items/padded-vest', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'health', percent: 3 }] },
-  { id: 'chainmail-hauberk', name: 'Chainmail Hauberk', icon: 'items/chainmail-hauberk', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'health', percent: 6 }] },
+  { id: 'chainmail-hauberk', name: 'Leafmail Hauberk', icon: 'items/chainmail-hauberk', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'health', percent: 6 }] },
   { id: 'iron-buckler', name: 'Crusader Shield', icon: 'items/iron-buckler', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'armor', flat: 75 }] },
   { id: 'ward-cloak', name: 'Warding Robe', icon: 'items/ward-cloak', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'magicResist', flat: 75 }] },
   { id: 'plate-armor', name: 'Plate Armor', icon: 'items/plate-armor', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'health', percent: 10 }] },
   { id: 'ironstride-greaves', name: 'Ironstride Greaves', icon: 'items/ironstride-greaves', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'armor', flat: 150 }, { stat: 'health', percent: 5 }] },
-  { id: 'dragons-heart', name: "Dragon's Heart", icon: 'items/dragons-heart', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'health', percent: 20 }, { stat: 'physicalDamage', percent: 10 }] },
+  { id: 'dragons-heart', name: 'Dragonscale Shield', icon: 'items/dragons-heart', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'health', percent: 20 }, { stat: 'physicalDamage', percent: 10 }] },
   // --- Support and consumable ---
-  { id: 'novices-charm', name: "Novice's Rose", icon: 'items/novices-charm', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'healing', percent: 3 }] },
-  { id: 'blessed-censer', name: 'Sunstaff', icon: 'items/blessed-censer', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'healing', percent: 6 }] },
-  { id: 'sacred-chalice', name: 'Sacred Cauldron', icon: 'items/sacred-chalice', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'healing', percent: 18 }] },
+  { id: 'novices-charm', name: "Novice's Charm", icon: 'items/novices-charm', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'healing', percent: 3 }] },
+  { id: 'blessed-censer', name: 'Blessed Censer', icon: 'items/blessed-censer', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'healing', percent: 6 }] },
+  { id: 'sacred-chalice', name: 'Sacred Chalice', icon: 'items/sacred-chalice', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'healing', percent: 18 }] },
   { id: 'lucky-coin', name: 'Lucky Coffer', icon: 'items/lucky-coin', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'expGain', percent: 3 }] },
   { id: 'shining-star', name: 'Star Wand', icon: 'items/shining-star', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'expGain', percent: 6 }] },
-  { id: 'rebirth-orb', name: 'Rebirth Orb', icon: 'items/rebirth-orb', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'expGain', percent: 15 }] },
+  { id: 'rebirth-orb', name: 'Rebirth Seed', icon: 'items/rebirth-orb', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'expGain', percent: 15 }] },
   { id: 'firebird-staff', name: 'Firebird Staff', icon: 'items/firebird-staff', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'healing', percent: 18 }, { stat: 'lifesteal', percent: 2 }] },
   { id: 'crescent-crook', name: 'Crescent Crook', icon: 'items/crescent-crook', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'healing', percent: 20 }, { stat: 'magicResist', flat: 150 }] },
   { id: 'tome-of-insight', name: 'Tome of Insight', icon: 'items/tome-of-insight', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'expGain', percent: 16 }, { stat: 'critChance', percent: 8 }] },
-  { id: 'phoenix-feather', name: 'Phoenix Feather', icon: 'items/phoenix-feather', type: 'consumable', rarity: 'rare', bonuses: [] },
 
   // --- Second set (stronger for their rarity): physical ---
   { id: 'warded-longsword', name: 'Warded Longsword', icon: 'items/warded-longsword', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'physicalDamage', percent: 10 }, { stat: 'magicResist', flat: 100 }] },
@@ -78,7 +77,7 @@ export const ITEM_CATALOG: ItemDef[] = [
   { id: 'warding-sigil', name: 'Warding Pendant', icon: 'items/warding-sigil', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'health', percent: 5 }, { stat: 'magicResist', flat: 150 }] },
   { id: 'bulwark-plate', name: 'Bulwark Plate', icon: 'items/bulwark-plate', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'health', percent: 25 }, { stat: 'healing', percent: 10 }] },
   { id: 'juggernaut-carapace', name: 'Juggernaut Carapace', icon: 'items/juggernaut-carapace', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'armor', flat: 450 }, { stat: 'health', percent: 15 }, { stat: 'physicalDamage', percent: -10 }] },
-  { id: 'penitents-hauberk', name: "Penitent's Cuirass", icon: 'items/penitents-hauberk', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'armor', flat: 150 }, { stat: 'healing', percent: 18 }] },
+  { id: 'penitents-hauberk', name: "Penitent's Cloak", icon: 'items/penitents-hauberk', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'armor', flat: 150 }, { stat: 'healing', percent: 18 }] },
   // Exception: armor + magic resist together.
   { id: 'ascetics-beads', name: "Ascetic's Staff", icon: 'items/ascetics-beads', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'armor', flat: 150 }, { stat: 'magicResist', flat: 150 }, { stat: 'trueDamage', percent: 22 }] },
   { id: 'brawlers-ironhide', name: "Brawler's Harness", icon: 'items/brawlers-ironhide', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'armor', flat: 250 }, { stat: 'physicalDamage', percent: 10 }, { stat: 'critChance', percent: 8 }] },
@@ -90,7 +89,7 @@ export const ITEM_CATALOG: ItemDef[] = [
   { id: 'dawnguard-helm', name: 'Dawnguard Helm', icon: 'items/dawnguard-helm', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'health', percent: 20 }, { stat: 'armor', flat: 300 }], effect: 'dawnguard', effectText: 'First hit each day deals half damage.' },
   { id: 'wellspring-crown', name: 'Wellspring Crown', icon: 'items/wellspring-crown', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'magicResist', flat: 350 }, { stat: 'healing', percent: 25 }], effect: 'wellspring', effectText: 'Overhealing from healing skills hits the boss as true damage.' },
   // --- Second set: support ---
-  { id: 'serene-lotus-charm', name: 'Serene Glowcap', icon: 'items/serene-lotus-charm', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'healing', percent: 12 }, { stat: 'expGain', percent: 12 }] },
+  { id: 'serene-lotus-charm', name: 'Serene Emerald', icon: 'items/serene-lotus-charm', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'healing', percent: 12 }, { stat: 'expGain', percent: 12 }] },
   { id: 'pilgrims-blessing', name: "Pilgrim's Staff", icon: 'items/pilgrims-blessing', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'healing', percent: 15 }, { stat: 'health', percent: 5 }, { stat: 'expGain', percent: 5 }] },
   { id: 'stalwart-sages-ring', name: "Stalwart Sage's Ring", icon: 'items/stalwart-sages-ring', type: 'equipment', rarity: 'uncommon', bonuses: [{ stat: 'magicResist', flat: 100 }, { stat: 'healing', percent: 8 }] },
   { id: 'font-of-renewal', name: 'Staff of Renewal', icon: 'items/font-of-renewal', type: 'equipment', rarity: 'rare', bonuses: [{ stat: 'healing', percent: 25 }, { stat: 'expGain', percent: 5 }] },
@@ -103,8 +102,8 @@ export const ITEM_CATALOG: ItemDef[] = [
   { id: 'worldbreaker-maul', name: 'Worldbreaker Maul', icon: 'items/worldbreaker-maul', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'physicalDamage', percent: 55 }, { stat: 'health', percent: 15 }, { stat: 'armorPen', percent: 25 }] },
   { id: 'colossus-plate', name: 'Colossus Plate', icon: 'items/colossus-plate', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'health', percent: 45 }, { stat: 'armor', flat: 350 }] },
   { id: 'archons-halo', name: "Archon's Crown", icon: 'items/archons-halo', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'healing', percent: 30 }, { stat: 'expGain', percent: 15 }, { stat: 'magicDamage', percent: 10 }] },
-  { id: 'sunpiercer-bow', name: 'Frostpiercer Crossbow', icon: 'items/sunpiercer-bow', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'trueDamage', percent: 60 }, { stat: 'critChance', percent: 12 }, { stat: 'health', percent: 15 }] },
-  { id: 'void-arbalest', name: 'Void Arbalest', icon: 'items/void-arbalest', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'trueDamage', percent: 60 }, { stat: 'critChance', percent: 10 }], effect: 'crit-streak', effectText: '+5% crit chance per crit today (max +25%).' },
+  { id: 'sunpiercer-bow', name: 'Frostpiercer Bow', icon: 'items/sunpiercer-bow', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'trueDamage', percent: 60 }, { stat: 'critChance', percent: 12 }, { stat: 'health', percent: 15 }] },
+  { id: 'void-arbalest', name: 'Void Longbow', icon: 'items/void-arbalest', type: 'equipment', rarity: 'epic', bonuses: [{ stat: 'trueDamage', percent: 60 }, { stat: 'critChance', percent: 10 }], effect: 'crit-streak', effectText: '+5% crit chance per crit today (max +25%).' },
 
   // --- Relics: side quests only, effect-first ---
   { id: 'ember-heart', name: 'Ember Heart', icon: 'items/ember-heart', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'health', percent: 20 }, { stat: 'healing', percent: 22 }], effect: 'ember-heart', effectText: 'Heal 5% of max HP each day.' },
@@ -118,12 +117,12 @@ export const ITEM_CATALOG: ItemDef[] = [
   { id: 'hunters-eye', name: "Hunter's Eye", icon: 'items/hunters-eye', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'critChance', percent: 12 }, { stat: 'trueDamage', percent: 52 }], effect: 'hunters-eye', effectText: 'Crits ignore armor and magic resist.' },
   { id: 'moonwell', name: 'Moonwell Staff', icon: 'items/moonwell', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'healing', percent: 28 }, { stat: 'magicDamage', percent: 30 }], effect: 'moonwell', effectText: 'Weekly skills are twice as strong.' },
   { id: 'dynamo-core', name: 'Dynamo Rod', icon: 'items/dynamo-core', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'magicDamage', percent: 62 }, { stat: 'critChance', percent: 12 }], effect: 'dynamo', effectText: 'Overdrive uses deal full damage.' },
-  { id: 'banner-of-endurance', name: 'Banner of Endurance', icon: 'items/banner-of-endurance', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'physicalDamage', percent: 32 }, { stat: 'health', percent: 30 }], effect: 'banner', effectText: 'Streak milestones give double EXP.' },
+  { id: 'banner-of-endurance', name: 'Standard of Endurance', icon: 'items/banner-of-endurance', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'physicalDamage', percent: 32 }, { stat: 'health', percent: 30 }], effect: 'banner', effectText: 'Streak milestones give double EXP.' },
   { id: 'null-mirror', name: 'Null Mirror', icon: 'items/null-mirror', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'magicResist', flat: 400 }, { stat: 'health', percent: 35 }], effect: 'null-mirror', effectText: 'Immune to Reflect and Blind.' },
   // Exception: physical + magic hybrid.
   { id: 'echoing-blade', name: 'Echoing Scythe', icon: 'items/echoing-blade', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'physicalDamage', percent: 36 }, { stat: 'magicDamage', percent: 36 }], effect: 'echoing-blade', effectText: 'Overkill damage carries into the next boss.' },
   // Exception: all damage types, paid for in health.
-  { id: 'scales-of-fate', name: 'Scales of Fate', icon: 'items/scales-of-fate', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'health', percent: 28 }, { stat: 'expGain', percent: 15 }], effect: 'scales-of-fate', effectText: 'Boss skills have a 50% chance to fail.' },
+  { id: 'scales-of-fate', name: 'Coin of Fate', icon: 'items/scales-of-fate', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'health', percent: 28 }, { stat: 'expGain', percent: 15 }], effect: 'scales-of-fate', effectText: 'Boss skills have a 50% chance to fail.' },
   { id: 'omen-hourglass', name: 'Omen Hourglass', icon: 'items/omen-hourglass', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'health', percent: 42 }, { stat: 'armor', flat: 150 }], effect: 'omen-hourglass', effectText: 'Rend, Ravage and Doom take half as much.' },
   { id: 'glass-crown', name: 'Glass Crown', icon: 'items/glass-crown', type: 'equipment', rarity: 'relic', bonuses: [{ stat: 'allDamage', percent: 55 }, { stat: 'health', percent: -20 }] },
 ];

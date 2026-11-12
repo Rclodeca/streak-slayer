@@ -329,7 +329,7 @@ function resolveCompletion(
   const netHealthChange = healed - reflected;
   const newHealth = Math.min(Math.max(character.currentHealth + netHealthChange, 0), maxHealth);
   const stampedCharacter = starfall ? stampEffectDay(wovenCharacter, 'starfall', currentDayKey) : wovenCharacter;
-  // A crit raises Void Arbalest's crit chance for the rest of today's hits, not this one.
+  // A crit raises Void Longbow's crit chance for the rest of today's hits, not this one.
   const streakCharacter = wasCrit ? bumpCritStreak(stampedCharacter, currentDayKey) : stampedCharacter;
   const newCharacter = netHealthChange !== 0 ? { ...streakCharacter, currentHealth: newHealth } : streakCharacter;
 

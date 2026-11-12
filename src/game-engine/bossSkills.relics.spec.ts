@@ -28,7 +28,7 @@ const hitBoss = (skill: BossSkillSlot['skill']): Boss => ({
   skills: [{ at: 0.5, skill }],
 });
 
-describe('Scales of Fate', () => {
+describe('Coin of Fate', () => {
   it('makes a skill fail on a roll under 50%, spending its breakpoint', () => {
     const character = hero(['scales-of-fate']);
     const result = resolveBreakpoints(600, hitBoss('rend'), character, DAY, () => 0.3);
