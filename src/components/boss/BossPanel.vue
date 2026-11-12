@@ -242,14 +242,14 @@ const skillTiles = computed<StatTile[]>(() => [
   align-items: flex-end;
 }
 
-/* Floats on the stage to the boss's left, in the corner the top bar left.
-   Its right edge sits at the mock's share of the stage (212px of 390, just
-   past the middle) at every phone width (196px wide at 390). */
+/* Floats on the stage to the boss's left, in the corner the top bar left,
+   10px in from the edge. 196px wide at 390, so its right edge sits just short
+   of the mock's share of the stage (212px of 390, just past the middle). */
 .boss-block {
   position: absolute;
   z-index: 4;
   top: 0;
-  left: 16px;
+  left: 10px;
   width: calc(100% * 212 / 390 - 16px);
   display: flex;
   flex-direction: column;
