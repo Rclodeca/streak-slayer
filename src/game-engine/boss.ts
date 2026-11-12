@@ -222,7 +222,7 @@ export const PERSONALITY_NAME: Record<Personality, string> = {
 
 /**
  * The art families. A family has several images; a new boss gets a random one
- * of its family's (`generateBoss`), so an armored boss is always a troll but
+ * of its family's (`generateBoss`), so an armored boss is always a dark knight but
  * never quite the same one. Names and stages stay per personality tier.
  */
 export type BossFamily = 'drifter' | 'colossus' | 'armored' | 'warded' | 'brute' | 'arcane' | 'warlord' | 'dragon' | 'serpent' | 'wraith';

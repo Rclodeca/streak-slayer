@@ -58,7 +58,7 @@ Each family has several images. A new boss gets a random image from its family, 
 
 | Family | Emphasis | Art (kept) | Count |
 |---|---|---|---|
-| Armored | Armor | Trolls | 4 |
+| Armored | Armor | Dark knights (replaced the trolls 2026-11-12) | 4 |
 | Warded | Magic resist | Golems | 4 |
 | Brute | Physical attack | Horned beasts | 4 |
 | Arcane | Magic attack | Liches + dark wizards | 9 |
@@ -71,7 +71,7 @@ Each family has several images. A new boss gets a random image from its family, 
 
 51 images in all. Where they are (`assets/pixellab/`):
 
-- Armored: `2026-11-11-bosses-run-a2/whole/` 01-04
+- Armored: `2026-11-12-bosses-control/whole/` 01-04 (the old trolls were `2026-11-11-bosses-run-a2/whole/` 01-04)
 - Warded: `2026-11-11-bosses/whole/` 13-16
 - Brute: `2026-11-11-bosses/whole/` 09-12
 - Arcane:

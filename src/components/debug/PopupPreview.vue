@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createHabit, createQuest, createRng } from '../../game-engine';
+import { BOSS_ART_COUNT, bossArt, bossFamily, createHabit, createQuest, createRng } from '../../game-engine';
 import { useBossSkillCard } from '../../composables/useBossSkillCard';
 import { useCelebration } from '../../composables/useCelebration';
 import { useDeathScreen } from '../../composables/useDeathScreen';
@@ -49,6 +49,13 @@ function showSwordWarlord() {
   bossStore.setBoss({ ...bossStore.boss, personality: 'warlord', art: 0 });
 }
 
+// The armored dark knights (armored 1-4), the next one on each press.
+function showNextKnight() {
+  const boss = bossStore.boss;
+  const art = bossFamily(boss.personality) === 'armored' ? (bossArt(boss) + 1) % BOSS_ART_COUNT.armored : 0;
+  bossStore.setBoss({ ...boss, personality: 'armored', art });
+}
+
 function previewBossSkills() {
   showBossSkill({ skill: 'ravage', outcome: 'landed', amount: 1240 });
   showBossSkill({ skill: 'blind', outcome: 'landed' });
@@ -76,6 +83,7 @@ function previewDaily() {
     <button type="button" @click="previewBossSkills">Preview boss skills (testing)</button>
     <button type="button" @click="showTallestBoss">Show tallest boss (testing)</button>
     <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>
+    <button type="button" @click="showNextKnight">Show next dark knight (testing)</button>
     <button type="button" @click="trialsBadge.set(null, true)">Trials dot (testing)</button>
     <button type="button" @click="trialsBadge.set(3, null)">Trials 3 (testing)</button>
     <button type="button" @click="trialsBadge.set(12, null)">Trials 12 (testing)</button>
