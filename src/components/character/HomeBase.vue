@@ -121,6 +121,10 @@ onBeforeUnmount(() => observer?.disconnect());
   inset: 0;
   width: var(--art-w);
   height: var(--art-h);
+  /* A taller backdrop (the testing toggle's arenas, up to 216 x 148) keeps 2 CSS
+     px per art pixel and shows its bottom, floor included. */
+  object-fit: cover;
+  object-position: bottom;
 }
 
 /* The base build (64px art) at the stage's size: 2 CSS px per art pixel, stood on

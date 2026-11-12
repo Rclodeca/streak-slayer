@@ -181,12 +181,16 @@ onBeforeUnmount(() => {
   image-rendering: pixelated;
 }
 
+/* Held to the stage's bottom, under the fighters, so their feet land on the
+   same rows on every phone: arena6b is 216 x 116, the backdrop's full height
+   with no status-bar inset; with one, the dark behind it fills the top.
+   2 CSS px per art pixel; height follows. */
 .arena-img {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: calc(50% - 216px);
   width: 432px;
-  height: 216px;
+  height: auto;
   image-rendering: pixelated;
 }
 </style>

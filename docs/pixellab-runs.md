@@ -28,6 +28,32 @@ Entry template:
 
 ## 2026-11-12: boss arena (default fight-stage backdrop, one shared arena instead of a scene per boss)
 
+**Run 6 extended to 216x116 (8 rows of floor only), `2026-11-12-arena-run6-floor8/`, job 2ed90b16-961a-41e8-a633-c7795d8aebd3**
+- Why: the user found the 216x148 extension "awful" and dropped the notch inset ("We can have a black bar at the top for the notch"), so a stage backdrop only has to fill the stage's backdrop box: 116 rows at 390 wide without an inset (the painted scene's canvas height). Run 6 is 108 rows, so it needed 8 more rows of floor under the hero.
+- Tool + settings: `inpaint_image`, image `input.png` (216x116: run 6's tile unchanged at rows 0-107, rows 108-115 starting as copies of its bottom row), custom mask `mask.png` (white = rows 108-115, black = run 6), `crop_to_mask` default (true), background follows the input (opaque). Both files in the run folder. Shown in the dev toggles as `arena6b` (`public/sprites/stage/arena6b.png`).
+- Description: `more of the same flagstone floor continuing toward the viewer, matching the existing floor tiles, colours and lighting exactly, no characters, no objects`
+- Cost: 10 generations.
+- Result: run 6's pixels are identical (checked: 0 of 23,328 changed). On the stage at 390 with no inset, the image fills the backdrop box exactly (top and bottom flush), the hero's feet land on row 108 and the boss's on row 86, the same rows as when run 6 was approved, with the 8 new floor rows below the hero. User: "looks good". **Shipped as the default boss arena.**
+
+**Runs 8 and 9, `2026-11-12-arena-run8/` (job 51f031fd-f565-46ca-a172-f620b359428f) and `2026-11-12-arena-run9/` (job 40a9470f-a791-4947-932e-7668b782e8ed)**, run 6's prompt at the correct stage height
+- Why: the user found the inpaint-extended run 6 "awful" and asked for run 6's exact prompt regenerated from scratch at the correct size, run twice. Correct size, measured at 390 wide: the painted scene's canvas (which fills the stage's backdrop box) is 116 rows without a status-bar inset and 146 rows with a 59px inset (notched iPhone, home-screen app), so the canvas is 216 x 148 (up to a 62px inset), held to the stage's bottom; on phones without an inset the top rows are cropped.
+- Tool + settings: `create_image_pro`, **216x148, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Shown in the dev toggles as `arena8` and `arena9` (`public/sprites/stage/arena8.png`, `arena9.png`).
+- Description (both, unchanged from run 6): `fantasy RPG boss arena, side view with depth, camera just above floor level, stone hall, straight dark stone back wall set back from the front with an open stretch of floor before it, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, broken pillars and tattered banners at the far edges, flagstone floor along the bottom third of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations each, 20 in all, 1 candidate each (the receipt confirmed 10 at 216x148).
+- Result, on the stage at 390 (hero's feet on row 140, boss's on row 118 in both):
+  - Run 8: works. A flagstone floor from about row 95, so the boss stands well in front of the wall. Two arched gates, two lit braziers, banners at the edges, a vaulted ceiling at the top that shows behind the status bar on a notched phone and is cropped otherwise. Closest to run 6.
+  - Run 9: the middle floor came out as a flat, untextured blue-grey area from about row 75 to row 118 (read "plain open floor" literally), with flagstones only in a strip along the bottom. Square gates, lit braziers, broken pillars at the edges. Looks unfinished.
+  - Not yet judged by the user.
+
+**Run 6 extended to 216x148, `2026-11-12-arena-run6-tall/`, job c5f5b978-e671-46bf-ab6c-42537136f42b** (this is the shipped `public/sprites/stage/arena6.png`)
+- Why: the arena was generated 108 rows tall, copied from the armory, but the phone stage is 235px (118 rows) without a status-bar inset and about 294px (147 rows) with a 59px one. The image was pinned to the stage top, so the floor ended at the hero's feet with 19px of flat fill below, and on a notched phone in home-screen mode it ended about 59px above the fighters.
+- Tool + settings: `inpaint_image`, image `input.png` (216x148: run 6's tile pasted unchanged at rows 30-137; rows 0-29 and 138-147 start as copies of its top and bottom rows), custom mask `mask.png` (white = rows 0-29 and 138-147, black = run 6's rows), `crop_to_mask` default (true), background follows the input (opaque). Both files are in the run folder; built in code with `scripts/lib/pnglib.cjs`.
+- Description: `continue the same stone hall: more of the dark stone back wall above, more flagstone floor below, matching the existing art, no characters`
+- Cost: 10 generations (took 28s).
+- Result: run 6's pixels are identical (checked: 0 of 23,328 changed). The top band continues the wall and pillars upward; the bottom band adds 10 rows of flagstones. Shipped with the arena held to the stage's bottom (`StageScene.vue`): at 390, with and without a simulated 59px inset, the hero's feet land on row 140 of 148 (8 rows of floor below them) and the boss's on row 118 (run 6's row 88). Without an inset the top is cropped; with one, the extra wall fills the status bar.
+- Run 7 (the skin) is still 108 rows and would need the same extension before it is used.
+- User: "This looks awful." Not used; replaced by the 8-row floor extension (`arena6b`) after the user dropped the notch inset.
+
 All seven runs are kept: the tiles in `assets/pixellab/2026-11-12-arena*/` (git-ignored, back them up) and copies in `public/sprites/stage/` for the dev toggles.
 
 | Run | File | Status |
@@ -37,8 +63,12 @@ All seven runs are kept: the tiles in `assets/pixellab/2026-11-12-arena*/` (git-
 | 3 | `arena3.png` | **kept for a future sellable or alternative stage** (right depth, wall too detailed for the default) |
 | 4 | `arena4.png` | **kept as a possible Hero tab backdrop** (wall too close for the stage) |
 | 5 | `arena5.png` | kept; wall too close (layout reference ignored) |
-| 6 | `arena6.png` | **the default boss arena** |
-| 7 | `arena7.png` | **kept as a potential skin** |
+| 6 | `arena6.png` | kept; the approved art, 216x108 (too short for the stage) |
+| 6b | `arena6b.png` | **the default boss arena**: run 6 with 8 rows of floor inpainted below, 216x116 |
+| 6 tall | (not shipped) | rejected: run 6 inpainted to 216x148 ("This looks awful") |
+| 7 | `arena7.png` | **kept as a potential skin** (216x108; needs the same 8-row floor before use) |
+| 8 | `arena8.png` | kept; run 6's prompt at 216x148, works, closest to run 6 |
+| 9 | `arena9.png` | kept; run 6's prompt at 216x148, flat untextured floor |
 
 **Runs 6 and 7, `2026-11-12-arena-run6/` (job 9f7f9f85-edbb-480a-825d-ef8714c6d826) and `2026-11-12-arena-run7/` (job 71eb3fe2-46ce-4adf-8ac3-c76f2d8e61e4)**, the same prompt submitted twice at once
 - Tool + settings: same as runs 1-4: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Shown in the dev toggles as `arena6` and `arena7` (`public/sprites/stage/arena6.png`, `arena7.png`).
