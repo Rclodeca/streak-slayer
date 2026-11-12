@@ -8,7 +8,7 @@ import { TUNING } from './constants/tuning';
 import { healingAllowed, rerollDamageType } from './habits';
 import { availableRelics, doublableItems, equippedDoubledItemIds, unownedDroppableItems } from './items';
 import type { ItemDef } from './items';
-import { effectiveStat } from './leveling';
+import { activeCritBoost, activeHealBoost, effectiveStat } from './leveling';
 import { assignSpecialIfEligible, assignUltIfEligible, grantOverdrive } from './levelRewards';
 import { shuffle, type Rng } from './rng';
 import type { Character, CritBoostStatusEffect, Habit, HealBoostStatusEffect, Quest } from './types';
@@ -22,8 +22,11 @@ export interface EventDef {
   minLevel: number;
   /** Once picked, never offered again this run (tracked in Character.takenEventIds). */
   oneTime: boolean;
-  /** Level and one-time checks are done by `eligibleEvents`; this covers event-specific requirements. */
-  isEligible: (character: Character, habits: Habit[], quests: Quest[]) => boolean;
+  /**
+   * Level and one-time checks are done by `eligibleEvents`; this covers event-specific requirements.
+   * `todayKey` is the current day key, for events that depend on a timed effect; without it they count as eligible.
+   */
+  isEligible: (character: Character, habits: Habit[], quests: Quest[], todayKey?: string) => boolean;
 }
 
 export const EVENTS_PER_CHOICE = 3;
@@ -43,7 +46,7 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: `A random daily skill permanently deals ×${TUNING.SPECIAL_MULTIPLIER} damage.`,
     minLevel: TUNING.SPECIAL_LEVEL,
     oneTime: true,
-    isEligible: (_character, habits) => habits.some((h) => h.period === 'daily' && !h.isBad),
+    isEligible: (_character, habits) => !habits.some((h) => h.isSpecial) && habits.some((h) => h.period === 'daily' && !h.isBad),
   },
   {
     id: 'ult',
@@ -51,7 +54,7 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: `A random weekly skill permanently deals ×${TUNING.ULT_MULTIPLIER} damage.`,
     minLevel: TUNING.ULT_LEVEL,
     oneTime: true,
-    isEligible: (_character, habits) => habits.some((h) => h.period === 'weekly' && !h.isBad),
+    isEligible: (_character, habits) => !habits.some((h) => h.isUlt) && habits.some((h) => h.period === 'weekly' && !h.isBad),
   },
   {
     id: 'overdrive',
@@ -107,7 +110,8 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: `+${Math.round(TUNING.HEAL_BOOST_BONUS * 100)}% healing for ${TUNING.HEAL_BOOST_DAYS} days.`,
     minLevel: 1,
     oneTime: false,
-    isEligible: () => true,
+    // Not while one is running: a pick would only refresh it.
+    isEligible: (character, _habits, _quests, todayKey) => !todayKey || !activeHealBoost(character, todayKey),
   },
   {
     id: 'double-item',
@@ -123,7 +127,7 @@ export const EVENT_DEFS: readonly EventDef[] = [
     description: `+${Math.round(TUNING.CRIT_BOOST_BONUS * 100)}% crit chance for ${TUNING.CRIT_BOOST_DAYS} days.`,
     minLevel: 1,
     oneTime: false,
-    isEligible: () => true,
+    isEligible: (character, _habits, _quests, todayKey) => !todayKey || !activeCritBoost(character, todayKey),
   },
 ];
 
@@ -133,12 +137,19 @@ export function getEventDef(id: EventId): EventDef {
   return def;
 }
 
-/** Every event the character could be offered right now (level gate, one-time already taken, event-specific checks). */
-export function eligibleEvents(character: Character, habits: Habit[], quests: Quest[] = []): EventDef[] {
+/**
+ * Every event the character could be offered right now (level gate, one-time already taken, event-specific checks).
+ * If a pick would otherwise have nothing to offer (both boosts running, nothing else open), the boosts come back
+ * so a pending pick can never be stuck.
+ */
+export function eligibleEvents(character: Character, habits: Habit[], quests: Quest[] = [], todayKey?: string): EventDef[] {
   const taken = character.takenEventIds ?? [];
-  return EVENT_DEFS.filter(
-    (e) => character.level >= e.minLevel && !(e.oneTime && taken.includes(e.id)) && e.isEligible(character, habits, quests),
-  );
+  const eligibleAt = (key?: string) =>
+    EVENT_DEFS.filter(
+      (e) => character.level >= e.minLevel && !(e.oneTime && taken.includes(e.id)) && e.isEligible(character, habits, quests, key),
+    );
+  const events = eligibleAt(todayKey);
+  return events.length > 0 || todayKey === undefined ? events : eligibleAt(undefined);
 }
 
 /**
@@ -147,8 +158,15 @@ export function eligibleEvents(character: Character, habits: Habit[], quests: Qu
  * event eligible but never offered, it is forced into the choices (replacing the
  * last one) so a run's side-only items stay obtainable.
  */
-export function rollEventChoices(character: Character, habits: Habit[], rng: Rng, quests: Quest[] = [], count = EVENTS_PER_CHOICE): EventDef[] {
-  const eligible = eligibleEvents(character, habits, quests);
+export function rollEventChoices(
+  character: Character,
+  habits: Habit[],
+  rng: Rng,
+  quests: Quest[] = [],
+  count = EVENTS_PER_CHOICE,
+  todayKey?: string,
+): EventDef[] {
+  const eligible = eligibleEvents(character, habits, quests, todayKey);
   let choices = shuffle(eligible, rng).slice(0, count);
   const sideQuest = eligible.find((e) => e.id === 'side-quest');
   if (sideQuest && !choices.includes(sideQuest) && (character.sideQuestPicksMissed ?? 0) >= TUNING.SIDE_QUEST_GUARANTEE_LEVELS) {
@@ -162,17 +180,18 @@ export function rollEventChoices(character: Character, habits: Habit[], rng: Rng
  * event was eligible but not among `offered` counts as a miss; one where it
  * was offered resets the count. Picks where it wasn't eligible leave it alone.
  */
-export function recordSideQuestOffer(character: Character, offered: readonly EventId[], sideQuestEligible: boolean): Character {
+export function recordSideQuestOffer(character: Character, offered: readonly string[], sideQuestEligible: boolean): Character {
   if (!sideQuestEligible) return character;
   const missed = offered.includes('side-quest') ? 0 : (character.sideQuestPicksMissed ?? 0) + 1;
   return { ...character, sideQuestPicksMissed: missed };
 }
 
-/** Records a pick: marks a one-time event as taken, spends one pending pick and drops the offered challenge. */
+/** Records a pick: marks a one-time event as taken, spends one pending pick and drops the offered cards and challenge. */
 export function consumeEventPick(character: Character, id: EventId): Character {
   const taken = character.takenEventIds ?? [];
   return {
     ...character,
+    offeredEventIds: undefined,
     offeredChallengeId: undefined,
     takenEventIds: getEventDef(id).oneTime && !taken.includes(id) ? [...taken, id] : taken,
     pendingEventPicks: Math.max(0, (character.pendingEventPicks ?? 0) - 1),

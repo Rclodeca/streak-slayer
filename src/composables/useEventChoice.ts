@@ -1,7 +1,8 @@
 // Drives the level-up event popup (EventChoiceModal). Each level gained adds
 // one pending pick (see grantEventPicks in useCombatActions); this rolls up
-// to 3 eligible events for the front pick and applies whichever the player
-// chooses. Module-scoped options for the same singleton reasoning as
+// to 3 eligible events for the front pick, keeps them on the character
+// (offeredEventIds) so a reload can't re-roll them, and applies whichever the
+// player chooses. Module-scoped state for the same singleton reasoning as
 // useItemDropQueue — the modal is mounted once in AppShell.
 
 import { computed, ref } from 'vue';
@@ -19,6 +20,7 @@ import {
   dailyPeriodKey,
   drawChallenge,
   eligibleEvents,
+  EVENT_DEFS,
   getChallengeDef,
   heroClassFor,
   maxEquipSlots,
@@ -27,7 +29,7 @@ import {
   rollEventChoices,
   takeChallenge,
 } from '../game-engine';
-import type { ChallengeDef, ChallengeEvent, ChallengeId, EventDef, EventId, ItemDef } from '../game-engine';
+import type { Character, ChallengeDef, ChallengeEvent, ChallengeId, EventDef, EventId, ItemDef } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -39,7 +41,6 @@ import { useCombatActions } from './useCombatActions';
 import { useItemDropQueue } from './useItemDropQueue';
 
 const rng = createRng();
-const options = ref<EventDef[] | null>(null);
 // The item just enchanted, shown on its own screen until the player continues.
 const revealed = ref<ItemDef | null>(null);
 
@@ -54,7 +55,7 @@ export function useEventChoice() {
   const { reportChallenge } = useCombatActions();
 
   const pending = computed(() => characterStore.character.pendingEventPicks ?? 0);
-  const choices = computed(() => options.value ?? []);
+  const choices = computed<EventDef[]>(() => (characterStore.character.offeredEventIds ?? []).flatMap((id) => EVENT_DEFS.find((e) => e.id === id) ?? []));
 
   /** The challenge the side-quest card names, once rolled. */
   const offeredChallenge = computed<ChallengeDef | null>(() => {
@@ -68,34 +69,41 @@ export function useEventChoice() {
    * the same one), otherwise a fresh draw. With no side-quest card rolled,
    * nothing is offered.
    */
-  function settleOfferedChallenge(rolled: EventDef[]) {
-    const character = characterStore.character;
+  function settleOfferedChallenge(character: Character, rolled: readonly string[]): ChallengeId | undefined {
+    if (!rolled.includes('side-quest')) return undefined;
     const current = character.offeredChallengeId;
-    let next: ChallengeId | undefined;
-    if (rolled.some((event) => event.id === 'side-quest')) {
-      next = current && offerableChallenges(character).some((def) => def.id === current) ? current : (drawChallenge(character, rng) ?? undefined);
-    }
-    if (next !== current) characterStore.setCharacter({ ...character, offeredChallengeId: next });
+    return current && offerableChallenges(character).some((def) => def.id === current) ? current : (drawChallenge(character, rng) ?? undefined);
   }
 
-  /** Rolls the options for the front pick if none are rolled yet; clears them once no picks remain. */
+  /**
+   * Rolls the cards for the front pick if none are kept yet (or a kept one is no
+   * longer eligible), and clears them once no picks remain. Only writes when
+   * something changed, since the modal runs it from an effect that reads the character.
+   */
   function ensureChoices() {
-    if (pending.value === 0) options.value = null;
-    else if (options.value === null) {
-      options.value = rollEventChoices(characterStore.character, habitStore.habits, rng, questStore.quests);
-      settleOfferedChallenge(options.value);
+    const character = characterStore.character;
+    if (pending.value === 0) {
+      if (character.offeredEventIds) characterStore.setCharacter({ ...character, offeredEventIds: undefined });
+      return;
     }
+    const todayKey = dailyPeriodKey(debugClockStore.now());
+    const kept = character.offeredEventIds;
+    const eligible = eligibleEvents(character, habitStore.habits, questStore.quests, todayKey);
+    const stillValid = kept !== undefined && kept.every((id) => eligible.some((e) => e.id === id));
+    const rolled = stillValid ? kept : rollEventChoices(character, habitStore.habits, rng, questStore.quests, undefined, todayKey).map((e) => e.id);
+    const offeredChallengeId = settleOfferedChallenge(character, rolled);
+    if (stillValid && offeredChallengeId === character.offeredChallengeId) return;
+    characterStore.setCharacter({ ...character, offeredEventIds: rolled, offeredChallengeId });
   }
 
   function finish(id: EventId) {
     const character = characterStore.character;
-    const offered = (options.value ?? []).map((e) => e.id);
+    const offered = character.offeredEventIds ?? [];
     // Being offered already proves it was eligible; checking again only matters when it wasn't offered, because
     // the pick itself (e.g. promising the last available relic) can make it ineligible by now.
     const sideQuestEligible =
       offered.includes('side-quest') || eligibleEvents(character, habitStore.habits, questStore.quests).some((e) => e.id === 'side-quest');
     characterStore.setCharacter(recordSideQuestOffer(consumeEventPick(character, id), offered, sideQuestEligible));
-    options.value = null;
   }
 
   /** Picks an event that needs no further input (everything except side-quest and reroll-skill). */
@@ -141,10 +149,14 @@ export function useEventChoice() {
       const dropped = characterStore.grantItemDrops(bossStore.boss.index, rng, 1);
       enqueueDrops(dropped);
       if (dropped.some((item) => item.rarity === 'epic')) happened = { type: 'epic-dropped' };
-    } else {
-      // item-slots / item-slots-2: the cap once this pick is recorded.
+    } else if (id === 'item-slots' || id === 'item-slots-2') {
+      // The cap once this pick is recorded.
       const takenEventIds = [...(characterStore.character.takenEventIds ?? []), id];
       activityLogStore.addEntry({ kind: 'item-slots-gained', slots: maxEquipSlots({ takenEventIds }) });
+    } else {
+      // Compile error here means a new event has no handler above.
+      const unhandled: never = id;
+      throw new Error(`Unhandled event: ${unhandled}`);
     }
     finish(id);
     if (happened) reportChallenge(happened);

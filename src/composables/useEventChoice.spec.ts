@@ -45,6 +45,30 @@ describe('useEventChoice', () => {
     expect(events.choices.value).toEqual([]);
   });
 
+  it('keeps the rolled cards across repeated calls and a reload, instead of re-rolling', () => {
+    const { characterStore, events } = setup(7, 1);
+    const first = events.choices.value.map((c) => c.id);
+    expect(characterStore.character.offeredEventIds).toEqual(first);
+    for (let i = 0; i < 20; i++) events.ensureChoices();
+    expect(events.choices.value.map((c) => c.id)).toEqual(first);
+  });
+
+  it('re-rolls when a kept card is no longer eligible', () => {
+    const { characterStore, events } = setup(7, 1);
+    // 'item-slots-2' needs level 20 and the first slots event: it can never be eligible here.
+    characterStore.setCharacter({ ...characterStore.character, offeredEventIds: ['item-slots-2'] });
+    events.ensureChoices();
+    expect(events.choices.value.map((c) => c.id)).not.toContain('item-slots-2');
+    expect(events.choices.value.length).toBeGreaterThan(0);
+  });
+
+  it('clears the kept cards once the pick is spent', () => {
+    const { characterStore, events } = setup(7, 1);
+    events.choose('overdrive');
+    expect(characterStore.character.offeredEventIds).toBeUndefined();
+    expect(events.choices.value).toEqual([]);
+  });
+
   it('applying a one-time event spends the pick and marks it taken', () => {
     const { characterStore, habitStore, events } = setup(7, 2);
     events.choose('special');

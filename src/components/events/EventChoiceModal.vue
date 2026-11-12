@@ -36,12 +36,20 @@ const statGains = computed(() =>
   GAIN_STATS.map((stat) => ({ stat, amount: Math.round(levelUp.value?.statDeltas[stat] ?? 0) })).filter((gain) => gain.amount > 0),
 );
 
-watchEffect(ensureChoices);
+// Cards are rolled only once the popup is actually showing (or to clear them when no
+// picks remain), so what they were drawn from can't change before the player sees them.
+watchEffect(() => {
+  if (eventChoiceVisible.value || pending.value === 0) ensureChoices();
+});
 
 const step = ref<'choose' | 'reroll'>('choose');
-watch(choices, () => {
-  step.value = 'choose';
-});
+// Keyed on the card ids, so only a new roll (not any other character change) sends the pick back to the cards.
+watch(
+  () => choices.value.map((event) => event.id).join(),
+  () => {
+    step.value = 'choose';
+  },
+);
 
 // Reroll step: tap a row to pick it, then confirm.
 const rerollPickId = ref<string | null>(null);

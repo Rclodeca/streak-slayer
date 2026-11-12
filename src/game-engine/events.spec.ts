@@ -92,6 +92,13 @@ describe('eligibleEvents', () => {
     expect(result).toContain('side-quest');
   });
 
+  it('hides special and ult once one is assigned, so the pick is never spent on nothing', () => {
+    const habits = [makeHabit({ id: 'd' }), makeHabit({ id: 'd2', isSpecial: true }), makeHabit({ id: 'w', period: 'weekly' }), makeHabit({ id: 'w2', period: 'weekly', isUlt: true })];
+    const offered = ids(eligibleEvents(makeCharacter({ level: 30 }), habits));
+    expect(offered).not.toContain('special');
+    expect(offered).not.toContain('ult');
+  });
+
   it('hides special/ult/overdrive when no matching good habit exists', () => {
     const habits = [makeHabit({ id: 'bad', isBad: true }), makeHabit({ id: 'w', period: 'weekly', isBad: true })];
     const result = ids(eligibleEvents(makeCharacter({ level: 10 }), habits));
@@ -195,6 +202,10 @@ describe('consumeEventPick', () => {
     expect(result.takenEventIds).toEqual([]);
   });
 
+  it('drops the rolled cards whichever event is picked', () => {
+    expect(consumeEventPick(makeCharacter({ pendingEventPicks: 1, offeredEventIds: ['heal', 'item-drop'] }), 'heal').offeredEventIds).toBeUndefined();
+  });
+
   it('clears the offered challenge whichever event is picked', () => {
     expect(consumeEventPick(makeCharacter({ pendingEventPicks: 1, offeredChallengeId: 'resist' }), 'heal').offeredChallengeId).toBeUndefined();
     expect(consumeEventPick(makeCharacter({ pendingEventPicks: 1, offeredChallengeId: 'resist' }), 'side-quest').offeredChallengeId).toBeUndefined();
@@ -210,6 +221,20 @@ describe('applyOverdriveEvent', () => {
 });
 
 describe('boost events', () => {
+  it('are hidden while that boost is running, and back once it expires', () => {
+    const character = applyHealBoostEvent(applyCritBoostEvent(makeCharacter(), '2026-10-17'), '2026-10-17');
+    const habits = [makeHabit({ id: 'd' })];
+    expect(ids(eligibleEvents(character, habits, [], '2026-10-18'))).not.toContain('crit-boost');
+    expect(ids(eligibleEvents(character, habits, [], '2026-10-18'))).not.toContain('heal-boost');
+    expect(ids(eligibleEvents(character, habits, [], '2026-10-20'))).toEqual(expect.arrayContaining(['crit-boost', 'heal-boost']));
+    expect(ids(eligibleEvents(character, habits))).toEqual(expect.arrayContaining(['crit-boost', 'heal-boost'])); // no day key, no check
+  });
+
+  it('come back when nothing else is left, so a pick is never stuck', () => {
+    const character = applyHealBoostEvent(applyCritBoostEvent(makeCharacter({ level: 1, ownedItemIds: ITEM_CATALOG.map((i) => i.id) }), '2026-10-17'), '2026-10-17');
+    expect(ids(eligibleEvents(character, [], [], '2026-10-18'))).toEqual(['crit-boost', 'heal-boost']);
+  });
+
   it('crit boost adds a timed crit bonus and refreshes rather than stacks', () => {
     const base = makeCharacter();
     const once = applyCritBoostEvent(base, '2026-10-17');
