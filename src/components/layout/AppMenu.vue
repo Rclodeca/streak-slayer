@@ -176,6 +176,7 @@ onBeforeUnmount(() => {
 <template>
   <div ref="root" class="app-menu">
     <button type="button" class="menu-button" aria-label="Menu" aria-haspopup="menu" :aria-expanded="open" @click="toggle">
+      <Settings class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
       <Settings :size="22" />
       <template v-if="trialsItem">
         <span v-if="claimCount" class="trials-count"><span>{{ claimCount }}</span></span>

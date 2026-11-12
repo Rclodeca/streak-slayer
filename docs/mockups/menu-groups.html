@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>StreakSlayer — menu + trials grouping</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#1b1c20;color:#b8b6b0;font:500 16px/1.35 system-ui,sans-serif}
+.page{padding:28px 16px 60px}
+h1{text-align:center;font:600 14px system-ui;letter-spacing:.3em;color:#ece8de;margin:0 0 6px;text-transform:uppercase}
+.lede{text-align:center;margin:0 auto 24px;max-width:680px;font-size:14px}
+.grid{display:flex;flex-wrap:wrap;gap:36px 26px;justify-content:center}
+.col{width:390px}
+.col h2{font:700 12px system-ui;letter-spacing:.2em;color:#ece8de;margin:0 0 3px;text-transform:uppercase}
+.col p{margin:0 0 10px;min-height:56px;font-size:14px}
+
+/* The phone stage's top: boss name + HP on the left, its plinth on the right, the screen's right edge = the stage's. */
+.stage{position:relative;width:390px;height:132px;overflow:hidden;margin-bottom:8px}
+.night{background:linear-gradient(#141a2a,#0c0f17)}
+.day{background:linear-gradient(#bcd3e6,#e8dfc4)}
+.plat{position:absolute;right:60px;top:96px;width:136px;height:18px;background:#333254}
+.day .plat{background:#8a8470}
+.boss{position:absolute;left:10px;top:6px;width:196px;text-shadow:0 0 8px #000,0 1px 2px #000}
+.boss b{display:block;font:600 13.6px system-ui;color:#ece8de}
+.boss i{display:block;font-style:normal;height:16px;margin-top:5px;background:linear-gradient(90deg,#b8342a 72%,#2a1414 72%);border:1px solid #000}
+
+/* An icon in its 44px tap box; .rim draws the dark copy under it. */
+.ib{position:relative;display:grid;place-items:center;width:44px;height:44px;color:#d8b46a}
+.ib svg{grid-area:1/1}
+.ib .rim{color:#161622}
+.count{position:absolute;top:4px;right:3px;min-width:16px;height:16px;padding:0 4px;background:#c8402f;color:#eaeaf1;font:700 10.4px/16px system-ui;text-align:center;box-shadow:0 0 0 2px #161622}
+
+/* Stepped pixel corners. */
+.px3{clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)}
+.px3-left{clip-path:polygon(3px 0,100% 0,100% 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)}
+.px3-bottom{clip-path:polygon(0 0,100% 0,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px))}
+
+/* A Shared pill */
+.a{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;background:#2d2c50;box-shadow:inset 0 0 0 1px #3d3c68,inset 0 0 0 2px #0e0e19}
+.a .sep{height:1px;margin:0 9px;background:#4a4a74}
+
+/* B Edge tab, stacked */
+.b{position:absolute;top:6px;right:0;display:flex;flex-direction:column;padding-right:2px;background:#2d2c50;box-shadow:inset 1px 0 0 #3d3c68,inset 0 1px 0 #3d3c68,inset 0 -1px 0 #3d3c68}
+.b .sep{height:1px;margin:0 9px;background:#4a4a74}
+
+/* C Edge tab, side by side */
+.c{position:absolute;top:6px;right:0;display:flex;padding-right:2px;background:#2d2c50;box-shadow:inset 1px 0 0 #3d3c68,inset 0 1px 0 #3d3c68,inset 0 -1px 0 #3d3c68}
+.c .sep{width:1px;margin:9px 0;background:#4a4a74}
+
+/* D Hanging banner: the section banners' cloth, hung from the top edge, swallowtail end */
+.d{position:absolute;top:0;right:8px;width:48px;padding:4px 2px 14px;display:flex;flex-direction:column;align-items:center;background:linear-gradient(90deg,#24233f,#33325a 50%,#24233f);
+  clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 10px),0 100%)}
+.d::before,.d::after{content:'';position:absolute;top:0;bottom:0;width:2px;background:#b39a66;opacity:.8}
+.d::before{left:3px}.d::after{right:3px}
+.d .sep{width:14px;height:2px;margin:1px 0;background:#b39a66;opacity:.7}
+
+/* E Notch from the top edge */
+.e{position:absolute;top:0;right:10px;display:flex;flex-direction:row-reverse;padding:0 3px 2px;background:#2d2c50;box-shadow:inset 1px 0 0 #3d3c68,inset -1px 0 0 #3d3c68,inset 0 -1px 0 #3d3c68}
+.e .sep{width:1px;margin:10px 0;background:#4a4a74}
+
+/* F Medallion + satellite */
+.f{position:absolute;top:6px;right:6px;width:44px;height:96px}
+.f .med{position:absolute;top:0;right:0;width:44px;height:44px;border-radius:50%;background:#2d2c50;box-shadow:inset 0 0 0 2px #b39a66,0 0 0 2px #0e0e19}
+.f .sat{position:absolute;top:44px;right:16px;width:44px;height:44px;display:grid;place-items:center}
+.f .sat .ring{position:absolute;width:34px;height:34px;border-radius:50%;background:#2d2c50;box-shadow:inset 0 0 0 2px #b39a66,0 0 0 2px #0e0e19}
+.f .sat .ib{width:34px;height:34px}
+.f .chain{position:absolute;top:40px;right:28px;width:2px;height:12px;background:#b39a66;transform:rotate(30deg)}
+
+/* G Stone rail along the edge, icons in sockets */
+.g{position:absolute;top:0;right:0;width:54px;height:104px;padding:4px 0 0 6px;display:flex;flex-direction:column;gap:4px;
+  background:linear-gradient(90deg,#1a1b26,#252636);box-shadow:inset 2px 0 0 #0b0b12,inset 3px 0 0 #3a3b4e}
+.g .sock{width:44px;height:44px;background:#12131c;box-shadow:inset 0 2px 0 #08080e,inset 0 -1px 0 #3a3b4e}
+.g .rivet{position:absolute;left:10px;width:3px;height:3px;background:#b39a66}
+
+/* H Bare gold, chained */
+.h{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;align-items:center}
+.h .link{width:2px;height:6px;background:#d8b46a;box-shadow:0 0 0 1px #161622}
+
+/* I Shadow pool: no shape, a soft dark corner behind bare gold */
+.i-pool{position:absolute;top:0;right:0;width:140px;height:132px;background:radial-gradient(circle at 100% 0,rgba(6,6,14,.82),rgba(6,6,14,.5) 38%,transparent 70%)}
+.i{position:absolute;top:6px;right:6px;display:flex;flex-direction:column}
+
+/* J Split key: one pill, the two halves cut apart by a dark notch */
+.j{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:3px}
+.j .ib{background:#2d2c50;box-shadow:inset 0 0 0 1px #3d3c68}
+.j .top{clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% 100%,0 100%,0 3px,3px 3px)}
+.j .bot{clip-path:polygon(0 0,100% 0,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px))}
+.j-back{position:absolute;top:5px;right:5px;width:46px;height:93px;background:#0e0e19}
+</style></head><body><div class="page">
+<h1>Menu + Trials: grouping</h1>
+<p class="lede">Ways to show the cog and the Trials gift together on the phone stage, in their real order (cog in the corner, Trials under or beside it). The gift shows a claim count to check the badge. Night stage, then a day stage. Each tap box stays 44px.</p>
+<div class="grid" id="grid"></div>
+</div>
+<script>
+const COG='<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>'
+const GIFT='<path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/>'
+const svg=(p,w,cls='')=>`<svg class="${cls}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`
+// rim: draw the dark copy under the gold one
+const icon=(p,rim,extra='',cls='')=>`<div class="ib ${cls}">${rim?svg(p,4.5,'rim'):''}${svg(p,2)}${extra}</div>`
+const cog=(rim,cls)=>icon(COG,rim,'',cls), gift=(rim,cls)=>icon(GIFT,rim,'<span class="count">2</span>',cls)
+const scene=(kind,inner)=>`<div class="stage ${kind}"><div class="boss"><b>#12 Iron Guardian</b><i></i></div><div class="plat"></div>${inner}</div>`
+const OPTS=[
+ ['A  Shared pill','One card-indigo pill holds both, split by a hairline. Reads as one control group; quiet on both stages.',
+  `<div class="a px3">${cog()}<div class="sep"></div>${gift()}</div>`],
+ ['B  Edge tab, stacked','The same pill, but it runs off the right edge of the screen like a drawer tab. Left corners cut, right side open.',
+  `<div class="b px3-left">${cog()}<div class="sep"></div>${gift()}</div>`],
+ ['C  Edge tab, side by side','One row along the top, fixed to the right edge: gift, then cog in the corner. Frees the space under the cog for the boss.',
+  `<div class="c px3-left">${gift()}<div class="sep"></div>${cog()}</div>`],
+ ['D  Hanging banner','The section banners\' cloth, hung from the top edge with brass trim and a swallowtail end. Most "game", ties to the tab banners.',
+  `<div class="d">${cog()}<div class="sep"></div>${gift()}</div>`],
+ ['E  Top notch','A tab that hangs down from the top edge, both icons in a row, cut bottom corners. Like part of the frame, not floating.',
+  `<div class="e px3-bottom">${cog()}<div class="sep"></div>${gift()}</div>`],
+ ['F  Medallion + satellite','The cog in a brass-ringed medallion, the gift a smaller one hung off it on a short chain. The cog leads, Trials is secondary.',
+  `<div class="f"><div class="med"></div><div style="position:absolute;top:0;right:0">${cog()}</div><div class="chain"></div><div class="sat"><div class="ring"></div>${icon(GIFT,false,'<span class="count" style="top:-2px;right:-4px">2</span>')}</div></div>`],
+ ['G  Stone rail','A strip of dark stone set into the right edge, each icon in a sunk socket. Heavy and built-in.',
+  `<div class="g"><div class="sock">${cog()}</div><div class="sock">${gift()}</div></div>`],
+ ['H  Bare gold, chained','Today\'s bare gold icons (E) joined by a short gold link, so they read as a pair without any background.',
+  `<div class="h">${cog(true)}<div class="link"></div>${gift(true)}</div>`],
+ ['I  Shadow pool','No shape at all: a soft dark wash in the top-right corner behind the bare gold icons. Cheap (one gradient), helps on the day stage.',
+  `<div class="i-pool"></div><div class="i">${cog(true)}${gift(true)}</div>`],
+ ['J  Split key','One pill cut into two keys by a dark seam: outer corners stepped, inner edge straight. Clearly two buttons, clearly one group.',
+  `<div class="j-back px3"></div><div class="j">${cog(false,'top')}${gift(false,'bot')}</div>`],
+]
+document.getElementById('grid').innerHTML=OPTS.map(([t,d,h])=>`<div class="col"><h2>${t}</h2><p>${d}</p>${scene('night',h)}${scene('day',h)}</div>`).join('')
+</script>
+</body></html>

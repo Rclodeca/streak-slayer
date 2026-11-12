@@ -286,12 +286,14 @@ onBeforeUnmount(() => {
     padding-top: var(--stage-top);
   }
 
-  /* The button's 44px box holds only its icon, so it sits snug in the corner. Set
-     from the full stage's top, not --stage-top, so the Focus strip's shorter
-     top leaves it where it is. */
+  /* The menu (and Trials under it) is a tab run off the screen's right edge, so
+     it sits flush there, its padding carried into any side inset. Set from the
+     full stage's top, not --stage-top, so the Focus strip's shorter top leaves
+     it where it is. */
   .stage-menu {
     top: calc(6px + env(safe-area-inset-top, 0px));
-    right: 6px;
+    right: 0;
+    padding-right: calc(2px + env(safe-area-inset-right, 0px));
   }
 
   /* Focus mode (below) is a 76px strip, which needs less air above it. The

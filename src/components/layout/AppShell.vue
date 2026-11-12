@@ -133,6 +133,7 @@ watch(
             @trials="tabStore.select('trials')"
           />
           <button v-if="isPhone && trialsOpen(characterStore.character)" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
+            <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
             <Gift :size="22" />
             <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
             <span v-else-if="newTrial" class="trials-pip" role="img" aria-label="New" />
