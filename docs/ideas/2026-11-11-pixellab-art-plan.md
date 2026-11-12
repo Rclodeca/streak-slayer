@@ -92,7 +92,7 @@ Rejected art is kept in each run's `rejected/` folder.
 - Suggestion: hybrids get two tiers (base and 3x), about 2x each stat instead of 3-5x, and are a little rarer.
 - Check with a small, time-capped sim first.
 
-### To build
+### To build (built 2026-11-11, uncommitted: items 1-4; heroes not started)
 
 1. Hybrid families in the engine: personalities, stats, names, weights.
 2. Boss art by family:
@@ -131,6 +131,7 @@ Rejected art is kept in each run's `rejected/` folder.
 
 - `npm run sprites` resamples painted art to 1.5 CSS px per art pixel with a 2x and a @3x build. Native pixel art should be scaled by whole steps instead (3 device px per art pixel for the 2x build, 4 for @3x), not resampled. Check how the phone stage's base-build sizing combines with that when wiring it up.
 - Boss sprites are drawn mirrored (flip in the build, not in CSS, so effects and hit areas stay simple).
+- Built for bosses as `npm run boss-art` (`scripts/boss-art/`, picks in `families.json`): ×3 and ×4 files per image, padded to multiples of 6 so 4/3 CSS px per art pixel stays exact; `<img srcset="x.png 2x, x@3x.png 3x">` sizes them (`spriteSrcset`). Hero placement (feet 8px below the plinth) waits for hero art.
 - Items: `npm run item-icons -- --grid 32` and the `main.scss` slot sizes per grid; check whether Pixellab's own outline makes the pipeline's added outline redundant.
 - The scratch scripts (tiles -> sheet, blob split, tile boxing, eye grid) go under `scripts/` when this starts.
 

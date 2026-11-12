@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Talents totals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The phone's Talents tab (docs/superpowers/specs/2026-11-10-talent-tree-design.md)
+   in two layouts, the node popup that confirms a spend, and the level-5 unlock
+   popup. Midnight tokens from src/assets/scss/themes/moonlit.scss; banners,
+   tab bar, rule ledger and emblem from ashen.scss. Icons are the app's own
+   lucide icons (statIcons.ts). Hero at level 15: 14 points, 12 spent, 2 left. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #d3d4e4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #f4f4fa; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 680px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 28px; justify-content: center; align-items: flex-start; }
+.tag { font: 600 11px 'Cinzel', serif; letter-spacing: .22em; color: #9c9dac; margin: 0 0 8px 6px; text-transform: uppercase; }
+.note { max-width: 390px; margin: 10px 6px 0; font-size: 14px; color: #9c9dac; }
+
+.phone.tall { height: auto; }
+.phone.tall .scroll { overflow: visible; }
+.phone {
+  --bg: #11121b; --text: #d3d4e4; --ink: #f4f4fa; --dim: #7b7c96; --spent: #686877; --moon: #dfe0f0; --moon-solid: #b0b1cb; --accent: #b0b1cb; --brass: #d2bb85; --on-brass: #222330;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19; --well: rgba(0,0,0,.22); --sunk-hi: #0f1018; --sunk-lo: #2c2c47; --code-bg: #202030; --stat: #d8cdb5;
+  --button-fill: #cdcedf; --button-lip: #828398; --button-text: #20202e;
+  --phys: #e86154; --magic: #c870d6; --true: #f1e9d6; --heal: #4ac777; --health: #c33a2e; --crit: #d6a24f; --steel: #a8a092; --arcane: #8d9bd1; --violet: #a58bd0; --lifesteal: #b8433a; --exp: #d8b46a; --gold: #e0c068;
+  --px: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; height: 780px; display: flex; flex-direction: column; overflow: hidden; position: relative;
+  background: radial-gradient(70% 20% at 50% 0, rgba(165,166,201,.1), transparent 70%), var(--bg);
+  border: 1px solid #000; border-radius: 30px; box-shadow: 0 18px 44px rgba(0,0,0,.5);
+}
+svg.i { width: 16px; height: 16px; flex: none; }
+
+/* ---------- Focus strip (the stage, dropped as on the Hero tab) ---------- */
+.focus { flex: none; height: 76px; padding: 14px 14px 0; background: #19192b; border-bottom: 3px solid var(--lip); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center; }
+.fbar { display: flex; flex-direction: column; gap: 5px; }
+.fname { font: 600 13px 'Alegreya', serif; color: var(--ink); display: flex; justify-content: space-between; }
+.fname b { font: 800 12px 'Alegreya Sans'; color: var(--brass); }
+.ftrack { height: 8px; clip-path: var(--px2); background: rgba(0,0,0,.45); box-shadow: inset 2px 2px 0 var(--sunk-hi); }
+.ftrack i { display: block; height: 100%; background: var(--c); }
+
+.scroll { flex: 1; overflow-y: auto; padding: 4px 12px 16px; scrollbar-width: none; }
+/* Pinned above and below the tree: the Talents banner with the points, and
+   the plinths. Only the tree scrolls between them, fading under each edge. */
+.pin-top { flex: none; position: relative; z-index: 2; padding: 4px 12px 0; background: var(--bg); box-shadow: 0 12px 12px -6px var(--bg); }
+.pin-foot { flex: none; position: relative; z-index: 2; padding: 0 12px 10px; background: var(--bg); box-shadow: 0 -12px 12px -6px var(--bg); }
+.pinned .scroll { padding-bottom: 0; }
+
+/* ---------- Banner (ashen.scss .section-title) ---------- */
+.banner { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 2px; }
+.section-title { --spine: var(--accent); --medal: var(--moon-solid); --medal-ink: var(--bg); display: inline-flex; align-items: center; margin: 0; font: 600 14.4px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; }
+.medal { display: grid; place-items: center; flex: none; width: 36px; height: 36px; background: var(--medal); color: var(--medal-ink); clip-path: var(--px2); position: relative; z-index: 1;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.35); }
+.medal svg { width: 19px; height: 19px; }
+.cloth { margin-left: -6px; padding: 7px 24px 8px 15px; line-height: 1; white-space: nowrap; color: #f4f4fa; text-shadow: 0 2px 0 rgba(0,0,0,.5);
+  background: color-mix(in srgb, var(--spine) 30%, #1c1c30);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--spine) 50%, #2a2a44), inset 0 -3px 0 color-mix(in srgb, var(--spine) 18%, #0e0e19);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%); }
+.section-title.shoot .medal { --medal: color-mix(in srgb, var(--spine) 70%, #fff 10%); }
+.spent { font: 700 13px 'Alegreya Sans'; color: var(--dim); padding-right: 4px; }
+.spent b { color: var(--brass); }
+
+/* Points: a brass plate, as earned things are. */
+.points { display: flex; align-items: center; gap: 8px; font: 600 13px 'Alegreya Sans'; color: var(--text); }
+.count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; clip-path: var(--px2); background: var(--brass); color: var(--on-brass); font: 800 15px 'Alegreya Sans'; }
+.count.zero { background: var(--well); color: var(--dim); box-shadow: inset 2px 2px 0 var(--sunk-hi); }
+
+/* ---------- Sockets (rule-sock, bigger) ---------- */
+.sock { --c: var(--text); position: relative; display: grid; place-items: center; flex: none; width: 44px; height: 44px; clip-path: var(--px2); color: var(--c);
+  background: var(--code-bg); box-shadow: inset 0 0 0 2px var(--hi), inset 4px 4px 0 rgba(0,0,0,.45), inset -3px -3px 0 var(--sunk-lo); }
+.sock svg { width: 20px; height: 20px; }
+.n.open .sock { box-shadow: inset 0 0 0 2px var(--moon-solid), inset 4px 4px 0 rgba(0,0,0,.45), inset -3px -3px 0 var(--sunk-lo); }
+.n.has .sock { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brass) 55%, var(--hi)), inset 4px 4px 0 rgba(0,0,0,.45), inset -3px -3px 0 var(--sunk-lo); }
+.n.full .sock { background: radial-gradient(circle, color-mix(in srgb, var(--brass) 22%, #0a0a14), #0a0a14 80%); box-shadow: inset 0 0 0 2px var(--brass), inset 4px 4px 0 rgba(0,0,0,.4), inset -3px -3px 0 color-mix(in srgb, var(--brass) 30%, #000); }
+.n.locked .sock { color: #4a4a60; background: #0c0c15; box-shadow: inset 2px 2px 0 #05050a, inset -2px -2px 0 #1f1f33; }
+.n.top .sock { width: 52px; height: 52px; }
+.n.top .sock svg { width: 24px; height: 24px; }
+.n.top.open .sock { box-shadow: inset 0 0 0 2px var(--brass), 0 0 0 0; animation: glow 2.4s ease-in-out infinite; }
+.lk { position: absolute; right: 2px; bottom: 2px; width: 11px; height: 11px; color: #6b6b85; }
+@keyframes glow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+/* Rank pips: brass squares, lit for each rank learned. */
+.pips { display: inline-flex; gap: 3px; }
+.pip { width: 6px; height: 6px; border: 1.5px solid color-mix(in srgb, var(--brass) 70%, transparent); }
+.pip.lit { background: var(--brass); border-color: var(--brass); }
+.n.locked .pip { border-color: #3a3a52; }
+
+/* ---------- Option A · Ledger: three banners, one card per node ---------- */
+.ledger { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px 7px 7px; clip-path: var(--px); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row.off { margin-left: 26px; position: relative; overflow: visible; }
+.offwrap { position: relative; }
+.offwrap::before { content: ''; position: absolute; left: 12px; top: -6px; width: 2px; height: calc(50% + 6px); background: #3f405a; }
+.offwrap::after { content: ''; position: absolute; left: 12px; top: 50%; width: 14px; height: 2px; background: #3f405a; }
+.offwrap + .offwrap::before { top: -36px; height: calc(50% + 36px); }
+.n.locked.row { background: var(--well); border-bottom: 0; box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.rt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.nm { font: 600 15.5px 'Alegreya', Georgia, serif; color: var(--ink); line-height: 1.2; }
+.fx { font-size: 13.5px; color: var(--stat); }
+.n.locked .nm { color: #6c6c80; }
+.n.locked .fx { color: #5a5a6e; }
+.rk { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font: 800 12px 'Alegreya Sans'; color: var(--dim); }
+.n.has .rk, .n.full .rk { color: var(--brass); }
+.row.top { background: linear-gradient(100deg, color-mix(in srgb, var(--brass) 16%, #1a1a2c), var(--card) 70%); box-shadow: inset 0 2px 0 color-mix(in srgb, var(--brass) 40%, var(--hi)), inset -2px -2px 0 var(--lo); }
+.row.top.locked { background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo), inset 0 0 0 1px color-mix(in srgb, var(--brass) 25%, transparent); }
+.row.top .nm::after { content: ' ★'; color: var(--brass); font-size: 13px; }
+.row.top.locked .nm::after { color: color-mix(in srgb, var(--brass) 45%, transparent); }
+
+/* ---------- Option B · Trunk: one shoot at a time, growing up ---------- */
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0 6px; }
+.key { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; clip-path: var(--px2); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  font: 600 11px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--text); }
+.key svg { width: 15px; height: 15px; color: var(--c); }
+.key small { font: 800 12px 'Alegreya Sans'; letter-spacing: 0; color: var(--brass); }
+.key.on { background: var(--button-fill); color: var(--button-text); border-bottom-color: var(--button-lip); box-shadow: inset 0 2px 0 rgba(255,255,255,.4); }
+.key.on small { color: #6e5418; }
+.key.on svg { color: var(--button-text); }
+.cell { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; text-align: center; }
+.cell .nm { font-size: 13.5px; }
+.cell .fx { font-size: 12px; line-height: 1.2; max-width: 110px; }
+.cell.n.main .sock { width: 52px; height: 52px; }
+.cell.n.main .sock svg { width: 24px; height: 24px; }
+.br { position: absolute; top: 31px; height: 3px; background: #2c2c47; z-index: 0; }
+.br.lit { background: color-mix(in srgb, var(--brass) 70%, #2c2c47); }
+.br.r { left: calc(50% + 26px); width: calc((100% - 96px) / 4); }
+.br.l { right: calc(50% + 26px); width: calc((100% - 96px) / 4); }
+/* Names sit on the page colour, so the trunk passes behind them. */
+.cell .nm, .cell .pips { position: relative; background: var(--bg); padding: 0 4px; }
+.cell .pips { padding: 2px 4px; }
+.mid { grid-column: 2; }
+.lft { grid-column: 1; }
+.rgt { grid-column: 3; }
+
+/* ---------- Shoot switchers ---------- */
+/* Shared: how far a shoot has climbed toward its ★ (main ranks / main max). */
+.climb { display: block; height: 2px; background: #2c2c47; }
+.climb i { display: block; height: 100%; width: var(--w); background: var(--brass); }
+
+/* 1 · Pennants: three cloths hung from one brass rod; the picked one hangs
+   long and lit in its shoot's colour. */
+.pennants { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 6px 6px 0; margin-bottom: 4px; }
+.pennants::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 4px; background: linear-gradient(#e6d29f, #8f7848); clip-path: var(--px2); }
+.pen { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 66px; padding-top: 12px;
+  background: color-mix(in srgb, var(--c) 14%, #1c1c30); box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c) 22%, #2a2a44), inset 2px 0 0 rgba(255,255,255,.03);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 12px), 0 100%); color: var(--dim); font: 600 10px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.pen svg { width: 18px; height: 18px; color: color-mix(in srgb, var(--c) 60%, #555); }
+.pen b { font: 800 12px 'Alegreya Sans'; letter-spacing: 0; color: color-mix(in srgb, var(--brass) 60%, transparent); }
+.pen.on { height: 86px; color: #f4f4fa; text-shadow: 0 2px 0 rgba(0,0,0,.5); background: color-mix(in srgb, var(--c) 42%, #1c1c30);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c) 60%, #2a2a44), inset 0 -16px 0 -12px rgba(0,0,0,.2); }
+.pen.on svg { color: #fff; width: 22px; height: 22px; }
+.pen.on b { color: var(--brass); }
+
+/* 2 · Sigils: three big sockets, like gear slots; the picked one glows in its
+   colour under a silver rim, each with its climb to the ★ beneath. */
+.sigils { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 4px; }
+.sig { display: flex; flex-direction: column; align-items: center; gap: 5px; font: 600 10px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.sig .well2 { display: grid; place-items: center; width: 64px; height: 64px; clip-path: var(--px); color: color-mix(in srgb, var(--c) 55%, #555);
+  background: #0c0c15; box-shadow: inset 2px 2px 0 #05050a, inset -2px -2px 0 #1f1f33; }
+.sig .well2 svg { width: 28px; height: 28px; }
+.sig.on { color: var(--ink); }
+.sig.on .well2 { color: #fff; background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--c) 60%, #0a0a14), #07070e 85%);
+  box-shadow: inset 0 0 0 2px var(--moon-solid), inset 4px 4px 0 rgba(0,0,0,.45), inset -4px -4px 0 color-mix(in srgb, var(--c) 40%, #000); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 50%, transparent)); }
+.sig .climb { width: 64px; }
+.sig small { font: 800 11.5px 'Alegreya Sans'; letter-spacing: 0; color: var(--brass); }
+
+/* 3 · Pager: one big title with the next shoot either side; swipe the tree. */
+.pager { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 6px; margin: 6px 0 2px; }
+.arrow { display: grid; place-items: center; height: 44px; clip-path: var(--px2); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--moon-solid); }
+.arrow svg { width: 20px; height: 20px; }
+.ptitle { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ptitle .big { display: flex; align-items: center; gap: 8px; font: 700 19px 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 14px color-mix(in srgb, var(--c) 60%, transparent); }
+.ptitle .big svg { width: 20px; height: 20px; color: var(--c); }
+.ptitle .side { display: flex; justify-content: space-between; width: 100%; font: 600 9.5px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 6px; height: 6px; background: #3f405a; }
+.dots i.on { background: var(--moon-solid); width: 16px; }
+.peek { position: relative; }
+.peek::before, .peek::after { content: ''; position: absolute; top: 40px; bottom: 40px; width: 6px; background: linear-gradient(transparent, rgba(176,177,203,.12), transparent); }
+.peek::before { left: -12px; } .peek::after { right: -12px; }
+
+/* 4 · Plinths: the tree stands on one of three stone plinths at its foot,
+   in thumb reach. The picked plinth is raised and the trunk runs into it. */
+.plinths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; align-items: end; margin-top: -2px; }
+.pl { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: 50px; clip-path: var(--px2);
+  background: linear-gradient(#38385c 0 7px, #26263d 7px); border-bottom: 3px solid #161622; color: var(--dim); font: 600 10px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.pl span { display: flex; align-items: center; gap: 5px; }
+.pl svg { width: 14px; height: 14px; color: color-mix(in srgb, var(--c) 60%, #555); }
+.pl b { font: 800 11.5px 'Alegreya Sans'; letter-spacing: 0; color: color-mix(in srgb, var(--brass) 60%, transparent); }
+.pl.on { height: 64px; color: var(--ink); background: linear-gradient(color-mix(in srgb, var(--c) 45%, #4d4c7e) 0 8px, color-mix(in srgb, var(--c) 22%, #2d2c50) 8px); }
+.pl.on svg { color: var(--c); }
+.pl.on b { color: var(--brass); }
+.stand { display: block; width: 100%; height: 18px; overflow: visible; }
+
+/* 5 · Ribbons: bookmark ribbons down the left edge, the picked one pulled
+   out into the page. */
+.ribwrap { display: flex; gap: 4px; margin: 4px -12px 0 -12px; }
+.ribs { flex: none; width: 50px; display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
+.rib { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 40px; padding: 12px 0 14px; color: var(--dim);
+  background: color-mix(in srgb, var(--c) 16%, #1c1c30); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c) 24%, #2a2a44); }
+.rib svg { width: 17px; height: 17px; color: color-mix(in srgb, var(--c) 60%, #555); }
+.rib span { writing-mode: vertical-rl; transform: rotate(180deg); font: 600 10px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; }
+.rib b { font: 800 11.5px 'Alegreya Sans'; color: color-mix(in srgb, var(--brass) 60%, transparent); }
+.rib.on { width: 50px; color: var(--ink); background: color-mix(in srgb, var(--c) 42%, #1c1c30); box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c) 60%, #2a2a44); }
+.rib.on svg { color: #fff; }
+.rib.on b { color: var(--brass); }
+.ribwrap .treebox { flex: 1; min-width: 0; padding-right: 8px; }
+
+/* ---------- Tab bar (ashen.scss, five tabs) ---------- */
+.tabbar { flex: none; display: flex; padding: 0 6px 14px; background: #19192b; border-top: 3px solid var(--lip); box-shadow: 0 -10px 18px -8px rgba(0,0,0,.6); position: relative; z-index: 2; }
+.tab { --mark: var(--accent); position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 58px; padding-top: 3px;
+  font: 600 9.5px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--spent); }
+.tab svg { width: 21px; height: 21px; }
+.tab.brassy { --mark: var(--brass); }
+.tab.sel { color: var(--ink); }
+.tab.sel::before { content: ''; position: absolute; left: 16px; right: 16px; top: -3px; height: 3px; background: var(--mark); }
+.tab.sel svg { color: var(--mark); }
+.tab.sealed { color: color-mix(in srgb, var(--spent) 60%, transparent); }
+.tab .badge { position: absolute; top: 6px; left: calc(50% + 7px); display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; clip-path: var(--px2); background: var(--brass); color: var(--on-brass); font: 800 10.5px 'Alegreya Sans'; letter-spacing: 0; }
+.tab .tlock { position: absolute; top: 6px; left: calc(50% + 7px); width: 12px; height: 12px; color: var(--spent); }
+
+/* ---------- Popups (Modal + pixel-panel) ---------- */
+.scrim { position: absolute; inset: 0; z-index: 5; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { width: 100%; max-width: 360px; padding: 16px 20px 18px; clip-path: var(--px); background: #232337; box-shadow: inset 2px 2px 0 #373857, inset -2px -2px 0 #171823; }
+.mh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.mh h3 { margin: 0; font: 600 15px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+.mh .x { width: 20px; height: 20px; color: var(--text); }
+.emblem { position: relative; width: 84px; height: 84px; margin: 4px auto 14px; display: grid; place-items: center; }
+.emblem::before, .emblem::after { content: ''; position: absolute; clip-path: var(--px); }
+.emblem::before { inset: 0; background: linear-gradient(var(--button-fill), var(--button-lip)); }
+.emblem::after { inset: 4px; background: var(--code-bg); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.emblem svg { position: relative; z-index: 1; width: 36px; height: 36px; color: var(--moon); }
+.emblem .count { position: absolute; z-index: 2; right: -10px; top: -8px; }
+.tagline { margin: 0 0 16px; text-align: center; color: var(--text); }
+.rules { list-style: none; margin: 0 0 18px; padding: 4px 8px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.rules li { display: grid; grid-template-columns: 34px 3.8rem 1fr; gap: 8px; align-items: center; padding: 8px 0; }
+.rules li + li { border-top: 1px solid rgba(255,255,255,.06); }
+.rules .rs { display: grid; place-items: center; width: 34px; height: 34px; clip-path: var(--px2); background: var(--code-bg); box-shadow: inset 0 0 0 2px var(--hi), inset 4px 4px 0 rgba(0,0,0,.45); }
+.rules .rs svg { width: 16px; height: 16px; }
+.rules b { font: 600 10px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--ink); }
+.rules span:last-child { font-size: 14.5px; color: var(--text); }
+.primary { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; clip-path: var(--px2); background: var(--button-fill); color: var(--button-text); border-bottom: 3px solid var(--button-lip);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.4); font: 700 16px 'Alegreya Sans'; }
+.primary .count { min-width: 22px; height: 22px; font-size: 13px; background: var(--brass); }
+.primary.off { background: var(--well); color: var(--dim); border-bottom: 0; box-shadow: inset 2px 2px 0 var(--sunk-hi); }
+.warn { margin: 8px 0 0; text-align: center; font-size: 13px; color: var(--dim); }
+
+/* Node popup */
+.nhead { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+.nhead .sock { width: 60px; height: 60px; }
+.nhead .sock svg { width: 28px; height: 28px; }
+.nhead .nm { font-size: 19px; }
+.nhead .rk { align-items: flex-start; margin-top: 4px; }
+.plates { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px; }
+.plate { padding: 8px 10px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.plate small { display: block; font: 600 9.5px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin-bottom: 2px; }
+.plate span { display: flex; align-items: center; gap: 5px; font: 700 16px 'Alegreya Sans'; color: var(--ink); }
+.plate.next span { color: var(--heal); }
+.desc { margin: 0 0 14px; font-size: 14.5px; color: var(--stat); }
+
+/* Sealed tab, before level 5 */
+.sealed-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--dim); }
+.lock-mark { width: 46px; height: 46px; transform: rotate(45deg); display: grid; place-items: center; border: 1px solid #3f405a; background: radial-gradient(circle, rgba(230,199,127,.1), rgba(0,0,0,.5) 75%); box-shadow: inset 0 0 0 4px rgba(0,0,0,.5), inset 0 0 0 5px rgba(200,169,110,.14); }
+.lock-mark svg { transform: rotate(-45deg); width: 18px; height: 18px; color: var(--text); }
+.lock-text { font: 600 16px 'Alegreya Sans'; color: var(--text); }
+
+/* ---------- Totals ---------- */
+.gain { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.gain svg { width: 16px; height: 16px; flex: none; color: var(--c); }
+.gain .v { font: 800 15px 'Alegreya Sans'; color: var(--brass); white-space: nowrap; }
+.gain .l { font-size: 13px; color: var(--stat); line-height: 1.15; }
+.gain.sole .v { font-size: 13px; }
+
+/* A · Plaque: a sunk plate under the first node, in the scroll. */
+.plaque { position: relative; margin: 2px 0 6px; padding: 10px 12px 12px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.plaque h4 { margin: 0 0 8px; display: flex; justify-content: space-between; align-items: baseline; font: 600 10px 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); }
+.plaque h4 b { font: 800 12px 'Alegreya Sans'; letter-spacing: 0; color: color-mix(in srgb, var(--brass) 70%, transparent); }
+.plaque .gs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+.plaque .none { font-size: 13.5px; color: var(--dim); }
+
+/* B · Strip: pinned chips between the banner and the tree. */
+.strip { display: flex; gap: 6px; margin: 2px 0 4px; overflow: hidden; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px; clip-path: var(--px2); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.chip svg { width: 15px; height: 15px; color: var(--c); }
+.chip b { font: 800 14px 'Alegreya Sans'; color: var(--brass); }
+
+/* C · Sheet: a Totals button on the banner, a popup listing all three trees. */
+.tbtn { display: grid; place-items: center; width: 44px; height: 44px; clip-path: var(--px2); background: var(--card); border-bottom: 3px solid var(--lip); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--moon); }
+.tbtn svg { width: 20px; height: 20px; }
+.bright { display: flex; align-items: center; gap: 10px; }
+.sheet .group + .group { margin-top: 12px; }
+.sheet .gh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.sheet .gh span { display: flex; align-items: center; gap: 7px; }
+.sheet .gh svg { width: 15px; height: 15px; color: var(--c); }
+.sheet .gh b { font: 800 12px 'Alegreya Sans'; letter-spacing: 0; color: var(--brass); }
+.sheet ul { list-style: none; margin: 0; padding: 4px 10px; clip-path: var(--px); background: var(--well); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.sheet li { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+.sheet li + li { border-top: 1px solid rgba(255,255,255,.06); }
+.sheet li .gain { flex: 1; }
+.sheet li .v { margin-left: auto; }
+.sheet .nil { padding: 8px 0; font-size: 13.5px; color: var(--dim); }
+
+/* D · Plinths with the headline gain in place of "N spent". */
+.pl.hl { height: 58px; gap: 2px; }
+.pl.hl.on { height: 70px; }
+.pl.hl b { font-size: 13px; }
+.pl.hl.empty b { color: var(--dim); font-weight: 600; font-size: 11.5px; }
+.pl.hl small { font: 700 10.5px 'Alegreya Sans'; letter-spacing: 0; text-transform: none; color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Talents · what each tree has given you</h1>
+  <p class="lede">Four places for a per-tree total, on the picked Plinths layout. Same hero as before (level 15, 12 spent): Damage 8 points, Tank 2, Support 2. Values are the sum of every learned rank, same stats as the spec. Phone width, Midnight.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const P = {"sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>",
+"scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>",
+"gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>",
+"user-round":"<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>",
+"sprout":"<path d=\"M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3\"/><path d=\"M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4\"/><path d=\"M5 21h14\"/>",
+"lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>",
+"swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>",
+"zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>",
+"calendar":"<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/>",
+"crosshair":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\"/><line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\"/><line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\"/><line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\"/>",
+"target":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/>",
+"shield-off":"<path d=\"m2 2 20 20\"/><path d=\"M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71\"/><path d=\"M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264\"/>",
+"wand-sparkles":"<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\"/><path d=\"m14 7 3 3\"/><path d=\"M5 6v4\"/><path d=\"M19 14v4\"/><path d=\"M10 2v2\"/><path d=\"M7 8H3\"/><path d=\"M21 16h-4\"/><path d=\"M11 3H9\"/>",
+"orbit":"<path d=\"M20.341 6.484A10 10 0 0 1 10.266 21.85\"/><path d=\"M3.659 17.516A10 10 0 0 1 13.74 2.152\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/><circle cx=\"19\" cy=\"5\" r=\"2\"/><circle cx=\"5\" cy=\"19\" r=\"2\"/>",
+"skull":"<path d=\"m12.5 17-.5-1-.5 1h1z\"/><path d=\"M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><circle cx=\"9\" cy=\"12\" r=\"1\"/>",
+"heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>",
+"shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>",
+"shield-half":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"M12 22V2\"/>",
+"bandage":"<path d=\"M10 10.01h.01\"/><path d=\"M10 14.01h.01\"/><path d=\"M14 10.01h.01\"/><path d=\"M14 14.01h.01\"/><path d=\"M18 6v12\"/><path d=\"M6 6v12\"/><rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"/>",
+"wind":"<path d=\"M12.8 19.6A2 2 0 1 0 14 16H2\"/><path d=\"M17.5 8a2.5 2.5 0 1 1 2 4H2\"/><path d=\"M9.8 4.4A2 2 0 1 1 11 8H2\"/>",
+"heart-pulse":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>",
+"heart-plus":"<path d=\"m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49\"/><path d=\"M15 15h6\"/><path d=\"M18 12v6\"/>",
+"sparkles":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>",
+"chevrons-up":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>",
+"droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\"/>",
+"sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>",
+"check":"<path d=\"M20 6 9 17l-5-5\"/>",
+"plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>",
+"x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>"};
+Object.assign(P, {"anvil":"<path d=\"M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4\"/><path d=\"M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z\"/><path d=\"M9 12v5\"/><path d=\"M15 12v5\"/><path d=\"M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1\"/>","castle":"<path d=\"M10 5V3\"/><path d=\"M14 5V3\"/><path d=\"M15 21v-3a3 3 0 0 0-6 0v3\"/><path d=\"M18 3v8\"/><path d=\"M18 5H6\"/><path d=\"M22 11H2\"/><path d=\"M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9\"/><path d=\"M6 3v8\"/>","milestone":"<path d=\"M12 13v8\"/><path d=\"M12 3v3\"/><path d=\"M4 6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h13a2 2 0 0 0 1.152-.365l3.424-2.317a1 1 0 0 0 0-1.635l-3.424-2.318A2 2 0 0 0 17 6z\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>"});
+const svg = (n, c, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="${c || 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
+
+// The tree, in the spec's order (max 3 ranks; a stat worth more shows up again
+// as a II node higher up; no offshoots off a shoot's first node). r = ranks
+// learned in this mock.
+const TREE = [
+  { id: 'damage', name: 'Damage', icon: 'swords', c: 'var(--phys)', mains: [
+    { n: 'Might', ic: 'swords', c: 'var(--phys)', max: 3, r: 3, fx: '+2% all damage', offs: [] },
+    { n: 'Precision', ic: 'crosshair', c: 'var(--crit)', max: 3, r: 3, fx: '+1% crit chance', offs: [
+      { n: 'Keen Edge', ic: 'target', c: 'var(--crit)', max: 2, r: 1, fx: 'Crits deal +0.1×' }] },
+    { n: 'Brawn', ic: 'sword', c: 'var(--phys)', max: 3, r: 1, fx: '+3% physical damage', offs: [
+      { n: 'Armor Break', ic: 'shield-off', c: 'var(--steel)', max: 3, r: 0, fx: '+2% armor pen' }] },
+    { n: 'Arcana', ic: 'wand-sparkles', c: 'var(--magic)', max: 3, r: 0, fx: '+3% magic damage', offs: [
+      { n: 'Spell Break', ic: 'orbit', c: 'var(--violet)', max: 3, r: 0, fx: '+2% magic pen' }] },
+    { n: 'Might II', ic: 'swords', c: 'var(--phys)', max: 3, r: 0, fx: '+2% all damage', offs: [
+      { n: 'Truestrike', ic: 'zap', c: 'var(--true)', max: 3, r: 0, fx: '+4% true damage' },
+      { n: 'Weekly Might', ic: 'calendar', c: 'var(--gold)', max: 3, r: 0, fx: '+5% damage from weekly skills' }] },
+    { n: 'Precision II', ic: 'crosshair', c: 'var(--crit)', max: 3, r: 0, fx: '+1% crit chance', offs: [
+      { n: 'Armor Break II', ic: 'shield-off', c: 'var(--steel)', max: 3, r: 0, fx: '+2% armor pen' },
+      { n: 'Spell Break II', ic: 'orbit', c: 'var(--violet)', max: 3, r: 0, fx: '+2% magic pen' }] },
+  ], top: { n: 'Executioner', ic: 'skull', c: 'var(--phys)', max: 1, r: 0, fx: 'Crits deal +0.5×' } },
+  { id: 'tank', name: 'Tank', icon: 'shield', c: 'var(--steel)', mains: [
+    { n: 'Vigor', ic: 'heart', c: 'var(--health)', max: 3, r: 2, fx: '+3% max HP', offs: [] },
+    { n: 'Plating', ic: 'shield', c: 'var(--steel)', max: 3, r: 0, fx: '+25 armor', offs: [
+      { n: 'Iron Hide', ic: 'shield', c: 'var(--steel)', max: 2, r: 0, fx: '+25 armor' }] },
+    { n: 'Warding', ic: 'shield-half', c: 'var(--arcane)', max: 3, r: 0, fx: '+25 magic resist', offs: [
+      { n: 'Spell Hide', ic: 'shield-half', c: 'var(--arcane)', max: 2, r: 0, fx: '+25 magic resist' }] },
+    { n: 'Vigor II', ic: 'heart', c: 'var(--health)', max: 3, r: 0, fx: '+3% max HP', offs: [
+      { n: 'Last Stand', ic: 'bandage', c: 'var(--phys)', max: 3, r: 0, fx: '−5% damage taken below 25% HP' }] },
+    { n: 'Bastion', ic: 'castle', c: 'var(--steel)', max: 3, r: 0, fx: '+25 armor and +25 magic resist', offs: [
+      { n: 'Plating II', ic: 'shield', c: 'var(--steel)', max: 3, r: 0, fx: '+25 armor' },
+      { n: 'Warding II', ic: 'shield-half', c: 'var(--arcane)', max: 3, r: 0, fx: '+25 magic resist' }] },
+  ], top: { n: 'Unbroken', ic: 'wind', c: 'var(--steel)', max: 1, r: 0, fx: '10% chance to dodge a boss hit' } },
+  { id: 'support', name: 'Support', icon: 'heart-pulse', c: 'var(--heal)', mains: [
+    { n: 'Mending', ic: 'heart-pulse', c: 'var(--heal)', max: 3, r: 2, fx: '+3% healing', offs: [] },
+    { n: 'Renewal', ic: 'chevrons-up', c: 'var(--exp)', max: 3, r: 0, fx: 'Level-ups heal +2% of max HP', offs: [
+      { n: 'Scavenger', ic: 'gift', c: 'var(--gold)', max: 3, r: 0, fx: '+5% chance of an extra item when a boss falls' }] },
+    { n: 'Insight', ic: 'sparkles', c: 'var(--exp)', max: 3, r: 0, fx: '+2% EXP', offs: [
+      { n: 'Wisdom', ic: 'scroll-text', c: 'var(--steel)', max: 2, r: 0, fx: '+3% quest EXP' },
+      { n: 'Waymark', ic: 'milestone', c: 'var(--exp)', max: 3, r: 0, fx: '+5% EXP from streak milestones' }] },
+    { n: 'Mending II', ic: 'heart-pulse', c: 'var(--heal)', max: 3, r: 0, fx: '+3% healing', offs: [
+      { n: 'Second Wind', ic: 'heart-plus', c: 'var(--heal)', max: 3, r: 0, fx: 'Heal 2% of max HP when a boss falls' }] },
+    { n: 'Renewal II', ic: 'chevrons-up', c: 'var(--exp)', max: 3, r: 0, fx: 'Level-ups heal +2% of max HP', offs: [] },
+    { n: 'Leech', ic: 'droplet', c: 'var(--lifesteal)', max: 2, r: 0, fx: '+0.5% lifesteal', offs: [] },
+  ], top: { n: 'Blessed', ic: 'sun', c: 'var(--gold)', max: 1, r: 0, fx: 'Heal skills can crit, for double healing' } },
+];
+
+// Unlock rules from the spec: first main open; each main once the one before
+// has a rank; offshoots once their parent has a rank; the top once every main is full.
+const state = (node, open) => node.r >= node.max ? 'has full' : node.r > 0 ? 'has' : open ? 'open' : 'locked';
+function computeStates(tree) {
+  tree.forEach((s) => {
+    s.mains.forEach((m, i) => {
+      m.st = state(m, i === 0 || s.mains[i - 1].r > 0);
+      m.offs.forEach((o) => { o.st = state(o, m.r > 0); });
+    });
+    s.top.st = state(s.top, s.mains.every((m) => m.r >= m.max));
+    s.spent = [...s.mains, ...s.mains.flatMap((m) => m.offs), s.top].reduce((a, n) => a + n.r, 0);
+  });
+  return tree;
+}
+computeStates(TREE);
+const LEFT = 2;
+
+const pips = (n) => `<span class="pips">${Array.from({ length: n.max }, (_, i) => `<i class="pip${i < n.r ? ' lit' : ''}"></i>`).join('')}</span>`;
+const sock = (n) => `<span class="sock" style="--c:${n.c}">${svg(n.ic)}${n.st === 'locked' ? svg('lock', null, 'lk') : ''}</span>`;
+const banner = (title, icon, spine, right, shoot) => `<div class="banner"><h2 class="section-title${shoot ? ' shoot' : ''}" style="--spine:${spine}"><span class="medal">${svg(icon)}</span><span class="cloth">${title}</span></h2>${right || ''}</div>`;
+const pointsHead = banner('Talents', 'anvil', 'var(--accent)', `<span class="points"><span class="count">${LEFT}</span>points</span>`);
+
+const focus = `<div class="focus">
+  <div class="fbar"><span class="fname">Aldric <b>15</b></span><span class="ftrack" style="--c:var(--heal)"><i style="width:72%"></i></span></div>
+  <div class="fbar"><span class="fname">The Hollow King <b>9</b></span><span class="ftrack" style="--c:var(--phys)"><i style="width:41%"></i></span></div></div>`;
+
+const TABS = [['Skills', 'sword'], ['Quests', 'scroll-text', 1], ['Trials', 'gift', 1], ['Talents', 'anvil'], ['Hero', 'user-round']];
+const tabbar = (sel, opts = {}) => `<div class="tabbar">${TABS.map(([l, ic, brassy]) => {
+  const sealed = l === 'Talents' && opts.sealed;
+  const badge = l === 'Talents' && !sealed && opts.badge ? `<span class="badge">${opts.badge}</span>` : '';
+  return `<div class="tab${brassy ? ' brassy' : ''}${l === sel ? ' sel' : ''}${sealed ? ' sealed' : ''}">${svg(ic)}<span>${l}</span>${sealed ? svg('lock', null, 'tlock') : badge}</div>`;
+}).join('')}</div>`;
+
+const phone = (body, sel, opts) => `<div class="phone${opts && opts.tall ? ' tall' : ''}${opts && opts.head ? ' pinned' : ''}">${focus}${opts && opts.head ? `<div class="pin-top">${opts.head}</div>` : ''}<div class="scroll${opts && opts.bottom ? ' bottom' : ''}">${body}</div>${opts && opts.foot ? `<div class="pin-foot">${opts.foot}</div>` : ''}${tabbar(sel, opts)}${opts && opts.over || ''}</div>`;
+
+// ---------- Option A · Ledger ----------
+const lrow = (n, cls = '') => `<li class="n ${n.st} row ${cls}">${sock(n)}<span class="rt"><span class="nm">${n.n}</span><span class="fx">${n.fx}</span></span><span class="rk">${pips(n)}<span>${n.r}/${n.max}</span></span></li>`;
+const ledger = TREE.map((s) => `${banner(s.name, s.icon, s.c, `<span class="spent"><b>${s.spent}</b> spent</span>`, true)}
+  <ul class="ledger">${s.mains.map((m) => lrow(m) + m.offs.map((o) => `<div class="offwrap">${lrow(o, 'off')}</div>`).join('')).join('')}${lrow(s.top, 'top')}</ul>`).join('');
+
+// ---------- Option B · Trunk ----------
+const cell = (n, pos, main) => `<div class="cell n ${n.st} ${pos}${main ? ' main' : ''}${n.top ? ' top' : ''}">${sock(n)}<span class="nm">${n.n}</span>${pips(n)}</div>`;
+// Branch lines need to sit inside each row, so the tree is built from row boxes.
+const trunkRows = (s) => {
+  const rowBox = (inner) => `<div style="position:relative;display:grid;grid-template-columns:1fr 96px 1fr;z-index:1">${inner}</div>`;
+  const out = [rowBox(cell({ ...s.top, top: true }, 'mid', true))];
+  // A lone offshoot alternates sides up the trunk (right, then left, ...);
+  // a pair takes both sides.
+  let lone = 0;
+  const sides = s.mains.map((m) => (m.offs.length === 1 ? (lone++ % 2 ? 'l' : 'r') : 'r'));
+  [...s.mains].reverse().forEach((m, ri) => {
+    let [a, b] = m.offs;
+    if (sides[s.mains.length - 1 - ri] === 'l' && !b) [a, b] = [undefined, a];
+    out.push(rowBox(`${b ? `<span class="br l${m.r > 0 ? ' lit' : ''}"></span>${cell(b, 'lft')}` : ''}${cell(m, 'mid', true)}${a ? `<span class="br r${m.r > 0 ? ' lit' : ''}"></span>${cell(a, 'rgt')}` : ''}`));
+  });
+  const lit = s.mains.filter((m) => m.r > 0).length;
+  // Fill from the bottom: lit between mains up to the highest one with a rank.
+  const n = s.mains.length;
+  const fill = lit ? ((n - (lit - 1)) / n) * 100 : 100;
+  return `<div style="position:relative;padding:4px 0 8px"><span style="position:absolute;left:50%;top:34px;bottom:44px;width:4px;margin-left:-2px;background:linear-gradient(#2c2c47 0 ${fill}%, var(--brass) ${fill}%)"></span>${out.join('')}</div>`;
+};
+const keys = (sel) => `<div class="keys">${TREE.map((s) => `<div class="key${s.id === sel ? ' on' : ''}" style="--c:${s.c}">${svg(s.icon)}${s.name}<small>${s.spent}</small></div>`).join('')}</div>`;
+const trunkBody = (sel) => `${pointsHead}${keys(sel)}${trunkRows(TREE.find((s) => s.id === sel))}`;
+
+// ---------- Node popup (the confirm) ----------
+const prec = TREE[0].mains[2];
+const nodePop = `<div class="scrim"><div class="modal">
+  <div class="mh"><h3>Talent</h3>${svg('x', null, 'x')}</div>
+  <div class="nhead n has">${sock(prec)}<div class="rt"><span class="nm">${prec.n}</span><span class="rk">${pips(prec)}</span></div></div>
+  <p class="desc">+3% physical damage per rank.</p>
+  <div class="plates">
+    <div class="plate"><small>Now · 1/3</small><span>${svg('sword', 'var(--phys)')}+3%</span></div>
+    <div class="plate next"><small>Next · 2/3</small><span>${svg('sword', 'var(--phys)')}+6%</span></div>
+  </div>
+  <div class="primary">Learn <span class="count">1</span></div>
+  <p class="warn">Spent points stay spent.</p>
+</div></div>`;
+
+// ---------- Unlock popup ----------
+const unlockPop = `<div class="scrim"><div class="modal">
+  <div class="mh"><h3>Talents unlocked</h3></div>
+  <div class="emblem">${svg('sprout')}<span class="count">4</span></div>
+  <p class="tagline">Every level leaves its mark.</p>
+  <ul class="rules">
+    <li><span class="rs">${svg('chevrons-up', 'var(--exp)')}</span><b>Earn</b><span>Each level brings a point.</span></li>
+    <li><span class="rs">${svg('sprout', 'var(--moon)')}</span><b>Grow</b><span>Spent points stay spent.</span></li>
+    <li><span class="rs">${svg('skull', 'var(--phys)')}</span><b>Fall</b><span>The tree dies with you.</span></li>
+  </ul>
+  <div class="primary">Onward</div>
+</div></div>`;
+
+const sealed = `<div class="sealed-body" style="height:100%;min-height:560px"><span class="lock-mark">${svg('lock')}</span><span class="lock-text">Reach level 5</span></div>`;
+
+const col = (tag, html, note) => `<div><div class="tag">${tag}</div>${html}${note ? `<p class="note">${note}</p>` : ''}</div>`;
+// ---------- Shoot switchers for the trunk ----------
+const shoot = (id) => TREE.find((s) => s.id === id);
+const climbPct = (s) => Math.round(100 * s.mains.reduce((a, m) => a + m.r, 0) / s.mains.reduce((a, m) => a + m.max, 0));
+const climb = (s) => `<span class="climb" style="--w:${climbPct(s)}%"><i></i></span>`;
+const SW = {
+  pennants: (sel) => `<div class="pennants">${TREE.map((s) => `<div class="pen${s.id === sel ? ' on' : ''}" style="--c:${s.c}">${svg(s.icon)}${s.name}<b>${s.spent}</b></div>`).join('')}</div>`,
+  sigils: (sel) => `<div class="sigils">${TREE.map((s) => `<div class="sig${s.id === sel ? ' on' : ''}" style="--c:${s.c}"><span class="well2">${svg(s.icon)}</span>${s.name}${climb(s)}<small>${s.spent} spent</small></div>`).join('')}</div>`,
+  pager: (sel) => {
+    const i = TREE.findIndex((s) => s.id === sel), s = TREE[i];
+    const prev = TREE[(i + 2) % 3], next = TREE[(i + 1) % 3];
+    return `<div class="pager"><span class="arrow">${svg('chevron-left')}</span><div class="ptitle" style="--c:${s.c}">
+      <span class="big">${svg(s.icon)}${s.name}</span>
+      <span class="dots">${TREE.map((t) => `<i class="${t.id === sel ? 'on' : ''}"></i>`).join('')}</span>
+      <span class="side"><span>‹ ${prev.name}</span><span style="color:var(--brass);font-family:'Alegreya Sans';letter-spacing:0;font-weight:800">${s.spent} spent</span><span>${next.name} ›</span></span>
+    </div><span class="arrow">${svg('chevron-right')}</span></div>`;
+  },
+  plinths: (sel) => `<div class="plinths">${TREE.map((s) => `<div class="pl${s.id === sel ? ' on' : ''}" style="--c:${s.c}"><span>${svg(s.icon)}${s.name}</span><b>${s.spent} spent</b></div>`).join('')}</div>`,
+  ribbons: (sel) => `<div class="ribs">${TREE.map((s) => `<div class="rib${s.id === sel ? ' on' : ''}" style="--c:${s.c}">${svg(s.icon)}<span>${s.name}</span><b>${s.spent}</b></div>`).join('')}</div>`,
+};
+// Plinths (picked): the banner and points pinned at the top, the plinths at the
+// foot, and only the tree scrolls. A root runs from the foot of the trunk into
+// the picked plinth.
+const plinthsPhone = (sel, opts) => {
+  const x = [58, 183, 308][TREE.findIndex((s) => s.id === sel)];
+  const foot = `<svg class="stand" viewBox="0 0 366 18" preserveAspectRatio="none"><path d="M183 0 V8 H${x} V18" fill="none" stroke="var(--brass)" stroke-width="4"/></svg>${SW.plinths(sel)}`;
+  return phone(trunkRows(shoot(sel)), 'Talents', { badge: LEFT, ...opts, head: pointsHead, foot });
+};
+const body = {
+  pennants: (sel) => `${pointsHead}${SW.pennants(sel)}${trunkRows(shoot(sel))}`,
+  sigils: (sel) => `${pointsHead}${SW.sigils(sel)}${trunkRows(shoot(sel))}`,
+  pager: (sel) => `${pointsHead}${SW.pager(sel)}<div class="peek">${trunkRows(shoot(sel))}</div>`,
+  ribbons: (sel) => `${pointsHead}<div class="ribwrap">${SW.ribbons(sel)}<div class="treebox">${trunkRows(shoot(sel))}</div></div>`,
+};
+
+
+// ---------- Totals: what each learned rank adds (the spec's values) ----------
+// k = what stacks together; u = how it prints; per = value per rank.
+const FX = {
+  'Might': [{ k: 'all', l: 'All damage', ic: 'swords', c: 'var(--phys)', per: 2, u: '%' }],
+  'Might II': [{ k: 'all', per: 2 }],
+  'Precision': [{ k: 'crit', l: 'Crit chance', ic: 'crosshair', c: 'var(--crit)', per: 1, u: '%' }],
+  'Precision II': [{ k: 'crit', per: 1 }],
+  'Keen Edge': [{ k: 'critdmg', l: 'Crit damage', ic: 'target', c: 'var(--crit)', per: 0.1, u: '×' }],
+  'Executioner': [{ k: 'critdmg', per: 0.5 }],
+  'Brawn': [{ k: 'phys', l: 'Physical damage', ic: 'sword', c: 'var(--phys)', per: 3, u: '%' }],
+  'Arcana': [{ k: 'magic', l: 'Magic damage', ic: 'wand-sparkles', c: 'var(--magic)', per: 3, u: '%' }],
+  'Armor Break': [{ k: 'apen', l: 'Armor pen', ic: 'shield-off', c: 'var(--steel)', per: 2, u: '%' }],
+  'Armor Break II': [{ k: 'apen', per: 2 }],
+  'Spell Break': [{ k: 'mpen', l: 'Magic pen', ic: 'orbit', c: 'var(--violet)', per: 2, u: '%' }],
+  'Spell Break II': [{ k: 'mpen', per: 2 }],
+  'Truestrike': [{ k: 'true', l: 'True damage', ic: 'zap', c: 'var(--true)', per: 4, u: '%' }],
+  'Weekly Might': [{ k: 'weekly', l: 'Weekly skill damage', ic: 'calendar', c: 'var(--gold)', per: 5, u: '%' }],
+  'Vigor': [{ k: 'hp', l: 'Max HP', ic: 'heart', c: 'var(--health)', per: 3, u: '%' }],
+  'Vigor II': [{ k: 'hp', per: 3 }],
+  'Plating': [{ k: 'armor', l: 'Armor', ic: 'shield', c: 'var(--steel)', per: 25, u: '' }],
+  'Iron Hide': [{ k: 'armor', per: 25 }],
+  'Plating II': [{ k: 'armor', per: 25 }],
+  'Warding': [{ k: 'mr', l: 'Magic resist', ic: 'shield-half', c: 'var(--arcane)', per: 25, u: '' }],
+  'Spell Hide': [{ k: 'mr', per: 25 }],
+  'Warding II': [{ k: 'mr', per: 25 }],
+  'Bastion': [{ k: 'armor', per: 25 }, { k: 'mr', per: 25 }],
+  'Last Stand': [{ k: 'last', l: 'Damage taken below 25% HP', ic: 'bandage', c: 'var(--phys)', per: -5, u: '%' }],
+  'Unbroken': [{ k: 'dodge', l: 'Dodge a boss hit', ic: 'wind', c: 'var(--steel)', per: 10, u: '%' }],
+  'Mending': [{ k: 'heal', l: 'Healing', ic: 'heart-pulse', c: 'var(--heal)', per: 3, u: '%' }],
+  'Mending II': [{ k: 'heal', per: 3 }],
+  'Renewal': [{ k: 'lvheal', l: 'Level-up heal', ic: 'chevrons-up', c: 'var(--exp)', per: 2, u: '%' }],
+  'Renewal II': [{ k: 'lvheal', per: 2 }],
+  'Scavenger': [{ k: 'loot', l: 'Extra item chance', ic: 'gift', c: 'var(--gold)', per: 5, u: '%' }],
+  'Insight': [{ k: 'exp', l: 'EXP', ic: 'sparkles', c: 'var(--exp)', per: 2, u: '%' }],
+  'Wisdom': [{ k: 'qexp', l: 'Quest EXP', ic: 'scroll-text', c: 'var(--steel)', per: 3, u: '%' }],
+  'Waymark': [{ k: 'mexp', l: 'Milestone EXP', ic: 'milestone', c: 'var(--exp)', per: 5, u: '%' }],
+  'Second Wind': [{ k: 'sw', l: 'Heal on a boss kill', ic: 'heart-plus', c: 'var(--heal)', per: 2, u: '%' }],
+  'Leech': [{ k: 'ls', l: 'Lifesteal', ic: 'droplet', c: 'var(--lifesteal)', per: 0.5, u: '%' }],
+  'Blessed': [{ k: 'bless', l: 'Heal skills can crit', ic: 'sun', c: 'var(--gold)', per: 1, u: 'on' }],
+};
+const fmt = (t) => t.u === 'on' ? 'On' : t.u === '×' ? `+${t.v.toFixed(1)}×` : t.u === '%' ? `${t.v < 0 ? '−' : '+'}${Math.abs(+t.v.toFixed(1))}%` : `+${t.v}`;
+// Totals for one shoot, in the order the stats first appear up the trunk.
+function totals(s) {
+  const nodes = [...s.mains.flatMap((m) => [m, ...m.offs]), s.top];
+  const meta = {}, sum = {}, order = [];
+  nodes.forEach((n) => (FX[n.n] || []).forEach((e) => {
+    if (e.l) meta[e.k] = e;
+    if (n.r > 0) { if (!(e.k in sum)) { sum[e.k] = 0; order.push(e.k); } sum[e.k] += e.per * n.r; }
+  }));
+  const lists = {};
+  nodes.forEach((n) => (FX[n.n] || []).forEach((e) => { if (e.l) lists[e.k] = e; }));
+  return order.map((k) => ({ ...lists[k], v: sum[k] }));
+}
+const gain = (t) => `<span class="gain" style="--c:${t.c}">${svg(t.ic)}<span class="v">${fmt(t)}</span><span class="l">${t.l}</span></span>`;
+const headline = (s) => { const t = totals(s)[0]; return t; };
+const sh = (id) => TREE.find((s) => s.id === id);
+
+// A · Plaque
+const plaque = (s) => { const ts = totals(s); return `<div class="plaque"><h4>Gained<b>${s.spent} spent</b></h4>${ts.length ? `<div class="gs">${ts.map(gain).join('')}</div>` : '<div class="none">Nothing learned yet.</div>'}</div>`; };
+const plaquePhone = (sel, opts) => {
+  const s = sh(sel), x = [58, 183, 308][TREE.findIndex((t) => t.id === sel)];
+  const foot = `<svg class="stand" viewBox="0 0 366 18" preserveAspectRatio="none"><path d="M183 0 V8 H${x} V18" fill="none" stroke="var(--brass)" stroke-width="4"/></svg>${SW.plinths(sel)}`;
+  return phone(trunkRows(s) + plaque(s), 'Talents', { badge: LEFT, bottom: true, ...opts, head: pointsHead, foot });
+};
+
+// B · Strip
+const strip = (s) => `<div class="strip">${totals(s).map((t) => `<span class="chip" style="--c:${t.c}">${svg(t.ic)}<b>${fmt(t)}</b></span>`).join('')}</div>`;
+const stripPhone = (sel, opts) => {
+  const s = sh(sel), x = [58, 183, 308][TREE.findIndex((t) => t.id === sel)];
+  const foot = `<svg class="stand" viewBox="0 0 366 18" preserveAspectRatio="none"><path d="M183 0 V8 H${x} V18" fill="none" stroke="var(--brass)" stroke-width="4"/></svg>${SW.plinths(sel)}`;
+  return phone(trunkRows(s), 'Talents', { badge: LEFT, bottom: true, ...opts, head: pointsHead + strip(s), foot });
+};
+
+// C · Sheet
+const tbanner = banner('Talents', 'anvil', 'var(--accent)', `<span class="bright"><span class="points"><span class="count">${LEFT}</span>points</span><span class="tbtn">${svg('scroll-text')}</span></span>`);
+const sheetPop = `<div class="scrim"><div class="modal sheet">
+  <div class="mh"><h3>Gained</h3>${svg('x', null, 'x')}</div>
+  ${TREE.map((s) => `<div class="group"><div class="gh" style="--c:${s.c}"><span>${svg(s.icon)}${s.name}</span><b>${s.spent} spent</b></div>
+    ${totals(s).length ? `<ul>${totals(s).map((t) => `<li>${gain(t)}</li>`).join('')}</ul>` : `<ul><li class="nil">Nothing learned yet.</li></ul>`}</div>`).join('')}
+</div></div>`;
+const sheetPhone = (sel, opts) => {
+  const s = sh(sel), x = [58, 183, 308][TREE.findIndex((t) => t.id === sel)];
+  const foot = `<svg class="stand" viewBox="0 0 366 18" preserveAspectRatio="none"><path d="M183 0 V8 H${x} V18" fill="none" stroke="var(--brass)" stroke-width="4"/></svg>${SW.plinths(sel)}`;
+  return phone(trunkRows(s), 'Talents', { badge: LEFT, bottom: true, ...opts, head: tbanner, foot });
+};
+
+// D · Plinths carry the headline
+const hlPlinths = (sel) => `<div class="plinths">${TREE.map((s) => { const t = headline(s); return `<div class="pl hl${s.id === sel ? ' on' : ''}${t ? '' : ' empty'}" style="--c:${s.c}"><span>${svg(s.icon)}${s.name}</span><b>${t ? `${fmt(t)} ${t.l.toLowerCase().replace('max ', '').replace('all damage', 'dmg')}` : 'none yet'}</b></div>`; }).join('')}</div>`;
+const hlPhone = (sel, opts) => {
+  const s = sh(sel), x = [58, 183, 308][TREE.findIndex((t) => t.id === sel)];
+  const foot = `<svg class="stand" viewBox="0 0 366 18" preserveAspectRatio="none"><path d="M183 0 V8 H${x} V18" fill="none" stroke="var(--brass)" stroke-width="4"/></svg>${hlPlinths(sel)}`;
+  return phone(trunkRows(s), 'Talents', { badge: LEFT, bottom: true, ...opts, head: pointsHead, foot });
+};
+
+document.getElementById('grid').innerHTML = [
+  col('A · Plaque under the first node', plaquePhone('damage'),
+    'A sunk plate at the foot of the trunk, in the scroll. The tree opens scrolled to the bottom, so it is the first thing you see. Full list, per tree, no extra tap. Costs a little room at the bottom, and it scrolls away.'),
+  col('A · Plaque, Tank', plaquePhone('tank'), 'Switching plinth swaps the plate to that tree. Short trees leave the plate short.'),
+  col('B · Pinned strip', stripPhone('damage'),
+    'Icon + value chips pinned under the banner, always visible while you scroll. Costs 34px of the tree on every view and has no names, so it leans on the stat icons; a deep tree (6+ stats) would not fit one row.'),
+  col('C · Totals button + popup', sheetPhone('damage'),
+    'A scroll button next to the points. The tree layout does not change at all.'),
+  col('C · The popup', sheetPhone('damage', { over: sheetPop }),
+    'All three trees at once, so you can compare. A tap away, so it is not seen unless asked for; it also suits the desktop modal.'),
+  col('D · Headline on the plinths', hlPhone('damage'),
+    'Each plinth shows its tree\'s main gain instead of "N spent". Costs no room and shows all three trees, but only one stat each, so it is a teaser, not a summary. Best paired with A or C.'),
+].join('');
+document.querySelectorAll('.scroll.bottom').forEach((el) => { el.scrollTop = el.scrollHeight; });
+</script>
+</body>
+</html>
