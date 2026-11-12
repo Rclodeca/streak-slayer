@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useHeroStats } from '../../composables/useHeroStats';
+import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import { useHabitStore } from '../../store/habitStore';
 import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
@@ -25,6 +26,11 @@ const ART_H = 216;
 
 const { character, heroName, displayLevel } = useHeroStats();
 const habitStore = useHabitStore();
+// Testing: the debug menu can swap the armory for another 216 x 108 backdrop.
+const debugBackdrop = useDebugBackdropStore();
+const roomUrl = computed(() =>
+  debugBackdrop.home === 'armory' ? `${baseUrl}sprites/home/armory.png` : `${baseUrl}sprites/stage/${debugBackdrop.home}.png`,
+);
 const heroClass = computed(() => heroClassFor(character.value));
 
 // The longest streak running now, and whose it is.
@@ -61,7 +67,7 @@ onBeforeUnmount(() => observer?.disconnect());
       :style="{ '--art-w': `${ART_W}px`, '--art-h': `${ART_H}px`, '--art-x': `${offset}px`, '--hero-size': `${HERO_STAGE_CANVAS}px` }"
     >
       <div class="home-art">
-        <img class="home-room" :src="`${baseUrl}sprites/home/armory.png`" alt="" />
+        <img class="home-room" :src="roomUrl" alt="" />
         <img class="home-hero" :src="baseSpriteUrl(`player/${heroClass}`)" alt="" />
       </div>
       <h2 class="home-name plate">{{ heroName }}</h2>

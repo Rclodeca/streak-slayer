@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { BOSS_ART_COUNT, bossArt, bossFamily, createHabit, createQuest, createRng } from '../../game-engine';
+import type { BossFamily, Personality } from '../../game-engine';
 import { useBossSkillCard } from '../../composables/useBossSkillCard';
 import { useCelebration } from '../../composables/useCelebration';
 import { useDeathScreen } from '../../composables/useDeathScreen';
@@ -8,6 +10,7 @@ import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
 
 const { enqueue } = useQuestCompleteQueue();
@@ -19,6 +22,7 @@ const { showBossSkill } = useBossSkillCard();
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const trialsBadge = useDebugTrialsBadgeStore();
+const backdrop = useDebugBackdropStore();
 
 // Fake quests/habits never enter their stores, so acknowledging a preview is
 // a no-op (the resolvers all bail on an unknown id).
@@ -56,6 +60,33 @@ function showNextKnight() {
   bossStore.setBoss({ ...boss, personality: 'armored', art });
 }
 
+// Every boss image in turn, family by family (the common tier of each), the next
+// one on each press: all of the roster's art, to see a backdrop behind each.
+const FAMILY_PERSONALITY: Record<BossFamily, Personality> = {
+  drifter: 'balanced',
+  colossus: 'tank',
+  armored: 'armored',
+  warded: 'warded',
+  brute: 'brute',
+  arcane: 'arcane',
+  warlord: 'warlord',
+  dragon: 'dragon',
+  serpent: 'serpent',
+  wraith: 'wraith',
+};
+const ALL_BOSS_ART = (Object.keys(BOSS_ART_COUNT) as BossFamily[]).flatMap((family) =>
+  Array.from({ length: BOSS_ART_COUNT[family] }, (_, art) => ({ family, art })),
+);
+const bossArtPosition = computed(() => {
+  const boss = bossStore.boss;
+  return ALL_BOSS_ART.findIndex((e) => e.family === bossFamily(boss.personality) && e.art === bossArt(boss));
+});
+
+function showNextBoss() {
+  const next = ALL_BOSS_ART[(bossArtPosition.value + 1) % ALL_BOSS_ART.length];
+  bossStore.setBoss({ ...bossStore.boss, personality: FAMILY_PERSONALITY[next.family], art: next.art });
+}
+
 function previewBossSkills() {
   showBossSkill({ skill: 'ravage', outcome: 'landed', amount: 1240 });
   showBossSkill({ skill: 'blind', outcome: 'landed' });
@@ -84,6 +115,9 @@ function previewDaily() {
     <button type="button" @click="showTallestBoss">Show tallest boss (testing)</button>
     <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>
     <button type="button" @click="showNextKnight">Show next dark knight (testing)</button>
+    <button type="button" @click="showNextBoss">Next boss {{ bossArtPosition + 1 }}/{{ ALL_BOSS_ART.length }} (testing)</button>
+    <button type="button" @click="backdrop.toggleStage()">Stage backdrop: {{ backdrop.stage }} (testing)</button>
+    <button type="button" @click="backdrop.toggleHome()">Hero tab backdrop: {{ backdrop.home }} (testing)</button>
     <button type="button" @click="trialsBadge.set(null, true)">Trials dot (testing)</button>
     <button type="button" @click="trialsBadge.set(3, null)">Trials 3 (testing)</button>
     <button type="button" @click="trialsBadge.set(12, null)">Trials 12 (testing)</button>

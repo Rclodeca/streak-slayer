@@ -21,9 +21,80 @@ Entry template:
 | 7c521a05 | `assets/pixellab/2026-11-11-heroes-run2/sheet.png` | some warrior runs |
 | 88aa7296 | `assets/pixellab/2026-11-11-heroes/sheet.png` | all runs on 2026-11-12 below |
 | 524ea01d | `assets/pixellab/2026-11-11-heroes/sheet.png` | armory home base, 2026-11-12 |
+| 4704fb7e | `assets/pixellab/2026-11-11-heroes/sheet.png` | boss arena, 2026-11-12 |
 | 25630e04, 2af5bd1d | scratch `sheet256.png`, `sheet256b.png` (session scratchpad, gone) | very first hero tries |
 | f7f1a9d3 | a screenshot from `~/Documents` | the very first warrior try |
 | e8b00ce0 | `public/sprites/player/warrior.png` | reference image for the chibi warrior |
+
+## 2026-11-12: boss arena (default fight-stage backdrop, one shared arena instead of a scene per boss)
+
+All seven runs are kept: the tiles in `assets/pixellab/2026-11-12-arena*/` (git-ignored, back them up) and copies in `public/sprites/stage/` for the dev toggles.
+
+| Run | File | Status |
+|---|---|---|
+| 1 | `arena.png` | kept; too much depth (big round floor) |
+| 2 | `arena2.png` | kept; wall too close |
+| 3 | `arena3.png` | **kept for a future sellable or alternative stage** (right depth, wall too detailed for the default) |
+| 4 | `arena4.png` | **kept as a possible Hero tab backdrop** (wall too close for the stage) |
+| 5 | `arena5.png` | kept; wall too close (layout reference ignored) |
+| 6 | `arena6.png` | **the default boss arena** |
+| 7 | `arena7.png` | **kept as a potential skin** |
+
+**Runs 6 and 7, `2026-11-12-arena-run6/` (job 9f7f9f85-edbb-480a-825d-ef8714c6d826) and `2026-11-12-arena-run7/` (job 71eb3fe2-46ce-4adf-8ac3-c76f2d8e61e4)**, the same prompt submitted twice at once
+- Tool + settings: same as runs 1-4: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Shown in the dev toggles as `arena6` and `arena7` (`public/sprites/stage/arena6.png`, `arena7.png`).
+- Description (both): `fantasy RPG boss arena, side view with depth, camera just above floor level, stone hall, straight dark stone back wall set back from the front with an open stretch of floor before it, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, broken pillars and tattered banners at the far edges, flagstone floor along the bottom third of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations each, 20 in all, 1 candidate each (both took 126s, run in parallel).
+- To reproduce (the default arena's exact call; Pixellab gives a different picture each time, so run it twice and keep the one whose floor starts near row 68-70):
+  1. Upload the style image: `get_upload_url`, then `curl -sS -F "file=@assets/pixellab/2026-11-11-heroes/sheet.png" "<upload url>"`, and use the returned `upload:<id>`.
+  2. Call:
+     ```
+     create_image_pro(
+       description="fantasy RPG boss arena, side view with depth, camera just above floor level, stone hall, straight dark stone back wall set back from the front with an open stretch of floor before it, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, broken pillars and tattered banners at the far edges, flagstone floor along the bottom third of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters",
+       width=216, height=108, no_background=False,
+       style_image_url="upload:<id>",   # style_copy left at its default: palette, outline, detail, shading
+     )                                   # no reference_images, palette, max_colors or seed
+     ```
+  3. `wait_for_jobs`, then `curl -sS -o assets/pixellab/<run-folder>/tile-01.png "https://api.pixellab.ai/mcp/images/<job id>/download"`, `node scripts/pixellab-gallery.cjs assets/pixellab/<run-folder> 4`, open `gallery.html`, and check a standing boss on the stage.
+- Result: both got the depth right. The floor starts around row 68-70 in both (measured by row brightness), like run 3, and on the stage at 390 the spider (drifter 2) stands on open floor in front of the wall. Both are darker than runs 2-5, with less wall detail than run 3 (no moss or vines), and both have lit braziers with red flames between the gates.
+  - Run 6: arched portcullis gates, broken pillars and rubble at both edges, a darker wall.
+  - Run 7: square-topped barred gates, tattered banners hanging at the top corners, pillars at the edges, a slightly lighter and deeper-looking floor.
+  - User: "these 2 runs are it. They are both perfect." **Run 6 is the default boss arena; run 7 is kept as a potential skin.**
+- Why / what changed: user asked to go back to run 3's wording (the one with the right depth, but too detailed) with "a little depth" made "depth" and "ruined" dropped, run twice to see whether either lands. From run 3: "side view with a little depth" became "side view with depth" and "ruined stone hall" became "stone hall"; nothing else changed. The plain-wall wording of runs 4-5 was not used.
+
+**Run 5, `2026-11-12-arena-run5/`, job 5cc0d488-0819-403d-aa88-f94b40c09c90**
+- Tool + settings: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no palette. **Reference image (first time):** `assets/pixellab/refs/arena-layout-row68.png` (upload 02806fbc), a flat block-in drawn in code: dark wall rows 0-67, a lighter seam at row 68, floor rows 69-107 lightening toward the front. Usage: `composition only: the camera angle and the line where the back wall meets the floor; take no colours or detail from it`. Shown in the dev toggles as `arena5` (`public/sprites/stage/arena5.png`).
+- Description: `fantasy RPG boss arena, side view with a little depth, camera just above floor level, stone hall, straight plain dark stone back wall of large simple blocks with little detail, set well back from the front with an open stretch of floor before it, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, a pillar and a banner at each far edge, flagstone floor along the bottom third of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations, 1 candidate (took 76s; the reference did not change the price).
+- Result: the reference did not move the wall. The floor starts around row 80-82 (measured by row brightness), the same as runs 2 and 4, so the boss still stands against the wall. Otherwise on brief and plain: even stone blocks, two arched portcullis gates, two small unlit braziers, a pillar and banner at each edge. The flat reference did not flatten the colours either.
+- Why / what changed: run 4's wall was too close again. Added the layout reference and changed "set back" to "set well back"; everything else the same as run 4. Lesson: a flat block-in reference is ignored for horizon placement in `create_image_pro`; the floor line seems to be chance (run 3 at row 70, runs 2, 4, 5 at 80-84).
+
+**Run 4, `2026-11-12-arena-run4/`, job c6581443-9032-44d6-b8fa-fd106651ff38**
+- Tool + settings: same as runs 1-3: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Shown in the dev toggles as `arena4` (`public/sprites/stage/arena4.png`).
+- Description: `fantasy RPG boss arena, side view with a little depth, camera just above floor level, stone hall, straight plain dark stone back wall of large simple blocks with little detail, set back from the front with an open stretch of floor before it, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, a pillar and a banner at each far edge, flagstone floor along the bottom third of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations, 1 candidate (took 47s).
+- Result: plainer, as asked. A wall of large even stone blocks, two square-topped barred gates (not arched like runs 2-3), and two lit braziers with small flames between them, the first run where they are lit. A pillar and a banner at each far edge; no moss, vines or top banners. The floor keeps run 3's depth: on the stage at 390 the spider (drifter 2) stands on open floor in front of the wall. No characters. User: "decent", but the wall is too close again (measured: run 4's floor starts around row 82-84 like run 2's, run 3's around row 70, from the same floor wording). **Kept as a possible Hero tab backdrop.**
+- Why / what changed: user wanted run 3's layout with a plainer back wall, detailed but not too much, like run 2. "ruined stone hall" became "stone hall" (likely the source of run 3's moss and cracks); the wall became "plain dark stone back wall of large simple blocks with little detail"; "broken pillars and tattered banners at the far edges" became "a pillar and a banner at each far edge". The floor and wall-distance wording is unchanged from run 3.
+
+**Run 3, `2026-11-12-arena-run3/`, job 9fe3a860-8521-490d-9ac3-13af94d76ea9**
+- Tool + settings: same as runs 1 and 2: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Shown in the dev toggles as `arena3` (`public/sprites/stage/arena3.png`).
+- Description: `fantasy RPG boss arena, side view with a little depth, camera just above floor level, ruined stone hall, straight dark stone back wall set back from the front with an open stretch of floor before it, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, broken pillars and tattered banners at the far edges, flagstone floor along the bottom third of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations, 1 candidate (took 66s).
+- Result: the floor runs along about the bottom third, so the wall stands further back than run 2. On the stage at 390 the boss (drifter 2, the spider) stands on open floor with flagstones behind it, no longer against the wall. Straight wall with two arched portcullis gates, two small braziers between them (they look unlit), moss and vines on the stones, banners hanging at the top, pillars at the edges, plain dark top-left. No characters. Darker and gloomier than run 2. **Kept** (user: "perfect. I love it"), then set aside as a future sellable or alternative stage: the user found its back wall too detailed for the default, which led to run 4.
+- Why / what changed: user liked run 2's art but the boss looked backed up against the wall (run 2's floor starts around row 82, the boss's feet are at row 86). Asked for the wall "set back from the front with an open stretch of floor before it" and the floor along the bottom third instead of the bottom quarter, aiming for the wall base near row 70. "side view with only a little depth" became "side view with a little depth". Nothing else changed.
+
+**Run 2, `2026-11-12-arena-run2/`, job 27e3a25f-4acb-419a-8b34-3eb0eb9b4a94**
+- Tool + settings: same as run 1: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Shown in the dev toggles as `arena2` (`public/sprites/stage/arena2.png`).
+- Description: `fantasy RPG boss arena, side view with only a little depth, camera just above floor level, ruined stone hall, tall straight dark stone back wall filling most of the image, two shut iron portcullis gates in the wall, two iron braziers against the wall between them, broken pillars and tattered banners at the far edges, a shallow flagstone floor only along the bottom quarter of the image, plain open floor across the whole width, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations, 1 candidate (took 56s).
+- Result: the floor came out as a shallow band along about the bottom quarter, as asked. A straight wall with two big arched portcullis gates in the middle, two small braziers at the foot of the gates (they look unlit), a pillar and banners at the far edges, plain top-left. No characters. Flatter and plainer than run 1, with less glow. Not yet judged on the stage.
+- Why / what changed: run 1's floor had too much depth (a big ring seen from above; the boss's feet are only a little above the hero's). Measured on the stage at 390: boss feet at art row 86, hero feet at row 108, so the floor only needs the bottom quarter. Dropped "slightly raised", "curved wall", "sigil ring" and "on the floor" for the braziers; asked for a camera just above floor level and a floor along the bottom quarter. A layout sketch reference was offered and skipped for this try. (A "flat straight-on" version was proposed first and rejected by the user as too flat.)
+
+**Run 1, `2026-11-12-arena/`, job ebad56ed-56a5-414e-9180-4d5d5befcd9e**
+- Tool + settings: `create_image_pro`, **216x108, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 4704fb7e, all four aspects), no reference images, no palette. Tile is `tile-01.png` plus `gallery.html` at 4x.
+- Description: `fantasy RPG boss arena, slightly raised side view, ruined stone fighting pit, curved dark stone back wall with two shut iron portcullis gates, broken pillars and tattered banners at the far edges, two iron braziers, cracked flagstone floor with a faint sigil ring in the middle, empty clear floor on the left and right, cool moonlit blue-grey light, dark and plain at the top left, no characters`
+- Cost + candidates: 10 generations, 1 candidate (took 59s).
+- Result: blue-grey and moonlit as asked, so no tint needed. Curved stone wall with two barred gates at the top centre, a lit brazier left of centre and another at the right edge, a broken pillar on the left, rubble in the bottom corners, and a big sigil ring covering most of the floor. No characters. Open questions: the ring is busy where fighters and hit effects sit, and the floor is one big circle rather than two ground lines (boss row 65, hero row 96); check fighter placement on the real stage. Not shipped yet.
+- Why / what changed: first run for this piece. User wants one default arena for every boss (dungeon art and shop arenas later); plinths dropped in the brief, with "drop or draw them on top" as the fallback if the floor doesn't line up.
 
 ## 2026-11-12: armory home base (Hero tab backdrop, fixed, hero drawn on top in code)
 
