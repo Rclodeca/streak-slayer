@@ -11,13 +11,15 @@ if (!dir) { console.error('usage: node scripts/pixellab-gallery.cjs <run-folder>
 const tiles = fs.readdirSync(dir).filter((f) => /^tile-\d+\.png$/.test(f)).sort()
 // Tile width from the first PNG's header (85 for bosses, 64 for heroes, 32 for items).
 const tileWidth = tiles.length ? fs.readFileSync(path.join(dir, tiles[0])).readUInt32BE(16) : 85
+const tileHeight = tiles.length ? fs.readFileSync(path.join(dir, tiles[0])).readUInt32BE(20) : tileWidth
 const size = tileWidth * scale
+const sizeH = tileHeight * scale
 const html = `<!doctype html><meta charset="utf-8"><title>${path.basename(dir)}</title>
 <style>
 body{margin:0;padding:16px;background:#3a3a42;color:#ddd;font:13px system-ui}
 .g{display:flex;flex-wrap:wrap;gap:8px;max-width:${(size + 8) * 4}px}
 figure{margin:0;width:${size}px;background:#2c2c34;position:relative}
-img{display:block;width:${size}px;height:${size}px;image-rendering:pixelated}
+img{display:block;width:${size}px;height:${sizeH}px;image-rendering:pixelated}
 figcaption{position:absolute;left:4px;top:2px;color:#ff0;font-weight:700}
 </style>
 <h3>${path.basename(dir)} (${scale}x)</h3>

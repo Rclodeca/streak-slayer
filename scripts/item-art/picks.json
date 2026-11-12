@@ -1,0 +1,873 @@
+{
+ "_about": "Final item art picks for the 94 catalog items (2026-11-12). tile = folder letter + tile number, see folders. fixes = tiles that need scripts/item-art/mirror-fix.cjs applied first. approvedByClick false = proposed by Claude and approved by the user as part of the rest are approved rule, not clicked. Source tiles live in the gitignored assets/pixellab folders.",
+ "folders": {
+  "E": "assets/pixellab/2026-11-12-items-epic-variety",
+  "W": "assets/pixellab/2026-11-12-items-weapons-pool",
+  "C": "assets/pixellab/2026-11-12-items-cursed-pool",
+  "T": "assets/pixellab/2026-11-12-items-trinkets-pool",
+  "G": "assets/pixellab/2026-11-12-items-gaps-pool",
+  "S": "assets/pixellab/2026-11-12-items-swords-pool",
+  "B": "assets/pixellab/2026-11-12-items-blood-scythes-pool",
+  "P": "assets/pixellab/2026-11-12-items-staffs-crowns-pool",
+  "H": "assets/pixellab/2026-11-12-items-mage-hats-pool",
+  "A": "assets/pixellab/2026-11-12-items-epic-armor-pool",
+  "F": "assets/pixellab/2026-11-12-items-armor-hats-pool"
+ },
+ "fixes": {
+  "F6": {
+   "script": "scripts/item-art/mirror-fix.cjs",
+   "axis": 39,
+   "dx": -4,
+   "dy": -1,
+   "fixedFile": "assets/pixellab/2026-11-12-items-armor-hats-pool/fixed/tile-06.png"
+  }
+ },
+ "items": {
+  "rusty-blade": {
+   "tile": "W13",
+   "name": "Rusty Hatchet",
+   "oldName": "Rusty Hatchet",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/rusty-blade",
+   "approvedByClick": false
+  },
+  "steel-sword": {
+   "tile": "S34",
+   "name": "Steel Sword",
+   "oldName": "Steel Sword",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/steel-sword",
+   "approvedByClick": true
+  },
+  "warlords-greatsword": {
+   "tile": "W29",
+   "name": "Warlord's Broadsword",
+   "oldName": "Warlord's Broadsword",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/warlords-greatsword",
+   "approvedByClick": false
+  },
+  "runed-warblade": {
+   "tile": "S14",
+   "name": "Frostguard Blade",
+   "oldName": "Frostguard Blade",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/runed-warblade",
+   "approvedByClick": false
+  },
+  "vampiric-fang": {
+   "tile": "B19",
+   "name": "Vampiric Fang",
+   "oldName": "Vampiric Fang",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/vampiric-fang",
+   "approvedByClick": true
+  },
+  "executioners-axe": {
+   "tile": "W14",
+   "name": "Executioner's Axe",
+   "oldName": "Executioner's Axe",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/executioners-axe",
+   "approvedByClick": false
+  },
+  "berserkers-fury": {
+   "tile": "S9",
+   "name": "Molten Fury",
+   "oldName": "Molten Fury",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/berserkers-fury",
+   "approvedByClick": false
+  },
+  "godslayer-greatblade": {
+   "tile": "S22",
+   "name": "Godslayer Greatblade",
+   "oldName": "Godslayer Greatblade",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/godslayer-greatblade",
+   "approvedByClick": true
+  },
+  "apprentice-wand": {
+   "tile": "H2",
+   "name": "Apprentice's Hat",
+   "oldName": "Apprentice's Hat",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/apprentice-wand",
+   "approvedByClick": false
+  },
+  "arcane-staff": {
+   "tile": "C2",
+   "name": "Opal Staff",
+   "oldName": "Opal Staff",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/arcane-staff",
+   "approvedByClick": false
+  },
+  "archmages-rod": {
+   "tile": "E14",
+   "name": "Archmage's Rod",
+   "oldName": "Archmage's Rod",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/archmages-rod",
+   "approvedByClick": false
+  },
+  "stormcaller-staff": {
+   "tile": "E12",
+   "name": "Stormcaller Staff",
+   "oldName": "Stormcaller Staff",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/stormcaller-staff",
+   "approvedByClick": false
+  },
+  "void-crystal": {
+   "tile": "C13",
+   "name": "Void Orb",
+   "oldName": "Void Orb",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/void-crystal",
+   "approvedByClick": false
+  },
+  "wyrmsage-staff": {
+   "tile": "E13",
+   "name": "Wyrmsage Staff",
+   "oldName": "Wyrmsage Staff",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/wyrmsage-staff",
+   "approvedByClick": false
+  },
+  "galewind-staff": {
+   "tile": "P38",
+   "name": "Galewind Staff",
+   "oldName": "Galewind Staff",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/galewind-staff",
+   "approvedByClick": false
+  },
+  "azure-staff": {
+   "tile": "E15",
+   "name": "Azure Staff",
+   "oldName": "Azure Staff",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/azure-staff",
+   "approvedByClick": false
+  },
+  "voidcallers-scepter": {
+   "tile": "C4",
+   "name": "Voidcaller's Scepter",
+   "oldName": "Voidcaller's Scepter",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/voidcallers-scepter",
+   "approvedByClick": false
+  },
+  "bone-needle": {
+   "tile": "E8",
+   "name": "Crystal Needle",
+   "oldName": "Crystal Needle",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/bone-needle",
+   "approvedByClick": false
+  },
+  "silver-stiletto": {
+   "tile": "G33",
+   "name": "Frost Stiletto",
+   "oldName": "Frost Stiletto",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/silver-stiletto",
+   "approvedByClick": false
+  },
+  "truthseekers-bow": {
+   "tile": "W25",
+   "name": "Truthseeker's Bow",
+   "oldName": "Truthseeker's Bow",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/truthseekers-bow",
+   "approvedByClick": true
+  },
+  "crystal-longbow": {
+   "tile": "W9",
+   "name": "Crystal Longbow",
+   "oldName": "Crystal Longbow",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/crystal-longbow",
+   "approvedByClick": false
+  },
+  "lucky-dagger": {
+   "tile": "G6",
+   "name": "Lucky Dagger",
+   "oldName": "Lucky Dagger",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/lucky-dagger",
+   "approvedByClick": false
+  },
+  "assassins-edge": {
+   "tile": "G40",
+   "name": "Assassin's Edge",
+   "oldName": "Assassin's Edge",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/assassins-edge",
+   "approvedByClick": true
+  },
+  "eagle-eye-lens": {
+   "tile": "E55",
+   "name": "Seeker's Compass",
+   "oldName": "Seeker's Compass",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/eagle-eye-lens",
+   "approvedByClick": false
+  },
+  "battlemage-gauntlets": {
+   "tile": "T26",
+   "name": "Battlemage Gauntlets",
+   "oldName": "Battlemage Gauntlets",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/battlemage-gauntlets",
+   "approvedByClick": false
+  },
+  "chaos-blade": {
+   "tile": "S55",
+   "name": "Chaos Blade",
+   "oldName": "Chaos Blade",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/chaos-blade",
+   "approvedByClick": false
+  },
+  "padded-vest": {
+   "tile": "T14",
+   "name": "Leather Vest",
+   "oldName": "Leather Vest",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/padded-vest",
+   "approvedByClick": false
+  },
+  "chainmail-hauberk": {
+   "tile": "E18",
+   "name": "Leafmail Hauberk",
+   "oldName": "Chainmail Hauberk",
+   "renamed": true,
+   "rarity": "common",
+   "icon": "items/chainmail-hauberk",
+   "approvedByClick": false
+  },
+  "iron-buckler": {
+   "tile": "E36",
+   "name": "Crusader Shield",
+   "oldName": "Crusader Shield",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/iron-buckler",
+   "approvedByClick": false
+  },
+  "ward-cloak": {
+   "tile": "E21",
+   "name": "Warding Robe",
+   "oldName": "Warding Robe",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/ward-cloak",
+   "approvedByClick": false
+  },
+  "plate-armor": {
+   "tile": "E20",
+   "name": "Plate Armor",
+   "oldName": "Plate Armor",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/plate-armor",
+   "approvedByClick": false
+  },
+  "ironstride-greaves": {
+   "tile": "T13",
+   "name": "Ironstride Greaves",
+   "oldName": "Ironstride Greaves",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/ironstride-greaves",
+   "approvedByClick": false
+  },
+  "dragons-heart": {
+   "tile": "E33",
+   "name": "Dragonscale Shield",
+   "oldName": "Dragon's Heart",
+   "renamed": true,
+   "rarity": "rare",
+   "icon": "items/dragons-heart",
+   "approvedByClick": false
+  },
+  "novices-charm": {
+   "tile": "G18",
+   "name": "Novice's Charm",
+   "oldName": "Novice's Rose",
+   "renamed": true,
+   "rarity": "common",
+   "icon": "items/novices-charm",
+   "approvedByClick": false
+  },
+  "blessed-censer": {
+   "tile": "T62",
+   "name": "Blessed Censer",
+   "oldName": "Sunstaff",
+   "renamed": true,
+   "rarity": "common",
+   "icon": "items/blessed-censer",
+   "approvedByClick": false
+  },
+  "sacred-chalice": {
+   "tile": "E43",
+   "name": "Sacred Chalice",
+   "oldName": "Sacred Cauldron",
+   "renamed": true,
+   "rarity": "uncommon",
+   "icon": "items/sacred-chalice",
+   "approvedByClick": false
+  },
+  "lucky-coin": {
+   "tile": "E63",
+   "name": "Lucky Coffer",
+   "oldName": "Lucky Coffer",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/lucky-coin",
+   "approvedByClick": false
+  },
+  "shining-star": {
+   "tile": "P26",
+   "name": "Star Wand",
+   "oldName": "Star Wand",
+   "renamed": false,
+   "rarity": "common",
+   "icon": "items/shining-star",
+   "approvedByClick": false
+  },
+  "rebirth-orb": {
+   "tile": "E47",
+   "name": "Rebirth Seed",
+   "oldName": "Rebirth Orb",
+   "renamed": true,
+   "rarity": "uncommon",
+   "icon": "items/rebirth-orb",
+   "approvedByClick": false
+  },
+  "firebird-staff": {
+   "tile": "E10",
+   "name": "Firebird Staff",
+   "oldName": "Firebird Staff",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/firebird-staff",
+   "approvedByClick": false
+  },
+  "crescent-crook": {
+   "tile": "C1",
+   "name": "Crescent Crook",
+   "oldName": "Crescent Crook",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/crescent-crook",
+   "approvedByClick": false
+  },
+  "tome-of-insight": {
+   "tile": "E41",
+   "name": "Tome of Insight",
+   "oldName": "Tome of Insight",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/tome-of-insight",
+   "approvedByClick": false
+  },
+  "warded-longsword": {
+   "tile": "S21",
+   "name": "Warded Longsword",
+   "oldName": "Warded Longsword",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/warded-longsword",
+   "approvedByClick": true
+  },
+  "berserkers-war-axe": {
+   "tile": "G42",
+   "name": "Berserker's War Axe",
+   "oldName": "Berserker's War Axe",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/berserkers-war-axe",
+   "approvedByClick": true
+  },
+  "serrated-ripper": {
+   "tile": "G8",
+   "name": "Crystal Ripper",
+   "oldName": "Crystal Ripper",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/serrated-ripper",
+   "approvedByClick": true
+  },
+  "piercing-fang-gauntlets": {
+   "tile": "T12",
+   "name": "Piercing Fang Gauntlets",
+   "oldName": "Piercing Fang Gauntlets",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/piercing-fang-gauntlets",
+   "approvedByClick": true
+  },
+  "duelists-signet": {
+   "tile": "T60",
+   "name": "Duelist's Signet",
+   "oldName": "Duelist's Signet",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/duelists-signet",
+   "approvedByClick": false
+  },
+  "bloodthorn-blade": {
+   "tile": "B16",
+   "name": "Bloodcrystal Blade",
+   "oldName": "Bloodcrystal Blade",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/bloodthorn-blade",
+   "approvedByClick": true
+  },
+  "scholars-grimoire": {
+   "tile": "C25",
+   "name": "Scholar's Grimoire",
+   "oldName": "Scholar's Grimoire",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/scholars-grimoire",
+   "approvedByClick": false
+  },
+  "hexed-ring": {
+   "tile": "T18",
+   "name": "Hexed Ring",
+   "oldName": "Hexed Ring",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/hexed-ring",
+   "approvedByClick": false
+  },
+  "chaos-conduit": {
+   "tile": "F52",
+   "name": "Pyromancer's Hat",
+   "oldName": "Pyromancer's Hat",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/chaos-conduit",
+   "approvedByClick": false
+  },
+  "cinder-crown": {
+   "tile": "H21",
+   "name": "Astral Hat",
+   "oldName": "Astral Hat",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/cinder-crown",
+   "approvedByClick": false
+  },
+  "runeforged-spellblade": {
+   "tile": "S61",
+   "name": "Runeforged Spellblade",
+   "oldName": "Runeforged Spellblade",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/runeforged-spellblade",
+   "approvedByClick": false
+  },
+  "warding-sigil": {
+   "tile": "E56",
+   "name": "Warding Pendant",
+   "oldName": "Warding Pendant",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/warding-sigil",
+   "approvedByClick": false
+  },
+  "bulwark-plate": {
+   "tile": "E23",
+   "name": "Bulwark Plate",
+   "oldName": "Bulwark Plate",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/bulwark-plate",
+   "approvedByClick": false
+  },
+  "juggernaut-carapace": {
+   "tile": "F6",
+   "name": "Juggernaut Carapace",
+   "oldName": "Juggernaut Carapace",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/juggernaut-carapace",
+   "approvedByClick": true
+  },
+  "penitents-hauberk": {
+   "tile": "T23",
+   "name": "Penitent's Cloak",
+   "oldName": "Penitent's Cuirass",
+   "renamed": true,
+   "rarity": "rare",
+   "icon": "items/penitents-hauberk",
+   "approvedByClick": false
+  },
+  "ascetics-beads": {
+   "tile": "C3",
+   "name": "Ascetic's Staff",
+   "oldName": "Ascetic's Staff",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/ascetics-beads",
+   "approvedByClick": false
+  },
+  "brawlers-ironhide": {
+   "tile": "T20",
+   "name": "Brawler's Harness",
+   "oldName": "Brawler's Harness",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/brawlers-ironhide",
+   "approvedByClick": false
+  },
+  "spellturner-mantle": {
+   "tile": "T24",
+   "name": "Spellturner Mantle",
+   "oldName": "Spellturner Mantle",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/spellturner-mantle",
+   "approvedByClick": true
+  },
+  "aegis-of-the-unbroken": {
+   "tile": "E35",
+   "name": "Aegis of the Unbroken",
+   "oldName": "Aegis of the Unbroken",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/aegis-of-the-unbroken",
+   "approvedByClick": false
+  },
+  "bloodbound-carapace": {
+   "tile": "E22",
+   "name": "Bloodbound Carapace",
+   "oldName": "Bloodbound Carapace",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/bloodbound-carapace",
+   "approvedByClick": false
+  },
+  "dawnguard-helm": {
+   "tile": "E31",
+   "name": "Dawnguard Helm",
+   "oldName": "Dawnguard Helm",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/dawnguard-helm",
+   "approvedByClick": false
+  },
+  "wellspring-crown": {
+   "tile": "E30",
+   "name": "Wellspring Crown",
+   "oldName": "Wellspring Crown",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/wellspring-crown",
+   "approvedByClick": false
+  },
+  "serene-lotus-charm": {
+   "tile": "G20",
+   "name": "Serene Emerald",
+   "oldName": "Serene Glowcap",
+   "renamed": true,
+   "rarity": "uncommon",
+   "icon": "items/serene-lotus-charm",
+   "approvedByClick": false
+  },
+  "pilgrims-blessing": {
+   "tile": "E9",
+   "name": "Pilgrim's Staff",
+   "oldName": "Pilgrim's Staff",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/pilgrims-blessing",
+   "approvedByClick": false
+  },
+  "stalwart-sages-ring": {
+   "tile": "T25",
+   "name": "Stalwart Sage's Ring",
+   "oldName": "Stalwart Sage's Ring",
+   "renamed": false,
+   "rarity": "uncommon",
+   "icon": "items/stalwart-sages-ring",
+   "approvedByClick": false
+  },
+  "font-of-renewal": {
+   "tile": "P4",
+   "name": "Staff of Renewal",
+   "oldName": "Staff of Renewal",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/font-of-renewal",
+   "approvedByClick": true
+  },
+  "adventurers-sigil": {
+   "tile": "E52",
+   "name": "Adventurer's Crest",
+   "oldName": "Adventurer's Crest",
+   "renamed": false,
+   "rarity": "rare",
+   "icon": "items/adventurers-sigil",
+   "approvedByClick": false
+  },
+  "titans-lifeblood": {
+   "tile": "T33",
+   "name": "Titan's Lifeblood",
+   "oldName": "Titan's Lifeblood",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/titans-lifeblood",
+   "approvedByClick": false
+  },
+  "sages-codex": {
+   "tile": "E45",
+   "name": "Sage's Codex",
+   "oldName": "Sage's Codex",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/sages-codex",
+   "approvedByClick": false
+  },
+  "starfall-staff": {
+   "tile": "P30",
+   "name": "Moonstar Staff",
+   "oldName": "Moonstar Staff",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/starfall-staff",
+   "approvedByClick": false
+  },
+  "worldbreaker-maul": {
+   "tile": "W47",
+   "name": "Worldbreaker Maul",
+   "oldName": "Worldbreaker Maul",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/worldbreaker-maul",
+   "approvedByClick": true
+  },
+  "colossus-plate": {
+   "tile": "E17",
+   "name": "Colossus Plate",
+   "oldName": "Colossus Plate",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/colossus-plate",
+   "approvedByClick": false
+  },
+  "archons-halo": {
+   "tile": "P48",
+   "name": "Archon's Crown",
+   "oldName": "Archon's Crown",
+   "renamed": false,
+   "rarity": "epic",
+   "icon": "items/archons-halo",
+   "approvedByClick": true
+  },
+  "sunpiercer-bow": {
+   "tile": "W33",
+   "name": "Frostpiercer Bow",
+   "oldName": "Frostpiercer Crossbow",
+   "renamed": true,
+   "rarity": "epic",
+   "icon": "items/sunpiercer-bow",
+   "approvedByClick": false
+  },
+  "void-arbalest": {
+   "tile": "W34",
+   "name": "Void Longbow",
+   "oldName": "Void Arbalest",
+   "renamed": true,
+   "rarity": "epic",
+   "icon": "items/void-arbalest",
+   "approvedByClick": false
+  },
+  "ember-heart": {
+   "tile": "E46",
+   "name": "Ember Heart",
+   "oldName": "Ember Heart",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/ember-heart",
+   "approvedByClick": false
+  },
+  "soul-lantern": {
+   "tile": "G29",
+   "name": "Soul Lantern",
+   "oldName": "Soul Lantern",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/soul-lantern",
+   "approvedByClick": false
+  },
+  "first-blood": {
+   "tile": "B1",
+   "name": "First Blood",
+   "oldName": "First Blood",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/first-blood",
+   "approvedByClick": false
+  },
+  "censer-of-wrath": {
+   "tile": "G60",
+   "name": "Torch of Wrath",
+   "oldName": "Torch of Wrath",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/censer-of-wrath",
+   "approvedByClick": false
+  },
+  "temperance-seal": {
+   "tile": "T53",
+   "name": "Temperance Seal",
+   "oldName": "Temperance Seal",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/temperance-seal",
+   "approvedByClick": false
+  },
+  "quill-of-oaths": {
+   "tile": "C32",
+   "name": "Scroll of Oaths",
+   "oldName": "Scroll of Oaths",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/quill-of-oaths",
+   "approvedByClick": false
+  },
+  "magpie-charm": {
+   "tile": "C16",
+   "name": "Magpie's Diamond",
+   "oldName": "Magpie's Diamond",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/magpie-charm",
+   "approvedByClick": false
+  },
+  "headsmans-mark": {
+   "tile": "W38",
+   "name": "Headsman's Axe",
+   "oldName": "Headsman's Axe",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/headsmans-mark",
+   "approvedByClick": false
+  },
+  "hunters-eye": {
+   "tile": "C12",
+   "name": "Hunter's Eye",
+   "oldName": "Hunter's Eye",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/hunters-eye",
+   "approvedByClick": false
+  },
+  "moonwell": {
+   "tile": "P27",
+   "name": "Moonwell Staff",
+   "oldName": "Moonwell Staff",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/moonwell",
+   "approvedByClick": false
+  },
+  "dynamo-core": {
+   "tile": "C7",
+   "name": "Dynamo Rod",
+   "oldName": "Dynamo Rod",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/dynamo-core",
+   "approvedByClick": false
+  },
+  "banner-of-endurance": {
+   "tile": "G10",
+   "name": "Standard of Endurance",
+   "oldName": "Banner of Endurance",
+   "renamed": true,
+   "rarity": "relic",
+   "icon": "items/banner-of-endurance",
+   "approvedByClick": false
+  },
+  "null-mirror": {
+   "tile": "C55",
+   "name": "Null Mirror",
+   "oldName": "Null Mirror",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/null-mirror",
+   "approvedByClick": false
+  },
+  "echoing-blade": {
+   "tile": "B33",
+   "name": "Echoing Scythe",
+   "oldName": "Echoing Scythe",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/echoing-blade",
+   "approvedByClick": false
+  },
+  "scales-of-fate": {
+   "tile": "G21",
+   "name": "Coin of Fate",
+   "oldName": "Scales of Fate",
+   "renamed": true,
+   "rarity": "relic",
+   "icon": "items/scales-of-fate",
+   "approvedByClick": false
+  },
+  "omen-hourglass": {
+   "tile": "C46",
+   "name": "Omen Hourglass",
+   "oldName": "Omen Hourglass",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/omen-hourglass",
+   "approvedByClick": false
+  },
+  "glass-crown": {
+   "tile": "P51",
+   "name": "Glass Crown",
+   "oldName": "Glass Crown",
+   "renamed": false,
+   "rarity": "relic",
+   "icon": "items/glass-crown",
+   "approvedByClick": true
+  }
+ }
+}
