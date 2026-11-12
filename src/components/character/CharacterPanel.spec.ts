@@ -4,13 +4,11 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, createRng, dailyPeriodKey, effectiveStat, formatCompact, ITEM_CATALOG } from '../../game-engine';
+import { addDaysToDayKey, dailyPeriodKey, effectiveStat, formatCompact, ITEM_CATALOG } from '../../game-engine';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
-import { useHabitStore } from '../../store/habitStore';
 import { useTabStore } from '../../store/tabStore';
 import Modal from '../ui/Modal.vue';
-import StatIcon from '../ui/StatIcon.vue';
 import CharacterPanel from './CharacterPanel.vue';
 
 enableAutoUnmount(afterEach);
