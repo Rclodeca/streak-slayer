@@ -209,13 +209,13 @@ const skillTiles = computed<StatTile[]>(() => [
   display: contents;
   /* How far down the stage the boss's middle is: where the kill's stamp sits
      (the figure itself stands on its plinth, see .boss-figure). */
-  --boss-w: calc(128 * var(--u));
+  --boss-w: calc(166 * var(--u));
 }
 
 .boss-plat {
   position: absolute;
-  right: calc(30 * var(--u));
-  top: calc(14px + 116 * var(--u));
+  right: calc(40 * var(--u));
+  top: calc(36px + var(--stage-grow, 0px) + 116 * var(--u));
   width: calc(136 * var(--u));
   height: 18px;
   background: color-mix(in srgb, var(--text) 12%, transparent);
@@ -223,7 +223,9 @@ const skillTiles = computed<StatTile[]>(() => [
 }
 
 /* The plinth's width, centred over it, the boss's feet 4px below its top (the
-   stage is 212px tall on phones, the plinth's top 14px + 116 * --u down).
+   stage is 212px + --stage-grow tall on phones, the plinth's top 36px +
+   --stage-grow + 116 * --u down: low, so the tallest boss (85 art px) clears the
+   top of the stage; its foot can reach the hero's name and bar).
    The sprite is native pixel art, drawn at its own size (spriteSrcset: 2 CSS
    px per art pixel, 4 device px on 2x screens and 6 on 3x, like the hero and
    the stage scenes) and a multiple of six art pixels in each direction, so
@@ -232,8 +234,8 @@ const skillTiles = computed<StatTile[]>(() => [
    sits in the stage's top-right corner. */
 .boss-figure {
   position: absolute;
-  right: calc(30 * var(--u));
-  bottom: calc(194px - 116 * var(--u));
+  right: calc(40 * var(--u));
+  bottom: calc(172px - 116 * var(--u));
   width: calc(136 * var(--u));
   display: flex;
   justify-content: center;

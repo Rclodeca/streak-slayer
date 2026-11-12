@@ -204,11 +204,11 @@ watch(
   grid-column: 1 / -1;
 }
 
-/* The stage's 4px of air under its plinths comes out of the gap below, so the
-   lists stay where they were. (On a phone the stage is pinned over the top of
+/* The stage's 4px of air under its plinths, and on phones its --stage-grow, come
+   out of the gap below, so the lists stay where they were. (On a phone the stage is pinned over the top of
    the scroll box, which has air of its own there.) */
 .layout > .fight-stage:not(.focus) {
-  margin-bottom: -4px;
+  margin-bottom: calc(-4px - var(--stage-grow, 0px));
 }
 
 /* Desktop: no box of its own, the columns are the grid's, and every list
@@ -312,7 +312,7 @@ watch(
   .scroll-body.talents-view {
     grid-template-rows: minmax(0, 1fr);
     overflow: hidden;
-    padding: 0.25rem 0.75rem 0.5rem;
+    padding: calc(0.25rem + var(--stage-grow, 0px)) 0.75rem 0.5rem;
   }
 
   .tab-panel:not(.current),

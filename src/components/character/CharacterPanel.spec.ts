@@ -95,20 +95,8 @@ describe('CharacterPanel', () => {
     expect(style()).toBe(warrior);
   });
 
-  it('shows a damage stat only while some skill uses its type', () => {
-    const habitStore = useHabitStore();
-    const icons = (type: 'physical' | 'trueDamage') => {
-      habitStore.habits = [{ ...habitStore.addHabit('Read', 'daily', 'easy', false, createRng(1)), damageType: type }];
-      return mount(CharacterPanel)
-        .find('.stat-summary')
-        .findAllComponents(StatIcon)
-        .map((icon: { props: (key: string) => unknown }) => icon.props('name'));
-    };
-    expect(icons('physical')).toContain('physical');
-    expect(icons('physical')).not.toContain('true');
-    expect(icons('physical')).not.toContain('magic');
-    expect(icons('trueDamage')).toContain('true');
-    expect(icons('trueDamage')).not.toContain('physical');
+  it('keeps the hero\'s stats off the stage: no chips line until a boost or an effect is on', () => {
+    expect(mount(CharacterPanel).find('.stat-summary').exists()).toBe(false);
   });
 
   describe('boss-skill effects', () => {

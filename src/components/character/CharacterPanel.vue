@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue';
-import { formatCompact, heroClassFor, type DamageType } from '../../game-engine';
+import { computed, onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue';
+import { heroClassFor } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { useHeroStats } from '../../composables/useHeroStats';
 import { useHitFeed } from '../../composables/useHitFeed';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { usePress } from '../../composables/usePress';
-import { useHabitStore } from '../../store/habitStore';
 import { useTabStore } from '../../store/tabStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
@@ -16,17 +15,13 @@ import { HERO_PHONE_PLACEMENT, HERO_PLACEMENT } from './heroArt';
 import HeroDetails from './HeroDetails.vue';
 import PlayerSprite from './PlayerSprite.vue';
 
-// A condensed, always-visible emoji stat line (Buffed numbers) sits under
-// the bars; the Base/Buffed breakdown and the gear live in the details
-// (HeroDetails) behind the hero's half of the stage: the Hero tab on a phone,
-// a popup on wider screens. See BossPanel.vue for the same pattern.
+// Only the name and the bars sit on the stage (the boss's panel shows its numbers
+// at a glance; the hero's live in the details, HeroDetails, behind the hero's half
+// of the stage: the Hero tab on a phone, a popup on wider screens), plus a line of
+// chips while a boost or a boss-skill effect is on.
 const showDetails = ref(false);
 const isPhone = usePhoneLayout();
 const tabStore = useTabStore();
-
-// A damage stat only shows while a skill of its type could use it (the details keep them all).
-const habitStore = useHabitStore();
-const has = (type: DamageType) => habitStore.habits.some((habit) => habit.damageType === type);
 
 function openDetails() {
   if (isPhone.value) tabStore.select('hero');
@@ -40,18 +35,6 @@ const {
   displayLevel,
   expNeeded,
   displayExp,
-  physicalDamage,
-  magicDamage,
-  currentHealing,
-  trueDamage,
-  critChance,
-  armor,
-  magicResist,
-  currentArmor,
-  currentMagicResist,
-  lifesteal,
-  armorPen,
-  magicPen,
   critBoost,
   critBoostDaysLeft,
   healBoost,
@@ -66,6 +49,13 @@ const {
   sunderDaysLeft,
   doomDays,
 } = useHeroStats();
+
+// The chips line exists only while something is on, so a plain stage has no row for it.
+const hasEffects = computed(
+  () =>
+    !!(critBoost.value || healBoost.value || woundsEffect.value || blindEffect.value || severEffect.value || sunderEffect.value) ||
+    doomDays.value !== undefined,
+);
 
 // Turned to face the boss across the stage, and stood on its plinth by the
 // art's visual center (see heroArt.ts); phones draw it smaller.
@@ -114,6 +104,11 @@ onMounted(() => {
   // Sizes change with the width, the theme and the numbers themselves.
   statLineObserver = new ResizeObserver(() => requestAnimationFrame(clipStatLine));
   if (statLine.value) statLineObserver.observe(statLine.value);
+  // The line comes and goes with the effects.
+  watch(statLine, (el, prev) => {
+    if (prev) statLineObserver?.unobserve(prev);
+    if (el) statLineObserver?.observe(el);
+  });
   document.fonts?.ready.then(clipStatLine);
   clipStatLine();
 });
@@ -143,17 +138,7 @@ onBeforeUnmount(() => {
         <!-- Keyed by level so the bar snaps empty on a level-up instead of draining back. -->
         <ExpBar :key="displayLevel" :current="displayExp" :max="expNeeded" />
       </div>
-      <p ref="statLine" class="stat-summary">
-        <span v-if="has('physical')"><StatIcon name="physical" />{{ formatCompact(physicalDamage) }}</span>
-        <span v-if="has('magic')"><StatIcon name="magic" />{{ formatCompact(magicDamage) }}</span>
-        <span v-if="has('healing')"><StatIcon name="healing" />{{ formatCompact(currentHealing) }}</span>
-        <span v-if="has('trueDamage')"><StatIcon name="true" />{{ formatCompact(trueDamage) }}</span>
-        <span><StatIcon name="crit" />{{ (critChance * 100).toFixed(0) }}%</span>
-        <span v-if="armor > 0"><StatIcon name="armor" />{{ formatCompact(currentArmor) }}</span>
-        <span v-if="magicResist > 0"><StatIcon name="magicResist" />{{ formatCompact(currentMagicResist) }}</span>
-        <span v-if="lifesteal > 0 && !severEffect"><StatIcon name="lifesteal" />{{ +lifesteal.toFixed(1) }}%</span>
-        <span v-if="armorPen > 0"><StatIcon name="armorPen" />{{ armorPen.toFixed(0) }}%</span>
-        <span v-if="magicPen > 0"><StatIcon name="magicPen" />{{ magicPen.toFixed(0) }}%</span>
+      <p v-if="hasEffects" ref="statLine" class="stat-summary">
         <span v-if="critBoost"><StatIcon name="critBoost" />+{{ (critBoost.bonus * 100).toFixed(0) }}% crit · {{ critBoostDaysLeft }}d</span>
         <span v-if="healBoost"><StatIcon name="healBoost" />+{{ (healBoost.bonus * 100).toFixed(0) }}% heal · {{ healBoostDaysLeft }}d</span>
         <span v-if="woundsEffect"><StatIcon name="wounds" />{{ (woundsEffect.effectRate * 100).toFixed(0) }}% heal · {{ woundsDaysLeft }}d</span>
@@ -213,14 +198,15 @@ onBeforeUnmount(() => {
 }
 
 /* Floats on the stage to the hero's right. Its left edge sits at the same
-   share of the stage (150px of 390) at every phone width, clear of the
-   warrior's sword tip (224px wide at 390). */
+   share of the stage (138px of 390) at every phone width, clear of the
+   hero (the warrior's right edge is at 129px), and it is 236px wide at 390,
+   ending where it always did, 16px short of the stage's right edge. */
 .hero-block {
   position: absolute;
   z-index: 4;
   bottom: 6px;
-  right: 16px;
-  width: calc(100% * 240 / 390 - 16px);
+  left: calc(100% * 138 / 390);
+  width: calc(100% * 236 / 390);
   display: flex;
   flex-direction: column;
   gap: 5px;

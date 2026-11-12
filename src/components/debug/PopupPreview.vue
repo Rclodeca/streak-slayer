@@ -37,6 +37,16 @@ function previewKill() {
   celebrateLevelUp(Math.max(1, characterStore.character.level - 1));
 }
 
+// Puts the tallest boss image (warlord 5, 90 art px) on the stage, to check how tall bosses fit.
+function showTallestBoss() {
+  bossStore.setBoss({ ...bossStore.boss, personality: 'warlord', art: 4 });
+}
+
+// The warlord whose raised sword reaches the stage's menu button (warlord 1, 84 art px).
+function showSwordWarlord() {
+  bossStore.setBoss({ ...bossStore.boss, personality: 'warlord', art: 0 });
+}
+
 function previewBossSkills() {
   showBossSkill({ skill: 'ravage', outcome: 'landed', amount: 1240 });
   showBossSkill({ skill: 'blind', outcome: 'landed' });
@@ -62,6 +72,8 @@ function previewDaily() {
     <button type="button" @click="triggerDeath">Preview death screen (testing)</button>
     <button type="button" @click="previewKill">Preview boss kill (testing)</button>
     <button type="button" @click="previewBossSkills">Preview boss skills (testing)</button>
+    <button type="button" @click="showTallestBoss">Show tallest boss (testing)</button>
+    <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>
   </div>
 </template>
 

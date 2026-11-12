@@ -18,6 +18,14 @@ body {
 // their own (AppShell), so the page itself must not rubber-band, or the
 // pinned stage would be dragged with it.
 @media (max-width: 820px) {
+  // How much taller the phone fight stage is than its 212px design, into the gap
+  // above the lists: AppShell takes the same off that gap, so the lists stay where
+  // they were. The boss's plinth drops with it, the hero's stays on the bottom, so
+  // the stage scenes' ground (whose two plinth rows are fixed) still meets both.
+  :root {
+    --stage-grow: 6px;
+  }
+
   html,
   body {
     overscroll-behavior: none;

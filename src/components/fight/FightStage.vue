@@ -267,13 +267,13 @@ onBeforeUnmount(() => {
 .stage-inner {
   position: relative;
   width: min(100%, 430px);
-  height: 212px;
+  height: calc(212px + var(--stage-grow, 0px));
   margin-inline: auto;
   container-type: inline-size;
   --u: min(1px, calc(100cqw / 390));
   --split-x: 50%;
-  --split-yl: max(calc(212px - 118 * var(--u)), calc(var(--boss-bottom, 0px) + 4px));
-  --split-yr: min(calc(32px + 116 * var(--u)), calc(var(--hero-top, 999px) - 4px));
+  --split-yl: max(calc(212px + var(--stage-grow, 0px) - 118 * var(--u)), calc(var(--boss-bottom, 0px) + 4px));
+  --split-yr: min(calc(54px + var(--stage-grow, 0px) + 116 * var(--u)), calc(var(--hero-top, 999px) - 4px));
   /* A second step, for the banner; on phones it folds into the first. */
   --split-x2: var(--split-x);
   --split-ym: var(--split-yr);
