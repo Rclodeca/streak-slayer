@@ -13,6 +13,8 @@
     "item-icon": "node scripts/item-icons/make-item-icon.cjs",
     "item-icons": "node scripts/item-icons/rebuild-all.cjs",
     "sprites": "node scripts/item-icons/rebuild-sprites.cjs",
+    "boss-art": "node scripts/boss-art/build.cjs",
+    "hero-art": "node scripts/hero-art/build.cjs",
     "item-catalog-page": "vite-node scripts/item-catalog-page.ts -- docs/mockups/item-catalog.html"
   },
   "dependencies": {

@@ -3,7 +3,7 @@ import { TUNING } from './constants/tuning';
 import { expToNextLevel, statAtLevel } from './leveling';
 import type { Rng } from './rng';
 import { pickWeighted } from './rng';
-import type { Boss, Personality } from './types';
+import type { Boss, HybridPersonality, Personality } from './types';
 
 /** The health growth from boss `index - 1` to `index`: the rate of the last BOSS_HEALTH_GROWTH_BANDS row starting at or before it. */
 export function bossHealthGrowthRate(index: number): number {
@@ -40,10 +40,11 @@ export function rescaleBossToHealthBands(boss: Boss): Boss {
 export function easeBossAttack(boss: Boss): Boss {
   const eased = { ...boss };
   delete (eased as { critChance?: number }).critChance;
+  if (isHybrid(boss.personality)) return eased; // never existed before the easing
   const stat = PERSONALITY_STAT[boss.personality];
   const newMultiplier = ATTACK_MULTIPLIER[boss.personality];
   if ((stat === 'physicalAttack' || stat === 'magicAttack') && newMultiplier !== undefined) {
-    eased[stat] = boss[stat] * (newMultiplier / PERSONALITY_MULTIPLIER[boss.personality as Exclude<Personality, 'balanced'>]);
+    eased[stat] = boss[stat] * (newMultiplier / PERSONALITY_MULTIPLIER[boss.personality as Exclude<SinglePersonality, 'balanced'>]);
   }
   return eased;
 }
@@ -89,7 +90,37 @@ export function bossExpReward(level: number, rng: Rng): number {
 
 type EmphasizedStat = 'health' | 'physicalAttack' | 'magicAttack' | 'armor' | 'magicResist';
 
-const PERSONALITY_STAT: Record<Personality, EmphasizedStat | null> = {
+type SinglePersonality = Exclude<Personality, HybridPersonality>;
+
+/**
+ * What a hybrid personality emphasizes: one resist, brought up to the given
+ * tier's cap (see resistPctForIndex), and one attack, multiplied. Two tiers
+ * each, the base and the 3x; each stat is about half as strong as the
+ * single-stat families' 2x-5x so a hybrid stays within today's hardest bosses.
+ */
+interface HybridEmphasis {
+  resist: 'armor' | 'magicResist';
+  resistTier: number;
+  attack: 'physicalAttack' | 'magicAttack';
+  attackMultiplier: number;
+}
+
+const HYBRID_EMPHASIS: Record<HybridPersonality, HybridEmphasis> = {
+  warlord: { resist: 'armor', resistTier: 2, attack: 'physicalAttack', attackMultiplier: 1.5 },
+  warlord3x: { resist: 'armor', resistTier: 3, attack: 'physicalAttack', attackMultiplier: 2 },
+  dragon: { resist: 'armor', resistTier: 2, attack: 'magicAttack', attackMultiplier: 1.5 },
+  dragon3x: { resist: 'armor', resistTier: 3, attack: 'magicAttack', attackMultiplier: 2 },
+  serpent: { resist: 'magicResist', resistTier: 2, attack: 'physicalAttack', attackMultiplier: 1.5 },
+  serpent3x: { resist: 'magicResist', resistTier: 3, attack: 'physicalAttack', attackMultiplier: 2 },
+  wraith: { resist: 'magicResist', resistTier: 2, attack: 'magicAttack', attackMultiplier: 1.5 },
+  wraith3x: { resist: 'magicResist', resistTier: 3, attack: 'magicAttack', attackMultiplier: 2 },
+};
+
+export function isHybrid(personality: Personality): personality is HybridPersonality {
+  return personality in HYBRID_EMPHASIS;
+}
+
+const PERSONALITY_STAT: Record<SinglePersonality, EmphasizedStat | null> = {
   balanced: null,
   tank: 'health',
   armored: 'armor',
@@ -115,7 +146,7 @@ const PERSONALITY_STAT: Record<Personality, EmphasizedStat | null> = {
  * armored/warded tier that picks the resist cap). `balanced` never emphasizes anything (PERSONALITY_STAT
  * maps it to null), so it has no entry here.
  */
-const PERSONALITY_MULTIPLIER: Record<Exclude<Personality, 'balanced'>, number> = {
+const PERSONALITY_MULTIPLIER: Record<Exclude<SinglePersonality, 'balanced'>, number> = {
   tank: 2,
   armored: 2,
   armored3x: 3,
@@ -142,7 +173,7 @@ const PERSONALITY_MULTIPLIER: Record<Exclude<Personality, 'balanced'>, number> =
  * of a player's HP in one hit. The tier number itself still keys the resist
  * caps for armored/warded, so this is separate from PERSONALITY_MULTIPLIER.
  */
-const ATTACK_MULTIPLIER: Partial<Record<Personality, number>> = {
+const ATTACK_MULTIPLIER: Partial<Record<SinglePersonality, number>> = {
   brute: 2,
   brute3x: 2.5,
   brute4x: 3,
@@ -179,13 +210,61 @@ export const PERSONALITY_NAME: Record<Personality, string> = {
   arcane3x: 'Spellweaver',
   arcane4x: 'Eldritch Harbinger',
   arcane5x: 'Voidcaller',
+  warlord: 'Iron Warlord',
+  warlord3x: 'Black Warlord',
+  dragon: 'Scaled Wyrm',
+  dragon3x: 'Elder Dragon',
+  serpent: 'Coiled Serpent',
+  serpent3x: 'Basilisk',
+  wraith: 'Restless Wraith',
+  wraith3x: 'Dread Wraith',
 };
+
+/**
+ * The art families. A family has several images; a new boss gets a random one
+ * of its family's (`generateBoss`), so an armored boss is always a troll but
+ * never quite the same one. Names and stages stay per personality tier.
+ */
+export type BossFamily = 'drifter' | 'colossus' | 'armored' | 'warded' | 'brute' | 'arcane' | 'warlord' | 'dragon' | 'serpent' | 'wraith';
+
+/** How many images each family has (public/sprites/bosses/<family>/1..n, built by `npm run boss-art`). */
+export const BOSS_ART_COUNT: Record<BossFamily, number> = {
+  drifter: 6,
+  colossus: 4,
+  armored: 4,
+  warded: 4,
+  brute: 4,
+  arcane: 9,
+  warlord: 7,
+  dragon: 5,
+  serpent: 4,
+  wraith: 4,
+};
+
+/** The art family of a personality: its name without the tier suffix (`armored3x` -> armored). */
+export function bossFamily(personality: Personality): BossFamily {
+  if (personality === 'balanced') return 'drifter';
+  if (personality === 'tank') return 'colossus';
+  return personality.replace(/[345]x$/, '') as BossFamily;
+}
+
+/**
+ * The image (0-based, within its family) a boss wears. A boss saved before art
+ * was picked has none: it gets a fixed one from its index, so it looks the
+ * same on every load.
+ */
+export function bossArt(boss: Pick<Boss, 'personality' | 'index' | 'art'>): number {
+  const count = BOSS_ART_COUNT[bossFamily(boss.personality)];
+  return boss.art !== undefined && boss.art < count ? boss.art : (boss.index - 1) % count;
+}
 
 /**
  * The personality weights in effect at a given boss index. Rarer personalities
  * (armored5x, warded4x, etc.) linearly gain weight toward the common tier's
  * weight as the index climbs from 1 to BOSS_PERSONALITY_RAMP_END_INDEX, so
- * every personality is equally likely from that boss onward.
+ * every single-stat personality is equally likely from that boss onward. A
+ * personality with a BOSS_PERSONALITY_RAMP_CEILING (the hybrids) climbs to that
+ * instead and stays a little rarer.
  */
 export function personalityWeightsForIndex(index: number): Record<Personality, number> {
   const rampEnd = TUNING.BOSS_PERSONALITY_RAMP_END_INDEX;
@@ -193,7 +272,8 @@ export function personalityWeightsForIndex(index: number): Record<Personality, n
   const commonWeight = Math.max(...Object.values(TUNING.BOSS_PERSONALITY_WEIGHTS));
   const weights = {} as Record<Personality, number>;
   for (const [key, baseWeight] of Object.entries(TUNING.BOSS_PERSONALITY_WEIGHTS)) {
-    weights[key as Personality] = baseWeight + (commonWeight - baseWeight) * progress;
+    const ceiling = TUNING.BOSS_PERSONALITY_RAMP_CEILING[key as HybridPersonality] ?? commonWeight;
+    weights[key as Personality] = baseWeight + (ceiling - baseWeight) * progress;
   }
   return weights;
 }
@@ -302,17 +382,28 @@ function jitteredResistStat(index: number, tierMultiplier: number | undefined, r
  * scope yet (e.g. this store's initial state), which is only ever wrong for
  * an index-1 boss anyway, where the curve's target is already at its
  * smallest.
+ *
+ * `previous` is the boss this one follows (the one just slain, or the one that
+ * ended the run): when it's the same family, its image is skipped, so the
+ * same art never shows twice in a row.
  */
 export function generateBoss(
   index: number,
   rng: Rng,
   difficultyModifier?: number,
   baseMaxHealth: number = TUNING.BASE_STATS.health,
+  previous?: Pick<Boss, 'personality' | 'index' | 'art'>,
 ): Boss {
   const resolvedDifficultyModifier = difficultyModifier ?? rollRunDifficultyModifier(rng);
   const personality = pickWeighted<Personality>(personalityWeightsForIndex(index), rng);
-  const emphasizedStat = PERSONALITY_STAT[personality];
-  const tierMultiplier = emphasizedStat ? PERSONALITY_MULTIPLIER[personality as Exclude<Personality, 'balanced'>] : undefined;
+  const hybrid = isHybrid(personality) ? HYBRID_EMPHASIS[personality] : undefined;
+  const emphasizedStat = hybrid ? hybrid.attack : PERSONALITY_STAT[personality as SinglePersonality];
+  const tierMultiplier = hybrid
+    ? hybrid.resistTier
+    : emphasizedStat
+      ? PERSONALITY_MULTIPLIER[personality as Exclude<SinglePersonality, 'balanced'>]
+      : undefined;
+  const resistTierFor = (stat: 'armor' | 'magicResist') => (hybrid ? (hybrid.resist === stat ? hybrid.resistTier : undefined) : emphasizedStat === stat ? tierMultiplier : undefined);
   const healthMultiplier = emphasizedStat === 'health' ? TUNING.BOSS_TANK_HEALTH_MULTIPLIER : 1;
 
   const health = bossBaseHealth(index, resolvedDifficultyModifier) * healthMultiplier * (1 + (rng() * 2 - 1) * 0.1); // ±10%, rolled once, reused for maxHealth below
@@ -327,8 +418,9 @@ export function generateBoss(
   // personality's attacks stay on the curve.
   const targetAttack = (missDamagePctForIndex(index) * baseMaxHealth) / TUNING.MISS_DAMAGE_FACTOR;
   const attackJitter = () => 1 + (rng() * 2 - 1) * 0.1;
-  const physicalMultiplier = emphasizedStat === 'physicalAttack' ? ATTACK_MULTIPLIER[personality] ?? 1 : 1;
-  const magicMultiplier = emphasizedStat === 'magicAttack' ? ATTACK_MULTIPLIER[personality] ?? 1 : 1;
+  const attackMultiplier = hybrid ? hybrid.attackMultiplier : ATTACK_MULTIPLIER[personality as SinglePersonality] ?? 1;
+  const physicalMultiplier = emphasizedStat === 'physicalAttack' ? attackMultiplier : 1;
+  const magicMultiplier = emphasizedStat === 'magicAttack' ? attackMultiplier : 1;
 
   const boss: Boss = {
     index,
@@ -337,8 +429,8 @@ export function generateBoss(
     health,
     physicalAttack: targetAttack * attackJitter() * physicalMultiplier,
     magicAttack: targetAttack * attackJitter() * magicMultiplier,
-    armor: jitteredResistStat(index, emphasizedStat === 'armor' ? tierMultiplier : undefined, rng),
-    magicResist: jitteredResistStat(index, emphasizedStat === 'magicResist' ? tierMultiplier : undefined, rng),
+    armor: jitteredResistStat(index, resistTierFor('armor'), rng),
+    magicResist: jitteredResistStat(index, resistTierFor('magicResist'), rng),
     lifestealPct,
     difficultyModifier: resolvedDifficultyModifier,
   };
@@ -355,7 +447,16 @@ export function generateBoss(
 
   // Rolled after the lean for the same reason; none before boss 15.
   const skills = rollBossSkills(index, rng);
-  return skills.length > 0 ? { ...boss, physicalShare, skills } : { ...boss, physicalShare };
+
+  // The image, rolled last of all (one draw, so it shifts nothing above): a
+  // random one of the family's, skipping the previous boss's when that was the
+  // same family.
+  const family = bossFamily(personality);
+  const skip = previous && bossFamily(previous.personality) === family ? bossArt(previous) : undefined;
+  let art = Math.floor(rng() * (BOSS_ART_COUNT[family] - (skip === undefined ? 0 : 1)));
+  if (skip !== undefined && art >= skip) art++;
+
+  return skills.length > 0 ? { ...boss, physicalShare, art, skills } : { ...boss, physicalShare, art };
 }
 
 /**

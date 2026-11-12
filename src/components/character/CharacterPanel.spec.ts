@@ -82,13 +82,17 @@ describe('CharacterPanel', () => {
     expect(bars.find('.exp-bar').exists()).toBe(true);
   });
 
-  it('places each hero by its class', async () => {
+  it('stands every hero on its plinth the same way, whatever its class', async () => {
     setClass(600, 300);
     const wrapper = mount(CharacterPanel);
-    expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 168');
+    const style = () => wrapper.find('.hero-figure').attributes('style');
+    // The canvas is drawn at its own size (96 CSS px) with the feet 8px below the plinth's top.
+    expect(style()).toContain('--hero-pw: 96');
+    expect(style()).toContain('--hero-py: 12');
+    const warrior = style();
     setClass(300, 600);
     await nextTick();
-    expect(wrapper.find('.hero-figure').attributes('style')).toContain('--hero-w: 180');
+    expect(style()).toBe(warrior);
   });
 
   it('shows a damage stat only while some skill uses its type', () => {

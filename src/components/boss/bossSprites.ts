@@ -1,27 +1,13 @@
+import { bossArt, bossFamily } from '../../game-engine';
 import type { Personality } from '../../game-engine';
 
-// Boss art from FreePixel (see CREDITS.md), picked to match each
-// personality's emphasized stat and escalate within its family as
-// PERSONALITY_NAME's flavor names climb in intensity (boss.ts) — every one
-// of the 18 personalities has its own distinct sprite. Every file is stored
-// facing left or straight out, toward the hero, so nothing turns it in code.
-export const PERSONALITY_SPRITE: Record<Personality, string> = {
-  balanced: 'bosses/balanced',
-  tank: 'bosses/tank',
-  armored: 'bosses/armored',
-  armored3x: 'bosses/armored3x',
-  armored4x: 'bosses/armored4x',
-  armored5x: 'bosses/armored5x',
-  warded: 'bosses/warded',
-  warded3x: 'bosses/warded3x',
-  warded4x: 'bosses/warded4x',
-  warded5x: 'bosses/warded5x',
-  brute: 'bosses/brute',
-  brute3x: 'bosses/brute3x',
-  brute4x: 'bosses/brute4x',
-  brute5x: 'bosses/brute5x',
-  arcane: 'bosses/arcane',
-  arcane3x: 'bosses/arcane3x',
-  arcane4x: 'bosses/arcane4x',
-  arcane5x: 'bosses/arcane5x',
-};
+// Boss art is native pixel art (Pixellab), several images per family (see
+// BOSS_ART_COUNT): public/sprites/bosses/<family>/<n>.png, n from 1, built by
+// `npm run boss-art` already mirrored to face the hero, so nothing turns it in
+// code. A boss wears the image it was rolled (`art`); one saved before art was
+// rolled has a fixed one (see bossArt).
+
+/** The sprite name (a path under public/sprites/, no extension) of a boss, or of a high-score run's boss. */
+export function bossSprite(boss: { personality: Personality; index: number; art?: number }): string {
+  return `bosses/${bossFamily(boss.personality)}/${bossArt(boss) + 1}`;
+}

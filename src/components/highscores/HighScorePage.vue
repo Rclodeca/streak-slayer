@@ -7,7 +7,7 @@ import { computed, ref } from 'vue';
 import { describeItemBonus, formatCompact, ITEM_CATALOG, PERSONALITY_NAME } from '../../game-engine';
 import type { HighScoreRun, HighScoreRunItem } from '../../store/highScoreStore';
 import { runHabitRank, runHero, useHighScoreStore } from '../../store/highScoreStore';
-import { PERSONALITY_SPRITE } from '../boss/bossSprites';
+import { bossSprite } from '../boss/bossSprites';
 import { sortByDamageType } from '../habits/habitDisplay';
 import RankPips from '../habits/RankPips.vue';
 import Modal from '../ui/Modal.vue';
@@ -112,7 +112,7 @@ function skillGroups(run: HighScoreRun) {
           <img
             v-if="openRun.bossPersonality"
             class="duel-boss"
-            :src="spriteUrl(PERSONALITY_SPRITE[openRun.bossPersonality])"
+            :src="spriteUrl(bossSprite({ personality: openRun.bossPersonality, index: openRun.bossIndex, art: openRun.bossArt }))"
             alt=""
           />
         </div>
@@ -339,8 +339,8 @@ function skillGroups(run: HighScoreRun) {
 
 .duel-hero {
   left: 18px;
-  width: 92px;
-  height: 92px;
+  width: 96px;
+  height: 96px;
   filter: grayscale(0.85) brightness(0.75);
 }
 
@@ -352,7 +352,7 @@ function skillGroups(run: HighScoreRun) {
 
 /* A hero with no boss saved (an older run) stands alone, centred. */
 .duel-hero:only-child {
-  left: calc(50% - 46px);
+  left: calc(50% - 48px);
 }
 
 .run-hero {

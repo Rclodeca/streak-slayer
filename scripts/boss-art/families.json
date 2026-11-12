@@ -1,0 +1,73 @@
+{
+  "armored": [
+    "2026-11-11-bosses-run-a2/whole/figure-01.png",
+    "2026-11-11-bosses-run-a2/whole/figure-02.png",
+    "2026-11-11-bosses-run-a2/whole/figure-03.png",
+    "2026-11-11-bosses-run-a2/whole/figure-04.png"
+  ],
+  "warded": [
+    "2026-11-11-bosses/whole/figure-13.png",
+    "2026-11-11-bosses/whole/figure-14.png",
+    "2026-11-11-bosses/whole/figure-15.png",
+    "2026-11-11-bosses/whole/figure-16.png"
+  ],
+  "brute": [
+    "2026-11-11-bosses/whole/figure-09.png",
+    "2026-11-11-bosses/whole/figure-10.png",
+    "2026-11-11-bosses/whole/figure-11.png",
+    "2026-11-11-bosses/whole/figure-12.png"
+  ],
+  "arcane": [
+    "2026-11-11-bosses/eyes/figure-05.png",
+    "2026-11-11-bosses/eyes/figure-06.png",
+    "2026-11-11-bosses/eyes/figure-07.png",
+    "2026-11-11-bosses/eyes/figure-08.png",
+    "2026-11-11-bosses-run-c/whole/figure-03.png",
+    "2026-11-11-bosses-run-c/whole/figure-06.png",
+    "2026-11-11-bosses-run-c/whole/figure-09.png",
+    "2026-11-11-bosses-run-c/whole/figure-12.png",
+    "2026-11-11-bosses-run-c/whole/figure-15.png"
+  ],
+  "drifter": [
+    "2026-11-11-bosses-run-c/whole/figure-01.png",
+    {"src": "2026-11-11-bosses-run-c/whole/figure-04.png", "mirror": false},
+    "2026-11-11-bosses-run-c/whole/figure-07.png",
+    "2026-11-11-bosses-run-c/whole/figure-10.png",
+    "2026-11-11-bosses-run-c/whole/figure-13.png",
+    {"src": "2026-11-11-bosses-run-c/whole/figure-16.png", "mirror": false}
+  ],
+  "colossus": [
+    {"src": "2026-11-11-bosses-run-b/whole/figure-09.png", "mirror": false},
+    {"src": "2026-11-11-bosses-run-b/whole/figure-11.png", "mirror": false},
+    {"src": "2026-11-11-bosses-run-b/whole/figure-12.png", "mirror": false},
+    {"src": "2026-11-11-bosses-run-b/whole/figure-15.png", "mirror": false}
+  ],
+  "warlord": [
+    "2026-11-11-bosses/whole/figure-01.png",
+    "2026-11-11-bosses/whole/figure-02.png",
+    "2026-11-11-bosses/whole/figure-03.png",
+    "2026-11-11-bosses/whole/figure-04.png",
+    "2026-11-11-bosses-run-c/whole/figure-02.png",
+    "2026-11-11-bosses-run-c/whole/figure-05.png",
+    "2026-11-11-bosses-run-c/whole/figure-14.png"
+  ],
+  "dragon": [
+    "2026-11-11-bosses-run-b/whole/figure-01.png",
+    "2026-11-11-bosses-run-b/whole/figure-02.png",
+    "2026-11-11-bosses-run-b/whole/figure-03.png",
+    "2026-11-11-bosses-run-b/whole/figure-04.png",
+    "2026-11-11-bosses-run-b/whole/figure-13.png"
+  ],
+  "serpent": [
+    "2026-11-11-bosses-run-a2/whole/figure-09.png",
+    "2026-11-11-bosses-run-a2/whole/figure-10.png",
+    "2026-11-11-bosses-run-a2/whole/figure-11.png",
+    "2026-11-11-bosses-run-a2/whole/figure-12.png"
+  ],
+  "wraith": [
+    "2026-11-11-bosses-run-a/tiles-boxed/figure-13.png",
+    "2026-11-11-bosses-run-a/tiles-boxed/figure-14.png",
+    "2026-11-11-bosses-run-a/tiles-boxed/figure-15.png",
+    "2026-11-11-bosses-run-a/tiles-boxed/figure-16.png"
+  ]
+}

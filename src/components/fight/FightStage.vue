@@ -11,7 +11,7 @@ import { useFocusModeStore } from '../../store/focusModeStore';
 import { STRIP_TABS, useTabStore } from '../../store/tabStore';
 import BossBar from '../boss/BossBar.vue';
 import BossPanel from '../boss/BossPanel.vue';
-import { PERSONALITY_SPRITE } from '../boss/bossSprites';
+import { bossSprite } from '../boss/bossSprites';
 import CharacterPanel from '../character/CharacterPanel.vue';
 import { createHitPlayer } from './hitFx';
 import StageScene from './StageScene.vue';
@@ -192,7 +192,7 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <BossBar
         ref="bar"
-        :sprite="PERSONALITY_SPRITE[boss.personality]"
+        :sprite="bossSprite(boss)"
         :name="PERSONALITY_NAME[boss.personality]"
         :boss-index="boss.index"
         :current="bossHp"
@@ -358,7 +358,19 @@ onBeforeUnmount(() => {
 
 .fight-stage.focus :deep(.boss-figure) {
   top: 6px;
+  bottom: auto;
   right: 64px;
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+}
+
+/* Fitted into its square, so not every pixel is whole: the strip's half-size
+   fighters never were. */
+.fight-stage.focus :deep(.boss-figure .sprite) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 .fight-stage.focus :deep(.hero-figure) {

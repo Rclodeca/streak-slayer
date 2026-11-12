@@ -24,14 +24,13 @@ import { usePress } from '../../composables/usePress';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
-import { PERSONALITY_SPRITE } from './bossSprites';
+import { bossSprite } from './bossSprites';
 import HealthBar from '../ui/HealthBar.vue';
 import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import type { StatIconName } from '../ui/statIcons';
-import { baseSpriteUrl, PHONE_STAGE_MEDIA, spriteUrl } from '../ui/spriteUrl';
+import { spriteSrcset } from '../ui/spriteUrl';
 
-const baseUrl = import.meta.env.BASE_URL;
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 
@@ -57,6 +56,7 @@ const doomDays = computed(() => doomDaysLeft(boss.value, currentDayKey.value));
 
 // The name's last word carries the tap cue's chevron, so a name that only
 // just fits its line never leaves the chevron alone on the next.
+const sprite = computed(() => bossSprite(boss.value));
 const bossName = computed(() => PERSONALITY_NAME[boss.value.personality]);
 const nameHead = computed(() => bossName.value.slice(0, bossName.value.lastIndexOf(' ') + 1));
 const nameTail = computed(() => bossName.value.slice(bossName.value.lastIndexOf(' ') + 1));
@@ -130,11 +130,7 @@ const skillTiles = computed<StatTile[]>(() => [
   <div class="boss-panel" :class="{ pressed }">
     <div class="boss-plat" aria-hidden="true" />
     <div class="boss-figure" :class="{ dying: phase === 'dying', arriving: phase === 'arriving' }">
-      <!-- Phones draw the base build, smaller (see PHONE_STAGE_MEDIA). -->
-      <picture>
-        <source :media="PHONE_STAGE_MEDIA" :srcset="baseSpriteUrl(PERSONALITY_SPRITE[boss.personality])" />
-        <img class="sprite" :src="spriteUrl(PERSONALITY_SPRITE[boss.personality])" alt="Boss" />
-      </picture>
+      <img class="sprite" :srcset="spriteSrcset(sprite)" alt="Boss" />
       <template v-if="phase === 'dying'">
         <span class="death-flash" aria-hidden="true" />
         <span class="death-sparks" aria-hidden="true" />
@@ -167,8 +163,7 @@ const skillTiles = computed<StatTile[]>(() => [
       <!-- The boss in its socket, its numbers listed beside it. -->
       <div class="hero">
         <div class="hero-sprite">
-          <!-- The base build at its own size: one CSS px per art pixel, whole device pixels on every screen. -->
-          <img class="sprite" :src="`${baseUrl}sprites/${PERSONALITY_SPRITE[boss.personality]}.png`" alt="Boss" />
+          <img class="sprite" :srcset="spriteSrcset(sprite)" alt="Boss" />
         </div>
         <div class="hero-info">
           <span class="hero-tag">Boss #{{ boss.index }}</span>
@@ -212,8 +207,8 @@ const skillTiles = computed<StatTile[]>(() => [
    on its phone geometry (--u scales the art on narrow phones). */
 .boss-panel {
   display: contents;
-  /* The base build's canvas, so whole device pixels per art pixel (see
-     PHONE_STAGE_MEDIA); the banner draws the larger build (spriteUrl). */
+  /* How far down the stage the boss's middle is: where the kill's stamp sits
+     (the figure itself stands on its plinth, see .boss-figure). */
   --boss-w: calc(128 * var(--u));
 }
 
@@ -227,17 +222,21 @@ const skillTiles = computed<StatTile[]>(() => [
   transition: background 0.3s ease;
 }
 
-/* No z-index, so its kill effects and the plain sprite stack with the blocks.
-   Below the menu button, which sits in the stage's top-right corner. */
+/* The plinth's width, centred over it, the boss's feet 4px below its top (the
+   stage is 212px tall on phones, the plinth's top 14px + 116 * --u down).
+   The sprite is native pixel art, drawn at its own size (spriteSrcset: 1.5 CSS
+   px per art pixel on 2x screens, 4/3 on 3x) and a multiple of six art pixels
+   in each direction, so its size and centring are whole device pixels. No z-index, so its kill effects
+   and the plain sprite stack with the blocks. Below the menu button, which
+   sits in the stage's top-right corner. */
 .boss-figure {
   position: absolute;
-  top: 14px;
-  right: calc(34 * var(--u));
-  width: var(--boss-w);
-}
-
-.boss-figure picture {
-  display: contents;
+  right: calc(30 * var(--u));
+  bottom: calc(194px - 116 * var(--u));
+  width: calc(136 * var(--u));
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 }
 
 /* Floats on the stage to the boss's left, in the corner the top bar left.
@@ -330,8 +329,9 @@ const skillTiles = computed<StatTile[]>(() => [
   }
 
   .boss-figure {
-    top: 0;
-    right: 7%;
+    right: calc(7% + 4px);
+    bottom: 112px; /* the 290px banner, less the plinth's top (174px) and the 4px */
+    width: 186px;
   }
 
   .boss-block {
@@ -581,8 +581,7 @@ const skillTiles = computed<StatTile[]>(() => [
 }
 
 .boss-figure :deep(.sprite) {
-  width: 100%;
-  height: auto;
+  flex: none;
   transition: filter 0.3s ease;
 }
 
@@ -617,8 +616,6 @@ const skillTiles = computed<StatTile[]>(() => [
 
 .hero-sprite :deep(.sprite) {
   flex-shrink: 0;
-  width: 128px;
-  height: 128px;
 }
 
 /* ---------- A kill: flash, fall into the fog, "Slain" ---------- */

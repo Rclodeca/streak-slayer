@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyResist,
+  BOSS_ART_COUNT,
+  bossArt,
+  bossFamily,
   bossAttackAnchorHealth,
   bossExpReward,
   bossBaseHealth,
@@ -16,7 +19,7 @@ import {
 import { statAtLevel } from './leveling';
 import { createRng, type Rng } from './rng';
 import { TUNING } from './constants/tuning';
-import type { Personality } from './types';
+import type { HybridPersonality, Personality } from './types';
 
 type EmphasizedStat = 'health' | 'physicalAttack' | 'magicAttack' | 'armor' | 'magicResist';
 
@@ -137,13 +140,23 @@ describe('personalityWeightsForIndex', () => {
     expect(personalityWeightsForIndex(1)).toEqual(TUNING.BOSS_PERSONALITY_WEIGHTS);
   });
 
-  it('makes every personality equally likely at and beyond the ramp-end index', () => {
+  it('makes every single-stat personality equally likely at and beyond the ramp-end index', () => {
     for (const index of [TUNING.BOSS_PERSONALITY_RAMP_END_INDEX, TUNING.BOSS_PERSONALITY_RAMP_END_INDEX + 50, 200]) {
-      const weights = Object.values(personalityWeightsForIndex(index));
       const commonWeight = Math.max(...Object.values(TUNING.BOSS_PERSONALITY_WEIGHTS));
-      for (const weight of weights) {
+      for (const [key, weight] of Object.entries(personalityWeightsForIndex(index))) {
+        if (key in TUNING.BOSS_PERSONALITY_RAMP_CEILING) continue;
         expect(weight).toBeCloseTo(commonWeight, 10);
       }
+    }
+  });
+
+  it('lifts the hybrids to their own ceiling, a little under the common weight', () => {
+    const commonWeight = Math.max(...Object.values(TUNING.BOSS_PERSONALITY_WEIGHTS));
+    const late = personalityWeightsForIndex(TUNING.BOSS_PERSONALITY_RAMP_END_INDEX + 20);
+    for (const [key, ceiling] of Object.entries(TUNING.BOSS_PERSONALITY_RAMP_CEILING)) {
+      expect(late[key as HybridPersonality]).toBeCloseTo(ceiling, 10);
+      expect(ceiling).toBeLessThan(commonWeight);
+      expect(TUNING.BOSS_PERSONALITY_WEIGHTS[key as HybridPersonality]).toBeLessThan(ceiling);
     }
   });
 
@@ -264,7 +277,8 @@ describe('generateBoss', () => {
     }
   });
 
-  const EMPHASIZED_STAT: Record<Exclude<Personality, 'balanced'>, EmphasizedStat> = {
+  type Single = Exclude<Personality, 'balanced' | HybridPersonality>;
+  const EMPHASIZED_STAT: Record<Single, EmphasizedStat> = {
     tank: 'health',
     armored: 'armor',
     armored3x: 'armor',
@@ -289,7 +303,7 @@ describe('generateBoss', () => {
   const RESIST_STATS: EmphasizedStat[] = ['armor', 'magicResist'];
 
   it.each(
-    (Object.entries(EMPHASIZED_STAT) as [Exclude<Personality, 'balanced'>, EmphasizedStat][]).filter(
+    (Object.entries(EMPHASIZED_STAT) as [Single, EmphasizedStat][]).filter(
       ([, stat]) => !RESIST_STATS.includes(stat),
     ),
   )(
@@ -318,7 +332,7 @@ describe('generateBoss', () => {
     },
   );
 
-  const MULTIPLIER_TIERS: Array<{ lower: Exclude<Personality, 'balanced'>; higher: Exclude<Personality, 'balanced'> }> = [
+  const MULTIPLIER_TIERS: Array<{ lower: Single; higher: Single }> = [
     { lower: 'armored', higher: 'armored3x' },
     { lower: 'armored3x', higher: 'armored4x' },
     { lower: 'armored4x', higher: 'armored5x' },
@@ -357,10 +371,16 @@ describe('generateBoss', () => {
 describe('generateBoss armor/magicResist by personality', () => {
   // At BOSS_PERSONALITY_RAMP_END_INDEX every personality has equal weight, so
   // a personality's forced roll is just the middle of its slot in key order.
-  const keys = Object.keys(TUNING.BOSS_PERSONALITY_WEIGHTS) as Personality[];
   const index = TUNING.BOSS_PERSONALITY_RAMP_END_INDEX;
+  const weights = personalityWeightsForIndex(index);
+  const weightTotal = Object.values(weights).reduce((a, b) => a + b, 0);
   const bossFor = (personality: Personality, seed: number) => {
-    const roll = (keys.indexOf(personality) + 0.5) / keys.length;
+    let before = 0;
+    for (const [key, weight] of Object.entries(weights)) {
+      if (key === personality) break;
+      before += weight;
+    }
+    const roll = (before + weights[personality] / 2) / weightTotal;
     let usedFirst = false;
     const underlying = createRng(seed);
     const rng: Rng = () => {
@@ -389,6 +409,37 @@ describe('generateBoss armor/magicResist by personality', () => {
       expect(boss.personality).toBe(personality);
       expect(Math.abs(reduction(boss[stat]) - TUNING.BOSS_RESIST_TIER_CAP_PCT[tier])).toBeLessThanOrEqual(0.0301);
     }
+  });
+
+  it.each([
+    ['warlord', 'armor', 2, 'physicalAttack', 1.5],
+    ['warlord3x', 'armor', 3, 'physicalAttack', 2],
+    ['dragon', 'armor', 2, 'magicAttack', 1.5],
+    ['dragon3x', 'armor', 3, 'magicAttack', 2],
+    ['serpent', 'magicResist', 2, 'physicalAttack', 1.5],
+    ['serpent3x', 'magicResist', 3, 'physicalAttack', 2],
+    ['wraith', 'magicResist', 2, 'magicAttack', 1.5],
+    ['wraith3x', 'magicResist', 3, 'magicAttack', 2],
+  ] as const)("hybrid '%s' pairs its %s tier %i with a x%f %s", (personality, resist, tier, attack, multiplier) => {
+    const other = attack === 'physicalAttack' ? 'magicAttack' : 'physicalAttack';
+    const otherResist = resist === 'armor' ? 'magicResist' : 'armor';
+    for (let seed = 0; seed < 40; seed++) {
+      const boss = bossFor(personality, seed);
+      expect(boss.personality).toBe(personality);
+      expect(Math.abs(reduction(boss[resist]) - TUNING.BOSS_RESIST_TIER_CAP_PCT[tier])).toBeLessThanOrEqual(0.0301);
+      expect(Math.abs(reduction(boss[otherResist]) - TUNING.BOSS_RESIST_BASE_PCT_END)).toBeLessThanOrEqual(0.0301);
+      // The attacks share one baseline (each ±10% jitter), so the ratio is the multiplier within ±22%.
+      expect(boss[attack] / boss[other]).toBeGreaterThan(multiplier * 0.8);
+      expect(boss[attack] / boss[other]).toBeLessThan(multiplier * 1.25);
+    }
+  });
+
+  it.each(['warlord', 'warlord3x', 'serpent', 'serpent3x'] as const)("never leans a '%s' boss toward magic", (personality) => {
+    for (let seed = 0; seed < 60; seed++) expect(bossFor(personality, seed).physicalShare).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it.each(['dragon', 'dragon3x', 'wraith', 'wraith3x'] as const)("never leans a '%s' boss toward physical", (personality) => {
+    for (let seed = 0; seed < 60; seed++) expect(bossFor(personality, seed).physicalShare).toBeLessThanOrEqual(0.5);
   });
 
   it('keeps the non-emphasized resist, and brute/arcane/balanced bosses, on the base curve', () => {
@@ -464,6 +515,14 @@ describe('PERSONALITY_NAME', () => {
     'arcane3x',
     'arcane4x',
     'arcane5x',
+    'warlord',
+    'warlord3x',
+    'dragon',
+    'dragon3x',
+    'serpent',
+    'serpent3x',
+    'wraith',
+    'wraith3x',
   ];
 
   it('has a non-empty flavor name for every personality', () => {
@@ -540,9 +599,11 @@ describe('generateBoss — hidden attack lean', () => {
     // Seed 42 at index 5 was captured before the lean was added, and re-captured
     // when Reflect left the roll order, the boss health/attack curves eased, and
     // health moved to growth bands (a float-rounding change only, at boss 5),
-    // and again when the random boss crit roll left the generator.
-    const { physicalShare, ...rest } = generateBoss(5, createRng(42));
+    // and again when the random boss crit roll left the generator. The art
+    // image is rolled after the lean, so it's set aside here too.
+    const { physicalShare, art, ...rest } = generateBoss(5, createRng(42));
     expect(physicalShare).toBeDefined();
+    expect(art).toBeDefined();
     expect(rest).toEqual({
       index: 5,
       personality: 'warded',
@@ -644,5 +705,57 @@ describe('bossAttackAnchorHealth / boss attack vs. player level', () => {
 
   it("scales with the character's own starterStats.health (per-run variation)", () => {
     expect(attackFor(10, starterHealth * 2)).toBeCloseTo(attackFor(10, starterHealth) * 2, 6);
+  });
+});
+
+describe('boss art', () => {
+  it('puts every personality in a family with art', () => {
+    for (const personality of Object.keys(PERSONALITY_NAME) as Personality[]) {
+      expect(BOSS_ART_COUNT[bossFamily(personality)]).toBeGreaterThan(0);
+    }
+    expect(bossFamily('balanced')).toBe('drifter');
+    expect(bossFamily('tank')).toBe('colossus');
+    expect(bossFamily('armored5x')).toBe('armored');
+    expect(bossFamily('wraith3x')).toBe('wraith');
+  });
+
+  it('rolls one image of the boss\'s own family and keeps it on the boss', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const boss = generateBoss(1 + (seed % 40), createRng(seed), 1);
+      const count = BOSS_ART_COUNT[bossFamily(boss.personality)];
+      expect(Number.isInteger(boss.art)).toBe(true);
+      expect(boss.art).toBeGreaterThanOrEqual(0);
+      expect(boss.art).toBeLessThan(count);
+      expect(bossArt(boss)).toBe(boss.art);
+    }
+  });
+
+  it('never repeats the previous boss\'s image within a family', () => {
+    for (let seed = 0; seed < 300; seed++) {
+      const rng = createRng(seed);
+      let previous = generateBoss(1, rng, 1);
+      for (let index = 2; index < 30; index++) {
+        const next = generateBoss(index, rng, 1, undefined, previous);
+        if (bossFamily(next.personality) === bossFamily(previous.personality)) expect(next.art).not.toBe(bossArt(previous));
+        previous = next;
+      }
+    }
+  });
+
+  it('can reach every image in a family', () => {
+    const seen = new Set<number>();
+    for (let seed = 0; seed < 400; seed++) {
+      const boss = generateBoss(50, forcedPersonalityRng(0.01, seed), 1); // the first personality, balanced: the drifter family
+      expect(boss.personality).toBe('balanced');
+      seen.add(boss.art as number);
+    }
+    expect(seen.size).toBe(BOSS_ART_COUNT.drifter);
+  });
+
+  it('gives a boss saved before art a fixed image from its index', () => {
+    const old = { personality: 'arcane3x' as const, index: 12 };
+    expect(bossArt(old)).toBe(bossArt({ ...old }));
+    expect(bossArt(old)).toBe(11 % BOSS_ART_COUNT.arcane);
+    expect(bossArt({ ...old, art: 99 })).toBe(11 % BOSS_ART_COUNT.arcane); // out of range: same fallback
   });
 });

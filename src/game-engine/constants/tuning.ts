@@ -1,4 +1,4 @@
-import type { BossSkillId, BossStat, Breakpoint, Period } from '../types';
+import type { BossSkillId, BossStat, Breakpoint, HybridPersonality, Period } from '../types';
 
 export const TUNING = {
   // Per-skill stats: every skill hits for its type's full stat (no pools),
@@ -265,7 +265,30 @@ export const TUNING = {
     arcane3x: 20,
     arcane4x: 4,
     arcane5x: 0.8,
+    // Hybrids (a resist plus an attack): a little rarer than the commons, and
+    // they stop short of 100 — see BOSS_PERSONALITY_RAMP_CEILING.
+    warlord: 40,
+    warlord3x: 8,
+    dragon: 40,
+    dragon3x: 8,
+    serpent: 40,
+    serpent3x: 8,
+    wraith: 40,
+    wraith3x: 8,
   },
+  // Where a personality's weight stops climbing at BOSS_PERSONALITY_RAMP_END_INDEX
+  // when it isn't the common weight (100): the hybrids stay a little rarer
+  // than the single-stat families for the whole game.
+  BOSS_PERSONALITY_RAMP_CEILING: {
+    warlord: 60,
+    warlord3x: 12,
+    dragon: 60,
+    dragon3x: 12,
+    serpent: 60,
+    serpent3x: 12,
+    wraith: 60,
+    wraith3x: 12,
+  } as Partial<Record<HybridPersonality, number>>,
   // Each personality's weight above linearly closes the gap to the common
   // tier's weight (100) as the boss index climbs from 1 to this value, so
   // rarity is a real early-game surprise but stops gatekeeping which boss

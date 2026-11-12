@@ -13,6 +13,7 @@ export type {
   Difficulty,
   Habit,
   Period,
+  HybridPersonality,
   Personality,
   Quest,
   QuestWeek,
@@ -88,11 +89,15 @@ export {
   streakBonus,
 } from './streaks';
 
+export type { BossFamily } from './boss';
 export {
   applyResist,
   bossAttackAnchorHealth,
   bossExpReward,
+  BOSS_ART_COUNT,
+  bossArt,
   bossBaseHealth,
+  bossFamily,
   bossHealthGrowthRate,
   damageReductionPct,
   easeBossAttack,

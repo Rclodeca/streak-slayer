@@ -12,7 +12,7 @@ import SectionTitle from '../ui/SectionTitle.vue';
 import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON } from '../ui/statIcons';
-import { HERO_FACE } from './heroArt';
+import { HERO_FACE, HERO_PORTRAIT_SCALE } from './heroArt';
 import PlayerSprite from './PlayerSprite.vue';
 
 // The hero's details: what's running on them, their gear and their stats.
@@ -25,10 +25,15 @@ const baseUrl = import.meta.env.BASE_URL;
 
 const { character, heroName, maxHealth, displayLevel, expNeeded, displayExp, activeEffects, equippedItems, emptySlotCount, statTiles } = useHeroStats();
 
-// The page's title banner carries the hero's portrait: the base build at its
-// file size (whole device pixels on every screen), its head in the medallion.
+// The page's title banner carries the hero's portrait: the base build at two
+// CSS px per art pixel (whole device pixels on every screen), its head in the
+// medallion.
 const heroClass = computed(() => heroClassFor(character.value));
-const portraitStyle = computed(() => ({ '--face-x': `${HERO_FACE[heroClass.value].x}px`, '--face-y': `${HERO_FACE[heroClass.value].y}px` }));
+const portraitStyle = computed(() => ({
+  '--face-x': `${HERO_FACE[heroClass.value].x * HERO_PORTRAIT_SCALE}px`,
+  '--face-y': `${HERO_FACE[heroClass.value].y * HERO_PORTRAIT_SCALE}px`,
+  width: `${64 * HERO_PORTRAIT_SCALE}px`,
+}));
 
 const habitStore = useHabitStore();
 // The longest streak running now, and whose it is.

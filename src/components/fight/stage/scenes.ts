@@ -24,6 +24,7 @@ import {
   tomb,
 } from './painter';
 import type { Painter } from './painter';
+import { basilisk, blackWarlord, coiledSerpent, dreadWraith, elderDragon, ironWarlord, restlessWraith, scaledWyrm } from './scenesHybrid';
 
 // A place for every boss (docs/mockups/pixel-boss-stages.html): the common six get
 // a sky, a place and one small motion; the rarer tiers more going on, up to the
@@ -724,7 +725,7 @@ function etherealSovereign(g: Painter) {
 
 const NIGHT_STONE: StageSceneDef['plinth'] = ['#1f2534', '#3a4358', '#283041', '#10141d'];
 
-/** Every boss's scene, by its personality (the sprite it shows: bossSprites.ts). */
+/** Every boss's scene, by its personality. */
 export const STAGE_SCENES: Record<Personality, StageSceneDef> = {
   balanced: { paint: drifter, fx: ['fireflies'], plinth: NIGHT_STONE },
   tank: { paint: colossus, fx: ['dust'], day: true, plinth: ['#a85e3a', '#d48c5c', '#bc7246', '#743a22'] },
@@ -744,4 +745,12 @@ export const STAGE_SCENES: Record<Personality, StageSceneDef> = {
   arcane3x: { paint: spellweaver, fx: ['lanterns'], plinth: ['#1e2238', '#4a5480', '#2e3456', '#0c0e1c'] },
   arcane4x: { paint: eldritchHarbinger, fx: ['fog', 'bats'], plinth: ['#2a2228', '#5a4a50', '#3a3036', '#120c0e'] },
   arcane5x: { paint: voidcaller, fx: ['motes'], plinth: ['#211a33', '#5a4a84', '#33284e', '#0d0a17'] },
+  warlord: { paint: ironWarlord, fx: ['embers'], plinth: ['#2a1a1a', '#6a3a2e', '#3e2622', '#120a0a'] },
+  warlord3x: { paint: blackWarlord, fx: ['torches', 'embers'], plinth: ['#1c1216', '#5a2a30', '#2c1a1e', '#0a0608'] },
+  dragon: { paint: scaledWyrm, fx: ['embers'], plinth: ['#2a1812', '#7a3a1e', '#3e2218', '#100806'] },
+  dragon3x: { paint: elderDragon, fx: ['golddust', 'glints'], plinth: ['#2e2216', '#c8982c', '#4a3820', '#120c06'] },
+  serpent: { paint: coiledSerpent, fx: ['fireflies'], plinth: ['#18281e', '#3a6a44', '#223a2a', '#08100c'] },
+  serpent3x: { paint: basilisk, fx: ['dust'], plinth: ['#5a5632', '#a89a50', '#6e6a40', '#2e2c18'] },
+  wraith: { paint: restlessWraith, fx: ['haze', 'twinkle'], plinth: ['#1e2a44', '#5a7098', '#2c3c5c', '#0c121e'] },
+  wraith3x: { paint: dreadWraith, fx: ['cyan', 'glints'], plinth: ['#12262e', '#3a8a9a', '#1c3a46', '#060e12'] },
 };

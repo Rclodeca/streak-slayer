@@ -23,3 +23,14 @@ export const PHONE_STAGE_MEDIA = '(max-width: 820px)';
 export function baseSpriteUrl(name: string): string {
   return `${import.meta.env.BASE_URL}sprites/${name}.png`;
 }
+
+/**
+ * The srcset of a native-art sprite (npm run boss-art): its 3x build on 2x
+ * screens and its 4x build on 3x, where an <img> draws each at the file's width
+ * over the density, so every art pixel is 1.5 (2x) or 4/3 (3x) CSS px across
+ * and lands on whole device pixels. It has no 1x candidate, so a 1x screen
+ * takes the 2x build too; leave `src` off, which would add one.
+ */
+export function spriteSrcset(name: string): string {
+  return `${import.meta.env.BASE_URL}sprites/${name}.png 2x, ${import.meta.env.BASE_URL}sprites/${name}@3x.png 3x`;
+}

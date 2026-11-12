@@ -567,7 +567,7 @@ export function resolveBossDefeatIfDead(
   // bossAttackAnchorHealth — so equipping health items doesn't just chase
   // the cap upward and cancel itself out.
   const baseMaxHealth = bossAttackAnchorHealth(boss.index + 1, withItems.starterStats.health, withItems.level);
-  const generated = generateBoss(boss.index + 1, rng, boss.difficultyModifier, baseMaxHealth);
+  const generated = generateBoss(boss.index + 1, rng, boss.difficultyModifier, baseMaxHealth, boss);
   // Echoing Scythe: the killing blow's overkill carries into the next boss —
   // that boss only, and never down past 1 health, so kills can't chain.
   const carried = hasItemEffect(withItems, 'echoing-blade') ? Math.min(boss.overkill ?? 0, generated.health - 1) : 0;
@@ -602,7 +602,7 @@ export function resolvePlayerDeathIfDead(
   const freshCharacter = createCharacter(rng, heroClassFor(character));
   return {
     character: freshCharacter,
-    boss: generateBoss(1, rng, undefined, bossAttackAnchorHealth(1, freshCharacter.starterStats.health, freshCharacter.level)),
+    boss: generateBoss(1, rng, undefined, bossAttackAnchorHealth(1, freshCharacter.starterStats.health, freshCharacter.level), boss),
     habits: rerollAllDamageTypes(habits, rng, heroClassFor(freshCharacter)).map(resetLevelRewards),
     died: true,
   };

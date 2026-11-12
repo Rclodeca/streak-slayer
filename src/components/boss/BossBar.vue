@@ -4,7 +4,7 @@ import { formatCompact } from '../../game-engine';
 import type { HeroClass } from '../../game-engine';
 import type { CelebrationPhase } from '../../composables/useCelebration';
 import { useDamagePopup } from '../../composables/useDamagePopup';
-import { HERO_BASE } from '../character/heroArt';
+import { HERO_STRIP } from '../character/heroArt';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
 import Sprite from '../ui/Sprite.vue';
@@ -45,8 +45,8 @@ const mirroredMarks = computed(() => (props.marks ?? []).map((mark) => ({ ...mar
 
 const heroShare = computed(() => (props.heroMax > 0 ? Math.max(0, Math.min(1, props.heroCurrent / props.heroMax)) : 0));
 const heroLow = computed(() => heroShare.value < LOW_HEALTH_SHARE);
-// Half the base build's file size, as the phone's Focus strip draws it.
-const heroWidth = computed(() => `${HERO_BASE[props.heroClass] / 2}px`);
+// The canvas fitted to the strip's height.
+const heroWidth = `${HERO_STRIP}px`;
 
 const { popups, isHit } = useDamagePopup(() => props.current);
 const { popups: heroPopups, isHit: heroHit } = useDamagePopup(() => props.heroCurrent);
@@ -150,6 +150,8 @@ const { popups: heroPopups, isHit: heroHit } = useDamagePopup(() => props.heroCu
 .portrait :deep(.sprite) {
   width: 64px;
   height: 64px;
+  object-fit: contain;
+  object-position: center bottom;
   image-rendering: pixelated;
 }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { HeroClass } from '../../game-engine';
-import { baseSpriteUrl } from './spriteUrl';
+import { baseSpriteUrl, spriteUrl } from './spriteUrl';
 
 // The hooded figure's line box (docs/mockups/pixel-hooded-flow.html): his
 // scene fills the screen, his words type out in a box below it. A tap finishes
@@ -63,7 +63,7 @@ onBeforeUnmount(stopTyping);
     <div class="scene">
       <p v-if="kind === 'death'" class="died">You died</p>
       <img class="boss" :src="baseSpriteUrl('bosses/hooded')" alt="" draggable="false" />
-      <img class="me" :src="baseSpriteUrl(`player/${heroClass}`)" alt="" draggable="false" />
+      <img class="me" :src="spriteUrl(`player/${heroClass}`)" alt="" draggable="false" />
       <div class="floor" />
     </div>
     <button ref="box" type="button" class="dlg">
@@ -129,8 +129,8 @@ onBeforeUnmount(stopTyping);
 .me {
   left: 70px;
   bottom: 30px;
-  width: 112px;
-  height: 112px;
+  width: 96px;
+  height: 96px;
   transform: translateX(-50%);
 }
 

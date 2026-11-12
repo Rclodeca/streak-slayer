@@ -59,6 +59,7 @@ export interface HighScoreRun {
   heroName?: string;
   heroClass?: HeroClass;
   bossPersonality?: Personality; // the boss that ended the run; gives its name and art
+  bossArt?: number; // which of its family's images it wore; runs before this show a fixed one (see bossArt)
 }
 
 /** Everything `recordRunEnd` needs about the run that just ended — the start date is tracked internally (see `currentRunStartedDayKey`). */
@@ -72,6 +73,7 @@ export interface HighScoreRunInput {
   heroName: string;
   heroClass: HeroClass;
   bossPersonality: Personality;
+  bossArt: number;
 }
 
 /** The hero who made a run. Older runs didn't save one: they read as "Nameless", with the class read off the run's final stats. */
@@ -161,6 +163,7 @@ export const useHighScoreStore = defineStore('highScore', {
         heroName: input.heroName,
         heroClass: input.heroClass,
         bossPersonality: input.bossPersonality,
+        bossArt: input.bossArt,
       };
       this.topRuns = rankRuns([...this.topRuns, run]);
       storage.setItem(RUNS_KEY, JSON.stringify(this.topRuns));

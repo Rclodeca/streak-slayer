@@ -189,15 +189,17 @@ onBeforeUnmount(() => {
   transition: background 0.3s ease;
 }
 
-/* The whole hero, smaller than the boss and standing on its plinth; the
-   per-class --hero-p* numbers come from HERO_PHONE_PLACEMENT (the banner's
-   --hero-* from HERO_PLACEMENT). No z-index, so its level ring stacks with
+/* The whole hero, standing on its plinth: its canvas centred on the plinth
+   (71 * --u across, the plinth's middle) and its feet 8px below the plinth's
+   top, at its natural size so every art pixel stays whole. The --hero-p*
+   numbers come from HERO_PHONE_PLACEMENT (the banner's --hero-* from
+   HERO_PLACEMENT). No z-index, so its level ring stacks with
    the blocks. */
 .hero-figure {
   position: absolute;
-  left: calc(var(--hero-px) * var(--u));
+  left: calc(71 * var(--u) - var(--hero-pw) * 0.5px);
   bottom: calc(var(--hero-py) * 1px);
-  width: calc(var(--hero-pw) * var(--u));
+  width: calc(var(--hero-pw) * 1px);
 }
 
 .hero-figure :deep(.player-sprite),

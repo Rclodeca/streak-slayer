@@ -53,6 +53,7 @@ describe('highScoreStore', () => {
     heroName: 'Aldric',
     heroClass: 'warrior' as const,
     bossPersonality: 'brute4x' as const,
+    bossArt: 2,
   };
 
   it('ensureRunStarted only sets the start day once', () => {
@@ -99,6 +100,7 @@ describe('highScoreStore', () => {
     expect(run.heroName).toBe('Aldric');
     expect(run.heroClass).toBe('warrior');
     expect(run.bossPersonality).toBe('brute4x');
+    expect(run.bossArt).toBe(2);
     expect(runHero(run)).toEqual({ name: 'Aldric', heroClass: 'warrior' }); // the saved class, not one read off the stats
   });
 
@@ -107,6 +109,7 @@ describe('highScoreStore', () => {
     delete older.heroName;
     delete older.heroClass;
     delete older.bossPersonality;
+    delete older.bossArt;
     localStorage.setItem(
       'streak-slayer:highscore:runs:v1',
       JSON.stringify([{ ...older, id: 'old', startedDayKey: '2026-01-01', endedDayKey: '2026-01-02', daysLived: 2 }]),
@@ -116,6 +119,7 @@ describe('highScoreStore', () => {
     // magicDamage 2 vs physicalDamage 1 reads as a magic lean.
     expect(runHero(store.topRuns[0])).toEqual({ name: 'Nameless', heroClass: 'cleric' });
     expect(store.topRuns[0].bossPersonality).toBeUndefined();
+    expect(store.topRuns[0].bossArt).toBeUndefined();
   });
 
   it('runHabitRank uses the saved rank, and the streak for a run that saved none', () => {

@@ -126,6 +126,7 @@ describe('generateBoss — skills', () => {
     // health moved to growth bands, and again when the random boss crit roll left the generator.
     const rest = generateBoss(30, createRng(7));
     delete rest.skills;
+    delete rest.art; // rolled after the skills
     expect(rest).toEqual({
       index: 30,
       personality: 'balanced',

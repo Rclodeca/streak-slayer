@@ -8,8 +8,21 @@ export type Period = 'daily' | 'weekly';
 
 // Each emphasized-stat family (armored/warded/brute/arcane) has an
 // escalating 2x/3x/4x/5x tier — see PERSONALITY_MULTIPLIER in boss.ts —
-// with higher tiers weighted much rarer (BOSS_PERSONALITY_WEIGHTS).
+// with higher tiers weighted much rarer (BOSS_PERSONALITY_WEIGHTS). The hybrid
+// families (HybridPersonality) pair a resist with an attack and have only two
+// tiers, base and 3x.
+export type HybridPersonality =
+  | 'warlord'
+  | 'warlord3x'
+  | 'dragon'
+  | 'dragon3x'
+  | 'serpent'
+  | 'serpent3x'
+  | 'wraith'
+  | 'wraith3x';
+
 export type Personality =
+  | HybridPersonality
   | 'balanced'
   | 'tank'
   | 'armored'
@@ -103,6 +116,10 @@ export interface Character {
   doubledItemIds?: string[];
   takenEventIds?: string[];
   pendingEventPicks?: number;
+  // The event cards rolled for the front pick, kept so a reload or reopened
+  // popup shows the same ones instead of a fresh roll. Cleared once the pick
+  // is spent.
+  offeredEventIds?: string[];
   // Regular-quest completions this calendar week (undefined = none yet). Lives
   // on the character, so a death starts a fresh count along with everything
   // else in the run.
@@ -267,6 +284,10 @@ export interface Boss {
   physicalShare?: number;
   // Set once the player first damages this boss (First Blood reads it).
   playerHasHit?: boolean;
+  // Which of its family's images this boss wears (BOSS_ART_COUNT in boss.ts),
+  // rolled once at generation so a reload keeps it. Optional so an older save
+  // still loads: see bossArt for the fallback.
+  art?: number;
   // Set the first time this boss damages the player (a miss, a checked bad
   // habit, a missed quest, a landed Rend/Ravage/Doom) — not by Reflect. A new
   // boss starts without it. The Untouched challenge reads it.

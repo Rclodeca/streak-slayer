@@ -195,9 +195,9 @@ function begin() {
 }
 
 .bonfire :deep(.player-sprite) {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 16px;
+  width: 192px;
+  height: 192px;
+  margin-bottom: 0;
 }
 
 .bonfire :deep(.layer) {

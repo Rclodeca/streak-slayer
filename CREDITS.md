@@ -1,5 +1,11 @@
 # Credits
 
+## Pixellab art
+
+The boss images in `public/sprites/bosses/<family>/<n>.png` (51, in ten families) were generated with [Pixellab](https://pixellab.ai) (`create_image_pro`, the hero sheet as the style image), picked and tidied by hand, and built with `npm run boss-art` (`scripts/boss-art/`, the picks in `families.json`). They replace the FreePixel boss sprites below, which the game no longer shows (`bosses/hooded.png` is still used by the death screen).
+
+The three heroes in `public/sprites/player/` (Warrior, Mage, Ranger) are Pixellab art too, picked from the same sheets and built with `npm run hero-art` (`scripts/hero-art/`, the picks in `heroes.json`). They replace the FreePixel heroes.
+
 ## FreePixel art
 
 Every boss sprite, item icon and player hero comes from [FreePixel](https://freepixel.art/), used under the [FreePixel Asset License](https://freepixel.art/license/): free for personal and commercial games and apps, modification allowed, no attribution required (credited here anyway). The raw asset files themselves must not be redistributed, so only the processed sprites live in the repo. Processing: items are cropped, reduced to a 48px grid (or 32px) with 12 colours and a 1px dark outline (`npm run item-icon -- <source.png> <item-id>`, see `scripts/item-icons/`; `npm run item-icons -- --grid <32|48>` rebuilds every icon from the item table below, so keep it current); bosses and heroes are rebuilt with `npm run sprites` (`scripts/item-icons/rebuild-sprites.cjs`, settings per sprite in `sprites.json`) in two builds drawn at the same size, `<name>.png` for 2x screens and `<name>@3x.png` for 3x, each on the item icons' screen pixel size there, with 48 colours.

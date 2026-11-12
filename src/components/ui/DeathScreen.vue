@@ -11,7 +11,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import RankPips from '../habits/RankPips.vue';
 import HoodedSpeech from './HoodedSpeech.vue';
-import { baseSpriteUrl } from './spriteUrl';
+import { spriteUrl } from './spriteUrl';
 import StatIcon from './StatIcon.vue';
 
 // A death plays in two parts over the whole screen (docs/mockups/pixel-hooded-flow.html):
@@ -93,7 +93,7 @@ const sparks = Array.from({ length: 14 }, () => ({
           <span class="stars" />
           <div class="mound" />
           <span class="glow" />
-          <img class="spirit" :src="baseSpriteUrl(`player/${heroClass}`)" alt="" />
+          <img class="spirit" :src="spriteUrl(`player/${heroClass}`)" alt="" />
           <span class="blade" />
           <span class="logs" />
           <span class="fire"><i v-for="(frame, n) in flames" :key="n" :style="{ boxShadow: frame }" /></span>
@@ -207,8 +207,8 @@ const sparks = Array.from({ length: 14 }, () => ({
   position: absolute;
   left: 20px;
   bottom: 30px;
-  width: 112px;
-  height: 112px;
+  width: 96px;
+  height: 96px;
   image-rendering: pixelated;
   filter: grayscale(1) brightness(1.6) sepia(0.2) hue-rotate(180deg);
   opacity: 0.28;
