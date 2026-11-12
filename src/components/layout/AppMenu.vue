@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Check, Download, Focus, Menu, ScrollText, Trophy, Undo2, Upload } from 'lucide-vue-next';
+import { Check, Download, Focus, Gift, ScrollText, Settings, Trophy, Undo2, Upload } from 'lucide-vue-next';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { exportSaveFile } from '../../composables/useSaveFileTransfer';
+import { useTrialsBadge } from '../../composables/useTrialsBadge';
 import { useUndoCheck } from '../../composables/useUndoCheck';
 import { useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
@@ -16,13 +17,18 @@ import Modal from '../ui/Modal.vue';
 // and the theme picker (it hides itself if there is only one theme). On a
 // phone, Log opens the log in a popup; wider screens keep it in the side
 // column, and Show log turns it on or off there. Picking a
-// theme, or flipping Focus mode / Show log, keeps the menu open so the change can
-// be seen and flipped back; anything else, a tap outside (which does nothing
-// else), or Escape closes it.
+// theme, or flipping Show log, keeps the menu open so the change can
+// be seen and flipped back; anything else (Focus mode too, which reshapes the
+// stage behind it), a tap outside (which does nothing else), or Escape closes it.
+// In Focus mode on a phone the Trials button isn't on the stage, so the stage
+// asks for a Trials item here (trialsItem), and the cog wears the Trials badge.
 // The panel is teleported to <body> and placed under the button: the button
 // rides inside the pinned stage, and on a phone the panel was being cut off
 // where the stage's layer ends, so it lives above the whole page instead.
-const emit = defineEmits<{ 'high-scores': []; log: [] }>();
+defineProps<{ trialsItem?: boolean }>();
+const emit = defineEmits<{ 'high-scores': []; log: []; trials: [] }>();
+
+const { claimCount, newTrial } = useTrialsBadge();
 
 const themeStore = useThemeStore();
 const focusMode = useFocusModeStore();
@@ -56,6 +62,16 @@ function undoCheck() {
 function openLog() {
   open.value = false;
   emit('log');
+}
+
+function openTrials() {
+  open.value = false;
+  emit('trials');
+}
+
+function toggleFocus() {
+  open.value = false;
+  focusMode.setOn(!focusMode.on);
 }
 
 function openHighScores() {
@@ -160,15 +176,20 @@ onBeforeUnmount(() => {
 <template>
   <div ref="root" class="app-menu">
     <button type="button" class="menu-button" aria-label="Menu" aria-haspopup="menu" :aria-expanded="open" @click="toggle">
-      <Menu :size="18" />
+      <Settings :size="22" />
+      <template v-if="trialsItem">
+        <span v-if="claimCount" class="trials-count"><span>{{ claimCount }}</span></span>
+        <span v-else-if="newTrial" class="trials-pip" aria-hidden="true" />
+      </template>
     </button>
     <Teleport to="body">
       <div v-if="open" ref="panel" class="menu-panel" role="menu" :style="panelPos">
         <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
         <button v-if="isPhone" type="button" class="menu-item" role="menuitem" @click="openLog"><ScrollText :size="15" />Log</button>
+        <button v-if="trialsItem" type="button" class="menu-item" role="menuitem" @click="openTrials"><Gift :size="15" />Trials</button>
         <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
         <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
-        <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="focusMode.setOn(!focusMode.on)">
+        <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="toggleFocus">
           <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />
         </button>
         <button v-if="!isPhone" type="button" class="menu-item" role="menuitemcheckbox" :aria-checked="logVisible.on" @click="logVisible.setOn(!logVisible.on)">
@@ -219,6 +240,7 @@ onBeforeUnmount(() => {
 }
 
 .menu-button {
+  position: relative;
   display: grid;
   place-items: center;
   padding: 0.35em 0.55em;

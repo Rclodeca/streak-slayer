@@ -2,13 +2,11 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { bossSkillMarks, effectiveStat, expToNextLevel, heroClassFor, PERSONALITY_NAME } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
-import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { setHitPlayer, useHitFeed } from '../../composables/useHitFeed';
 import { useScrolledPast } from '../../composables/useScrolledPast';
+import { useStageFocused } from '../../composables/useStageFocused';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
-import { useFocusModeStore } from '../../store/focusModeStore';
-import { STRIP_TABS, useTabStore } from '../../store/tabStore';
 import BossBar from '../boss/BossBar.vue';
 import BossPanel from '../boss/BossPanel.vue';
 import { bossSprite } from '../boss/bossSprites';
@@ -32,10 +30,7 @@ import { STAGE_SCENES } from './stage/scenes';
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
-const focusMode = useFocusModeStore();
-const isPhone = usePhoneLayout();
-const tabStore = useTabStore();
-const focused = computed(() => focusMode.on || (isPhone.value && STRIP_TABS.includes(tabStore.tab)));
+const focused = useStageFocused();
 
 // The slain boss stays up while a kill plays out, as on the stage.
 const { phase, displayedBoss, heldLevel } = useCelebration();
@@ -291,9 +286,12 @@ onBeforeUnmount(() => {
     padding-top: var(--stage-top);
   }
 
+  /* The button's 44px box holds only its icon, so it sits snug in the corner. Set
+     from the full stage's top, not --stage-top, so the Focus strip's shorter
+     top leaves it where it is. */
   .stage-menu {
-    top: var(--stage-top);
-    right: 1rem;
+    top: calc(6px + env(safe-area-inset-top, 0px));
+    right: 6px;
   }
 
   /* Focus mode (below) is a 76px strip, which needs less air above it. The
@@ -356,10 +354,12 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+/* Each fighter's art centred in the strip, in the room its side leaves: the boss
+   between the bars' end and the menu button, the hero before the bars. */
 .fight-stage.focus :deep(.boss-figure) {
   top: 6px;
   bottom: auto;
-  right: 64px;
+  right: 61px;
   width: calc(64 * var(--u));
   height: calc(64 * var(--u));
 }
@@ -370,13 +370,13 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: center bottom;
+  object-position: center;
 }
 
 .fight-stage.focus :deep(.hero-figure) {
-  left: 12px;
-  bottom: 8px;
-  width: calc(48 * var(--u));
+  left: 8px;
+  bottom: 13px;
+  width: calc(64 * var(--u));
 }
 
 .fight-stage.focus :deep(.boss-block) {

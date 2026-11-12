@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, Gift } from 'lucide-vue-next';
 import AppMenu from './AppMenu.vue';
 import TabBar from './TabBar.vue';
 import NewHeroScreen from './NewHeroScreen.vue';
@@ -28,18 +28,23 @@ import TrialUnlockPopup from '../quests/TrialUnlockPopup.vue';
 import EventChoiceModal from '../events/EventChoiceModal.vue';
 import ReviveNotice from '../ui/ReviveNotice.vue';
 import BossSkillPopup from '../boss/BossSkillPopup.vue';
-import { activeChallenges } from '../../game-engine';
+import { activeChallenges, trialsOpen } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
+import { useStageFocused } from '../../composables/useStageFocused';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { useTabStore } from '../../store/tabStore';
+import { useTrialsBadge } from '../../composables/useTrialsBadge';
 import { trialKey, useTrialSeenStore } from '../../store/trialSeenStore';
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const logVisible = useLogVisibleStore();
+
+const { claimCount, newTrial } = useTrialsBadge();
+const stageFocused = useStageFocused();
 
 const isDev = import.meta.env.DEV;
 
@@ -121,7 +126,17 @@ watch(
       <PopupPreview v-if="isDev" />
       <div class="layout">
         <FightStage>
-          <AppMenu @high-scores="showHighScores = true" @log="showLog = true" />
+          <AppMenu
+            :trials-item="isPhone && stageFocused && trialsOpen(characterStore.character)"
+            @high-scores="showHighScores = true"
+            @log="showLog = true"
+            @trials="tabStore.select('trials')"
+          />
+          <button v-if="isPhone && trialsOpen(characterStore.character)" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
+            <Gift :size="22" />
+            <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
+            <span v-else-if="newTrial" class="trials-pip" role="img" aria-label="New" />
+          </button>
         </FightStage>
         <div ref="scrollBody" class="scroll-body" :class="{ 'talents-view': isPhone && tabStore.tab === 'talents' }">
           <main class="main">
@@ -154,6 +169,21 @@ watch(
 </template>
 
 <style scoped>
+/* Under the menu button, in the stage's corner: a way to the Trials tab. The
+   Focus strip is too short to hold both. */
+.stage-trials {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+
+.fight-stage.focus .stage-trials {
+  display: none;
+}
+
 .app-shell {
   position: relative;
   display: flex;

@@ -2,11 +2,12 @@
 
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { activeChallenges, addDaysToDayKey, dailyPeriodKey } from '../../game-engine';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { activeChallenges, addDaysToDayKey, createHabit, createRng, dailyPeriodKey, periodKeyFor } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
+import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
 import { useTrialSeenStore } from '../../store/trialSeenStore';
@@ -167,5 +168,46 @@ describe('TabBar', () => {
     const wrapper = mount(TabBar);
     expect(tab(wrapper, 'quests').classes()).not.toContain('sealed');
     expect(tab(wrapper, 'trials').classes()).toContain('sealed');
+  });
+
+  describe('the Skills count', () => {
+    const WEDNESDAY = new Date('2026-11-11T20:00:00Z');
+    const SUNDAY = new Date('2026-11-15T20:00:00Z');
+
+    function addHabits(now: Date) {
+      const rng = createRng();
+      const habitStore = useHabitStore();
+      const done = { ...createHabit('Read', 'daily', 'easy', false, rng), lastCompletedPeriodKey: periodKeyFor('daily', now) };
+      habitStore.habits = [
+        createHabit('Meditate', 'daily', 'medium', false, rng),
+        createHabit('Stretch', 'daily', 'easy', false, rng),
+        done,
+        createHabit('Skip dessert', 'daily', 'easy', true, rng),
+        createHabit('Long run', 'weekly', 'hard', false, rng),
+        { ...createHabit('Clean', 'weekly', 'hard', false, rng), lastCompletedPeriodKey: periodKeyFor('weekly', now) },
+      ];
+    }
+
+    afterEach(() => vi.useRealTimers());
+
+    it('counts the unchecked dailies, leaving out the bad ones, the checked ones and the weeklies before Sunday', () => {
+      vi.useFakeTimers({ now: WEDNESDAY });
+      addHabits(WEDNESDAY);
+      expect(tab(mount(TabBar), 'skills').find('.tab-count').text()).toBe('2');
+    });
+
+    it('adds the unchecked weeklies on a Sunday', () => {
+      vi.useFakeTimers({ now: SUNDAY });
+      addHabits(SUNDAY);
+      expect(tab(mount(TabBar), 'skills').find('.tab-count').text()).toBe('3');
+    });
+
+    it('leaves out a skill resting today and wears no count when nothing is left', () => {
+      vi.useFakeTimers({ now: WEDNESDAY });
+      const rng = createRng();
+      const resting = createHabit('Lift', 'daily', 'medium', false, rng, [0, 1, 3, 4, 5, 6]);
+      useHabitStore().habits = [resting];
+      expect(tab(mount(TabBar), 'skills').find('.tab-count').exists()).toBe(false);
+    });
   });
 });

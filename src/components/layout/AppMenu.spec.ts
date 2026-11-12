@@ -3,6 +3,7 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
 import { STORAGE_KEY, useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { STORAGE_KEY as THEME_KEY, useThemeStore } from '../../store/themeStore';
@@ -41,7 +42,7 @@ describe('AppMenu', () => {
     expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
   });
 
-  it('flips Focus mode from the menu, and keeps the menu open', async () => {
+  it('flips Focus mode from the menu, and closes the menu', async () => {
     const wrapper = mount(AppMenu, { attachTo: document.body });
     await wrapper.find('.menu-button').trigger('click');
     const item = () => document.body.querySelector('[role="menuitemcheckbox"]') as HTMLElement;
@@ -52,11 +53,29 @@ describe('AppMenu', () => {
     await wrapper.vm.$nextTick();
     expect(useFocusModeStore().on).toBe(true);
     expect(localStorage.getItem(STORAGE_KEY)).toBe('on');
-    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
-    expect(item().getAttribute('aria-checked')).toBe('true');
+    expect(document.body.querySelector('.menu-panel')).toBeNull();
 
+    await wrapper.find('.menu-button').trigger('click');
     item().click();
     expect(useFocusModeStore().on).toBe(false);
+  });
+
+  it('offers Trials, and shows its badge on the cog, only when the stage asks for it', async () => {
+    useDebugTrialsBadgeStore().set(3, null);
+    const without = mount(AppMenu, { attachTo: document.body });
+    await without.find('.menu-button').trigger('click');
+    expect([...document.body.querySelectorAll('.menu-item')].some((el) => el.textContent?.includes('Trials'))).toBe(false);
+    expect(without.find('.trials-count').exists()).toBe(false);
+    without.unmount();
+
+    const wrapper = mount(AppMenu, { attachTo: document.body, props: { trialsItem: true } });
+    expect(wrapper.find('.menu-button .trials-count').text()).toBe('3');
+    await wrapper.find('.menu-button').trigger('click');
+    const item = [...document.body.querySelectorAll('.menu-item')].find((el) => el.textContent?.includes('Trials')) as HTMLElement;
+    item.click();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('trials')).toHaveLength(1);
+    expect(document.body.querySelector('.menu-panel')).toBeNull();
   });
 
   it('shows and hides the log from the menu, and keeps the menu open', async () => {

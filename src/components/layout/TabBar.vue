@@ -1,25 +1,29 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { Anvil, Gift, Lock, ScrollText, Sword, UserRound } from 'lucide-vue-next';
-import { activeChallenges, claimableChallenges, dailyPeriodKey, questsOpen, talentPointsUnspent, talentsOpen, trialsOpen } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, talentPointsUnspent, talentsOpen, trialsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
+import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
-import { useTrialSeenStore } from '../../store/trialSeenStore';
+import { useTrialsBadge } from '../../composables/useTrialsBadge';
 
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
 // shows under the stage. Quests counts what's due today or overdue; Trials
 // counts the finished trials waiting to be claimed, or else wears a pip while a
 // new trial waits unseen (a claim outranks a new trial). Talents counts the
-// points still to spend. Sealed (before QUESTS_UNLOCK_LEVEL,
+// points still to spend. Skills counts the good skills still to do today: the
+// dailies that are due and unchecked, and on a Sunday (the last day of the
+// Monday-start week) the unchecked weeklies too. Sealed (before QUESTS_UNLOCK_LEVEL,
 // TRIALS_UNLOCK_LEVEL and TALENTS_UNLOCK_LEVEL) Quests, Trials and Talents each
 // grey out under a lock, with no badges, and can't be tapped.
 const tabStore = useTabStore();
 const characterStore = useCharacterStore();
 const questStore = useQuestStore();
+const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
-const trialSeen = useTrialSeenStore();
+const { claimCount, newTrial } = useTrialsBadge();
 
 const TABS = [
   { id: 'skills', label: 'Skills', icon: Sword },
@@ -47,9 +51,17 @@ watch(
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
 // dueDateKey is YYYY-MM-DD, so it compares as text.
 const dueCount = computed(() => questStore.quests.filter((quest) => !quest.doneDayKey && (quest.overdue || quest.dueDateKey <= todayKey.value)).length);
+const skillsLeft = computed(() => {
+  const now = debugClockStore.now();
+  const sunday = dayOfWeekIndex(now) === 6;
+  return habitStore.habits.filter(
+    (habit) =>
+      !habit.isBad &&
+      (habit.period === 'daily' ? isDueOn(habit, now) : sunday) &&
+      habit.lastCompletedPeriodKey !== periodKeyFor(habit.period, now),
+  ).length;
+});
 const points = computed(() => talentPointsUnspent(characterStore.character));
-const claimCount = computed(() => claimableChallenges(characterStore.character).length);
-const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(activeChallenges(characterStore.character)));
 </script>
 
 <template>
@@ -68,10 +80,11 @@ const newTrial = computed(() => tabStore.tab !== 'trials' && trialSeen.unseen(ac
       <component :is="tab.icon" :size="21" class="tab-icon" />
       <span class="tab-label">{{ tab.label }}</span>
       <Lock v-if="isSealed(tab.id)" :size="12" class="tab-lock" aria-hidden="true" />
-      <span v-else-if="tab.id === 'quests' && dueCount" class="tab-count">{{ dueCount }}</span>
-      <span v-else-if="tab.id === 'trials' && claimCount" class="tab-count" aria-label="Ready to claim">{{ claimCount }}</span>
+      <span v-else-if="tab.id === 'skills' && skillsLeft" class="tab-count" aria-label="Left to do today"><span>{{ skillsLeft }}</span></span>
+      <span v-else-if="tab.id === 'quests' && dueCount" class="tab-count"><span>{{ dueCount }}</span></span>
+      <span v-else-if="tab.id === 'trials' && claimCount" class="tab-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
       <span v-else-if="tab.id === 'trials' && newTrial" class="tab-pip" role="img" aria-label="New" />
-      <span v-else-if="tab.id === 'talents' && points" class="tab-count" aria-label="Points to spend">{{ points }}</span>
+      <span v-else-if="tab.id === 'talents' && points" class="tab-count" aria-label="Points to spend"><span>{{ points }}</span></span>
     </button>
   </div>
 </template>

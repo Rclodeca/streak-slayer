@@ -467,20 +467,39 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // Outlined silver: a faint fill and a thin silver line, pixel-cut.
   .nav-button,
-  .menu-button {
+  .menu-button,
+  .stage-trials {
     min-height: 44px;
     padding: 0.55rem 0.8rem;
     @include soft-button($label-md, var(--accent), var(--accent-bg));
     border-color: var(--accent-border);
   }
 
-  // The menu button has no outline: just its faint fill.
-  .menu-button {
+  // The menu button (and the Trials one under it) is a card-indigo chip with a
+  // dark outline and brass icons (docs/mockups/menu-colours.html, C). It sits
+  // on the night stage in every theme, so these are fixed Midnight values, not
+  // the theme's own card and brass (white and dark gold in Light). 42px inside
+  // its 44px tap box.
+  .menu-button,
+  .stage-trials {
     display: grid;
     place-items: center;
-    width: 44px;
+    width: 42px;
+    min-height: 42px;
+    height: 42px;
+    margin: 1px;
     padding: 0;
-    border-color: transparent;
+    border: 1px solid #0e0e19;
+    background: #2d2c50;
+    color: #d2bb85;
+    box-shadow: inset 0 0 0 1px #3d3c68;
+
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background: #2d2c50;
+        color: #f0dfb0;
+      }
+    }
   }
 
   .menu-panel {
@@ -784,11 +803,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
     .stat-summary svg {
       filter: brightness(0.5) saturate(1.5);
-    }
-
-    .menu-button {
-      color: #17130d;
-      background: rgba(23, 19, 13, 0.12);
     }
   }
 
@@ -1729,8 +1743,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // ---------- The phone's bottom bar ----------
   // (docs/mockups/pixel-tabs-final.html) The stage's night, under a black lip
   // and a shadow cast up over the list. Engraved names, the chosen one lit
-  // with a mark along the top in its colour: silver, brass for Quests and
-  // Trials. Sealed ones grey out under a small lock.
+  // with a mark along the top, and its icon, in silver. Sealed ones grey out
+  // under a small lock.
   .tab-bar {
     --tab-bar-bg: #19192b;
     position: relative;
@@ -1745,10 +1759,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include engraved($caps-xs, 0.14em);
     color: var(--spent-text);
     @include inset-focus;
-  }
-
-  .tab:is(.tab-quests, .tab-trials) {
-    --mark: #{$brass};
   }
 
   .tab.selected {
@@ -1781,17 +1791,62 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--spent-text);
   }
 
+  // The tabs' counts and pip (and the stage's Trials button below): crimson, the
+  // count's pixel-cut corners ringed in the bar's own colour by a shadow on the
+  // outer span (a shadow on the cut span itself would be clipped away).
   .tab .tab-count {
+    filter: drop-shadow(2px 0 0 var(--tab-bar-bg)) drop-shadow(-2px 0 0 var(--tab-bar-bg)) drop-shadow(0 2px 0 var(--tab-bar-bg)) drop-shadow(0 -2px 0 var(--tab-bar-bg));
+  }
+
+  .tab .tab-count > span {
     @include brass-count;
     min-width: 16px;
     height: 16px;
     padding: 0 4px;
+    background: #c8402f;
+    color: #eaeaf1;
     font-size: 0.65rem;
   }
 
   .tab .tab-pip {
-    background: $brass;
+    background: #c8402f;
     box-shadow: 0 0 0 2px var(--tab-bar-bg);
+  }
+
+  // The stage's Trials button, or the cog when Focus mode folds Trials into the
+  // menu: the count and pip in crimson, ringed in the chip's
+  // indigo so they cut out of the brass icon, inside the chip's top-right corner
+  // (its pixel cut would clip anything outside). The count is two spans: the
+  // outer draws the ring as a shadow traced round the inner one's pixel-cut
+  // corners (a shadow on the cut span itself would be clipped away).
+  .stage-trials .trials-count,
+  .menu-button .trials-count {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    filter: drop-shadow(2px 0 0 #2d2c50) drop-shadow(-2px 0 0 #2d2c50) drop-shadow(0 2px 0 #2d2c50) drop-shadow(0 -2px 0 #2d2c50);
+  }
+
+  .stage-trials .trials-count > span,
+  .menu-button .trials-count > span {
+    @include brass-count;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: #c8402f;
+    color: #eaeaf1;
+    font-size: 0.65rem;
+  }
+
+  .stage-trials .trials-pip,
+  .menu-button .trials-pip {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    background: #c8402f;
+    box-shadow: 0 0 0 2px #2d2c50;
   }
 
   // The phone's Hero tab: its level in brass, as on the stage.

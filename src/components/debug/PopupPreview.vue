@@ -8,6 +8,7 @@ import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
 
 const { enqueue } = useQuestCompleteQueue();
 const { queueMiss } = useQuestMissGate();
@@ -17,6 +18,7 @@ const { celebrateBossKill, celebrateLevelUp } = useCelebration();
 const { showBossSkill } = useBossSkillCard();
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
+const trialsBadge = useDebugTrialsBadgeStore();
 
 // Fake quests/habits never enter their stores, so acknowledging a preview is
 // a no-op (the resolvers all bail on an unknown id).
@@ -74,6 +76,11 @@ function previewDaily() {
     <button type="button" @click="previewBossSkills">Preview boss skills (testing)</button>
     <button type="button" @click="showTallestBoss">Show tallest boss (testing)</button>
     <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>
+    <button type="button" @click="trialsBadge.set(null, true)">Trials dot (testing)</button>
+    <button type="button" @click="trialsBadge.set(3, null)">Trials 3 (testing)</button>
+    <button type="button" @click="trialsBadge.set(12, null)">Trials 12 (testing)</button>
+    <button type="button" @click="trialsBadge.set(0, false)">Trials none (testing)</button>
+    <button type="button" @click="trialsBadge.set(null, null)">Trials real (testing)</button>
   </div>
 </template>
 
