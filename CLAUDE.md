@@ -13,4 +13,5 @@ This is a Vue 3 + Vite + Pinia + SCSS web app. The end goal is to ship it as a r
 ## Pixellab generation runs
 
 - Document every Pixellab generation run in `docs/pixellab-runs.md` in the same session it is made, in detail: folder, job id, tool, canvas size, transparent or not, style image (the local file, not the expiring upload id), reference images, the exact description, cost and candidate count, what came out, and what changed from the previous run. Update the entry when a result or finding changes.
+- Every background (fight-stage arenas, the Hero tab armory, dungeons, shop backdrops) is **216 x 116 art px** at 2 CSS px per art pixel. Generate at that size; bring an old 216 x 108 tile up with the 8-row floor inpaint, never with tall invented bands. Details: `docs/pixellab-scenes.md` section 1.
 - Before any paid run, show every input and the cost and wait for a clear yes. After the run, download the tiles, run `node scripts/pixellab-gallery.cjs <run-folder>` and open the `gallery.html` it writes in the browser. Don't open the 4x `sheet.png` directly: the browser shrinks and smooths it, so it looks blurry.

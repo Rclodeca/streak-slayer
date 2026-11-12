@@ -2,22 +2,34 @@
 
 How the armory home base was generated, shipped and shown, so the next scene (another room, a camp, a level-up variant) can follow the same steps. The exact inputs of the run itself are in `docs/pixellab-runs.md` (2026-11-12: armory home base). The rules for any paid run still apply: show every input and the cost, wait for a clear yes, log it the same session.
 
-## 1. Pick the size from where it is drawn
+## 1. The size: every backdrop is 216 x 116
 
-A scene is a fixed backdrop, so size it in **art pixels** and draw it at **2 CSS px per art pixel**, like the stage's hero and the item art (4 device px on 2x, 6 on 3x, always whole).
+**All backgrounds are one size: 216 x 116 art px**, drawn at **2 CSS px per art pixel** (432 x 232 CSS px), like the stage's hero and the item art (4 device px on 2x, 6 on 3x, always whole). That covers the fight stage's arenas, the Hero tab armory, and any future dungeon art or shop backdrop, so any backdrop can go in either place. Don't make one another size.
 
-- Height: measure the real box the scene fills, not the painted scenes' frame. The Hero tab banner is 108 art rows (216 CSS px). The phone fight stage's backdrop box is taller: 232 CSS px (**116 rows**) at 390 wide, the painted scene's own canvas height. A notched iPhone in home-screen mode adds the status-bar inset (about 59px) on top, but the user chose a dark bar there instead of art, so a stage backdrop is **216 x 116**, held to the stage's bottom so the fighters' feet always land on the same rows (hero on row 108, boss on row 86). The arena was first made 108 rows by mistake and given 8 rows of floor with `inpaint_image` (section 5).
+| | Size | Where the feet land |
+|---|---|---|
+| Fight stage (`StageScene.vue`, arena held to the box's bottom) | 216 x 116, fills the 232px backdrop box at 390 wide exactly | hero row 108, boss row 86 |
+| Hero tab (`HomeBase.vue`, frame `ART_H = 232`) | 216 x 116 | hero row 101 (`bottom: 30px`) |
+
+- A notched iPhone's status-bar inset sits above the backdrop as a dark bar, not art.
+- A new backdrop is generated at **216 x 116** directly (`create_image_pro`, `width=216`, `height=116`).
+- An old 216 x 108 tile is brought to size with the **8-row floor inpaint**, which worked well: `node scripts/pixellab-floor-pad.cjs <tile.png> <run-folder>`, upload its `input.png` and `mask.png`, and run `inpaint_image` with the description `more of the same flagstone floor continuing toward the viewer, matching the existing floor tiles, colours and lighting exactly, no characters, no objects` (10 generations; check the original's pixels are unchanged). Done for run 6 (`arena6b`), run 7 (`arena7b`) and the armory.
+- **Never** extend a backdrop with tall bands of invented wall: the 216x148 version (30 rows of wall on top) was horrible.
+
+How 116 was found (keep it if the stage changes): the fight stage's backdrop box is 232 CSS px at 390 wide, the height of the painted scene's canvas (`StageScene.vue`). Measure it again before changing the size.
+
+- Height: 116 rows (above). The armory and the first arenas were made 108 rows by mistake (108 is only the painted scenes' design frame, not their full height) and given 8 rows of floor with `inpaint_image`.
 - Width: phones are 360 to 430 CSS px wide, the art can't stretch (stretching breaks the pixel grid). So draw it **wider than the widest phone and crop the sides evenly**: 216 art px = 432 CSS px. Keep the focal point (hero, door, fire) in the middle and let the sides be filler (racks, walls, trees).
-- Check the width in `create_image_pro`'s limits first: about a quarter megapixel by aspect ratio (792 x 336 is the widest canvas; 216 x 108 is far inside it).
+- Check the width in `create_image_pro`'s limits first: about a quarter megapixel by aspect ratio (792 x 336 is the widest canvas; 216 x 116 is far inside it).
 
 ## 2. The Pixellab run
 
-- **Tool:** `create_image_pro`, `no_background=false` (a scene, not an asset), `width=216`, `height=108`.
+- **Tool:** `create_image_pro`, `no_background=false` (a scene, not an asset), `width=216`, `height=116` (the armory itself was made at `height=108` and padded later).
 - **Style image:** `assets/pixellab/2026-11-11-heroes/sheet.png`, all four aspects (palette, outline, detail, shading), so the scene's outline and shading sit with the hero sprite. Upload it first: `get_upload_url`, then `curl -sS -F "file=@<file>" "<url>"`, and pass the returned `upload:<id>` as `style_image_url`. Uploads last 3 days, so record the local file in the runs log, not the id.
 - **Reference images / palette:** none.
 - **Description:** describe the room, name the clear patch for the hero, and say there are no characters:
   `fantasy RPG armory interior, side view, stone brick back wall, wooden weapon racks with swords axes and spears, round shields on the wall, armor stands, glowing wall torches, wooden ceiling beams, flagstone floor, empty clear floor in the centre, no characters`
-- **Cost:** 216 x 108 is in the 171-256 band: **10 generations, 1 candidate**. Non-square prices are not on the square ladder, so the submit receipt (`cost: N generations`) is the exact number. A cancel after submitting usually still pays. Smaller canvases return more candidates but would break the 2 CSS px match.
+- **Cost:** 216 x 108, 216 x 116 and 216 x 148 all cost **10 generations, 1 candidate** (receipts). Non-square prices are not on the square ladder, so the submit receipt (`cost: N generations`) is the exact number. A cancel after submitting usually still pays. Smaller canvases return more candidates but would break the 2 CSS px match.
 - **Time:** about a minute. `wait_for_jobs`, then download the tile.
 
 What to watch for: the chibi hero sheet can pull a scene toward chunky, cartoon shapes, and "no characters" may be ignored. The first armory run did neither. The colours came out warm and torch-lit, so a scene may need a tint to sit next to the blue-black UI.

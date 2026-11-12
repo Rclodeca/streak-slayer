@@ -26,6 +26,20 @@ Entry template:
 | f7f1a9d3 | a screenshot from `~/Documents` | the very first warrior try |
 | e8b00ce0 | `public/sprites/player/warrior.png` | reference image for the chibi warrior |
 
+## Standard backdrop size: 216 x 116
+
+**Every background (fight-stage arenas, the Hero tab armory, future dungeons and shop backdrops) is 216 x 116 art px**, drawn at 2 CSS px per art pixel (432 x 232), held to the bottom of its box, sides cropped evenly on narrow phones. 116 rows is the phone fight stage's backdrop box at 390 wide (the painted scene's canvas height); the Hero tab's frame was raised to the same 232px. A notched iPhone's status-bar inset above it is a dark bar, not art. On the stage the hero's feet land on row 108 and the boss's on row 86; on the Hero tab the hero's feet are on row 101. Generate new backdrops at 216 x 116 directly. An older 216 x 108 tile is brought to size with the 8-row floor inpaint (`node scripts/pixellab-floor-pad.cjs <tile> <out-dir>`, then the `inpaint_image` call under "Run 6 extended to 216x116" below), which worked well; the 216x148 extension was horrible and must not be repeated. How-to: `docs/pixellab-scenes.md` section 1.
+
+## 2026-11-12: armory and run 7 brought to the standard size (216 x 116)
+
+**Armory, `2026-11-12-armory-floor8/`, job 253d1e9d-454a-4e38-ba30-25814fe1d6d9** (shipped as `public/sprites/home/armory.png`; the original 216x108 tile stays in `2026-11-12-armory/`)
+**Run 7, `2026-11-12-arena-run7-floor8/`, job ed0322a9-1db6-4184-b1c9-a011496c9d87** (shipped as `public/sprites/stage/arena7b.png`, the potential skin)
+- Why: the user liked the 8-row floor inpaint on run 6 and wants every background the same size: run 7 (the other "perfect" arena) and the Hero tab armory get the same treatment, and the armory must match the arena's height exactly.
+- Tool + settings, both: exactly the `arena6b` call. Inputs built with `node scripts/pixellab-floor-pad.cjs <tile> <run-folder>` (216x116 `input.png`: the tile unchanged at rows 0-107, rows 108-115 starting as copies of its bottom row; `mask.png`: white = rows 108-115, black = the tile; the script reproduces the `arena6b` inputs byte for byte). `inpaint_image` with both uploaded, `crop_to_mask` default (true), background follows the input (opaque).
+- Description, both: `more of the same flagstone floor continuing toward the viewer, matching the existing floor tiles, colours and lighting exactly, no characters, no objects`
+- Cost: 10 generations each, 20 in all (run in parallel, about 54s).
+- Result: both originals are identical (checked: 0 of 23,328 pixels changed in each), with 8 rows of matching flagstones below. Armory on the Hero tab at 390: frame 232px (was 216), art drawn 432x232, the hero raised to `bottom: 30px` so their feet stay on art row 101 as before, plates at the foot on the new floor. Run 7 on the stage at 390: fills the 232px backdrop box exactly, the hero's feet on row 108, the boss's on row 86, as with `arena6b`.
+
 ## 2026-11-12: boss arena (default fight-stage backdrop, one shared arena instead of a scene per boss)
 
 **Run 6 extended to 216x116 (8 rows of floor only), `2026-11-12-arena-run6-floor8/`, job 2ed90b16-961a-41e8-a633-c7795d8aebd3**
@@ -33,7 +47,7 @@ Entry template:
 - Tool + settings: `inpaint_image`, image `input.png` (216x116: run 6's tile unchanged at rows 0-107, rows 108-115 starting as copies of its bottom row), custom mask `mask.png` (white = rows 108-115, black = run 6), `crop_to_mask` default (true), background follows the input (opaque). Both files in the run folder. Shown in the dev toggles as `arena6b` (`public/sprites/stage/arena6b.png`).
 - Description: `more of the same flagstone floor continuing toward the viewer, matching the existing floor tiles, colours and lighting exactly, no characters, no objects`
 - Cost: 10 generations.
-- Result: run 6's pixels are identical (checked: 0 of 23,328 changed). On the stage at 390 with no inset, the image fills the backdrop box exactly (top and bottom flush), the hero's feet land on row 108 and the boss's on row 86, the same rows as when run 6 was approved, with the 8 new floor rows below the hero. User: "looks good". **Shipped as the default boss arena.**
+- Result: run 6's pixels are identical (checked: 0 of 23,328 changed). On the stage at 390 with no inset, the image fills the backdrop box exactly (top and bottom flush), the hero's feet land on row 108 and the boss's on row 86, the same rows as when run 6 was approved, with the 8 new floor rows below the hero. User: "looks good", "this inpaint worked well". **Shipped as the default boss arena** (50e2d2f). The same call was then used for run 7 and the armory (above).
 
 **Runs 8 and 9, `2026-11-12-arena-run8/` (job 51f031fd-f565-46ca-a172-f620b359428f) and `2026-11-12-arena-run9/` (job 40a9470f-a791-4947-932e-7668b782e8ed)**, run 6's prompt at the correct stage height
 - Why: the user found the inpaint-extended run 6 "awful" and asked for run 6's exact prompt regenerated from scratch at the correct size, run twice. Correct size, measured at 390 wide: the painted scene's canvas (which fills the stage's backdrop box) is 116 rows without a status-bar inset and 146 rows with a 59px inset (notched iPhone, home-screen app), so the canvas is 216 x 148 (up to a 62px inset), held to the stage's bottom; on phones without an inset the top rows are cropped.
@@ -52,7 +66,7 @@ Entry template:
 - Cost: 10 generations (took 28s).
 - Result: run 6's pixels are identical (checked: 0 of 23,328 changed). The top band continues the wall and pillars upward; the bottom band adds 10 rows of flagstones. Shipped with the arena held to the stage's bottom (`StageScene.vue`): at 390, with and without a simulated 59px inset, the hero's feet land on row 140 of 148 (8 rows of floor below them) and the boss's on row 118 (run 6's row 88). Without an inset the top is cropped; with one, the extra wall fills the status bar.
 - Run 7 (the skin) is still 108 rows and would need the same extension before it is used.
-- User: "This looks awful." Not used; replaced by the 8-row floor extension (`arena6b`) after the user dropped the notch inset.
+- User: "This looks awful", and later "The last one was HORRIBLE." **Do not repeat**: no tall extension, no 30 rows of invented wall on top. Not used; replaced by the 8-row floor extension (`arena6b`), which "worked well", after the user dropped the notch inset.
 
 All seven runs are kept: the tiles in `assets/pixellab/2026-11-12-arena*/` (git-ignored, back them up) and copies in `public/sprites/stage/` for the dev toggles.
 
@@ -66,7 +80,8 @@ All seven runs are kept: the tiles in `assets/pixellab/2026-11-12-arena*/` (git-
 | 6 | `arena6.png` | kept; the approved art, 216x108 (too short for the stage) |
 | 6b | `arena6b.png` | **the default boss arena**: run 6 with 8 rows of floor inpainted below, 216x116 |
 | 6 tall | (not shipped) | rejected: run 6 inpainted to 216x148 ("This looks awful") |
-| 7 | `arena7.png` | **kept as a potential skin** (216x108; needs the same 8-row floor before use) |
+| 7 | `arena7.png` | kept; the approved skin art, 216x108 (too short for the stage) |
+| 7b | `arena7b.png` | **the potential skin**: run 7 with 8 rows of floor inpainted below, 216x116 |
 | 8 | `arena8.png` | kept; run 6's prompt at 216x148, works, closest to run 6 |
 | 9 | `arena9.png` | kept; run 6's prompt at 216x148, flat untextured floor |
 
@@ -135,6 +150,7 @@ All seven runs are kept: the tiles in `assets/pixellab/2026-11-12-arena*/` (git-
 - Why 216x108: 108 rows is the stage frame height; 216 art px is 432 CSS px at 2 px each, so it covers the widest phones and narrower ones crop the edges (hero and focal point stay centred).
 - Result: clean and on brief. Stone brick back wall, four round shields and wall torches along the top, wooden racks of swords and spears in the middle, armor stands (plate and chain) on the right, a wooden rack and barrel on the left, flagstone floor with a clear patch in the centre. No characters. Warm, torch-lit browns and greys, so it will need a tint to sit next to the blue-black pixel-cut screens. Kept: user called it "fire". Shipped as `public/sprites/home/armory.png` (Hero tab, `HomeBase.vue`); checked on a 390 and a 360 phone.
 - Why / what changed: first run for this piece. User asked for an armory interior, fixed (it does not show the player's gear).
+- Later (2026-11-12): brought to the standard 216x116 with 8 rows of inpainted floor; the shipped `armory.png` is now that version (see "armory and run 7 brought to the standard size" above).
 
 ## 2026-11-12: item art (native 32x32, 2 CSS px per art pixel to match the phone-stage hero)
 

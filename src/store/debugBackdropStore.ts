@@ -7,7 +7,7 @@
 import { defineStore } from 'pinia';
 
 // The generated arenas, public/sprites/stage/<name>.png (docs/pixellab-runs.md).
-const ARENAS = ['arena', 'arena2', 'arena3', 'arena4', 'arena5', 'arena6', 'arena6b', 'arena7', 'arena8', 'arena9'] as const;
+const ARENAS = ['arena', 'arena2', 'arena3', 'arena4', 'arena5', 'arena6', 'arena6b', 'arena7', 'arena7b', 'arena8', 'arena9'] as const;
 export type ArenaBackdrop = (typeof ARENAS)[number];
 export type StageBackdrop = 'painted' | ArenaBackdrop;
 export type HomeBackdrop = 'armory' | ArenaBackdrop;

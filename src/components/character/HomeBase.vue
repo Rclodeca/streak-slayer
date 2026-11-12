@@ -15,18 +15,19 @@ import { HERO_STAGE_CANVAS } from './heroArt';
 // and their level and best streak on two plates at its foot. The page's menu rides
 // in its corner through the default slot, as it does on the stage.
 //
-// The art is native pixel art, 216 x 108 drawn at 2 CSS px per art pixel (like the
-// stage's hero), so it is 432 x 216 and wider than most phones. It sits centred
+// The art is native pixel art at the standard backdrop size, 216 x 116, the fight
+// stage's arena's too (docs/pixellab-scenes.md), drawn at 2 CSS px per art pixel
+// (like the stage's hero), so it is 432 x 232 and wider than most phones. It sits centred
 // and the page crops the sides evenly, so a narrow phone loses some rack and shield
 // and keeps the hero. The offset is snapped to whole CSS px, so on a phone of an
 // odd width the art pixels still land on whole device pixels.
 const baseUrl = import.meta.env.BASE_URL;
 const ART_W = 432;
-const ART_H = 216;
+const ART_H = 232;
 
 const { character, heroName, displayLevel } = useHeroStats();
 const habitStore = useHabitStore();
-// Testing: the debug menu can swap the armory for another 216 x 108 backdrop.
+// Testing: the debug menu can swap the armory for one of the stage's arenas.
 const debugBackdrop = useDebugBackdropStore();
 const roomUrl = computed(() =>
   debugBackdrop.home === 'armory' ? `${baseUrl}sprites/home/armory.png` : `${baseUrl}sprites/stage/${debugBackdrop.home}.png`,
@@ -121,17 +122,18 @@ onBeforeUnmount(() => observer?.disconnect());
   inset: 0;
   width: var(--art-w);
   height: var(--art-h);
-  /* A taller backdrop (the testing toggle's arenas, up to 216 x 148) keeps 2 CSS
-     px per art pixel and shows its bottom, floor included. */
+  /* A backdrop of another size (the testing toggle's older arenas, 216 x 108 to
+     216 x 148) keeps 2 CSS px per art pixel and shows its bottom. */
   object-fit: cover;
   object-position: bottom;
 }
 
 /* The base build (64px art) at the stage's size: 2 CSS px per art pixel, stood on
-   the clear floor in the middle. */
+   the clear floor in the middle, its feet on art row 101 (the armory's 8 bottom
+   rows are the floor added below it). */
 .home-hero {
   left: calc((var(--art-w) - var(--hero-size)) / 2);
-  bottom: 14px;
+  bottom: 30px;
   width: var(--hero-size);
   height: var(--hero-size);
 }
