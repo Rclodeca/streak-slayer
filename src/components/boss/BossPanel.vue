@@ -214,7 +214,7 @@ const skillTiles = computed<StatTile[]>(() => [
 
 .boss-plat {
   position: absolute;
-  right: calc(40 * var(--u));
+  right: calc(60 * var(--u));
   top: calc(36px + var(--stage-grow, 0px) + 116 * var(--u));
   width: calc(136 * var(--u));
   height: 18px;
@@ -234,7 +234,7 @@ const skillTiles = computed<StatTile[]>(() => [
    sits in the stage's top-right corner. */
 .boss-figure {
   position: absolute;
-  right: calc(40 * var(--u));
+  right: calc(60 * var(--u));
   bottom: calc(172px - 116 * var(--u));
   width: calc(136 * var(--u));
   display: flex;
