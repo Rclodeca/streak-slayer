@@ -1,67 +1,50 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { ChartColumn, Swords } from 'lucide-vue-next';
-import { describeItemBonus, describeItemBonusParts, formatCompact, heroClassFor, itemDoubleFactor } from '../../game-engine';
-import type { Habit } from '../../game-engine';
+import { computed, ref } from 'vue';
+import { ChartColumn, Lock, Swords } from 'lucide-vue-next';
+import { describeItemBonus, describeItemBonusParts, itemDoubleFactor, MAX_EQUIP_SLOTS } from '../../game-engine';
 import { useHeroStats } from '../../composables/useHeroStats';
-import { useHabitStore } from '../../store/habitStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
 import ItemSparks from '../ui/ItemSparks.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
-import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON } from '../ui/statIcons';
-import { HERO_FACE, HERO_PORTRAIT_SCALE } from './heroArt';
 import PlayerSprite from './PlayerSprite.vue';
 
 // The hero's details: what's running on them, their gear and their stats.
 // In the popup (CharacterPanel) they open on the hero with their level and
-// bars; as the phone's Hero tab (`page`), where the Focus strip already shows
-// the hero, on their name, then their level and best streak.
-defineProps<{ page?: boolean }>();
+// bars; as the phone's Hero tab (`page`), where the pinned home base (HomeBase,
+// in AppShell) already shows the hero, their name, level and best streak, straight
+// on the gear: a rack of every slot (RACK_ROW across, locked ones shown) and the card
+// of the one picked.
+const props = defineProps<{ page?: boolean }>();
 
 const baseUrl = import.meta.env.BASE_URL;
 
-const { character, heroName, maxHealth, displayLevel, expNeeded, displayExp, activeEffects, equippedItems, emptySlotCount, statTiles } = useHeroStats();
+const { character, maxHealth, displayLevel, expNeeded, displayExp, activeEffects, equippedItems, slotCount, emptySlotCount, statTiles } = useHeroStats();
 
-// The page's title banner carries the hero's portrait: the base build at two
-// CSS px per art pixel (whole device pixels on every screen), its head in the
-// medallion.
-const heroClass = computed(() => heroClassFor(character.value));
-const portraitStyle = computed(() => ({
-  '--face-x': `${HERO_FACE[heroClass.value].x * HERO_PORTRAIT_SCALE}px`,
-  '--face-y': `${HERO_FACE[heroClass.value].y * HERO_PORTRAIT_SCALE}px`,
-  width: `${64 * HERO_PORTRAIT_SCALE}px`,
-}));
-
-const habitStore = useHabitStore();
-// The longest streak running now, and whose it is.
-const bestStreak = computed(() =>
-  habitStore.habits.reduce<Habit | null>((best, habit) => (habit.streakCount > (best?.streakCount ?? 0) ? habit : best), null),
+// The rack: every slot the game can ever have, two sockets across and four down,
+// beside the card of the picked item. The ones worn hold their item, the unlocked
+// rest are empty sockets and the others locked.
+const RACK_COLUMNS = 2;
+const picked = ref<string | null>(null);
+// The item whose card shows: the one tapped, or the first worn if it's gone (or nothing's tapped yet).
+const selected = computed(() => equippedItems.value.find((item) => item.id === picked.value) ?? equippedItems.value[0] ?? null);
+const cells = computed(() =>
+  Array.from({ length: MAX_EQUIP_SLOTS }, (_, slot) => {
+    const item = equippedItems.value[slot];
+    return { slot, item, state: item ? ('worn' as const) : slot < slotCount.value ? ('empty' as const) : ('locked' as const) };
+  }),
 );
+// The rack row of the picked item, where the card's pointer sits.
+const selectedRow = computed(() => Math.floor(Math.max(0, equippedItems.value.findIndex((item) => item.id === selected.value?.id)) / RACK_COLUMNS));
+// The popup lists every item; the tab, only the picked one under the rack.
+const listedItems = computed(() => (props.page ? (selected.value ? [selected.value] : []) : equippedItems.value));
 </script>
 
 <template>
   <div class="hero-details" :class="{ 'hero-page': page }">
-    <template v-if="page">
-      <div class="hero-page-header">
-        <SectionTitle :title="heroName"><img class="portrait" :src="baseSpriteUrl(`player/${heroClass}`)" :style="portraitStyle" alt="" /></SectionTitle>
-      </div>
-      <div class="tiles hero-head">
-        <div class="stat-tile">
-          <span class="tile-label"><StatIcon name="levelUp" />Level</span>
-          <span class="tile-value level-value">{{ displayLevel }}</span>
-          <span class="tile-note">{{ formatCompact(expNeeded - displayExp) }} EXP to next</span>
-        </div>
-        <div class="stat-tile">
-          <span class="tile-label"><StatIcon name="streak" />Best streak</span>
-          <span class="tile-value">{{ bestStreak?.streakCount ?? 0 }}</span>
-          <span v-if="bestStreak" class="tile-note">{{ bestStreak.name }}</span>
-        </div>
-      </div>
-    </template>
-    <div v-else class="hero">
+    <div v-if="!page" class="hero">
       <div class="hero-sprite">
         <PlayerSprite :character="character" />
       </div>
@@ -79,11 +62,35 @@ const bestStreak = computed(() =>
     </div>
 
     <section class="stat-group">
-      <div v-if="page" class="hero-page-header"><SectionTitle title="Equipment"><Swords :size="18" class="section-icon" /></SectionTitle></div>
+      <div v-if="page" class="hero-page-header">
+        <SectionTitle title="Equipment" :aside="`${equippedItems.length} / ${slotCount}`"><Swords :size="18" class="section-icon" /></SectionTitle>
+      </div>
       <h4 v-else class="group-label">Equipment</h4>
-      <ul class="gear-list">
+      <div :class="{ 'gear-bay': page }">
+        <div v-if="page" class="rack" role="group" aria-label="Equipment">
+          <template v-for="cell in cells" :key="cell.slot">
+            <button
+              v-if="cell.item"
+              type="button"
+              class="rack-slot"
+              :class="[`rarity-${cell.item.rarity}`, { enchanted: itemDoubleFactor(character, cell.item.id) > 1, selected: selected?.id === cell.item.id }]"
+              :aria-label="`${cell.item.name}, ${cell.item.rarity}`"
+              :aria-pressed="selected?.id === cell.item.id"
+              @click="picked = cell.item.id"
+            >
+              <span class="gear-icon">
+                <ItemSparks :rarity="cell.item.rarity" :seed="cell.slot" />
+                <span class="gear-art"><img :src="`${baseUrl}sprites/${cell.item.icon}.png`" alt="" /></span>
+              </span>
+            </button>
+            <span v-else class="rack-slot" :class="cell.state" role="img" :aria-label="cell.state === 'empty' ? 'Empty slot' : 'Locked slot'">
+              <span class="gear-icon"><Lock v-if="cell.state === 'locked'" :size="18" class="slot-lock" /></span>
+            </span>
+          </template>
+        </div>
+        <ul class="gear-list" :class="page && selected ? [`rarity-${selected.rarity}`, 'gear-detail'] : undefined" :style="page ? { '--row': selectedRow } : undefined">
         <li
-          v-for="(item, index) in equippedItems"
+          v-for="(item, index) in listedItems"
           :key="item.id"
           class="gear-row"
           :class="[`rarity-${item.rarity}`, { enchanted: itemDoubleFactor(character, item.id) > 1 }]"
@@ -109,8 +116,9 @@ const bestStreak = computed(() =>
             <span v-if="item.effectText" class="gear-effect">{{ item.effectText }}</span>
           </div>
         </li>
-        <li v-for="n in emptySlotCount" :key="`empty-${n}`" class="gear-row empty"><span class="gear-icon" aria-hidden="true" />Empty slot</li>
+        <li v-for="n in page ? 0 : emptySlotCount" :key="`empty-${n}`" class="gear-row empty"><span class="gear-icon" aria-hidden="true" />Empty slot</li>
       </ul>
+      </div>
     </section>
 
     <section class="stat-group">
@@ -143,10 +151,6 @@ const bestStreak = computed(() =>
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-}
-
-.hero-head {
-  margin-top: 0.5rem;
 }
 
 .rarity-common {
@@ -255,6 +259,114 @@ const bestStreak = computed(() =>
   border-style: dashed;
   border-left-style: dashed;
   border-left-color: var(--border);
+}
+
+/* The Hero tab's gear bay: the rack (two sockets across, four down) beside the picked
+   item's card, which stretches to the rack's height. The art is the same fixed size on
+   every screen (--rack-art, see main.scss): only the card's width follows the phone. */
+.gear-bay {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.rack {
+  display: grid;
+  grid-template-columns: repeat(2, var(--rack-slot));
+  grid-auto-rows: var(--rack-slot);
+  gap: 8px;
+  align-content: start;
+  padding: 8px;
+}
+
+.rack-slot {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+button.rack-slot {
+  cursor: pointer;
+}
+
+.rack-slot .gear-icon {
+  display: grid;
+  place-items: center;
+  width: var(--rack-slot);
+  height: var(--rack-slot);
+}
+
+.rack-slot .gear-art img,
+.gear-detail .gear-art img {
+  width: var(--rack-art);
+  height: var(--rack-art);
+}
+
+.rack-slot.empty,
+.rack-slot.locked {
+  --rarity: var(--border);
+}
+
+.slot-lock {
+  position: relative;
+  color: var(--text);
+}
+
+/* The card: the item's socket and name across the top, its bonuses and effect
+   under them over the full width. A pointer on its left edge sits level with the
+   picked socket's row. */
+.gear-detail {
+  position: relative;
+}
+
+.gear-detail::before {
+  content: '';
+  position: absolute;
+  top: calc(8px + var(--row, 0) * (var(--rack-slot) + 8px) + var(--rack-slot) / 2 - 6px);
+  left: -8px;
+  border: 6px solid transparent;
+  border-left: 0;
+  border-right-color: var(--rarity);
+}
+
+.gear-detail .gear-row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 4px;
+}
+
+.gear-detail .gear-icon {
+  grid-row: 1 / span 2;
+  width: var(--rack-slot);
+  height: var(--rack-slot);
+}
+
+.gear-detail .gear-text {
+  display: contents;
+}
+
+.gear-detail .gear-name {
+  grid-column: 2;
+  align-self: end;
+}
+
+.gear-detail .gear-tags {
+  grid-column: 2;
+  align-self: start;
+}
+
+.gear-detail .gear-bonuses,
+.gear-detail .gear-bonus,
+.gear-detail .gear-effect {
+  grid-column: 1 / -1;
 }
 
 /* A recessed slot: rarity hairline, a dark inner bevel and a faint glow. */

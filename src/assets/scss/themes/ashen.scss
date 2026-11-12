@@ -1199,19 +1199,72 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
   }
 
-  // The hero's medallion is a portrait: the base build at its file size, its
-  // head (HERO_FACE) in the middle, a silver ring round it.
-  .hero-page .section-title .medal:has(> .portrait) {
-    --medal: #1a1a2b;
-    box-shadow: inset 0 0 0 2px var(--moon-solid);
+  // The Hero tab's banners (docs/mockups/hero-layouts-2.html): the page's full width, a
+  // dark medallion with a brass icon, a slate cloth and a count riding at its far end
+  // (SectionTitle's aside). The page's blocks sit 14px apart.
+  .hero-page {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 0;
+
+    .effects,
+    .stat-group {
+      margin-top: 0;
+    }
+
+    .stat-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hero-page-header {
+      height: 38px;
+      padding: 0;
+    }
+
+    h2.section-title {
+      display: flex;
+      width: 100%;
+      @include engraved(0.8125rem, 0.16em);
+    }
+
+    .section-title {
+      --medal: var(--card);
+      --medal-ink: #{$brass};
+    }
+
+    .section-title .medal {
+      width: 38px;
+      height: 38px;
+      box-shadow:
+        inset 2px 2px 0 var(--card-hi),
+        inset -2px -2px 0 var(--card-lo);
+    }
+
+    .section-title .cloth {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      height: 28px;
+      margin-left: -4px;
+      padding: 0 22px 0 14px;
+      color: #f0f3f7;
+      text-shadow: none;
+      background: #202a40;
+      box-shadow: inset 0 2px 0 #333c52;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
+    }
   }
 
-  .section-title .portrait {
-    position: absolute;
-    top: calc(4px - var(--face-y));
-    left: calc(50% - var(--face-x));
-    max-width: none;
-    image-rendering: pixelated;
+  .section-title .cloth-aside {
+    @include true-sans(0.8125rem, 700);
+    letter-spacing: 0.06em;
+    color: $brass;
+    text-shadow: none;
   }
 
   // The icon in the medallion takes its ink.
@@ -1894,11 +1947,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     height: 8px;
     background: #c8402f;
     box-shadow: 0 0 0 2px #161622;
-  }
-
-  // The phone's Hero tab: its level in brass, as on the stage.
-  .hero-head .level-value {
-    color: $brass;
   }
 
   // The quest popup (docs/mockups/pixel-quests.html, Plates): the deed in a
@@ -2969,27 +3017,27 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   // The tier climbs with the rarity: how much of its colour the slot, the
   // row and the reveal card take (docs/mockups/pixel-hero-tab.html).
-  :is(.gear-row, .hero).rarity-common {
+  :is(.gear-row, .hero, .rack-slot).rarity-common {
     --tier: 10%;
     --tier-soft: 6%;
   }
 
-  :is(.gear-row, .hero).rarity-uncommon {
+  :is(.gear-row, .hero, .rack-slot).rarity-uncommon {
     --tier: 24%;
     --tier-soft: 12%;
   }
 
-  :is(.gear-row, .hero).rarity-rare {
+  :is(.gear-row, .hero, .rack-slot).rarity-rare {
     --tier: 38%;
     --tier-soft: 20%;
   }
 
-  :is(.gear-row, .hero).rarity-epic {
+  :is(.gear-row, .hero, .rack-slot).rarity-epic {
     --tier: 52%;
     --tier-soft: 28%;
   }
 
-  :is(.gear-row, .hero).rarity-relic {
+  :is(.gear-row, .hero, .rack-slot).rarity-relic {
     --tier: 68%;
     --tier-soft: 38%;
   }
@@ -3055,6 +3103,54 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .gear-row:not(.empty) .gear-icon {
     @include tier-socket;
+  }
+
+  // The Hero tab's rack (HeroDetails): a lifted card of eight sockets, two across,
+  // beside the picked item's card. A worn item's socket is lit by its rarity as in its
+  // card; the one picked has a silver ring and the card's pointer is level with it. An
+  // unlocked empty slot is a dim socket, a locked one a darker one with a lock.
+  .rack {
+    @include lifted-card;
+  }
+
+  .gear-detail::before {
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rarity) 50%, transparent));
+  }
+
+  .rack-slot:not(.empty):not(.locked) .gear-icon {
+    @include tier-socket;
+  }
+
+  .rack-slot.enchanted .gear-icon {
+    @include tier-socket($glow: inset 0 0 18px rgba(170, 220, 240, 0.35));
+  }
+
+  .rack-slot.selected .gear-icon {
+    @include tier-socket(2px, 4px, inset 0 0 0 4px var(--moon-solid));
+  }
+
+  .rack-slot.empty {
+    --rarity: #414163;
+    opacity: 0.7;
+  }
+
+  .rack-slot.locked {
+    --rarity: #2a2a40;
+    opacity: 0.85;
+    .slot-lock {
+      color: var(--spent-text);
+    }
+  }
+
+  @media (hover: hover) {
+    button.rack-slot:hover:not(.selected) .gear-icon {
+      filter: brightness(1.25);
+    }
+  }
+
+  button.rack-slot:focus-visible {
+    outline: 2px solid var(--moon-solid);
+    outline-offset: 2px;
   }
 
   .gear-name,
@@ -3942,7 +4038,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     .talent-header {
       position: relative;
       z-index: 2;
-      padding: 4px 2px 0;
+      // Clear of the menu, which floats over this corner (MenuCorner).
+      padding: 4px 52px 0 2px;
       background: var(--bg);
       box-shadow: 0 12px 12px -6px var(--bg);
     }

@@ -8,6 +8,8 @@ import PopupPreview from '../debug/PopupPreview.vue';
 import FightStage from '../fight/FightStage.vue';
 import SkipDayButton from '../debug/SkipDayButton.vue';
 import HeroDetails from '../character/HeroDetails.vue';
+import HomeBase from '../character/HomeBase.vue';
+import MenuCorner from './MenuCorner.vue';
 import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
 import QuestSection from '../quests/QuestSection.vue';
@@ -75,6 +77,21 @@ const showHighScores = ref(false);
 const isPhone = usePhoneLayout();
 const tabStore = useTabStore();
 const showLog = ref(false);
+
+// What sits above the lists on a phone: the fight stage, the home base on the Hero tab,
+// or nothing but the menu's corner on Talents, which fills the screen. Wider screens
+// always have the stage.
+const topBar = computed(() => {
+  if (isPhone.value && tabStore.tab === 'hero') return HomeBase;
+  if (isPhone.value && tabStore.tab === 'talents') return MenuCorner;
+  return FightStage;
+});
+// The Trials button under the menu, where there's room: not on Talents (its header takes
+// the corner) and not on the Focus strip; the menu lists Trials instead.
+const trialsButton = computed(
+  () => isPhone.value && trialsOpen(characterStore.character) && tabStore.tab !== 'talents' && (tabStore.tab === 'hero' || !stageFocused.value),
+);
+const trialsInMenu = computed(() => isPhone.value && trialsOpen(characterStore.character) && !trialsButton.value);
 const scrollBody = ref<HTMLElement | null>(null);
 watch(
   () => tabStore.tab,
@@ -124,22 +141,17 @@ watch(
     <template v-else>
       <SkipDayButton v-if="isDev" />
       <PopupPreview v-if="isDev" />
-      <div class="layout">
-        <FightStage>
-          <AppMenu
-            :trials-item="isPhone && stageFocused && trialsOpen(characterStore.character)"
-            @high-scores="showHighScores = true"
-            @log="showLog = true"
-            @trials="tabStore.select('trials')"
-          />
-          <button v-if="isPhone && trialsOpen(characterStore.character)" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
+      <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
+        <component :is="topBar">
+          <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="tabStore.select('trials')" />
+          <button v-if="trialsButton" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
             <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
             <Gift :size="22" />
             <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
             <span v-else-if="newTrial" class="trials-pip" role="img" aria-label="New" />
           </button>
-        </FightStage>
-        <div ref="scrollBody" class="scroll-body" :class="{ 'talents-view': isPhone && tabStore.tab === 'talents' }">
+        </component>
+        <div ref="scrollBody" class="scroll-body" :class="{ 'talents-view': isPhone && tabStore.tab === 'talents', 'hero-view': isPhone && tabStore.tab === 'hero' }">
           <main class="main">
             <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'quests' }"><QuestSection /></div>
@@ -300,7 +312,7 @@ watch(
 }
 
 /* Phones: one column. The fight view fills the screen and never scrolls
-   itself: the stage is the top row, the bottom bar the last, and the current
+   itself: the stage (or the Hero tab's home base) is the top row, the bottom bar the last, and the current
    tab's list scrolls in a box between them, so a pull past either end of the
    list bounces only the list, never the stage (the page has nothing to
    bounce, see main.scss). Every section is a row of the scroll box's grid,
@@ -343,7 +355,19 @@ watch(
   .scroll-body.talents-view {
     grid-template-rows: minmax(0, 1fr);
     overflow: hidden;
-    padding: calc(0.25rem + var(--stage-grow, 0px)) 0.75rem 0.5rem;
+    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+  }
+
+  /* Talents has no banner above it, so the box is the layout's first row (the menu's
+     corner floats over it). */
+  .fight-view .layout.talents-full {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  /* The Hero tab's blocks sit 14px apart (HeroDetails), so its box takes 14px at the top
+     and 18px at the foot. */
+  .scroll-body.hero-view {
+    padding: 14px 1rem 18px;
   }
 
   .tab-panel:not(.current),

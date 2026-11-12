@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Hero tab armory</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Where the armory home base (sprites/armory.png, 216x108 art px at 2 CSS px each = 432x216) goes on the Hero tab.
+   Pixel-cut Moonlit only. The pinned stage (Focus strip) and the tab bar are placeholders; the Hero tab content
+   is the real order from HeroDetails (name banner, Level + Best streak, Equipment, Stats). Gear rows are stand-ins. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col p { margin: 0 0 12px; min-height: 92px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --touch: #dbe2ee; --brass: #d2bb85; --exp: #d9a93c; --streak: #e0894a;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; height: 640px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); display: flex; flex-direction: column;
+}
+.strip { flex: none; height: 76px; background: linear-gradient(180deg, #0f131d, #0a0d14); border-bottom: 2px solid #05060a; display: flex; align-items: center; padding: 0 16px; gap: 10px; font: 600 11px 'Cinzel', serif; letter-spacing: .16em; color: #6b7080; text-transform: uppercase; }
+.scroll { flex: 1; overflow-y: auto; padding: 0 0 12px; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.tabbar { flex: none; height: 58px; background: #0a0c12; border-top: 2px solid #05060a; display: flex; justify-content: space-around; align-items: center; font: 600 10px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: #6b7080; }
+.tabbar .on { color: var(--touch); }
+
+/* the armory: art centred and cropped by the phone's width, hero drawn on top at the floor patch */
+.armory { position: relative; width: 100%; height: 216px; overflow: hidden; background: #0a0c12; }
+.armory .bg { position: absolute; left: 50%; top: 0; width: 432px; height: 216px; transform: translateX(-50%); image-rendering: pixelated; max-width: none; }
+.armory .hero { position: absolute; left: 50%; bottom: 14px; width: 128px; height: 128px; transform: translateX(-50%); image-rendering: pixelated; }
+.armory::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(7,8,12,.0) 70%, rgba(7,8,12,.55)); }
+
+/* banner (SectionTitle option B): medallion + cloth */
+.banner { display: flex; align-items: center; margin: 14px 16px 8px; height: 38px; }
+.banner .medal { width: 38px; height: 38px; flex: none; z-index: 1; display: flex; align-items: center; justify-content: center; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--brass); }
+.banner .medal svg { width: 20px; height: 20px; }
+.banner .cloth { margin-left: -4px; flex: 1; height: 28px; display: flex; align-items: center; padding: 0 14px 0 14px; background: #202a40; color: var(--ink); font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); }
+
+.tiles { display: flex; gap: 8px; margin: 0 16px; }
+.tile { flex: 1; background: var(--card); clip-path: var(--px2); padding: 8px 12px 9px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); display: flex; flex-direction: column; gap: 1px; }
+.tile .l { display: flex; align-items: center; gap: 5px; font: 700 11px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.tile .l svg { width: 13px; height: 13px; }
+.tile .v { font: 700 24px/1.1 'Alegreya', serif; color: var(--ink); }
+.tile .n { font-size: 12px; color: #7d8190; }
+.gear { margin: 0 16px; display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; gap: 10px; align-items: center; background: var(--card); clip-path: var(--px2); padding: 8px 10px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.row .ic { width: 44px; height: 44px; flex: none; background: var(--well); box-shadow: inset 2px 2px 0 #040508, inset -2px -2px 0 #1a1f2b; }
+.row b { display: block; font: 700 16px 'Alegreya', serif; color: var(--ink); }
+.row small { font-size: 12px; color: #7d8190; }
+
+/* B: name and numbers sit on the wall */
+.plate { position: absolute; z-index: 2; background: rgba(7,8,12,.78); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.plate.name { left: 12px; top: 12px; font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+.plate.stat { bottom: 10px; display: flex; align-items: center; gap: 6px; font: 700 14px 'Alegreya Sans'; color: var(--ink); }
+.plate.stat svg { width: 14px; height: 14px; }
+.plate.stat small { font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+
+/* C: the Equipment section's picture, its banner laid over the top */
+.room { position: relative; margin-top: 14px; }
+.room .banner { position: absolute; left: 0; right: 0; top: 0; margin-top: 10px; z-index: 2; }
+
+.widths { margin: 46px auto 0; max-width: 1260px; }
+.widths h2 { text-align: center; font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; text-transform: uppercase; margin: 0 0 4px; }
+.widths .lede { margin-bottom: 14px; }
+.wrow { display: flex; gap: 26px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+.wrow figure { margin: 0; }
+.wrow figcaption { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-top: 6px; text-transform: uppercase; }
+.wrow .armory { outline: 1px solid #000; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Hero tab — armory</h1>
+  <p class="lede">Three places for the armory home base. It is the fight stage's height (216px), fixed, with the hero drawn on top in code. Pixel-cut Moonlit. Gear rows and the strip/tab bar are stand-ins.</p>
+
+  <div class="grid">
+    <!-- A -->
+    <div class="col">
+      <h2>A · Over the page</h2>
+      <p>The armory is the first thing on the tab, full width, and scrolls away with the page. Name banner, Level and Best streak sit under it exactly as they do now (the banner's portrait medallion becomes redundant, so it is a plain hero mark here).</p>
+      <div class="phone">
+        <div class="strip">Pinned stage (Focus strip)</div>
+        <div class="scroll">
+          <div class="armory"><img class="bg" src="sprites/armory.png" alt="" /><img class="hero" src="sprites/hero-warrior.png" alt="" /></div>
+          <div class="banner"><span class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span><span class="cloth">Aldric</span></div>
+          <div class="tiles">
+            <div class="tile"><span class="l"><svg viewBox="0 0 24 24" fill="none" stroke="#d9a93c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>Level</span><span class="v">14</span><span class="n">2.1K EXP to next</span></div>
+            <div class="tile"><span class="l"><svg viewBox="0 0 24 24" fill="none" stroke="#e0894a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Best streak</span><span class="v">23</span><span class="n">Morning run</span></div>
+          </div>
+          <div class="banner"><span class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/></svg></span><span class="cloth">Equipment</span></div>
+          <div class="gear"><div class="row"><span class="ic"></span><span><b>Steel Longsword</b><small>Uncommon</small></span></div><div class="row"><span class="ic"></span><span><b>Ironbound Helm</b><small>Rare</small></span></div></div>
+        </div>
+        <div class="tabbar"><span>Skills</span><span>Quests</span><span>Trials</span><span class="on">Hero</span></div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="col">
+      <h2>B · Name on the wall</h2>
+      <p>The armory replaces the name banner and the two tiles: the hero's name is a plate on the wall (top left), Level and Best streak are two plates on the floor line. Shortest option, so Equipment starts higher up.</p>
+      <div class="phone">
+        <div class="strip">Pinned stage (Focus strip)</div>
+        <div class="scroll">
+          <div class="armory">
+            <img class="bg" src="sprites/armory.png" alt="" /><img class="hero" src="sprites/hero-warrior.png" alt="" />
+            <span class="plate name">Aldric</span>
+            <span class="plate stat" style="left:12px"><svg viewBox="0 0 24 24" fill="none" stroke="#d9a93c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg><small>Level</small>14</span>
+            <span class="plate stat" style="right:12px"><svg viewBox="0 0 24 24" fill="none" stroke="#e0894a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg><small>Best streak</small>23</span>
+          </div>
+          <div class="banner"><span class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/></svg></span><span class="cloth">Equipment</span></div>
+          <div class="gear"><div class="row"><span class="ic"></span><span><b>Steel Longsword</b><small>Uncommon</small></span></div><div class="row"><span class="ic"></span><span><b>Ironbound Helm</b><small>Rare</small></span></div><div class="row"><span class="ic"></span><span><b>Leather Boots</b><small>Common</small></span></div></div>
+        </div>
+        <div class="tabbar"><span>Skills</span><span>Quests</span><span>Trials</span><span class="on">Hero</span></div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="col">
+      <h2>C · Equipment room</h2>
+      <p>The page keeps its name banner and tiles. The armory is the Equipment section's picture: the Equipment banner lies across its top and the gear list sits right below, so the gear reads as what is on the racks.</p>
+      <div class="phone">
+        <div class="strip">Pinned stage (Focus strip)</div>
+        <div class="scroll">
+          <div class="banner"><span class="medal"><img src="sprites/hero-warrior.png" alt="" style="width:64px;image-rendering:pixelated;margin-top:6px" /></span><span class="cloth">Aldric</span></div>
+          <div class="tiles">
+            <div class="tile"><span class="l"><svg viewBox="0 0 24 24" fill="none" stroke="#d9a93c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>Level</span><span class="v">14</span><span class="n">2.1K EXP to next</span></div>
+            <div class="tile"><span class="l"><svg viewBox="0 0 24 24" fill="none" stroke="#e0894a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Best streak</span><span class="v">23</span><span class="n">Morning run</span></div>
+          </div>
+          <div class="room">
+            <div class="armory"><img class="bg" src="sprites/armory.png" alt="" /><img class="hero" src="sprites/hero-warrior.png" alt="" /></div>
+            <div class="banner"><span class="medal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span><span class="cloth">Equipment</span></div>
+          </div>
+          <div class="gear" style="margin-top:8px"><div class="row"><span class="ic"></span><span><b>Steel Longsword</b><small>Uncommon</small></span></div><div class="row"><span class="ic"></span><span><b>Ironbound Helm</b><small>Rare</small></span></div></div>
+        </div>
+        <div class="tabbar"><span>Skills</span><span>Quests</span><span>Trials</span><span class="on">Hero</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="widths">
+    <h2>One image, every width</h2>
+    <p class="lede">The art is 432px wide and centred; a narrower phone crops the edges evenly (hero and the clear floor stay in the middle). The shields, racks and armor stands on the sides are the part that gets trimmed.</p>
+    <div class="wrow">
+      <figure><div class="armory" style="width:360px"><img class="bg" src="sprites/armory.png" alt="" /><img class="hero" src="sprites/hero-warrior.png" alt="" /></div><figcaption>360</figcaption></figure>
+      <figure><div class="armory" style="width:390px"><img class="bg" src="sprites/armory.png" alt="" /><img class="hero" src="sprites/hero-warrior.png" alt="" /></div><figcaption>390</figcaption></figure>
+      <figure><div class="armory" style="width:430px"><img class="bg" src="sprites/armory.png" alt="" /><img class="hero" src="sprites/hero-warrior.png" alt="" /></div><figcaption>430</figcaption></figure>
+    </div>
+  </div>
+</div>
+</body>
+</html>

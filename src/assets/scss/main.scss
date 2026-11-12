@@ -134,7 +134,23 @@ body {
   --item-art: 120px;
   --item-card-art: 240px;
   --item-gear-zoom: 1;
-}
+  // The Hero tab's rack (HeroDetails): a socket, and the 32x32 art drawn in it, smaller
+  // than the item slots and at one size whatever the phone's width (only the card beside
+  // the rack follows it). A whole number of device px per art pixel at each density:
+  // 1 CSS px on 1x, 1.5 on 2x (3 device px), 4/3 on 3x (4 device px), the rule the
+  // fighters on the phone stage use.
+  --rack-art: 32px;
+  --rack-slot: 42px;
+
+  @media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) {
+    --rack-art: 48px;
+    --rack-slot: 58px;
+  }
+
+  @media (min-resolution: 3dppx), (-webkit-min-device-pixel-ratio: 3) {
+    --rack-art: calc(128px / 3);
+    --rack-slot: calc(128px / 3 + 10px);
+  }
 
 :root[data-item-grid='40'] {
   // 40 grid (42 art pixels with its outline): 1 CSS px per art pixel on 1x (item 42px),

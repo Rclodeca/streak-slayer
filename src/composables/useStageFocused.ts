@@ -1,15 +1,11 @@
 import { computed } from 'vue';
 import { useFocusModeStore } from '../store/focusModeStore';
-import { STRIP_TABS, useTabStore } from '../store/tabStore';
-import { usePhoneLayout } from './usePhoneLayout';
 
 /**
- * Whether the fight stage is the 76px Focus strip: the menu's Focus mode, or on
- * a phone the Hero and Talents tabs (STRIP_TABS).
+ * Whether the fight stage is the 76px Focus strip: the menu's Focus mode. (The phone's
+ * Hero and Talents tabs show no stage: the home base and the tree take the top.)
  */
 export function useStageFocused() {
   const focusMode = useFocusModeStore();
-  const isPhone = usePhoneLayout();
-  const tabStore = useTabStore();
-  return computed(() => focusMode.on || (isPhone.value && STRIP_TABS.includes(tabStore.tab)));
+  return computed(() => focusMode.on);
 }

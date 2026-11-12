@@ -20,8 +20,7 @@ import { STAGE_SCENES } from './stage/scenes';
 // (hitFx.ts), each fighter's HP held back until its blow lands.
 //
 // On phones the stage holds the top of the screen while the lists scroll in
-// their own box beneath it; Focus mode (the menu's), or the phone's Hero tab
-// (STRIP_TABS), shrinks it to a 76px strip, the fighters at half size with
+// their own box beneath it; Focus mode (the menu's) shrinks it to a 76px strip, the fighters at half size with
 // only their names and bars. The page's menu rides
 // in the stage's corner through the default slot, so it stays with the stage.
 // Behind it all, the boss's own place (StageScene): a day scene turns the stage's

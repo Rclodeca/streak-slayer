@@ -237,6 +237,7 @@ export function useHeroStats() {
     sunderDaysLeft,
     doomDays,
     equippedItems,
+    slotCount,
     emptySlotCount,
     statTiles,
     activeEffects,

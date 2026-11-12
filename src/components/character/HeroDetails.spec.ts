@@ -3,10 +3,9 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng, dailyPeriodKey, ITEM_CATALOG } from '../../game-engine';
+import { dailyPeriodKey, ITEM_CATALOG } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
-import { useHabitStore } from '../../store/habitStore';
 import HeroDetails from './HeroDetails.vue';
 
 enableAutoUnmount(afterEach);
@@ -24,29 +23,80 @@ describe('HeroDetails', () => {
     expect(wrapper.find('.hero-page-header').exists()).toBe(false);
   });
 
-  it('opens on the name, level and best streak as the Hero tab, with no second hero', () => {
-    const habitStore = useHabitStore();
-    habitStore.addHabit('Read', 'daily', 'easy', false, createRng(1)).streakCount = 4;
-    habitStore.addHabit('Run', 'daily', 'easy', false, createRng(1)).streakCount = 9;
+  it('opens straight on the gear as the Hero tab, with no second hero (the home base above it has the name)', () => {
     const wrapper = mount(HeroDetails, { props: { page: true } });
     expect(wrapper.find('.hero').exists()).toBe(false);
-    expect(wrapper.find('.hero-page-header h2').text()).toBe('Ash');
-    expect(wrapper.find('.hero-page-header .medal img.portrait').exists()).toBe(true);
-    const [level, streak] = wrapper.findAll('.hero-head .stat-tile');
-    expect(level.find('.tile-value').text()).toBe(String(useCharacterStore().character.level));
-    expect(level.find('.tile-note').text()).toContain('EXP to next');
-    expect(streak.find('.tile-value').text()).toBe('9');
-    expect(streak.find('.tile-note').text()).toBe('Run');
+    expect(wrapper.find('.home-name').exists()).toBe(false);
+    expect(wrapper.find('.hero-page-header .cloth').element.firstChild?.textContent).toBe('Equipment');
   });
 
-  it('lists the gear and the empty slots on the tab too', () => {
-    const store = useCharacterStore();
-    const item = ITEM_CATALOG[0];
-    store.character.ownedItemIds = [item.id];
-    store.character.equippedItemIds = [item.id];
-    const wrapper = mount(HeroDetails, { props: { page: true } });
-    expect(wrapper.find('.gear-row .gear-name').text()).toBe(item.name);
-    expect(wrapper.findAll('.gear-row.empty').length).toBeGreaterThan(0);
+  describe('the gear', () => {
+    const equip = (count: number, takenEventIds: string[] = []) => {
+      const store = useCharacterStore();
+      const items = ITEM_CATALOG.filter((item) => item.type === 'equipment').slice(0, count);
+      store.character.ownedItemIds = items.map((item) => item.id);
+      store.character.equippedItemIds = items.map((item) => item.id);
+      store.character.takenEventIds = takenEventIds as typeof store.character.takenEventIds;
+      return items;
+    };
+
+    it('lists every item and the empty slots in the popup', () => {
+      const items = equip(2);
+      const wrapper = mount(HeroDetails);
+      expect(wrapper.findAll('.gear-row .gear-name').map((n) => n.text())).toEqual(items.map((item) => item.name));
+      expect(wrapper.findAll('.gear-row.empty')).toHaveLength(2);
+      expect(wrapper.find('.rack').exists()).toBe(false);
+    });
+
+    it('shows a rack of all eight slots beside the picked item card on the tab, the ones not unlocked locked, with a count in the banner', () => {
+      equip(2);
+      const wrapper = mount(HeroDetails, { props: { page: true } });
+      expect(wrapper.findAll('.rack .rack-slot')).toHaveLength(8);
+      expect(wrapper.findAll('button.rack-slot')).toHaveLength(2);
+      expect(wrapper.findAll('.rack-slot.empty')).toHaveLength(2);
+      expect(wrapper.findAll('.rack-slot.locked')).toHaveLength(4);
+      expect(wrapper.find('.cloth-aside').text()).toBe('2 / 4');
+      expect(wrapper.find('.gear-bay > .rack').exists()).toBe(true);
+      expect(wrapper.find('.gear-bay > .gear-list.gear-detail').exists()).toBe(true);
+    });
+
+    it('lines the card\'s pointer up with the picked socket\'s row', async () => {
+      equip(5, ['item-slots']);
+      const wrapper = mount(HeroDetails, { props: { page: true } });
+      const row = () => wrapper.find('.gear-detail').attributes('style');
+      expect(row()).toContain('--row: 0');
+      await wrapper.findAll('button.rack-slot')[3].trigger('click');
+      expect(row()).toContain('--row: 1');
+      await wrapper.findAll('button.rack-slot')[4].trigger('click');
+      expect(row()).toContain('--row: 2');
+    });
+
+    it('unlocks sockets as the slot cap grows', () => {
+      equip(2, ['item-slots']);
+      expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(2);
+      equip(2, ['item-slots', 'item-slots-2']);
+      expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(0);
+    });
+
+    it('opens the card of the first item, then of the one tapped', async () => {
+      const items = equip(3);
+      const wrapper = mount(HeroDetails, { props: { page: true } });
+      expect(wrapper.findAll('.gear-row')).toHaveLength(1);
+      expect(wrapper.find('.gear-row .gear-name').text()).toBe(items[0].name);
+      expect(wrapper.findAll('button.rack-slot')[0].attributes('aria-pressed')).toBe('true');
+
+      await wrapper.findAll('button.rack-slot')[2].trigger('click');
+      expect(wrapper.find('.gear-row .gear-name').text()).toBe(items[2].name);
+      expect(wrapper.findAll('button.rack-slot')[2].attributes('aria-pressed')).toBe('true');
+      expect(wrapper.findAll('button.rack-slot')[0].attributes('aria-pressed')).toBe('false');
+    });
+
+    it('shows no card when nothing is worn', () => {
+      equip(0);
+      const wrapper = mount(HeroDetails, { props: { page: true } });
+      expect(wrapper.find('.gear-row').exists()).toBe(false);
+      expect(wrapper.findAll('.rack-slot.empty')).toHaveLength(4);
+    });
   });
 
   describe('a stat a boss skill is lowering', () => {

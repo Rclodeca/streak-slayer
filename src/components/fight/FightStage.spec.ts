@@ -75,14 +75,14 @@ describe('FightStage', () => {
     expect(wrapper.find('.fight-stage').classes()).toContain('focus');
   });
 
-  it('drops to the strip on the phone\'s Hero tab only', async () => {
+  it('stays the full stage on every phone tab (the Hero and Talents tabs swap it out instead)', async () => {
     vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
     const wrapper = mountStage();
     const tabStore = useTabStore();
-    for (const [tab, strip] of [['quests', false], ['trials', false], ['hero', true], ['skills', false]] as const) {
+    for (const tab of ['quests', 'trials', 'hero', 'talents', 'skills'] as const) {
       tabStore.select(tab);
       await nextTick();
-      expect(wrapper.find('.fight-stage').classes().includes('focus')).toBe(strip);
+      expect(wrapper.find('.fight-stage').classes()).not.toContain('focus');
     }
   });
 

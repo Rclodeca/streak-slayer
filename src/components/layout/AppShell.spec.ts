@@ -87,6 +87,68 @@ describe('AppShell', () => {
       expect(current()[0].find('hero-details-stub').attributes('page')).toBe('true');
     });
 
+    it('pins the home base over the lists on the Hero tab, in the fight stage\'s place', async () => {
+      const wrapper = shallowMount(AppShell);
+      expect(wrapper.find('.layout > fight-stage-stub').exists()).toBe(true);
+      expect(wrapper.find('home-base-stub').exists()).toBe(false);
+
+      useTabStore().select('hero');
+      await wrapper.vm.$nextTick();
+      const layout = wrapper.find('.layout');
+      expect(layout.element.firstElementChild!.tagName.toLowerCase()).toBe('home-base-stub');
+      expect(layout.find('fight-stage-stub').exists()).toBe(false);
+
+      useTabStore().select('skills');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.layout > fight-stage-stub').exists()).toBe(true);
+      expect(wrapper.find('home-base-stub').exists()).toBe(false);
+    });
+
+    it('keeps the Trials button under the menu on the home base, once Trials are open', async () => {
+      const homeBase = { template: '<div class="home-base-slot"><slot /></div>' };
+      const mountHero = () => {
+        useTabStore().select('hero');
+        return shallowMount(AppShell, { global: { stubs: { HomeBase: homeBase } } });
+      };
+      expect(mountHero().find('.home-base-slot .stage-trials').exists()).toBe(false);
+
+      useCharacterStore().character.trialsUnlocked = true;
+      const wrapper = mountHero();
+      await wrapper.vm.$nextTick();
+      const button = wrapper.find('.home-base-slot .stage-trials');
+      expect(button.exists()).toBe(true);
+      expect(wrapper.findComponent(AppMenu).props('trialsItem')).toBe(false);
+
+      await button.trigger('click');
+      expect(useTabStore().tab).toBe('trials');
+    });
+
+    it('fills the screen on Talents: no stage or home base, just the menu\'s corner', async () => {
+      const wrapper = shallowMount(AppShell);
+      useTabStore().select('talents');
+      await wrapper.vm.$nextTick();
+      const layout = wrapper.find('.layout');
+      expect(layout.classes()).toContain('talents-full');
+      expect(layout.find('fight-stage-stub').exists()).toBe(false);
+      expect(layout.find('home-base-stub').exists()).toBe(false);
+      expect(layout.element.firstElementChild!.tagName.toLowerCase()).toBe('menu-corner-stub');
+
+      useTabStore().select('skills');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.layout').classes()).not.toContain('talents-full');
+      expect(wrapper.find('.layout > fight-stage-stub').exists()).toBe(true);
+      expect(wrapper.find('menu-corner-stub').exists()).toBe(false);
+    });
+
+    it('keeps the menu on Talents, with Trials listed in it (no button there)', async () => {
+      useCharacterStore().character.trialsUnlocked = true;
+      const wrapper = shallowMount(AppShell, { global: { renderStubDefaultSlot: true } });
+      useTabStore().select('talents');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.stage-trials').exists()).toBe(false);
+      expect(wrapper.findComponent(AppMenu).props('trialsItem')).toBe(true);
+    });
+
     it('gives Talents a tab of its own, and none on the right', async () => {
       const wrapper = shallowMount(AppShell);
       expect(wrapper.find('.side talent-section-stub').exists()).toBe(false);

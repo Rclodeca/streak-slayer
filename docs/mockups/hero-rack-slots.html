@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Hero tab rack slots</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The Hero tab redesigned under the pinned armory home base (HomeBase). Pixel-cut Moonlit only. Real items, stats and
+   order (effects, Equipment, Stats); item art is the shipped icons. Scroll inside each phone. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col p { margin: 0 0 12px; min-height: 108px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #7d8190; --touch: #dbe2ee; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --health: #c33a2e; --crit: #d6a24f; --steel: #a8a092; --arcane: #8d9bd1; --life: #b8433a; --exp: #d8b46a; --streak: #8d8475;
+  --common: #9d9382; --uncommon: #6cc47f; --rare: #5f95e6; --epic: #b57be8; --relic: #f58a35;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 390px; height: 840px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* pinned armory (HomeBase) */
+.home { flex: none; position: relative; z-index: 3; background: #07080c; border-bottom: 3px solid #05060a; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); padding-top: 14px; }
+.crop { position: relative; height: 216px; overflow: hidden; }
+.art { position: absolute; top: 0; left: -21px; width: 432px; height: 216px; }
+.art img { position: absolute; image-rendering: pixelated; max-width: none; }
+.art .room { inset: 0; width: 432px; height: 216px; }
+.art .hero { left: 152px; bottom: 14px; width: 128px; height: 128px; }
+.plate { position: absolute; z-index: 1; background: rgba(7,8,12,.88); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; color: var(--ink); }
+.plate.name { left: 12px; top: 12px; font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.plate.stat { bottom: 10px; display: flex; align-items: center; gap: 6px; font: 700 17px/1 'Alegreya', serif; }
+.plate.stat small { font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.plate.stat .i { font-size: 14px; }
+.menu { position: absolute; top: 20px; right: 0; z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; background: #2d2c50; color: #d9b96e; clip-path: polygon(3px 0, 100% 0, 100% 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px); }
+.menu .i { font-size: 20px; }
+
+.scroll { flex: 1; overflow-y: auto; padding: 14px 16px 18px; scrollbar-width: none; display: flex; flex-direction: column; gap: 14px; }
+.scroll::-webkit-scrollbar { display: none; }
+.tabbar { flex: none; height: 58px; background: #0a0c12; border-top: 2px solid #05060a; display: flex; justify-content: space-around; align-items: center; font: 600 10px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: #6b7080; }
+.tabbar .on { color: var(--touch); }
+
+/* effects chips */
+.effects { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; font: 600 12px 'Alegreya Sans'; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.chip.boon { color: #7fc17a; } .chip.bane { color: #e0705f; }
+
+/* banner (section title, option B cloth) */
+.banner { display: flex; align-items: center; height: 38px; }
+.banner .medal { width: 38px; height: 38px; flex: none; z-index: 1; display: grid; place-items: center; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--brass); font-size: 20px; }
+.banner .cloth { margin-left: -4px; flex: 1; height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px 0 14px; background: #202a40; color: var(--ink); font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); }
+.banner .cloth em { font: 700 13px 'Alegreya Sans'; letter-spacing: .06em; color: var(--brass); font-style: normal; }
+
+/* generic lifted card / socket / bonus bits */
+.card { background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); position: relative; }
+.card::before { content: ''; position: absolute; left: 3px; right: 3px; top: 0; height: 2px; background: var(--rar, transparent); opacity: .9; }
+.socket { position: relative; flex: none; display: grid; place-items: center; background: color-mix(in srgb, var(--rar) 14%, var(--well)); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 color-mix(in srgb, var(--rar) 40%, var(--well-hi)); clip-path: var(--px2); }
+.socket img { image-rendering: pixelated; width: 100%; height: 100%; }
+.r-common { --rar: var(--common); } .r-uncommon { --rar: var(--uncommon); } .r-rare { --rar: var(--rare); } .r-epic { --rar: var(--epic); } .r-relic { --rar: var(--relic); }
+.rar { font: 700 10px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: var(--rar); }
+.opal { background: linear-gradient(90deg, #8eeee4, #c8a8ff 55%, #ffaccc); -webkit-background-clip: text; background-clip: text; color: transparent; font: 700 10px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; }
+.name { font: 700 16px/1.15 'Alegreya', serif; color: var(--ink); }
+.b { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 13px; }
+.b .i { font-size: 13px; } .b b { color: var(--ink); font-weight: 800; } .b span { color: var(--text); }
+.eff { font-size: 12.5px; color: #cdbf9a; line-height: 1.25; }
+.empty { background: var(--well); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: var(--dim); display: flex; align-items: center; gap: 10px; padding: 10px; font-size: 14px; }
+.empty .socket { --rar: #3a4256; background: var(--well); opacity: .7; }
+
+/* stats */
+.s-i { color: var(--c); }
+.c-health { --c: var(--health); } .c-phys { --c: var(--phys); } .c-magic { --c: var(--magic); } .c-true { --c: var(--true); } .c-heal { --c: var(--heal); } .c-crit { --c: var(--crit); } .c-armor { --c: var(--steel); } .c-mr { --c: var(--arcane); } .c-life { --c: var(--life); } .c-exp { --c: var(--exp); }
+.gain { color: #7fc17a; font: 700 12px 'Alegreya Sans'; margin-left: 4px; }
+.usual { text-decoration: line-through; color: var(--dim); font-weight: 500; margin-right: 5px; }
+.bane-t { color: #e0705f; }
+
+/* ===== A: two-up cards ===== */
+.a-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.a-card { padding: 10px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+.a-top { display: flex; gap: 8px; align-items: center; }
+.a-top .socket { width: 48px; height: 48px; }
+.a-bon { display: flex; flex-direction: column; gap: 2px; }
+.a-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.a-tile { background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); padding: 7px 8px 8px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.a-tile .l { display: flex; align-items: center; gap: 4px; font: 700 10px 'Alegreya Sans'; letter-spacing: .06em; text-transform: uppercase; color: var(--text); white-space: nowrap; }
+.a-tile .l .i { font-size: 13px; color: var(--c); }
+.a-tile .v { font: 700 21px/1.1 'Alegreya', serif; color: var(--ink); }
+.a-tile .n { font-size: 11px; color: var(--dim); line-height: 1.15; }
+
+/* ===== B: the rack ===== */
+.rack { padding: 10px 8px 0; }
+.rack .row { display: flex; gap: 6px; justify-content: space-between; padding-bottom: 8px; }
+.rack .slot { width: 50px; height: 50px; border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit; position: relative; }
+.rack .slot.sel::after { content: ''; position: absolute; inset: -3px; box-shadow: 0 0 0 2px var(--touch); clip-path: var(--px2); pointer-events: none; }
+.rack .slot.sel .socket { background: color-mix(in srgb, var(--rar) 26%, var(--well)); }
+.rack .slot .socket { width: 100%; height: 100%; }
+.rack .slot.none .socket { --rar: #3a4256; background: var(--well); opacity: .6; }
+.rail { height: 6px; margin: 0 -8px; background: #3a2c20; box-shadow: inset 0 2px 0 #5a4430, inset 0 -2px 0 #1e150e; }
+.b-detail { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.b-detail .top { display: flex; gap: 12px; align-items: center; }
+.b-detail .socket { width: 68px; height: 68px; }
+.b-detail .name { font-size: 19px; }
+.b-detail .bons { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.ledger { display: flex; flex-direction: column; gap: 3px; }
+.l-row { display: flex; align-items: center; gap: 8px; background: var(--card); clip-path: var(--px2); padding: 6px 10px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.l-row .i { font-size: 16px; color: var(--c); }
+.l-row .lab { flex: 1; color: var(--text); font-size: 14px; }
+.l-row .lab small { display: block; font-size: 11px; color: var(--dim); line-height: 1.1; }
+.l-row .val { font: 700 18px 'Alegreya', serif; color: var(--ink); }
+.ledger.two { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.ledger.two .l-row { padding: 6px 8px; } .ledger.two .l-row .lab { font-size: 12.5px; }
+
+/* ===== C: gear | stats toggle ===== */
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); padding: 3px; }
+.seg button { border: 0; background: transparent; color: var(--text); font: 600 12px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; padding: 10px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; clip-path: var(--px2); }
+.seg button.on { background: #202a40; color: var(--ink); box-shadow: inset 0 2px 0 var(--hi); }
+.seg button em { font: 700 12px 'Alegreya Sans'; color: var(--brass); font-style: normal; letter-spacing: .04em; }
+.c-list { display: flex; flex-direction: column; gap: 6px; }
+.c-row { display: flex; gap: 10px; padding: 8px 10px 8px 8px; align-items: flex-start; }
+.c-row .socket { width: 52px; height: 52px; margin-top: 1px; }
+.c-row .mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.c-row .t { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.c-row .bons { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.c-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.c-tile { background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); padding: 8px 10px 9px; display: flex; flex-direction: column; gap: 1px; }
+.c-tile .l { display: flex; align-items: center; gap: 5px; font: 700 11px 'Alegreya Sans'; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
+.c-tile .l .i { color: var(--c); font-size: 14px; }
+.c-tile .v { font: 700 24px/1.1 'Alegreya', serif; color: var(--ink); }
+.c-tile .n { font-size: 12px; color: var(--dim); }
+
+/* shelves: four sockets across, a rail under each shelf */
+.rack { padding: 10px 8px 0; }
+.shelf { display: flex; gap: 8px; justify-content: center; padding: 0 0 9px; }
+.rack .slot { width: 76px; height: 76px; }
+.rack .slot .socket { width: 100%; height: 100%; }
+.rack .socket img { width: 63px; height: 63px; }
+.rack .slot.none .socket { --rar: #3a4256; background: var(--well); opacity: .6; }
+.rack .rail { margin: 0 -8px 10px; }
+.rack .rail:last-child { margin-bottom: 0; }
+.rack-note { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: #8f8b80; margin: -4px 0 0; }
+
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Hero tab — the rack at 4, 6 and 8 slots</h1>
+  <p class="lede">Option B's rack as shelves: four sockets across (76px, the art at its full 63px), a rail under each shelf. A short last shelf is centred. Tap a socket to open it. The slot count grows with the slot upgrades (4, then 6, then 8).</p>
+  <div class="grid">
+    <div class="col"><h2>4 slots</h2><p>The starting rack: one shelf, all four full here.</p><div class="phone" id="P4"></div></div>
+    <div class="col"><h2>6 slots</h2><p>After the first upgrade: a shelf of four and a shelf of two, centred. One empty socket here.</p><div class="phone" id="P6"></div></div>
+    <div class="col"><h2>8 slots</h2><p>The full rack: two shelves of four. Two empty sockets here.</p><div class="phone" id="P8"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {"sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","wand":"<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\"/><path d=\"m14 7 3 3\"/><path d=\"M5 6v4\"/><path d=\"M19 14v4\"/><path d=\"M10 2v2\"/><path d=\"M7 8H3\"/><path d=\"M21 16h-4\"/><path d=\"M11 3H9\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","pulse":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>","crosshair":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\"/><line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\"/><line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\"/><line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>","half":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"M12 22V2\"/>","droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","chart":"<path d=\"M3 3v16a2 2 0 0 0 2 2h16\"/><path d=\"M18 17V9\"/><path d=\"M13 17V5\"/><path d=\"M8 17v-3\"/>","chevrons":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","target":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/>","gear":"<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>"};
+const ic = (n, extra = '') => `<svg class="i ${extra}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const IM = (id) => `../../public/sprites/items/${id}.png`;
+const STAT = { phys: ['Phys', 'sword', 'c-phys'], magic: ['Magic', 'wand', 'c-magic'], heal: ['Heal', 'pulse', 'c-heal'], hp: ['HP', 'heart', 'c-health'], crit: ['Crit', 'crosshair', 'c-crit'], life: ['Lifesteal', 'droplet', 'c-life'], armor: ['Armor', 'shield', 'c-armor'], mr: ['M. resist', 'half', 'c-mr'], exp: ['EXP', 'star', 'c-exp'], true: ['True', 'zap', 'c-true'] };
+const ITEMS = [
+  { id: 'bloodthorn-blade', name: 'Bloodcrystal Blade', r: 'epic', ench: true, b: [['phys', '+45%'], ['hp', '+10%'], ['crit', '+8%']], eff: 'Crits heal 5% of max HP.' },
+  { id: 'aegis-of-the-unbroken', name: 'Aegis of the Unbroken', r: 'epic', b: [['hp', '+35%'], ['armor', '+150'], ['mr', '+150']], eff: 'Immune to Wounds and Sunder.' },
+  { id: 'duelists-signet', name: "Duelist's Signet", r: 'rare', b: [['phys', '+18%'], ['crit', '+10%'], ['life', '+1%']] },
+  { id: 'bulwark-plate', name: 'Bulwark Plate', r: 'rare', b: [['hp', '+25%'], ['heal', '+10%']] },
+  { id: 'serene-lotus-charm', name: 'Serene Glowcap', r: 'uncommon', b: [['heal', '+12%'], ['exp', '+12%']] },
+];
+const STATS = [
+  ['Max health', 'heart', 'c-health', '1.2K', '+310'], ['Physical', 'sword', 'c-phys', '409', '+171'], ['Magic', 'wand', 'c-magic', '273'], ['True', 'zap', 'c-true', '301'],
+  ['Healing', 'pulse', 'c-heal', '188', '+62'], ['Crit chance', 'crosshair', 'c-crit', '18%', '+18%'], ['Armor', 'shield', 'c-armor', '450', null, '23.1% less damage', '225', 'Sundered'], ['Magic resist', 'half', 'c-mr', '150', null, '12.0% less damage'], ['Lifesteal', 'droplet', 'c-life', '1%'],
+];
+const bon = (b) => `<span class="b ${STAT[b[0]][2]}">${ic(STAT[b[0]][1], 's-i')}<b>${b[1]}</b><span>${STAT[b[0]][0]}</span></span>`;
+const rarTag = (it) => `<span class="rar">${it.r}</span>${it.ench ? ' <span class="opal">Enchanted</span>' : ''}`;
+const effects = `<div class="effects"><span class="chip boon">${ic('target')}+10% crit · 2d</span><span class="chip bane">${ic('shield')}Sundered · armor halved · 1d</span></div>`;
+const banner = (title, icon, extra = '') => `<div class="banner"><span class="medal">${ic(icon)}</span><span class="cloth">${title}${extra}</span></div>`;
+const home = `<div class="home"><div class="crop"><div class="art"><img class="room" src="sprites/armory.png" alt=""><img class="hero" src="sprites/hero-warrior.png" alt=""></div>
+<span class="plate name">Aldric</span><span class="plate stat" style="left:12px">${ic('chevrons', '')}<small>Level</small>14</span><span class="plate stat" style="right:12px">${ic('flame')}<small>Best streak</small>23</span></div><span class="menu">${ic('gear')}</span></div>`;
+const tabbar = `<div class="tabbar"><span>Skills</span><span>Quests</span><span>Trials</span><span>Talents</span><span class="on">Hero</span></div>`;
+const shell = (body) => home + `<div class="scroll">${body}</div>` + tabbar;
+const sockets = (it, size) => `<span class="socket r-${it.r}" style="width:${size}px;height:${size}px"><img src="${IM(it.id)}" alt=""></span>`;
+const statVal = (s) => s[6] ? `<span class="usual">${s[3]}</span><span class="bane-t">${s[6]}</span>` : `${s[3]}${s[4] ? `<span class="gain">${s[4]}</span>` : ''}`;
+
+
+ITEMS.push(
+  { id: 'dawnguard-helm', name: 'Dawnguard Helm', r: 'epic', b: [['hp', '+20%'], ['armor', '+300']], eff: 'First hit each day deals half damage.' },
+  { id: 'archons-halo', name: "Archon's Crown", r: 'epic', b: [['heal', '+30%'], ['exp', '+15%'], ['magic', '+10%']] },
+  { id: 'berserkers-war-axe', name: "Berserker's War Axe", r: 'rare', b: [['phys', '+35%']] },
+);
+const rackFor = (id, slots, worn) => {
+  const root = document.getElementById(id);
+  const items = ITEMS.slice(0, worn);
+  let sel = 0;
+  const shelves = (n) => (n <= 4 ? [n] : n === 6 ? [4, 2] : [4, 4]);
+  const draw = () => {
+    const it = items[sel];
+    let idx = 0;
+    const rows = shelves(slots).map((count) => {
+      const cells = Array.from({ length: count }, () => {
+        const i = idx++;
+        return items[i] ? `<button class="slot ${i === sel ? 'sel' : ''}" data-i="${i}">${sockets(items[i], 76)}</button>` : `<span class="slot none"><span class="socket" style="width:76px;height:76px"></span></span>`;
+      }).join('');
+      return `<div class="shelf">${cells}</div><div class="rail"></div>`;
+    }).join('');
+    root.innerHTML = shell(`${effects}
+${banner('Equipment', 'swords', `<em>${items.length} / ${slots}</em>`)}
+<div class="card rack">${rows}</div>
+<div class="card b-detail r-${it.r}"><div class="top">${sockets(it, 68)}<div><div class="name">${it.name}</div><div>${rarTag(it)}</div></div></div><div class="bons">${it.b.map(bon).join('')}</div>${it.eff ? `<div class="eff">${it.eff}</div>` : ''}</div>
+${banner('Stats', 'chart')}
+<div class="ledger two">${STATS.map((s) => `<div class="l-row ${s[2]}">${ic(s[1])}<span class="lab">${s[0]}${s[5] ? `<small>${s[7] ? '<span class="bane-t">' + s[7] + '</span>' : s[5]}</small>` : ''}</span><span class="val">${statVal(s)}</span></div>`).join('')}</div>`);
+    root.querySelectorAll('.slot[data-i]').forEach((b) => b.addEventListener('click', () => { sel = +b.dataset.i; const top = root.querySelector('.scroll').scrollTop; draw(); root.querySelector('.scroll').scrollTop = top; }));
+  };
+  draw();
+};
+rackFor('P4', 4, 4);
+rackFor('P6', 6, 5);
+rackFor('P8', 8, 6);
+</script>
+</body>
+</html>
