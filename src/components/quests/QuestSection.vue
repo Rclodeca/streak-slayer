@@ -31,9 +31,9 @@ const showAdd = ref(false);
 const detailId = ref<string | null>(null);
 const detailQuest = computed(() => questStore.quests.find((q) => q.id === detailId.value) ?? null);
 
-// Soonest due first, checked-off quests last; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
+// Soonest due first, checked-off quests stay in place; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
 const sortedQuests = computed(() =>
-  [...questStore.quests].sort((a, b) => Number(!!a.doneDayKey) - Number(!!b.doneDayKey) || a.dueDateKey.localeCompare(b.dueDateKey)),
+  [...questStore.quests].sort((a, b) => a.dueDateKey.localeCompare(b.dueDateKey)),
 );
 
 function daysLeft(quest: Quest): number {
