@@ -211,5 +211,11 @@ onBeforeUnmount(() => {
   .fight-stage:has(.arena-img) .boss-figure {
     bottom: calc(164px - 116 * var(--u));
   }
+
+  /* The hero stands 6px right of the plinth's middle (CharacterPanel.vue);
+     Focus mode places it itself. */
+  .fight-stage:not(.focus):has(.arena-img) .hero-figure {
+    left: calc(71 * var(--u) - var(--hero-pw) * 0.5px + 6px);
+  }
 }
 </style>
