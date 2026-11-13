@@ -204,4 +204,12 @@ onBeforeUnmount(() => {
 .fight-stage:has(.arena-img) .stage-bg {
   background: #0b1019;
 }
+
+/* With no plinth to stand on, the boss stands a little lower on the arena's
+   floor, 8px (4 art rows) below where the plinth held it (BossPanel.vue). */
+@media (max-width: 820px) {
+  .fight-stage:has(.arena-img) .boss-figure {
+    bottom: calc(164px - 116 * var(--u));
+  }
+}
 </style>

@@ -93,29 +93,23 @@ describe('CharacterPanel', () => {
     expect(style()).toBe(warrior);
   });
 
-  it('keeps the hero\'s stats off the stage: no chips line until a boost or an effect is on', () => {
-    expect(mount(CharacterPanel).find('.stat-summary').exists()).toBe(false);
-  });
-
   describe('boss-skill effects', () => {
     const today = () => dailyPeriodKey(new Date());
 
-    it('shows Blind on the stage line for the days it has left', () => {
+    it('keeps every stat and effect off the stage, even while boosts and effects are on (they live in the details)', () => {
       const store = useCharacterStore();
-      store.setCharacter({ ...store.character, statusEffects: [{ type: 'blind', appliedDayKey: today(), durationDays: 2 }] });
-      expect(mount(CharacterPanel).find('.stat-summary').text()).toContain('Blinded · 2d');
-    });
-
-    it('shows a counting-down Doom on the stage line', () => {
       const bossStore = useBossStore();
+      store.setCharacter({
+        ...store.character,
+        statusEffects: [
+          { type: 'blind', appliedDayKey: today(), durationDays: 2 },
+          { type: 'sever', appliedDayKey: today(), durationDays: 2 },
+        ],
+      });
       bossStore.setBoss({ ...bossStore.boss, doomDueDayKey: addDaysToDayKey(today(), 3) });
-      expect(mount(CharacterPanel).find('.stat-summary').text()).toContain('Doom · 3d');
-    });
-
-    it('shows Sever on the stage line for the days it has left', () => {
-      const store = useCharacterStore();
-      store.setCharacter({ ...store.character, statusEffects: [{ type: 'sever', appliedDayKey: today(), durationDays: 2 }] });
-      expect(mount(CharacterPanel).find('.stat-summary').text()).toContain('Severed · 2d');
+      const wrapper = mount(CharacterPanel);
+      expect(wrapper.find('.stat-summary').exists()).toBe(false);
+      expect(wrapper.find('.hero-block').text()).not.toMatch(/Blinded|Severed|Doom|crit|heal/);
     });
 
     it('lists Blind, Sever, Sunder and Doom among the active effects in the details, with what each does', async () => {

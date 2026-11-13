@@ -8,6 +8,7 @@ import { PERSONALITY_NAME } from '../../game-engine';
 import { holdHp, playHit } from '../../composables/useHitFeed';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import { useFocusModeStore } from '../../store/focusModeStore';
 import { useTabStore } from '../../store/tabStore';
 import BossBar from '../boss/BossBar.vue';
@@ -105,6 +106,7 @@ describe('FightStage', () => {
   });
 
   it("puts the boss's scene behind the fight: its stone on the plinths, dark ink on a day scene", async () => {
+    useDebugBackdropStore().stage = 'painted';
     const bossStore = useBossStore();
     bossStore.boss.personality = 'balanced';
     const wrapper = mountStage();
@@ -117,6 +119,14 @@ describe('FightStage', () => {
     await nextTick();
     expect(stage().classes()).toContain('day-stage');
     expect(stage().attributes('style')).toContain('--plinth: #a85e3a');
+  });
+
+  it('keeps the light ink over the arena, which is always night, even for a boss with a day scene', async () => {
+    const bossStore = useBossStore();
+    bossStore.boss.personality = 'tank';
+    const wrapper = mountStage();
+    expect(useDebugBackdropStore().stage).not.toBe('painted');
+    expect(wrapper.find('.fight-stage').classes()).not.toContain('day-stage');
   });
 
   it('feeds the drop-down bar the boss and the hero, parked until the stage scrolls away', () => {

@@ -785,6 +785,27 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     gap: 3px;
   }
 
+  // Over the arena's busy stone (StageScene.vue) the soft glows are lost: the
+  // names, the bars' numbers and the stats get a hard 1px black pixel outline,
+  // and the stats' numbers go to full white (each icon keeps its own colour).
+  .fight-stage:has(.arena-img) :is(.boss-block, .hero-block),
+  .fight-stage:has(.arena-img) :is(.boss-block, .hero-block) * {
+    text-shadow:
+      1px 0 0 #000,
+      -1px 0 0 #000,
+      0 1px 0 #000,
+      0 -1px 0 #000,
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
+  }
+
+  .fight-stage:has(.arena-img) .stat-summary,
+  .fight-stage:has(.arena-img) .stat-summary > span {
+    color: #f0f3f7;
+  }
+
   // Held, or focused from the keyboard: the figure brightens, its platform
   // glows gold and its name lights up — at once, then fading out.
   .boss-panel.pressed .boss-figure .sprite,

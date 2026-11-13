@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { useHeroStats } from '../../composables/useHeroStats';
@@ -10,15 +10,14 @@ import { useTabStore } from '../../store/tabStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
 import Modal from '../ui/Modal.vue';
-import StatIcon from '../ui/StatIcon.vue';
 import { HERO_PHONE_PLACEMENT, HERO_PLACEMENT } from './heroArt';
 import HeroDetails from './HeroDetails.vue';
 import PlayerSprite from './PlayerSprite.vue';
 
 // Only the name and the bars sit on the stage (the boss's panel shows its numbers
-// at a glance; the hero's live in the details, HeroDetails, behind the hero's half
-// of the stage: the Hero tab on a phone, a popup on wider screens), plus a line of
-// chips while a boost or a boss-skill effect is on.
+// at a glance). The hero's stats, boosts and boss-skill effects all live in the
+// details, HeroDetails, behind the hero's half of the stage: the Hero tab on a
+// phone, a popup on wider screens.
 const showDetails = ref(false);
 const isPhone = usePhoneLayout();
 const tabStore = useTabStore();
@@ -28,34 +27,7 @@ function openDetails() {
   else showDetails.value = true;
 }
 
-const {
-  character,
-  heroName,
-  maxHealth,
-  displayLevel,
-  expNeeded,
-  displayExp,
-  critBoost,
-  critBoostDaysLeft,
-  healBoost,
-  healBoostDaysLeft,
-  woundsEffect,
-  woundsDaysLeft,
-  blindEffect,
-  blindDaysLeft,
-  severEffect,
-  severDaysLeft,
-  sunderEffect,
-  sunderDaysLeft,
-  doomDays,
-} = useHeroStats();
-
-// The chips line exists only while something is on, so a plain stage has no row for it.
-const hasEffects = computed(
-  () =>
-    !!(critBoost.value || healBoost.value || woundsEffect.value || blindEffect.value || severEffect.value || sunderEffect.value) ||
-    doomDays.value !== undefined,
-);
+const { character, heroName, maxHealth, displayLevel, expNeeded, displayExp } = useHeroStats();
 
 // Turned to face the boss across the stage, and stood on its plinth by the
 // art's visual center (see heroArt.ts); phones draw it smaller.
@@ -81,41 +53,6 @@ const leveling = computed(() => phase.value === 'leveling');
 const { shownHp } = useHitFeed();
 const shownHealth = computed(() => shownHp('hero', character.value.currentHealth, maxHealth.value));
 const { pressed, pressHandlers } = usePress();
-
-// The stat line keeps to one row at every width: whatever wraps past the
-// first is hidden whole (it's all in the details), so the hero's block
-// never grows into the boss's half of the stage.
-const statLine = ref<HTMLElement | null>(null);
-let statLineObserver: ResizeObserver | null = null;
-
-function clipStatLine() {
-  const items = Array.from(statLine.value?.children ?? []) as HTMLElement[];
-  for (const item of items) item.style.display = '';
-  // Measure every item before hiding any, so hiding can't reflow the rest.
-  const shown = items.filter((item) => item.getClientRects().length > 0);
-  const tops = shown.map((item) => item.getBoundingClientRect().top);
-  const firstRowEnd = shown[0]?.getBoundingClientRect().bottom ?? 0;
-  shown.forEach((item, i) => {
-    if (tops[i] >= firstRowEnd) item.style.display = 'none';
-  });
-}
-
-onMounted(() => {
-  // Sizes change with the width, the theme and the numbers themselves.
-  statLineObserver = new ResizeObserver(() => requestAnimationFrame(clipStatLine));
-  if (statLine.value) statLineObserver.observe(statLine.value);
-  // The line comes and goes with the effects.
-  watch(statLine, (el, prev) => {
-    if (prev) statLineObserver?.unobserve(prev);
-    if (el) statLineObserver?.observe(el);
-  });
-  document.fonts?.ready.then(clipStatLine);
-  clipStatLine();
-});
-onUpdated(clipStatLine);
-onBeforeUnmount(() => {
-  statLineObserver?.disconnect();
-});
 </script>
 
 <template>
@@ -138,15 +75,6 @@ onBeforeUnmount(() => {
         <!-- Keyed by level so the bar snaps empty on a level-up instead of draining back. -->
         <ExpBar :key="displayLevel" :current="displayExp" :max="expNeeded" />
       </div>
-      <p v-if="hasEffects" ref="statLine" class="stat-summary">
-        <span v-if="critBoost"><StatIcon name="critBoost" />+{{ (critBoost.bonus * 100).toFixed(0) }}% crit · {{ critBoostDaysLeft }}d</span>
-        <span v-if="healBoost"><StatIcon name="healBoost" />+{{ (healBoost.bonus * 100).toFixed(0) }}% heal · {{ healBoostDaysLeft }}d</span>
-        <span v-if="woundsEffect"><StatIcon name="wounds" />{{ (woundsEffect.effectRate * 100).toFixed(0) }}% heal · {{ woundsDaysLeft }}d</span>
-        <span v-if="blindEffect"><StatIcon name="blind" />Blinded · {{ blindDaysLeft }}d</span>
-        <span v-if="severEffect"><StatIcon name="sever" />Severed · {{ severDaysLeft }}d</span>
-        <span v-if="sunderEffect"><StatIcon name="sunder" />Sundered · {{ sunderDaysLeft }}d</span>
-        <span v-if="doomDays !== undefined"><StatIcon name="doom" />Doom · {{ doomDays }}d</span>
-      </p>
     </div>
     <!-- The whole half is one button, clipped to its side of the stage's step. -->
     <button type="button" class="tap tap-hero" :aria-label="`${heroName} details`" v-on="pressHandlers" @click="openDetails" />
@@ -283,22 +211,6 @@ onBeforeUnmount(() => {
   display: none;
 }
 
-.stat-summary span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
-}
-
-.stat-summary :deep(.stat-icon) {
-  opacity: 0.8;
-}
-
-.stat-summary :deep(.stat-icon svg) {
-  width: 12px;
-  height: 12px;
-}
-
 /* The banner's hero sits 7% in from the left, each class offset from the
    warrior's spot as on phone. */
 @media (min-width: 821px) {
@@ -320,19 +232,6 @@ onBeforeUnmount(() => {
     left: calc(7% + 200px);
     width: 250px;
   }
-}
-
-/* Small and dimmed, so the name and bar lead. One row only: clipStatLine
-   hides whichever chips wrap past it. */
-.stat-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 7px;
-  margin: 0;
-  font-size: 0.7rem;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--text);
 }
 
 /* A transparent button over the whole stage, clipped to the hero's side of

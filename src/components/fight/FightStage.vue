@@ -7,6 +7,7 @@ import { useScrolledPast } from '../../composables/useScrolledPast';
 import { useStageFocused } from '../../composables/useStageFocused';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import BossBar from '../boss/BossBar.vue';
 import BossPanel from '../boss/BossPanel.vue';
 import { bossSprite } from '../boss/bossSprites';
@@ -24,17 +25,20 @@ import { STAGE_SCENES } from './stage/scenes';
 // only their names and bars. The page's menu rides
 // in the stage's corner through the default slot, so it stays with the stage.
 // Behind it all, the boss's own place (StageScene): a day scene turns the stage's
-// names and stats to dark ink, and the plinths take the scene's stone. The Focus
+// names and stats to dark ink, and the plinths take the scene's stone. The arena
+// backdrop (the default) is always night, so it keeps the light ink. The Focus
 // strip keeps the plain night instead: no scene.
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const focused = useStageFocused();
+const backdrop = useDebugBackdropStore();
 
 // The slain boss stays up while a kill plays out, as on the stage.
 const { phase, displayedBoss, heldLevel } = useCelebration();
 const boss = computed(() => displayedBoss.value ?? bossStore.boss);
 const scene = computed(() => STAGE_SCENES[boss.value.personality]);
+const dayStage = computed(() => scene.value.day && backdrop.stage === 'painted');
 const plinth = computed(() => {
   const [face, top, mid, foot] = scene.value.plinth;
   return { '--plinth': face, '--plinth-top': top, '--plinth-mid': mid, '--plinth-foot': foot };
@@ -171,7 +175,7 @@ onBeforeUnmount(() => {
     class="fight-stage"
     :class="{
       focus: focused,
-      'day-stage': scene.day && !focused,
+      'day-stage': dayStage && !focused,
     }"
     :style="plinth"
   >
