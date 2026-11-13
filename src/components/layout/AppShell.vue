@@ -86,10 +86,10 @@ const topBar = computed(() => {
   if (isPhone.value && tabStore.tab === 'talents') return MenuCorner;
   return FightStage;
 });
-// The Trials button under the menu, where there's room: not on Talents (its header takes
-// the corner) and not on the Focus strip; the menu lists Trials instead.
+// The Trials button under the menu, where there's room: not on the Focus strip; the menu
+// lists Trials instead. Talents has no stage, so it always has room.
 const trialsButton = computed(
-  () => isPhone.value && trialsOpen(characterStore.character) && tabStore.tab !== 'talents' && (tabStore.tab === 'hero' || !stageFocused.value),
+  () => isPhone.value && trialsOpen(characterStore.character) && (tabStore.tab === 'hero' || tabStore.tab === 'talents' || !stageFocused.value),
 );
 const trialsInMenu = computed(() => isPhone.value && trialsOpen(characterStore.character) && !trialsButton.value);
 const scrollBody = ref<HTMLElement | null>(null);
@@ -355,12 +355,13 @@ watch(
   .scroll-body.talents-view {
     grid-template-rows: minmax(0, 1fr);
     overflow: hidden;
-    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+    padding: calc(6px + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
   }
 
   /* Talents has no banner above it, so the box is the layout's first row (the menu's
-     corner floats over it). */
+     corner floats over it, from the layout's own top, below any dev buttons). */
   .fight-view .layout.talents-full {
+    position: relative;
     grid-template-rows: minmax(0, 1fr) auto;
   }
 

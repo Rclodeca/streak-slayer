@@ -4059,8 +4059,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     .talent-header {
       position: relative;
       z-index: 2;
-      // Clear of the menu, which floats over this corner (MenuCorner).
-      padding: 4px 52px 0 2px;
+      // Clear of the menu, which floats over this corner (MenuCorner), and level
+      // with it: the box's 6px top and a 44px row put the banner on the menu's centre.
+      min-height: 44px;
+      padding: 0 52px 0 2px;
       background: var(--bg);
       box-shadow: 0 12px 12px -6px var(--bg);
     }
