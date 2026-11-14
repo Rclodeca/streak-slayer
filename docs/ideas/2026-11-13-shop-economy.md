@@ -52,7 +52,7 @@ Once a long-time player has earned every free gem, new gems come only from new c
 | Streak freeze | Kept until used | Set up **in advance** (vacation, sick day). Frozen days don't add to the streak. It never saves a streak after a miss. |
 | Hero skins, base hero skins, arena skins | Kept | Cosmetic. |
 | A few rotating rare items | This run | Lost on death. Should come back into the rotation later (open, see §12). |
-| A couple of shop-exclusive items | This run | Something for paying players to spend gems on. |
+| A couple of shop-exclusive items | This run | Something for paying players to spend gems on. **Not built:** left out of Milestone D until they have their own design and art; the Vault rotates catalog items for now. |
 | Gold | This run | A poor exchange rate, shown clearly, so free players don't spend the gem budget meant for the tree. Capped (for example once a day, or a set amount per run) so money tops gold up but can't buy the gold skins outright, and boss kills stay the main source of gold. |
 
 ---
@@ -198,8 +198,8 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 
 - **Relic sources:** dungeons mostly. Since Milestone B the gold shop has one now and then (an epic or relic on 1 day in 3, a relic 1 time in 3 of those). Very rare drops? How many dungeons are needed to cover the 17 relics?
 - **Gem-bought items lost on death:** do they come back into the rotation later?
-- **Gold streak freeze:** sell it at all? Since buys are used immediately, a freeze would be set up when bought.
-- **Revive limit:** one per boss, one per run, or no limit at a fixed price?
+- **Gold streak freeze:** decided 2026-11-14: no. The freeze is sold for gems only.
+- **Revive limit:** decided 2026-11-14: one per boss, at a fixed 10 gems.
 - **"Kept" vs "This run" on each item:** how it looks. Visual pass later.
 - **Prices and the gem budget:** not tuned. Needs a rough budget (free gems in, gem costs out) before building. Milestone B's gold prices are multiples of the current boss's gold (common 1×, uncommon 1.5×, rare 2.5×, epic 4×, relic 6×, tonics 1×, restock 0.5× doubling), all in `constants/economy.ts`.
 
@@ -238,3 +238,4 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - All trials are available from level 1.
 - Nothing is pushed live until the whole plan is ready.
 - **Milestone C built (2026-11-14, not pushed).** Item slots, reroll, Overdrive and enchant are gold services in the Shop (prices as boss-gold multiples, climbing per buy this run; slots 4 to 6 to 8). Reroll, Overdrive and enchant pick their target. All 17 trials are live from the start (no unlock popup, no free milestone trials, no "New" tag). Level-up events are gone; a level-up just heals. Special at level 5, Ult at level 8, handed out (and again after a death). No enchant cap: the price is the limit. Plan: `docs/superpowers/plans/2026-11-14-shop-milestone-c.md`.
+- **Milestone D built (2026-11-14, not pushed).** The Vault opens. A gem revive on the death screen (10 gems, half health, once per boss), replacing the Phoenix Feather code. A streak freeze for gems only (2 a day, 1 to 7 days, from tomorrow to 30 days out; frozen days rest every skill, a weekly once 4 of its days are frozen; Doom waits). A Vault stock from the catalog every 3 days (an epic or relic and a rare; 5/10/15 gems) and a Gold Pouch (5 gems for 3 boss kills' gold, once a day). Boss drops are rarer: 2 kills in 3 (boss 1 always), at most 2 items. Shop-exclusive items are deferred. Plan: `docs/superpowers/plans/2026-11-14-shop-milestone-d.md`.
