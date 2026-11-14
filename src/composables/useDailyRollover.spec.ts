@@ -635,6 +635,18 @@ describe('useDailyRollover — frozen days', () => {
     expect(useCharacterStore().character.challenges?.find((e) => e.id === 'clean-days')?.progress).toBe(0);
   });
 
+  it('a Clean slate run carries over frozen days through the rollover', () => {
+    const characterStore = useCharacterStore();
+    const today = dailyPeriodKey(now);
+    characterStore.setCharacter({
+      ...characterStore.character,
+      challenges: [{ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today, -9), progress: 1, lastDayKey: addDaysToDayKey(today, -3) }],
+    });
+    freeze(addDaysToDayKey(today, -2), addDaysToDayKey(today, -1));
+    useDailyRollover(new Date(now.getTime() + DAY_MS));
+    expect(useCharacterStore().character.challenges?.find((e) => e.id === 'clean-days')).toMatchObject({ progress: 2, lastDayKey: today });
+  });
+
   it('a due Doom waits out a frozen day and lands the day after', () => {
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
@@ -648,5 +660,60 @@ describe('useDailyRollover — frozen days', () => {
 
     useDailyRollover(new Date(now.getTime() + DAY_MS));
     expect(characterStore.character.currentHealth).toBeCloseTo(500, 10);
+  });
+});
+
+describe('useDailyRollover — a miss before a freeze', () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const now = new Date();
+  const back = (days: number) => new Date(now.getTime() - days * DAY_MS);
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  afterEach(() => {
+    useMissedSkillsGate().acknowledge();
+  });
+
+  function freeze(...dayKeys: string[]) {
+    const accountStore = useAccountStore();
+    accountStore.account = { ...accountStore.account, frozenDayKeys: dayKeys };
+  }
+
+  it('a daily missed the day before a freeze still counts when the app stayed closed through it', () => {
+    const habitStore = useHabitStore();
+    useBossStore();
+    const habit = habitStore.addHabit('Read', 'daily', 'medium', false, createRng());
+    habitStore.updateHabit({ ...habit, streakCount: 5, lastCheckedPeriodKey: dailyPeriodKey(back(3)), lastCompletedPeriodKey: null });
+    freeze(dailyPeriodKey(back(2)), dailyPeriodKey(back(1)));
+
+    useDailyRollover(now);
+
+    expect(useMissedSkillsGate().misses.value.map((m) => m.habitId)).toEqual([habit.id]);
+  });
+
+  it('a daily done the day before a freeze is not a miss', () => {
+    const habitStore = useHabitStore();
+    useBossStore();
+    const habit = habitStore.addHabit('Read', 'daily', 'medium', false, createRng());
+    habitStore.updateHabit({ ...habit, lastCheckedPeriodKey: dailyPeriodKey(back(3)), lastCompletedPeriodKey: dailyPeriodKey(back(3)) });
+    freeze(dailyPeriodKey(back(2)), dailyPeriodKey(back(1)));
+
+    useDailyRollover(now);
+
+    expect(useMissedSkillsGate().misses.value).toHaveLength(0);
+  });
+
+  it('a weekly missed the week before a rested week still counts', () => {
+    const habitStore = useHabitStore();
+    useBossStore();
+    const habit = habitStore.addHabit('Hike', 'weekly', 'medium', false, createRng());
+    habitStore.updateHabit({ ...habit, lastCheckedPeriodKey: periodKeyFor('weekly', back(14)), lastCompletedPeriodKey: null });
+    freeze(...weekDayKeys(back(7)));
+
+    useDailyRollover(now);
+
+    expect(useMissedSkillsGate().misses.value.map((m) => m.habitId)).toEqual([habit.id]);
   });
 });

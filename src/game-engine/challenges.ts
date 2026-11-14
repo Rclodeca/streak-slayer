@@ -4,7 +4,7 @@
 
 import { TUNING } from './constants/tuning';
 import { isDueOn } from './habits';
-import { dailyPeriodKey, daysBetweenDayKeys } from './time';
+import { addDaysToDayKey, dailyPeriodKey, daysBetweenDayKeys } from './time';
 import type { Boss, ChallengeEntry, ChallengeId, Character, Habit, Quest } from './types';
 
 export type { ChallengeEntry, ChallengeId, PendingAddition } from './types';
@@ -101,7 +101,8 @@ export type ChallengeEvent =
   | { type: 'quest-added'; questId: string }
   | { type: 'quest-completed'; createdDayKey?: string } // an on-time completion
   | { type: 'state-changed'; habits: Habit[] } // evaluates Unbroken
-  | { type: 'day-end'; endedDate: Date; habits: Habit[]; quests: Quest[] };
+  // frozenDayKeys: days a streak freeze covered, which a run of days carries over.
+  | { type: 'day-end'; endedDate: Date; habits: Habit[]; quests: Quest[]; frozenDayKeys?: readonly string[] };
 
 interface Ctx {
   character: Character;
@@ -176,9 +177,14 @@ const HANDLERS: Record<ChallengeId, Handler> = {
     const perfect = due.length > 0 && due.every((h) => h.lastCompletedPeriodKey === day) && character.lastBadCheckDayKey !== day;
     return perfect ? 1 : entry.progress;
   }),
-  'clean-days': onDayEnd((entry, day, { character }) => {
-    // A gap of days is not backfilled and carries no protection: the run starts over.
-    const gap = entry.lastDayKey !== undefined && daysBetweenDayKeys(entry.lastDayKey, day) > 1;
+  'clean-days': onDayEnd((entry, day, { character }, event) => {
+    // A gap of days is not backfilled and carries no protection: the run starts
+    // over. Days a streak freeze covered aren't counted in the gap: a frozen day
+    // neither counts towards the run nor breaks it.
+    const frozen = event.frozenDayKeys ?? [];
+    const gapDays = entry.lastDayKey === undefined ? 0 : daysBetweenDayKeys(entry.lastDayKey, day) - 1;
+    const missing = Array.from({ length: Math.max(0, gapDays) }, (_, i) => addDaysToDayKey(entry.lastDayKey!, i + 1)).filter((key) => !frozen.includes(key));
+    const gap = missing.length > 0;
     const run = gap ? 0 : entry.progress;
     return character.lastBadCheckDayKey === day ? 0 : run + 1;
   }),
