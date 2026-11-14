@@ -29,6 +29,7 @@ import {
   ShieldOff,
   ShieldX,
   Skull,
+  Shirt,
   Snowflake,
   RefreshCw,
   Sparkles,
@@ -72,6 +73,7 @@ export const STAT_ICONS = {
   // Not Ult's violet, which shares the Gem glyph.
   gems: { icon: Gem, color: 'var(--icon-arcane)' },
   freeze: { icon: Snowflake, color: 'var(--icon-arcane)' },
+  skins: { icon: Shirt, color: 'var(--icon-arcane)' },
   levelUp: { icon: ChevronsUp, color: 'var(--icon-exp)' },
   special: { icon: Star, color: 'var(--icon-gold)' },
   ult: { icon: Gem, color: 'var(--icon-violet)' },

@@ -8,6 +8,7 @@ import { useHabitStore } from '../../store/habitStore';
 import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
 import { HERO_STAGE_CANVAS } from './heroArt';
+import WardrobeSheet from './WardrobeSheet.vue';
 
 // The phone's Hero tab banner (docs/mockups/hero-armory.html, option B): the
 // armory, pinned at the top of the screen where the fight stage's Focus strip
@@ -20,7 +21,8 @@ import { HERO_STAGE_CANVAS } from './heroArt';
 // (like the stage's hero), so it is 432 x 232 and wider than most phones. It sits centred
 // and the page crops the sides evenly, so a narrow phone loses some rack and shield
 // and keeps the hero. The offset is snapped to whole CSS px, so on a phone of an
-// odd width the art pixels still land on whole device pixels.
+// odd width the art pixels still land on whole device pixels. Tapping the scene
+// opens the wardrobe, where its skins are bought and worn.
 const baseUrl = import.meta.env.BASE_URL;
 const ART_W = 432;
 const ART_H = 232;
@@ -38,6 +40,8 @@ const bestStreak = computed(() =>
 const streak = computed(() => bestStreak.value?.streakCount ?? 0);
 const streakLabel = computed(() => `Best streak ${streak.value}${bestStreak.value ? `, ${bestStreak.value.name}` : ''}`);
 
+const wardrobeOpen = ref(false);
+
 const frame = ref<HTMLElement | null>(null);
 const offset = useCenteredArt(frame, ART_W);
 </script>
@@ -49,10 +53,10 @@ const offset = useCenteredArt(frame, ART_W);
       class="home-crop"
       :style="{ '--art-w': `${ART_W}px`, '--art-h': `${ART_H}px`, '--art-x': `${offset}px`, '--hero-size': `${HERO_STAGE_CANVAS}px` }"
     >
-      <div class="home-art">
+      <button type="button" class="home-art" aria-label="Wardrobe" @click="wardrobeOpen = true">
         <img class="home-room" :src="roomUrl" alt="" />
         <img class="home-hero" :src="baseSpriteUrl(skins.heroArt.value)" alt="" />
-      </div>
+      </button>
       <h2 class="home-name plate">{{ heroName }}</h2>
       <span class="home-stat plate level"><StatIcon name="levelUp" /><small>Level</small><b class="home-value">{{ displayLevel }}</b></span>
       <span class="home-stat plate streak" :aria-label="streakLabel">
@@ -60,6 +64,7 @@ const offset = useCenteredArt(frame, ART_W);
       </span>
     </div>
     <div class="stage-menu"><slot /></div>
+    <WardrobeSheet v-model="wardrobeOpen" />
   </section>
 </template>
 
@@ -88,6 +93,11 @@ const offset = useCenteredArt(frame, ART_W);
 .home-art {
   position: absolute;
   top: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
   left: var(--art-x);
   width: var(--art-w);
   height: var(--art-h);

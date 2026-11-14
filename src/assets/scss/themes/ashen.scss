@@ -4105,6 +4105,37 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--text-h);
   }
 
+  // The wardrobe: each look a lifted card with its art in a socket; the one
+  // worn has a silver ring, and Wear reads as a live key, not a spent label.
+  .wardrobe-tile {
+    @include lifted-card;
+  }
+
+  .wardrobe-tile .wardrobe-art {
+    @include socket(var(--card-hi));
+  }
+
+  .wardrobe-tile.worn .wardrobe-art {
+    outline: 2px solid var(--moon-solid);
+    outline-offset: -2px;
+  }
+
+  .wardrobe-tile .shop-buy.spent:not(:disabled) {
+    color: var(--card-ink);
+  }
+
+  .wardrobe .shop-name {
+    @include name-serif(700);
+    font-size: 0.95rem;
+    line-height: 1.15;
+    color: var(--card-ink);
+  }
+
+  .home-art:focus-visible {
+    outline: 2px solid var(--moon-solid);
+    outline-offset: -4px;
+  }
+
   .shop-desk .currency .count {
     @include brass-count;
     min-width: 26px;

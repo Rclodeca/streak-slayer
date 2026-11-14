@@ -8,6 +8,7 @@ import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import HomeBase from './HomeBase.vue';
+import WardrobeSheet from './WardrobeSheet.vue';
 
 enableAutoUnmount(afterEach);
 
@@ -34,6 +35,13 @@ describe('HomeBase', () => {
     const wrapper = mount(HomeBase);
     expect(wrapper.find('img.home-room').attributes('src')).toContain(`sprites/${home.art}.png`);
     expect(wrapper.find('img.home-hero').attributes('src')).toContain(`sprites/${hero.art}.png`);
+  });
+
+  it('opens the wardrobe when the scene is tapped', async () => {
+    const wrapper = mount(HomeBase);
+    expect(wrapper.find('button.home-art').attributes('aria-label')).toBe('Wardrobe');
+    await wrapper.find('button.home-art').trigger('click');
+    expect(wrapper.findComponent(WardrobeSheet).props('modelValue')).toBe(true);
   });
 
   it('shows the name, level and best streak on plates', () => {

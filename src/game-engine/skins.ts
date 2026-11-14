@@ -82,8 +82,10 @@ export function wearSkin(account: Account, slot: SkinSlot, skinId: string | null
     const skin = SKIN_CATALOG.find((candidate) => candidate.id === skinId);
     if (!skin || skinSlot(skin) !== slot || !account.ownedSkinIds?.includes(skinId)) return null;
   }
-  const { [slot]: _, ...others } = account.wornSkins ?? {};
-  return { ...account, wornSkins: skinId === null ? others : { ...others, [slot]: skinId } };
+  const wornSkins = { ...account.wornSkins };
+  if (skinId === null) delete wornSkins[slot];
+  else wornSkins[slot] = skinId;
+  return { ...account, wornSkins };
 }
 
 /** The sprite path a `heroClass` hero is drawn with: its worn skin's, else the class's own. */

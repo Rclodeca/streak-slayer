@@ -7,6 +7,7 @@ import { useVault } from '../../composables/useVault';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
+import WardrobeSheet from '../character/WardrobeSheet.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
 import FreezePicker from './FreezePicker.vue';
 import ShopFeatured from './ShopFeatured.vue';
@@ -83,6 +84,9 @@ const frozenAhead = computed(() => {
   return `${soonest.name}: ${span}${runs.length > 1 ? ` · +${runs.length - 1} more` : ''}`;
 });
 const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerPeriod);
+
+// Skins are bought and worn in the wardrobe, the same sheet the Hero tab's home base opens.
+const wardrobeOpen = ref(false);
 </script>
 
 <template>
@@ -114,8 +118,20 @@ const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerPer
         currency="gems"
         @buy="freezeOpen = true"
       />
+      <ShopWareRow
+        kind="tonic"
+        name="Skins"
+        icon="skins"
+        text="New looks for your hero, home and arena."
+        :price="0"
+        :buyable="true"
+        label="Browse"
+        currency="gems"
+        @buy="wardrobeOpen = true"
+      />
     </div>
     <FreezePicker v-if="freezeOpen" v-model="freezeOpen" />
+    <WardrobeSheet v-model="wardrobeOpen" />
 
     <SectionTitle title="For this run" aside="Lost when you fall"><Hourglass :size="20" class="section-icon" /></SectionTitle>
     <div class="shop-rows">

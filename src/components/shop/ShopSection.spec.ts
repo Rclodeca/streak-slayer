@@ -10,6 +10,7 @@ import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
+import WardrobeSheet from '../character/WardrobeSheet.vue';
 import ShopSection from './ShopSection.vue';
 
 enableAutoUnmount(afterEach);
@@ -149,6 +150,18 @@ describe('ShopSection', () => {
       expect([...order].sort((a, b) => a - b)).toEqual(order);
       expect(wrapper.find('.shop-featured .price').attributes('aria-label')).toMatch(/gems$/);
       expect(wrapper.text()).toContain('Lost when you fall');
+    });
+
+    it("the Vault's Skins row, kept for good, opens the wardrobe", async () => {
+      hero(0);
+      const wrapper = mount(ShopSection);
+      await wrapper.find('.side-vault').trigger('click');
+      const html = wrapper.html();
+      expect(html.indexOf('For good')).toBeLessThan(html.indexOf('Skins'));
+      expect(html.indexOf('Skins')).toBeLessThan(html.indexOf('For this run'));
+      const row = wrapper.findAll('.shop-ware-row').find((r) => r.text().includes('Skins'))!;
+      await row.find('.shop-buy').trigger('click');
+      expect(wrapper.findComponent(WardrobeSheet).props('modelValue')).toBe(true);
     });
 
     it('the Gold Pouch adds gold and takes 5 gems', async () => {
