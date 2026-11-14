@@ -161,6 +161,9 @@ export interface Character {
   // stored: unspent = (level - 1) - the ranks here. A fresh character
   // (createCharacter, so a death too) has none; a Phoenix revive keeps them.
   talents?: Partial<Record<TalentId, number>>;
+  // Gold to spend (see constants/economy.ts). Undefined = 0: a fresh character
+  // (createCharacter, so a death too) never sets it, so a death wipes it.
+  gold?: number;
   // Side-quest challenges for this run (see challenges.ts): every one taken,
   // active and done, so a finished one is never offered again. A death starts
   // a fresh run with none. Undefined on a save from before challenges.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyResist, bossExpReward } from './boss';
+import { bossGold } from './constants/economy';
 import { MILESTONE_EXP } from './constants/milestones';
 import { TUNING } from './constants/tuning';
 import { ITEM_CATALOG, itemBonusPercent, itemFlatBonus } from './items';
@@ -10,6 +11,7 @@ import { createCharacter, heroClassFor } from './character';
 import {
   activeWoundsEffect,
   bossMissDamage,
+  characterGold,
   chooseHero,
   completeHabit,
   effectiveResistAfterPen,
@@ -957,6 +959,18 @@ describe('reviveWithFeatherIfEquipped', () => {
 });
 
 describe('resolveBossDefeatIfDead', () => {
+  it('pays bossGold(slain.index)', () => {
+    const result = resolveBossDefeatIfDead(makeCharacter({ gold: 50 }), makeBoss({ index: 3, health: 0 }), createRng(1));
+    expect(result.character.gold).toBe(50 + bossGold(3));
+    expect(result.goldReward).toBe(bossGold(3));
+  });
+
+  it('no gold when the boss lives', () => {
+    const result = resolveBossDefeatIfDead(makeCharacter({ gold: 50 }), makeBoss({ health: 1 }), createRng(1));
+    expect(result.goldReward).toBe(0);
+    expect(result.character.gold).toBe(50);
+  });
+
   it('pays kill EXP at the slayer\'s level, and none for a live boss', () => {
     const character = makeCharacter({ level: 10, exp: 0 });
     const scripted = [0.5];
@@ -1042,6 +1056,11 @@ describe('resolveBossDefeatIfDead', () => {
 });
 
 describe('resolvePlayerDeathIfDead', () => {
+  it('a death wipes gold', () => {
+    const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0, gold: 900 }), makeBoss(), [], createRng(1));
+    expect(characterGold(result.character)).toBe(0);
+  });
+
   it('keeps every habit\'s rank through a death', () => {
     const habits = [makeHabit({ id: 'a', rank: 4 }), makeHabit({ id: 'b', rank: 1, damageType: 'healing' })];
     const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0 }), makeBoss(), habits, createRng(1));

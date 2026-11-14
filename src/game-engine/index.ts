@@ -134,6 +134,7 @@ export type { CombatResult, HabitDamageBreakdown } from './combat';
 export {
   activeWoundsEffect,
   bossMissDamage,
+  characterGold,
   chooseHero,
   completeHabit,
   DAMAGE_TYPE_STARTER_STAT,

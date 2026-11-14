@@ -8,6 +8,18 @@ import ActivityLog from './ActivityLog.vue';
 
 enableAutoUnmount(afterEach);
 
+describe('ActivityLog — boss defeated', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('shows the gold after the EXP', () => {
+    useActivityLogStore().addEntry({ kind: 'boss-defeated', bossIndex: 3, amount: 104, gold: 70 });
+    const text = mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim();
+    expect(text).toBe('Boss #3 defeated! +104 EXP +70 gold');
+  });
+});
+
 describe('ActivityLog — boss skills', () => {
   beforeEach(() => {
     setActivePinia(createPinia());

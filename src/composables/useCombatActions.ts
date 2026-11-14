@@ -346,7 +346,7 @@ export function useCombatActions() {
       return { itemsDropped: [] };
     }
 
-    activityLogStore.addEntry({ kind: 'boss-defeated', bossIndex: slain.index, amount: defeatResult.expReward });
+    activityLogStore.addEntry({ kind: 'boss-defeated', bossIndex: slain.index, amount: defeatResult.expReward, gold: defeatResult.goldReward });
     if (defeatResult.itemHealed) activityLogStore.addEntry({ kind: 'item-heal', itemName: 'Soul Lantern', amount: defeatResult.itemHealed });
     if (defeatResult.talentHealed) activityLogStore.addEntry({ kind: 'item-heal', itemName: 'Second Wind', amount: defeatResult.talentHealed });
     // Queued before the level-up beat below so the panels swap to the slain

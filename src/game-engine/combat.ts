@@ -4,6 +4,7 @@ import type { FiredBossSkill } from './bossSkills';
 import { createCharacter, heroClassFor } from './character';
 import type { HeroClass } from './character';
 import { DIFFICULTY_WEIGHT } from './constants/difficulty';
+import { bossGold } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { crowdingFactor, rerollAllDamageTypes, resetLevelRewards, skillBaseDamage } from './habits';
 import { activeHealBoost, addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
@@ -511,6 +512,11 @@ export function reviveWithFeatherIfEquipped(character: Character): { character: 
   };
 }
 
+/** Gold the character holds (undefined on a fresh character or an old save = 0). */
+export function characterGold(character: Pick<Character, 'gold'>): number {
+  return character.gold ?? 0;
+}
+
 /**
  * No-op unless the boss's health has reached 0. When it has, grants the
  * boss's EXP reward (resolving any resulting level-ups), rolls this
@@ -539,9 +545,11 @@ export function resolveBossDefeatIfDead(
   talentHealed?: number;
   /** The pre-item EXP the kill granted at the slayer's level; 0 when the boss isn't dead. */
   expReward: number;
+  /** Gold the kill paid (bossGold); 0 when the boss isn't dead. */
+  goldReward: number;
 } {
   if (Math.round(boss.health) > 0) {
-    return { character, boss, defeated: false, levelsGained: 0, itemsDropped: [], expReward: 0 };
+    return { character, boss, defeated: false, levelsGained: 0, itemsDropped: [], expReward: 0, goldReward: 0 };
   }
   // Rolled before the drops, which read the leveled character.
   const expReward = bossExpReward(character.level, rng);
@@ -558,9 +566,11 @@ export function resolveBossDefeatIfDead(
   const dropped = rollItemDrops(leveled, boss.index, rng);
   // Scavenger: one more roll for one extra item, past the usual cap.
   const itemsDropped = [...dropped, ...rollScavengerDrop(leveled, dropped, rng)];
+  const goldReward = bossGold(boss.index);
   const withItems: Character = {
     ...leveled,
     currentHealth: windHealth,
+    gold: characterGold(leveled) + goldReward,
     ownedItemIds: [...leveled.ownedItemIds, ...itemsDropped.map((item) => item.id)],
   };
   // Base (pre-item) health anchors the next boss's attack — see
@@ -573,7 +583,7 @@ export function resolveBossDefeatIfDead(
   const carried = hasItemEffect(withItems, 'echoing-blade') ? Math.min(boss.overkill ?? 0, generated.health - 1) : 0;
   // Breakpoints the carry passes are spent without firing.
   const nextBoss = carried > 0 ? spendPassedBreakpoints({ ...generated, health: generated.health - carried }) : generated;
-  return { character: withItems, boss: nextBoss, defeated: true, levelsGained, itemsDropped, expReward, ...(itemHealed > 0 && { itemHealed }), ...(talentHealed > 0 && { talentHealed }) };
+  return { character: withItems, boss: nextBoss, defeated: true, levelsGained, itemsDropped, expReward, goldReward, ...(itemHealed > 0 && { itemHealed }), ...(talentHealed > 0 && { talentHealed }) };
 }
 
 /**
