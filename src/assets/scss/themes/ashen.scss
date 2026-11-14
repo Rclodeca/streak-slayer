@@ -1153,7 +1153,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // name on a pixel pennant with a swallowtail, dyed the section's colour,
   // pinned by a solid medallion carrying the icon. The cloth stays dark in
   // every theme, so its letters are always pale.
-  :is(.habit-list-header, .quest-header, .hero-page-header, .talent-header, .shop-wares, .shop-header) h2.section-title {
+  :is(.habit-list-header, .quest-header, .hero-page-header, .talent-header, .shop-header) h2.section-title {
     display: inline-flex;
     align-items: center;
     gap: 0;
@@ -1220,31 +1220,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
   }
 
-  // The Hero tab's banners (docs/mockups/hero-layouts-2.html): the page's full width, a
-  // dark medallion with a brass icon, a slate cloth and a count riding at its far end
-  // (SectionTitle's aside). The page's blocks sit 14px apart.
-  .hero-page {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 0;
-
-    .effects,
-    .stat-group {
-      margin-top: 0;
-    }
-
-    .stat-group {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .hero-page-header {
-      height: 38px;
-      padding: 0;
-    }
-
+  // A full-width banner (docs/mockups/hero-layouts-2.html): a dark medallion with a
+  // brass icon and a slate cloth. The Hero tab and the Shop use it.
+  @mixin slate-banner {
     h2.section-title {
       display: flex;
       width: 100%;
@@ -1279,6 +1257,39 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       box-shadow: inset 0 2px 0 #333c52;
       clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
     }
+  }
+
+  // The Hero tab's banners (docs/mockups/hero-layouts-2.html): the page's full width, a
+  // dark medallion with a brass icon, a slate cloth and a count riding at its far end
+  // (SectionTitle's aside). The page's blocks sit 14px apart.
+  .hero-page {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 0;
+
+    .effects,
+    .stat-group {
+      margin-top: 0;
+    }
+
+    .stat-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hero-page-header {
+      height: 38px;
+      padding: 0;
+    }
+
+    @include slate-banner;
+  }
+
+  // The Shop's banners are the Hero tab's (docs/mockups/shop-tab-2.html).
+  .shop-wares {
+    @include slate-banner;
   }
 
   .section-title .cloth-aside {

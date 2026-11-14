@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
+import { Flame, Swords } from 'lucide-vue-next';
 import { ITEM_CATALOG, TONIC_DEFS, characterGold, wareState } from '../../game-engine';
 import type { ItemDef, ShopWare, TonicId } from '../../game-engine';
 import { useShop } from '../../composables/useShop';
 import { useCharacterStore } from '../../store/characterStore';
 import SectionTitle from '../ui/SectionTitle.vue';
-import StatIcon from '../ui/StatIcon.vue';
 import type { StatIconName } from '../ui/statIcons';
 import ShopFeatured from './ShopFeatured.vue';
 import ShopWareRow from './ShopWareRow.vue';
@@ -91,7 +91,7 @@ function buyTonic(id: TonicId) {
       @buy="shop.buy(featured.item.id)"
     />
 
-    <SectionTitle title="Wares"><StatIcon name="gold" :size="18" /></SectionTitle>
+    <SectionTitle title="Wares"><Swords :size="20" class="section-icon" /></SectionTitle>
     <div class="shop-rows">
       <ShopWareRow
         v-for="row in wares"
@@ -108,7 +108,7 @@ function buyTonic(id: TonicId) {
       />
     </div>
 
-    <SectionTitle title="Tonics"><StatIcon name="healing" :size="18" /></SectionTitle>
+    <SectionTitle title="Tonics"><Flame :size="20" class="section-icon" /></SectionTitle>
     <div class="shop-rows">
       <ShopWareRow
         v-for="tonic in tonics"
