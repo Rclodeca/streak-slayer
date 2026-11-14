@@ -1223,9 +1223,15 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // A full-width banner (docs/mockups/hero-layouts-2.html): a dark medallion with a
   // brass icon and a slate cloth. The Hero tab and the Shop use it.
   @mixin slate-banner {
+    // Centred on the medallion here too: the Shop's banners have no header row
+    // to give them the shared banner rules, as the Hero tab's do.
     h2.section-title {
       display: flex;
+      align-items: center;
+      gap: 0;
       width: 100%;
+      min-width: 0;
+      margin: 0;
       @include engraved(0.8125rem, 0.16em);
     }
 
