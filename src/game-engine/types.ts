@@ -166,6 +166,9 @@ export interface Character {
   // Gold to spend (see constants/economy.ts). Undefined = 0: a fresh character
   // (createCharacter, so a death too) never sets it, so a death wipes it.
   gold?: number;
+  // Today's shop stock (see shop.ts). A fresh character never has one, so a
+  // death wipes it and the new run gets a new stock.
+  shop?: ShopStock;
   // Side-quest challenges (see challenges.ts): every one taken, active and
   // done, so a finished one is never offered again. Kept through death
   // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
@@ -197,6 +200,21 @@ export type ChallengeId =
   | 'quest-run'
   | 'slay-two'
   | 'land-crits';
+
+/** One item for sale in the shop, at the price locked in when the stock was drawn. */
+export interface ShopWare {
+  itemId: string;
+  price: number;
+  sold?: boolean;
+}
+
+/** A day's shop stock: the piece on velvet (an epic or relic some days, else the rare), the rows, and the restocks bought today. */
+export interface ShopStock {
+  dayKey: string;
+  featured: ShopWare | null;
+  wares: ShopWare[];
+  restocks: number;
+}
 
 /** A habit or quest added after a challenge was taken; it counts at the next day rollover if it still exists. */
 export interface PendingAddition {

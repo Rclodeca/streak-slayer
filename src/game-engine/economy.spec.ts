@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TALENT_DEFS } from './constants/talentTree';
-import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, TALENT_COST, TRIAL_GEMS, bossGold } from './constants/economy';
+import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, TALENT_COST, TRIAL_GEMS, bossGold, roundPrice, warePrice } from './constants/economy';
 import { CHALLENGE_DEFS } from './challenges';
 
 describe('economy price sheet', () => {
@@ -26,4 +26,23 @@ describe('economy price sheet', () => {
   });
 
   it('bossGold rises with the boss', () => expect(bossGold(10)).toBeGreaterThan(bossGold(1)));
+
+  it('ware prices climb with rarity and the boss', () => {
+    expect(warePrice('common', 1)).toBeLessThan(warePrice('rare', 1));
+    expect(warePrice('rare', 1)).toBeLessThan(warePrice('relic', 1));
+    expect(warePrice('rare', 10)).toBeGreaterThan(warePrice('rare', 1));
+  });
+
+  it("an epic costs a few bosses' worth", () => {
+    for (const i of [1, 10, 30]) {
+      const bosses = warePrice('epic', i) / bossGold(i);
+      expect(bosses).toBeGreaterThanOrEqual(3);
+      expect(bosses).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('roundPrice rounds to 5', () => {
+    expect(roundPrice(52)).toBe(50);
+    expect(roundPrice(1)).toBe(5);
+  });
 });

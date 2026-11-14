@@ -1,10 +1,33 @@
 // Every gold and gem number in one place. Numbers are placeholders until
 // playtested; the spec's budget rule is pinned in economy.spec.ts.
 
+import type { ItemRarity } from '../items';
+
 /** Gold a boss pays when slain: rises with the boss's place in the run. */
 export function bossGold(bossIndex: number): number {
   return Math.round(40 + 10 * bossIndex);
 }
+
+/** A shop price: rounded to the nearest 5 gold, never under 5. */
+export function roundPrice(gold: number): number {
+  return Math.max(5, Math.round(gold / 5) * 5);
+}
+
+/** What a stocked item costs, as boss kills' worth of gold at the current boss: an epic or relic is a few bosses' worth. */
+export const SHOP_PRICE_FACTOR: Record<ItemRarity, number> = { common: 1, uncommon: 1.5, rare: 2.5, epic: 4, relic: 6 };
+
+/** The price of an item of `rarity` stocked while boss `bossIndex` is up. Locked into the stock when it's drawn. */
+export function warePrice(rarity: ItemRarity, bossIndex: number): number {
+  return roundPrice(SHOP_PRICE_FACTOR[rarity] * bossGold(bossIndex));
+}
+
+/** The fee for the next restock, after `restocksToday` already: half a boss's gold, doubling each time, back to the start with the next day's stock. */
+export function restockFee(restocksToday: number, bossIndex: number): number {
+  return roundPrice(0.5 * bossGold(bossIndex) * 2 ** restocksToday);
+}
+
+/** Each day's stock: up to `basics` common/uncommon items and a rare, and on `featuredChance` of days an epic or relic (a relic `relicShare` of those times). */
+export const SHOP_STOCK = { basics: 3, featuredChance: 1 / 3, relicShare: 1 / 3 };
 
 /** Cost of the `n`th talent rank bought overall (1-based). Gold is the bulk; gems are the key that kicks in from rank 4. */
 export function TALENT_COST(n: number): { gold: number; gems: number } {

@@ -10,6 +10,8 @@ export type {
   Breakpoint,
   Character,
   DamageType,
+  ShopStock,
+  ShopWare,
   Difficulty,
   Habit,
   Period,
@@ -192,7 +194,9 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, createAccount, recordLevel, spendGems } from './account';
-export { TRIAL_GEMS } from './constants/economy';
+export { TRIAL_GEMS, restockFee, warePrice } from './constants/economy';
+
+export { buyWare, restockShop, stockShop, wareState } from './shop';
 
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './talents';
 export {
