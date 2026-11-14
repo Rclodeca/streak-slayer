@@ -28,6 +28,9 @@ const ENTRY_KEYS = {
   showLog: LOG_VISIBLE_KEY,
 } as const;
 type EntryName = keyof typeof ENTRY_KEYS;
+// Entries an older export carried that nothing reads now (the seen trials,
+// retired when every trial went live from the start): still accepted, ignored.
+const RETIRED_ENTRIES = ['trialsSeen'];
 const ENTRY_NAMES = Object.keys(ENTRY_KEYS) as EntryName[];
 
 export interface SaveFile {
@@ -92,7 +95,7 @@ function isSaveFile(value: unknown): value is SaveFile {
   const file = value as Record<string, unknown>;
   if (file.app !== APP_ID || file.format !== FORMAT || typeof file.exportedAt !== 'string') return false;
   if (typeof file.entries !== 'object' || file.entries === null) return false;
-  return Object.entries(file.entries).every(([name, entry]) => name in ENTRY_KEYS && typeof entry === 'string');
+  return Object.entries(file.entries).every(([name, entry]) => (name in ENTRY_KEYS || RETIRED_ENTRIES.includes(name)) && typeof entry === 'string');
 }
 
 /**

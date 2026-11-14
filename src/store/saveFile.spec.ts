@@ -58,6 +58,18 @@ describe('save file', () => {
     expect(localStorage.getItem(LOG_VISIBLE_KEY)).toBe('off');
   });
 
+  it('still imports a file exported before the seen-trials entry was retired, and ignores that entry', () => {
+    storeRun('Aldric', 34, 23);
+    const old = JSON.parse(buildSaveFile());
+    old.entries.trialsSeen = '["first-blood:2026-10-02"]';
+    const read = readSaveFile(JSON.stringify(old));
+    expect(read).not.toBeNull();
+    localStorage.clear();
+    applySaveFile(read!.file);
+    expect(localStorage.getItem(SAVE_KEY)).not.toBeNull();
+    expect(localStorage.getItem('streak-slayer:trials-seen:v1')).toBeNull();
+  });
+
   it('rejects anything that is not a loadable save', () => {
     storeRun('Aldric', 34, 23);
     const good = JSON.parse(buildSaveFile());
