@@ -3,7 +3,8 @@
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createRng, dayOfWeekIndex } from '../../game-engine';
+import { createRng, dailyPeriodKey, dayOfWeekIndex } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useHabitStore } from '../../store/habitStore';
 import ProgressSummary from './ProgressSummary.vue';
 
@@ -18,5 +19,12 @@ describe('ProgressSummary', () => {
     habitStore.addHabit('Gym', 'daily', 'hard', false, createRng(1), [(dayOfWeekIndex(new Date()) + 1) % 7]);
     const wrapper = mount(ProgressSummary);
     expect(wrapper.findAll('.stat b')[0].text()).toBe('0 / 1');
+  });
+
+  it('Daily done leaves out frozen skills', () => {
+    useHabitStore().addHabit('Read', 'daily', 'easy', false, createRng(1));
+    const accountStore = useAccountStore();
+    accountStore.account = { ...accountStore.account, frozenDayKeys: [dailyPeriodKey(new Date())] };
+    expect(mount(ProgressSummary).findAll('.stat b')[0].text()).toBe('0 / 0');
   });
 });

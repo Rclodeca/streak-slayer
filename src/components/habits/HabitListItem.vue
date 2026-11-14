@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, formatCompact, frozenDays, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
+import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
@@ -28,11 +29,14 @@ const debugClockStore = useDebugClockStore();
 const characterStore = useCharacterStore();
 const bossStore = useBossStore();
 const habitStore = useHabitStore();
+const accountStore = useAccountStore();
 
 const currentPeriodKey = computed(() => periodKeyFor(props.habit.period, debugClockStore.now()));
 const isCompletedThisPeriod = computed(() => props.habit.lastCompletedPeriodKey === currentPeriodKey.value);
-// A set-day skill on one of its rest days: can't be struck or overdriven.
-const isResting = computed(() => !isDueOn(props.habit, debugClockStore.now()));
+// A set-day skill on one of its rest days, or any skill on a day a streak
+// freeze covers: can't be struck or overdriven. A frozen one says so.
+const isFrozen = computed(() => !isDueOn(props.habit, debugClockStore.now(), frozenDays(accountStore.account)) && isDueOn(props.habit, debugClockStore.now()));
+const isResting = computed(() => isFrozen.value || !isDueOn(props.habit, debugClockStore.now()));
 const nextDayLabel = computed(() =>
   props.habit.days ? WEEKDAY_SHORT[nextDueDay(props.habit.days, dayOfWeekIndex(debugClockStore.now()))] : '',
 );
@@ -105,7 +109,8 @@ function onStrike() {
       <RankPips :rank="habit.rank ?? 0" />
     </span>
     <span class="meta">
-      <span v-if="isResting" class="next-day">{{ nextDayLabel }}</span>
+      <span v-if="isFrozen" class="next-day frozen"><StatIcon name="freeze" :size="12" />Frozen</span>
+      <span v-else-if="isResting" class="next-day">{{ nextDayLabel }}</span>
       <!-- A bad habit's reward, what holding out deals, sunk into the card so it reads as a number to wait for, not a key. -->
       <span v-if="habit.isBad" class="reward-plate"><StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" :size="12" /><b>{{ formatCompact(effectiveDamage) }}</b></span>
       <span class="streak" :style="streakStyle" :title="showStreak ? `${habit.streakCount} streak` : undefined">
@@ -205,6 +210,12 @@ function onStrike() {
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.7rem;
+}
+
+.next-day.frozen {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 /* The rank-up flare: one sweep across the row, and the new rank rising off

@@ -3,8 +3,9 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, createHabit, createRng, dailyPeriodKey, periodKeyFor } from '../../game-engine';
+import { addDaysToDayKey, createHabit, createRng, dailyPeriodKey, periodKeyFor, weekDayKeys } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -168,6 +169,14 @@ describe('TabBar', () => {
       vi.useFakeTimers({ now: SUNDAY });
       addHabits(SUNDAY);
       expect(tab(mount(TabBar), 'skills').find('.tab-count').text()).toBe('3');
+    });
+
+    it('wears no count on a frozen day', () => {
+      vi.useFakeTimers({ now: SUNDAY });
+      addHabits(SUNDAY);
+      const accountStore = useAccountStore();
+      accountStore.account = { ...accountStore.account, frozenDayKeys: weekDayKeys(SUNDAY) };
+      expect(tab(mount(TabBar), 'skills').find('.tab-count').exists()).toBe(false);
     });
 
     it('leaves out a skill resting today and wears no count when nothing is left', () => {

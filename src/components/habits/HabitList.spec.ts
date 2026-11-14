@@ -4,9 +4,10 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
-import { createRng, dayOfWeekIndex } from '../../game-engine';
+import { createRng, dailyPeriodKey, dayOfWeekIndex } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { TUNING } from '../../game-engine/constants/tuning';
+import { useAccountStore } from '../../store/accountStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useHintStore } from '../../store/hintStore';
@@ -116,6 +117,18 @@ describe('HabitList', () => {
     const resting = wrapper.find('.habit-item.resting');
     expect(resting.find('.next-day').text()).toBe(WEEKDAY_SHORT[(today + 2) % 7]);
     expect(resting.find('button.strike').attributes('disabled')).toBeDefined();
+  });
+
+  it('a frozen day greys every daily and shows Frozen', () => {
+    addDaily();
+    addDaily([today]);
+    const accountStore = useAccountStore();
+    accountStore.account = { ...accountStore.account, frozenDayKeys: [dailyPeriodKey(new Date())] };
+    const wrapper = mountList();
+    const rows = wrapper.findAll('.skill-list .habit-item');
+    expect(rows.map((row) => row.classes().includes('resting'))).toEqual([true, true]);
+    expect(rows.map((row) => row.find('.next-day').text())).toEqual(['Frozen', 'Frozen']);
+    expect(rows[0].find('button.strike').attributes('disabled')).toBeDefined();
   });
 
   it('nothing is marked resting when every habit is due today', () => {

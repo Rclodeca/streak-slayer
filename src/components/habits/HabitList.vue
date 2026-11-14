@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Plus, Shield, Sword } from 'lucide-vue-next';
-import { isDueOn, periodKeyFor } from '../../game-engine';
+import { frozenDays, isDueOn, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
@@ -9,6 +9,7 @@ import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useModalPriority } from '../../composables/useModalPriority';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
+import { useAccountStore } from '../../store/accountStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useHintStore } from '../../store/hintStore';
@@ -48,20 +49,20 @@ const goodHabits = computed(() => habitStore.habits.filter((habit) => !habit.isB
 const badHabits = computed(() => habitStore.habits.filter((habit) => habit.isBad));
 
 const dailyHabits = computed(() => sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'daily')));
-// Set-day skills resting today stay at the bottom of Daily, greyed out.
-const orderedDailyHabits = computed(() => {
-  const now = debugClockStore.now();
-  return [...dailyHabits.value.filter((habit) => isDueOn(habit, now)), ...dailyHabits.value.filter((habit) => !isDueOn(habit, now))];
-});
+// Set-day skills resting today stay at the bottom of Daily, greyed out, and
+// so does every skill on a day a streak freeze covers.
+const accountStore = useAccountStore();
+const frozen = computed(() => frozenDays(accountStore.account));
+const dueNow = (habit: Habit) => isDueOn(habit, debugClockStore.now(), frozen.value);
+const orderedDailyHabits = computed(() => [...dailyHabits.value.filter(dueNow), ...dailyHabits.value.filter((habit) => !dueNow(habit))]);
 const weeklyHabits = computed(() =>
   sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'weekly')),
 );
 
 // Resist is split like Skills: daily (resting ones last, greyed), then weekly.
 const resistDailyHabits = computed(() => {
-  const now = debugClockStore.now();
   const daily = sortByDamageType(badHabits.value.filter((habit) => habit.period === 'daily'));
-  return [...daily.filter((habit) => isDueOn(habit, now)), ...daily.filter((habit) => !isDueOn(habit, now))];
+  return [...daily.filter(dueNow), ...daily.filter((habit) => !dueNow(habit))];
 });
 const resistWeeklyHabits = computed(() =>
   sortByDamageType(badHabits.value.filter((habit) => habit.period === 'weekly')),
@@ -101,7 +102,7 @@ const checkHint = computed<{ id: HintId; habit: Habit } | null>(() => {
   for (const id of ['checkGood', 'checkBad'] as const) {
     if (hintStore.seen[id]) continue;
     const habit = habitStore.habits.find(
-      (h) => h.isBad === (id === 'checkBad') && isDueOn(h, now) && h.lastCompletedPeriodKey !== periodKeyFor(h.period, now),
+      (h) => h.isBad === (id === 'checkBad') && isDueOn(h, now, frozen.value) && h.lastCompletedPeriodKey !== periodKeyFor(h.period, now),
     );
     if (habit) return { id, habit };
   }
