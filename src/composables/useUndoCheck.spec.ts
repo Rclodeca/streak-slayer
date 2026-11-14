@@ -126,7 +126,7 @@ describe('useUndoCheck', () => {
     expect(useUndoCheck().canUndo()).toBe(false);
   });
 
-  it('offers nothing for a bad-habit check that kills, or that a Phoenix Feather saves', () => {
+  it('offers nothing for a bad-habit check that kills', () => {
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000 });
@@ -134,12 +134,6 @@ describe('useUndoCheck', () => {
     characterStore.setCharacter({ ...characterStore.character, currentHealth: 1 });
     useCombatActions().checkOffHabit(addSkill('Doomscroll', true).id);
     expect(useDeathScreen().isDead.value).toBe(true);
-    expect(useUndoCheck().canUndo()).toBe(false);
-
-    useDeathScreen().dismiss();
-    characterStore.setCharacter({ ...characterStore.character, currentHealth: 1, ownedItemIds: ['phoenix-feather'], equippedItemIds: ['phoenix-feather'] });
-    useCombatActions().checkOffHabit(addSkill('Snack', true).id);
-    expect(useReviveNotice().visible.value).toBe(true);
     expect(useUndoCheck().canUndo()).toBe(false);
   });
 

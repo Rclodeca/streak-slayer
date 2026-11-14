@@ -111,7 +111,7 @@ export function useMissedSkillsGate() {
    * day's heals and kills happened during the day, the boss strikes at the
    * turnover — the same order a live tap gets. Otherwise a lethal miss queued
    * ahead of a heal would raise the death screen for a hero the heal then
-   * brings back above 0 HP, and burn a Phoenix Feather doing it.
+   * brings back above 0 HP.
    */
   function acknowledge() {
     const resolving = pending.value.map((item) => ({

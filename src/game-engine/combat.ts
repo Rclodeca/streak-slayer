@@ -4,7 +4,7 @@ import type { FiredBossSkill } from './bossSkills';
 import { createCharacter, heroClassFor } from './character';
 import type { HeroClass } from './character';
 import { DIFFICULTY_WEIGHT } from './constants/difficulty';
-import { bossGold } from './constants/economy';
+import { bossGold, REVIVE_GEMS } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { characterGold } from './gold';
 import { crowdingFactor, rerollAllDamageTypes, resetLevelRewards, skillBaseDamage } from './habits';
@@ -18,7 +18,6 @@ import { completeHabitStreak, rankBonus, rankMultiplier, resetHabitStreak, strea
 import { daysBetweenDayKeys } from './time';
 import type { Boss, Character, DamageType, Difficulty, Habit, Period, Quest, WoundsStatusEffect } from './types';
 
-const REVIVE_ITEM_ID = 'phoenix-feather';
 const REVIVE_HEALTH_FRACTION = 0.5;
 
 /** Maps a habit's damage type to the starter-stat field that drives it. */
@@ -487,29 +486,27 @@ export function missQuest(character: Character, quest: Quest, boss: Boss, curren
 }
 
 /**
- * No-op unless the character is dead AND has a Phoenix Feather equipped.
- * When both hold, consumes the feather (removes it from both equipped and
- * owned items — it can't be re-equipped without a fresh drop) and revives
- * the character at half max health, keeping level/exp/streaks/boss progress
- * intact. This is checked before `resolvePlayerDeathIfDead` so a held
- * feather pre-empts the normal full-run reset.
+ * Whether a fallen hero can revive for gems (docs/ideas/2026-11-13-shop-economy.md §3):
+ * `standing` while the rounded health is above 0, `spent` once this run has
+ * revived against this boss (one revive per boss), else `buy` or `short`.
  */
-export function reviveWithFeatherIfEquipped(character: Character): { character: Character; revived: boolean } {
-  // Rounded, matching the caller's rounded "is dead" check (see
-  // useCombatActions.ts) — otherwise a tiny positive health remainder that
-  // displays as 0 HP would fail this literal check and skip the revive.
-  if (Math.round(character.currentHealth) > 0) return { character, revived: false };
-  if (!character.equippedItemIds.includes(REVIVE_ITEM_ID)) return { character, revived: false };
+export function reviveState(character: Character, boss: Boss, gems: number): 'buy' | 'short' | 'spent' | 'standing' {
+  // Rounded, matching the rounded "is dead" check that raised the death screen.
+  if (Math.round(character.currentHealth) > 0) return 'standing';
+  if (character.revivedAtBoss === boss.index) return 'spent';
+  return gems >= REVIVE_GEMS ? 'buy' : 'short';
+}
 
-  const maxHealth = effectiveStat(character, 'health');
+/**
+ * Revives a fallen hero at half max health against the same boss, keeping
+ * everything else, and marks this boss as revived against. Null unless
+ * reviveState reads `buy`. The caller spends `gemsSpent` from the account.
+ */
+export function reviveForGems(character: Character, boss: Boss, gems: number): { character: Character; gemsSpent: number } | null {
+  if (reviveState(character, boss, gems) !== 'buy') return null;
   return {
-    character: {
-      ...character,
-      currentHealth: maxHealth * REVIVE_HEALTH_FRACTION,
-      equippedItemIds: character.equippedItemIds.filter((id) => id !== REVIVE_ITEM_ID),
-      ownedItemIds: character.ownedItemIds.filter((id) => id !== REVIVE_ITEM_ID),
-    },
-    revived: true,
+    character: { ...character, currentHealth: effectiveStat(character, 'health') * REVIVE_HEALTH_FRACTION, revivedAtBoss: boss.index },
+    gemsSpent: REVIVE_GEMS,
   };
 }
 

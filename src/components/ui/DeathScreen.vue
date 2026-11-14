@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Flame } from 'lucide-vue-next';
-import { heroClassFor } from '../../game-engine';
+import { REVIVE_GEMS, heroClassFor, reviveState } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { deathLines } from '../../composables/useHoodedFigure';
+import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -18,7 +19,8 @@ import StatIcon from './StatIcon.vue';
 // the hooded figure's line over the fallen hero, then a bonfire where each
 // skill that keeps its power burns on. "Rise again" there starts the reset.
 const { isDead } = useDeathScreen();
-const { restart } = useCombatActions();
+const { restart, revive } = useCombatActions();
+const accountStore = useAccountStore();
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const habitStore = useHabitStore();
@@ -27,6 +29,8 @@ const phase = ref<'speak' | 'fire'>('speak');
 const lines = ref<string[]>([]);
 
 const heroClass = computed(() => heroClassFor(characterStore.character));
+// The gem revive: once per boss, so it's gone after one against this boss.
+const revival = computed(() => reviveState(characterStore.character, bossStore.boss, accountStore.account.gems));
 const heroLabel = computed(() => heroClass.value.charAt(0).toUpperCase() + heroClass.value.slice(1));
 
 let releaseScrollLock: (() => void) | null = null;
@@ -115,7 +119,13 @@ const sparks = Array.from({ length: 14 }, () => ({
           </ul>
         </template>
 
-        <button type="button" class="restart-button" @click="restart">Rise again</button>
+        <template v-if="revival === 'buy' || revival === 'short'">
+          <button type="button" class="revive-button" :disabled="revival === 'short'" @click="revive">
+            Revive<span class="revive-price" :aria-label="`${REVIVE_GEMS} gems`"><StatIcon name="gems" :size="15" />{{ REVIVE_GEMS }}</span>
+          </button>
+          <p class="revive-note">Half health. Once per foe.</p>
+        </template>
+        <button type="button" class="restart-button" :class="{ after: revival === 'buy' || revival === 'short' }" @click="restart">Rise again</button>
       </div>
     </div>
   </Teleport>
@@ -445,6 +455,47 @@ const sparks = Array.from({ length: 14 }, () => ({
   width: 100%;
   margin-top: 1.4rem;
   font-weight: 700;
+}
+
+/* The revive sits above "Rise again": a cold gem-lit plate, quieter than the restart. */
+.revive-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 1.4rem;
+  padding: 0 1rem;
+  color: var(--text-h);
+  font: 700 15px 'Alegreya Sans', sans-serif;
+  background: #1a2436;
+  border: 0;
+  box-shadow:
+    inset 0 0 0 2px #3e5676,
+    inset 0 2px 0 #4c6a90;
+  clip-path: var(--px2);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.revive-button:disabled {
+  color: var(--text);
+  opacity: 0.55;
+}
+
+.revive-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.revive-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.restart-button.after {
+  margin-top: 0.9rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

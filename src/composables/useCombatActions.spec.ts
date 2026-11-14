@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, REVIVE_GEMS, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -500,31 +500,58 @@ describe('useCombatActions', () => {
     expect(isDead.value).toBe(true);
   });
 
-  it('checkMissedHabit revives via an equipped Phoenix Feather instead of triggering the death screen', () => {
+  it('a lethal miss raises the death screen, even with gems in hand', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
-    const { checkMissedHabit } = useCombatActions();
-    const { isDead } = useDeathScreen();
-    const { visible: reviveVisible } = useReviveNotice();
-
+    useAccountStore().addGems(50);
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
-    characterStore.character = {
-      ...characterStore.character,
-      currentHealth: 1,
-      ownedItemIds: ['phoenix-feather'],
-      equippedItemIds: ['phoenix-feather'],
-    };
+    characterStore.character = { ...characterStore.character, currentHealth: 1 };
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
 
+    useCombatActions().checkMissedHabit(habit.id);
+
+    expect(useDeathScreen().isDead.value).toBe(true);
+    expect(useAccountStore().account.gems).toBe(50);
+  });
+
+  it('revive spends the gems once, closes the death screen and keeps the boss', () => {
+    const habitStore = useHabitStore();
+    const characterStore = useCharacterStore();
+    const bossStore = useBossStore();
+    const accountStore = useAccountStore();
+    accountStore.addGems(25);
+    const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
+    characterStore.character = { ...characterStore.character, currentHealth: 1 };
+    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
+    const { checkMissedHabit, revive } = useCombatActions();
     checkMissedHabit(habit.id);
 
-    expect(isDead.value).toBe(false);
-    expect(reviveVisible.value).toBe(true);
+    expect(revive()).toBe(true);
+    expect(revive()).toBe(false);
+
+    expect(accountStore.account.gems).toBe(25 - REVIVE_GEMS);
+    expect(useDeathScreen().isDead.value).toBe(false);
+    expect(useReviveNotice().visible.value).toBe(true);
     expect(characterStore.character.currentHealth).toBeCloseTo(effectiveStat(characterStore.character, 'health') * 0.5, 5);
-    expect(characterStore.character.equippedItemIds).not.toContain('phoenix-feather');
-    expect(characterStore.character.ownedItemIds).not.toContain('phoenix-feather');
-    expect(bossStore.boss.index).toBe(3); // boss progress untouched by a feather revive
+    expect(bossStore.boss.index).toBe(3);
+    expect(useActivityLogStore().entries.filter((e) => e.kind === 'revived')).toHaveLength(1);
+  });
+
+  it('revive short on gems spends nothing and leaves the death screen up', () => {
+    const habitStore = useHabitStore();
+    const characterStore = useCharacterStore();
+    const bossStore = useBossStore();
+    useAccountStore().addGems(REVIVE_GEMS - 1);
+    const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
+    characterStore.character = { ...characterStore.character, currentHealth: 1 };
+    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
+    const { checkMissedHabit, revive } = useCombatActions();
+    checkMissedHabit(habit.id);
+
+    expect(revive()).toBe(false);
+    expect(useAccountStore().account.gems).toBe(REVIVE_GEMS - 1);
+    expect(useDeathScreen().isDead.value).toBe(true);
   });
 
   it('restart resets character/boss/habits and clears the death flag', () => {

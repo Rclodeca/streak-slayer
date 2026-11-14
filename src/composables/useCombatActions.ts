@@ -64,7 +64,7 @@ import {
   resolveBossDefeatIfDead,
   resolveDoom,
   resolvePlayerDeathIfDead,
-  reviveWithFeatherIfEquipped,
+  reviveForGems,
   skillCompletionExp,
   TRIAL_GEMS,
   unlockQuests,
@@ -373,12 +373,11 @@ export function useCombatActions() {
   /**
    * Lands one boss attack on the player: writes the struck character and boss
    * back, plays the boss's strike (so the boss visibly hits the hero), logs
-   * it, then checks for death. If the damage brought currentHealth to 0, an
-   * equipped Phoenix Feather is consumed and the hero revives at once (no
-   * death screen); otherwise the death screen is flagged and the actual
-   * reset waits for `restart()`. Shared by a missed habit and a missed quest.
+   * it, then checks for death. If the damage brought currentHealth to 0, the
+   * death screen is flagged; the reset waits for `restart()`, or `revive()`
+   * brings the hero back for gems. Shared by a missed habit and a missed quest.
    *
-   * Returns whether the hero fell (died, or the Feather revived them).
+   * Returns whether the hero fell.
    */
   function landBossStrike(
     result: { character: Character; boss: Boss; wasCrit: boolean; attackType: 'physical' | 'magic'; bossLifestealHealed?: number; dodged?: true },
@@ -421,13 +420,7 @@ export function useCombatActions() {
     // Math.round(currentHealth), so a tiny positive remainder (e.g. 0.3)
     // would otherwise show as "0 HP" without actually triggering death.
     if (Math.round(result.character.currentHealth) <= 0) {
-      const reviveResult = reviveWithFeatherIfEquipped(result.character);
-      if (reviveResult.revived) {
-        characterStore.setCharacter(reviveResult.character);
-        showReviveNotice();
-      } else {
-        triggerDeath();
-      }
+      triggerDeath();
       return true;
     }
     return false;
@@ -440,7 +433,7 @@ export function useCombatActions() {
    * both a good habit's rollover-detected miss and a bad habit's checkbox
    * tap. `stampPeriodKey` mirrors `applyReward`'s.
    *
-   * Returns whether the hero fell (died, or the Feather revived them).
+   * Returns whether the hero fell.
    */
   function applyPenalty(habitId: string, stampPeriodKey?: string): boolean {
     const habit = habitStore.habits.find((h) => h.id === habitId);
@@ -566,6 +559,21 @@ export function useCombatActions() {
     const quest = questStore.addQuest(description, difficulty, dueDateKey, dailyPeriodKey(debugClockStore.now()));
     reportChallenge({ type: 'quest-added', questId: quest.id });
     return quest;
+  }
+
+  /**
+   * The death screen's revive: brings a fallen hero back at half health for
+   * gems, once per boss (see reviveForGems), and closes the death screen.
+   * False, with nothing spent, when it can't be bought.
+   */
+  function revive(): boolean {
+    const result = reviveForGems(characterStore.character, bossStore.boss, accountStore.account.gems);
+    if (!result || !accountStore.spendGems(result.gemsSpent)) return false;
+    characterStore.setCharacter(result.character);
+    dismissDeathScreen();
+    showReviveNotice();
+    activityLogStore.addEntry({ kind: 'revived', gems: result.gemsSpent });
+    return true;
   }
 
   /**
@@ -699,7 +707,7 @@ export function useCombatActions() {
    * Resolves a quest's missed due date (not overridden): the boss hits the
    * character exactly as for a missed daily of the same difficulty
    * (`missQuest` + `landBossStrike`: armor, crit, lifesteal, the strike
-   * animation, the death check and Phoenix Feather revive), logs a
+   * animation and the death check), logs a
    * quest-failed entry, and flags the quest overdue — it stays in the list,
    * still finishable for half EXP. Called only from
    * useQuestMissGate.acknowledge() for a quest the player didn't flag as
@@ -744,6 +752,7 @@ export function useCombatActions() {
     reportChallenge,
     claimChallenge,
     restart,
+    revive,
     beginRun,
     completeQuest,
     failQuest,

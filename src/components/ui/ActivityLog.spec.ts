@@ -44,6 +44,11 @@ describe('ActivityLog — boss defeated', () => {
     useActivityLogStore().addEntry({ kind: 'gems', amount: 2, reason: 'level' });
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('+2 gems');
   });
+
+  it('shows a gem revive', () => {
+    useActivityLogStore().addEntry({ kind: 'revived', gems: 10 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Revived −10 gems');
+  });
 });
 
 describe('ActivityLog — boss skills', () => {

@@ -159,6 +159,9 @@ export interface Character {
   // The day the last Healing Draught was drunk (see tonicState in shop.ts).
   // A fresh character has none, so a death resets the cooldown.
   draughtDayKey?: string;
+  // The boss index this run last revived against for gems (see reviveState in
+  // combat.ts): one revive per boss. A fresh character has none.
+  revivedAtBoss?: number;
   // Side-quest challenges (see challenges.ts): every one taken, active and
   // done, so a finished one is never offered again. Kept through death
   // (resolvePlayerDeathIfDead carries them), so each trial is done and paid

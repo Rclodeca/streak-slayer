@@ -135,7 +135,8 @@ export {
   overdriveDamagePreview,
   overdriveHabit,
   overdriveUsesRemaining,
-  reviveWithFeatherIfEquipped,
+  reviveForGems,
+  reviveState,
   resolveBossDefeatIfDead,
   resolvePlayerDeathIfDead,
   weeklyBonusMultiplier,
@@ -170,7 +171,7 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, createAccount, recordLevel, spendGems } from './account';
-export { TRIAL_GEMS, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { REVIVE_GEMS, TRIAL_GEMS, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

@@ -9,7 +9,7 @@ import {
   missQuest,
   resolveBossDefeatIfDead,
   resolvePlayerDeathIfDead,
-  reviveWithFeatherIfEquipped,
+  reviveForGems,
 } from './combat';
 import { TUNING } from './constants/tuning';
 import { itemBonusPercent, itemFlatBonus, rollScavengerDrop } from './items';
@@ -437,10 +437,9 @@ describe('a run’s end', () => {
     expect(character.level).toBe(1);
   });
 
-  it('keeps the tree through a Phoenix Feather revive', () => {
-    const fallen = hero({ might: 3, vigor: 2 }, ['phoenix-feather'], { level: 12, currentHealth: 0 });
-    const { character, revived } = reviveWithFeatherIfEquipped(fallen);
-    expect(revived).toBe(true);
+  it('keeps the tree through a gem revive', () => {
+    const fallen = hero({ might: 3, vigor: 2 }, [], { level: 12, currentHealth: 0 });
+    const { character } = reviveForGems(fallen, makeBoss(), 99)!;
     expect(character.talents).toEqual({ might: 3, vigor: 2 });
     expect(character.level).toBe(12);
   });

@@ -1,6 +1,6 @@
 // Small shared (module-scope) revive-notice flag — same singleton reasoning
-// as useDeathScreen/useItemDropQueue: the code that detects a feather-saved
-// revive (useCombatActions) and the component that renders the toast
+// as useDeathScreen/useItemDropQueue: the code that runs a gem revive
+// (useCombatActions) and the component that renders the toast
 // (ReviveNotice, mounted once in AppShell) must see the same state.
 //
 // Unlike the death screen, this is non-blocking and self-dismisses after a

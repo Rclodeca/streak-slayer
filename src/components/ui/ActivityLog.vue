@@ -94,6 +94,9 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
         <template v-else-if="entry.kind === 'gems'">
           <StatIcon name="gems" class="log-icon" /> <span class="log-gems">+{{ formatCompact(entry.amount) }}</span> gems
         </template>
+        <template v-else-if="entry.kind === 'revived'">
+          <StatIcon name="gems" class="log-icon" /> Revived <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems
+        </template>
         <template v-else-if="entry.kind === 'shop-bought'">
           <StatIcon name="gold" class="log-icon" /> Bought {{ entry.name }} <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold
         </template>

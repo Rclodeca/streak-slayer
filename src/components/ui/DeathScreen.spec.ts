@@ -7,6 +7,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { createRng } from '../../game-engine';
 import type { Habit } from '../../game-engine';
+import { REVIVE_GEMS } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
+import { useBossStore } from '../../store/bossStore';
+import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import DeathScreen from './DeathScreen.vue';
 
@@ -91,5 +95,44 @@ describe('DeathScreen', () => {
     await nextTick();
     expect(useDeathScreen().isDead.value).toBe(false);
     expect(document.querySelector('.death-layer')).toBeNull();
+  });
+
+  describe('the gem revive', () => {
+    const reviveButton = () => document.querySelector('.revive-button') as HTMLButtonElement | null;
+
+    function fallWith(gems: number) {
+      useAccountStore().addGems(gems);
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, currentHealth: 0 });
+    }
+
+    it('offers the revive at its gem price, and taking it closes the screen', async () => {
+      fallWith(REVIVE_GEMS);
+      mountWith([]);
+      await toBonfire();
+      expect(reviveButton()!.textContent).toContain(String(REVIVE_GEMS));
+      expect(document.querySelector('.revive-note')!.textContent).toBe('Half health. Once per foe.');
+      reviveButton()!.click();
+      await nextTick();
+      expect(useDeathScreen().isDead.value).toBe(false);
+      expect(useAccountStore().account.gems).toBe(0);
+    });
+
+    it('is disabled with too few gems', async () => {
+      fallWith(REVIVE_GEMS - 1);
+      mountWith([]);
+      await toBonfire();
+      expect(reviveButton()!.disabled).toBe(true);
+    });
+
+    it('is gone once this boss has been revived against', async () => {
+      fallWith(99);
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, revivedAtBoss: useBossStore().boss.index });
+      mountWith([]);
+      await toBonfire();
+      expect(reviveButton()).toBeNull();
+      expect(document.querySelector('.restart-button')).not.toBeNull();
+    });
   });
 });

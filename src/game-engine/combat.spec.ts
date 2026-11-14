@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyResist, bossExpReward } from './boss';
-import { bossGold } from './constants/economy';
+import { bossGold, REVIVE_GEMS } from './constants/economy';
 import { characterGold } from './gold';
 import { MILESTONE_EXP } from './constants/milestones';
 import { TUNING } from './constants/tuning';
@@ -24,7 +24,8 @@ import {
   missQuest,
   resolveBossDefeatIfDead,
   resolvePlayerDeathIfDead,
-  reviveWithFeatherIfEquipped,
+  reviveForGems,
+  reviveState,
 } from './combat';
 import type { Boss, Character, Habit, Period, Quest, WoundsStatusEffect } from './types';
 
@@ -906,55 +907,56 @@ describe('overdriveUsesRemaining', () => {
   });
 });
 
-describe('reviveWithFeatherIfEquipped', () => {
-  it('is a no-op when currentHealth > 0, even with the feather equipped', () => {
-    const character = makeCharacter({
-      currentHealth: 5,
-      ownedItemIds: ['phoenix-feather'],
-      equippedItemIds: ['phoenix-feather'],
-    });
+describe('reviveForGems', () => {
+  const fallen = (overrides: Partial<Character> = {}) => makeCharacter({ currentHealth: 0, level: 3, gold: 200, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], ...overrides });
 
-    const result = reviveWithFeatherIfEquipped(character);
+  it('brings the hero back at half health for REVIVE_GEMS, changing nothing else', () => {
+    const character = fallen();
+    const boss = makeBoss({ index: 4 });
+    expect(reviveState(character, boss, REVIVE_GEMS)).toBe('buy');
 
-    expect(result.revived).toBe(false);
-    expect(result.character).toBe(character);
-  });
+    const result = reviveForGems(character, boss, REVIVE_GEMS)!;
 
-  it('is a no-op when dead but the feather is not equipped', () => {
-    const character = makeCharacter({ currentHealth: 0 });
-
-    const result = reviveWithFeatherIfEquipped(character);
-
-    expect(result.revived).toBe(false);
-    expect(result.character).toBe(character);
-  });
-
-  it('treats a tiny positive currentHealth that rounds to 0 as dead, and still revives with the feather', () => {
-    const character = makeCharacter({
-      currentHealth: 0.3, // rounds to 0 on the health bar, but is not literally 0
-      ownedItemIds: ['phoenix-feather'],
-      equippedItemIds: ['phoenix-feather'],
-    });
-
-    const result = reviveWithFeatherIfEquipped(character);
-
-    expect(result.revived).toBe(true);
-  });
-
-  it('consumes the feather and revives at half max health when dead with it equipped', () => {
-    const character = makeCharacter({
-      currentHealth: 0,
-      level: 3,
-      ownedItemIds: ['phoenix-feather', 'rusty-blade'],
-      equippedItemIds: ['phoenix-feather', 'rusty-blade'],
-    });
-
-    const result = reviveWithFeatherIfEquipped(character);
-
-    expect(result.revived).toBe(true);
+    expect(result.gemsSpent).toBe(REVIVE_GEMS);
     expect(result.character.currentHealth).toBeCloseTo(effectiveStat(character, 'health') * 0.5, 10);
+    expect(result.character.revivedAtBoss).toBe(4);
+    expect(result.character.level).toBe(3);
+    expect(result.character.gold).toBe(200);
     expect(result.character.equippedItemIds).toEqual(['rusty-blade']);
-    expect(result.character.ownedItemIds).toEqual(['rusty-blade']);
+  });
+
+  it('needs the full price', () => {
+    expect(reviveState(fallen(), makeBoss(), REVIVE_GEMS - 1)).toBe('short');
+    expect(reviveForGems(fallen(), makeBoss(), REVIVE_GEMS - 1)).toBeNull();
+  });
+
+  it('does nothing for a hero still standing', () => {
+    const standing = makeCharacter({ currentHealth: 5 });
+    expect(reviveState(standing, makeBoss(), 99)).toBe('standing');
+    expect(reviveForGems(standing, makeBoss(), 99)).toBeNull();
+  });
+
+  it('treats health that rounds to 0 as fallen', () => {
+    expect(reviveState(fallen({ currentHealth: 0.3 }), makeBoss(), REVIVE_GEMS)).toBe('buy');
+  });
+
+  it('allows one revive per boss', () => {
+    const boss = makeBoss({ index: 4 });
+    const again = { ...reviveForGems(fallen(), boss, 99)!.character, currentHealth: 0 };
+    expect(reviveState(again, boss, 99)).toBe('spent');
+    expect(reviveForGems(again, boss, 99)).toBeNull();
+  });
+
+  it('opens again once that boss is slain', () => {
+    const boss = makeBoss({ index: 4 });
+    const revived = reviveForGems(fallen(), boss, 99)!.character;
+    const { character, boss: next } = resolveBossDefeatIfDead(revived, { ...boss, health: 0 }, createRng(1));
+    expect(reviveState({ ...character, currentHealth: 0 }, next, 99)).toBe('buy');
+  });
+
+  it('a death wipes the revive mark', () => {
+    const { character } = resolvePlayerDeathIfDead(fallen({ revivedAtBoss: 4 }), makeBoss({ index: 4 }), [], createRng(1));
+    expect(character.revivedAtBoss).toBeUndefined();
   });
 });
 

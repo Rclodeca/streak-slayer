@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Feather } from 'lucide-vue-next';
+import { Gem } from 'lucide-vue-next';
 import { useReviveNotice } from '../../composables/useReviveNotice';
 
 const { visible } = useReviveNotice();
@@ -8,8 +8,8 @@ const { visible } = useReviveNotice();
 <template>
   <Teleport to="body">
     <div v-if="visible" class="revive-toast">
-      <span class="revive-mark" aria-hidden="true"><Feather :size="20" :stroke-width="1.75" /></span>
-      <span class="revive-text">Phoenix Feather consumed — revived at half health!</span>
+      <span class="revive-mark" aria-hidden="true"><Gem :size="20" :stroke-width="1.75" /></span>
+      <span class="revive-text">Revived at half health.</span>
     </div>
   </Teleport>
 </template>

@@ -72,7 +72,7 @@ export interface ItemDef {
   icon: string; // path segment relative to public/sprites/, passed straight to an <img>/Sprite
   type: 'equipment' | 'consumable'; // consumables still occupy an equip slot, but grant no passive bonus
   rarity: ItemRarity; // its share of drops at the player's level is set by dropRarityShares
-  bonuses: ItemBonus[]; // empty for the pure-consumable Phoenix Feather
+  bonuses: ItemBonus[]; // empty for a pure consumable (none are in the catalog now)
   effect?: ItemEffectId;
   effectText?: string; // short plain line saying what the effect does, e.g. "+30% damage to bosses above 75% HP."
 }

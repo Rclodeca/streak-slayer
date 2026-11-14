@@ -87,5 +87,8 @@ export const FREE_GEM_SOURCES = {
   dungeonFirstClears: 0,
 };
 
-/** Gem prices beyond the tree that the free budget must also cover (placeholders until D and E). */
-export const PLANNED_GEM_SINKS = { skin: 40, revive: 10 };
+/** A revive on the death screen: one fixed price that never climbs, once per boss. */
+export const REVIVE_GEMS = 10;
+
+/** Gem prices beyond the tree that the free budget must also cover (a placeholder until E). */
+export const PLANNED_GEM_SINKS = { skin: 40 };

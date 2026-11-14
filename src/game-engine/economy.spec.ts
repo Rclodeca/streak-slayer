@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TALENT_DEFS } from './constants/talentTree';
-import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, TALENT_COST, TRIAL_GEMS, bossGold, roundPrice, warePrice } from './constants/economy';
+import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, REVIVE_GEMS, TALENT_COST, TRIAL_GEMS, bossGold, roundPrice, warePrice } from './constants/economy';
 import { CHALLENGE_DEFS } from './challenges';
 
 describe('economy price sheet', () => {
@@ -16,7 +16,7 @@ describe('economy price sheet', () => {
     let treeGems = 0;
     for (let n = 1; n <= totalRanks; n++) treeGems += TALENT_COST(n).gems;
     const free = FREE_GEM_SOURCES.levels + FREE_GEM_SOURCES.trials + FREE_GEM_SOURCES.dungeonFirstClears;
-    const need = treeGems + PLANNED_GEM_SINKS.skin + 2 * PLANNED_GEM_SINKS.revive;
+    const need = treeGems + PLANNED_GEM_SINKS.skin + 2 * REVIVE_GEMS;
     expect(free).toBeGreaterThanOrEqual(need);
     expect(free).toBeLessThan(need * 1.15); // "tuned exactly": no big surplus
   });
