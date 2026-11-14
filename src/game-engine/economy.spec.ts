@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TALENT_DEFS } from './constants/talentTree';
-import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, TALENT_COST, bossGold } from './constants/economy';
+import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, TALENT_COST, TRIAL_GEMS, bossGold } from './constants/economy';
+import { CHALLENGE_DEFS } from './challenges';
 
 describe('economy price sheet', () => {
   it('the tree costs the spec examples', () => {
@@ -18,6 +19,10 @@ describe('economy price sheet', () => {
     const need = treeGems + PLANNED_GEM_SINKS.skin + 2 * PLANNED_GEM_SINKS.revive;
     expect(free).toBeGreaterThanOrEqual(need);
     expect(free).toBeLessThan(need * 1.15); // "tuned exactly": no big surplus
+  });
+
+  it('one-time trials fit the trial budget', () => {
+    expect(CHALLENGE_DEFS.length * TRIAL_GEMS).toBeLessThanOrEqual(FREE_GEM_SOURCES.trials);
   });
 
   it('bossGold rises with the boss', () => expect(bossGold(10)).toBeGreaterThan(bossGold(1)));

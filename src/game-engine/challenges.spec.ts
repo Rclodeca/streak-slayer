@@ -20,6 +20,7 @@ import {
   unlockTrials,
 } from './challenges';
 import type { ChallengeEntry, ChallengeId } from './challenges';
+import { resolvePlayerDeathIfDead } from './combat';
 import { ITEM_CATALOG } from './items';
 import { createRng } from './rng';
 import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex } from './time';
@@ -519,5 +520,36 @@ describe('milestoneTrial', () => {
   it('does nothing while trials are sealed', () => {
     const character = makeCharacter({ level: 1, trialsUnlocked: false });
     expect(milestoneTrial(character, 5, rng(), '2026-11-05')).toBe(character);
+  });
+});
+
+describe('trials across deaths', () => {
+  const fallen = () => {
+    const dead = makeCharacter({
+      currentHealth: 0,
+      trialsUnlocked: true,
+      challenges: [
+        entry('resist', { progress: 3 }),
+        entry('rank-up', { progress: 1, doneDayKey: '2026-11-02' }),
+        entry('slay-two', { progress: 2, doneDayKey: '2026-11-03', unclaimed: true }),
+      ],
+    });
+    const boss = makeBoss({ index: 1, personality: 'balanced', physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 });
+    return resolvePlayerDeathIfDead(dead, boss, [], createRng(1)).character;
+  };
+
+  it('a trial finished in an earlier run is never offered again', () => {
+    const offered = offerableChallenges(fallen()).map((d) => d.id);
+    expect(offered).not.toContain('resist');
+    expect(offered).not.toContain('rank-up');
+    expect(offered).not.toContain('slay-two');
+  });
+
+  it('an unclaimed trial can still be claimed after a death, once', () => {
+    const fresh = fallen();
+    expect(claimableChallenges(fresh).map((e) => e.id)).toEqual(['slay-two']);
+    const claimed = markChallengeClaimed(fresh, 'slay-two');
+    expect(claimableChallenges(claimed)).toEqual([]);
+    expect(markChallengeClaimed(claimed, 'slay-two')).toBe(claimed);
   });
 });

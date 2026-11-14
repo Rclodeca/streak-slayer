@@ -605,9 +605,17 @@ export function resolvePlayerDeathIfDead(
   // screen without actually resetting the run.
   if (Math.round(character.currentHealth) > 0) return { character, boss, habits, died: false };
   // Rolled as the fallen hero, which the new-hero screen then offers first.
-  // Talents are bought and kept through death, and the tab stays open. Kept
-  // Vigor ranks raise max health, so the new run starts full against that max.
-  const kept = { ...createCharacter(rng, heroClassFor(character)), talents: character.talents, talentsUnlocked: character.talentsUnlocked };
+  // Talents are bought and kept through death, and the tab stays open. Trials
+  // are kept too (active, finished and unclaimed), so each one is done and paid
+  // once per account. Kept Vigor ranks raise max health, so the new run starts
+  // full against that max.
+  const kept = {
+    ...createCharacter(rng, heroClassFor(character)),
+    talents: character.talents,
+    talentsUnlocked: character.talentsUnlocked,
+    challenges: character.challenges,
+    trialsUnlocked: character.trialsUnlocked,
+  };
   const freshCharacter = { ...kept, currentHealth: effectiveStat(kept, 'health') };
   return {
     character: freshCharacter,

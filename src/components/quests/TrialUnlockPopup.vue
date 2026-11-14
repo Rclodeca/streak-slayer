@@ -8,7 +8,7 @@ import Modal from '../ui/Modal.vue';
 import RuleList from '../ui/RuleList.vue';
 import type { Rule } from '../ui/RuleList.vue';
 
-// Shown every run on reaching TRIALS_UNLOCK_LEVEL (see trialUnlockPending).
+// Shown once, on first reaching TRIALS_UNLOCK_LEVEL (see trialUnlockPending).
 // "Onward" unseals the section and hands over the first trial.
 const { trialUnlockVisible } = useModalPriority();
 const characterStore = useCharacterStore();
@@ -17,7 +17,7 @@ const debugClockStore = useDebugClockStore();
 const RULES: Rule[] = [
   { icon: Flag, tone: 'accent', title: 'Take', text: 'The game names the deed.' },
   { icon: Check, tone: 'solid', title: 'Finish', text: 'Do it, then claim it.' },
-  { icon: Gem, tone: 'accent', title: 'Earn', text: 'Each one pays gems.' },
+  { icon: Gem, tone: 'accent', title: 'Earn', text: 'Each pays gems, once.' },
 ];
 
 function onward() {

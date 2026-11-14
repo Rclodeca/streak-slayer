@@ -1,6 +1,6 @@
 // Side-quest challenges: optional in-game deeds that pay gems, taken from the
-// level-up side-quest card. State lives on Character.challenges (per run), and
-// everything here is pure. Progress rules arrive with applyChallengeEvent.
+// level-up side-quest card. State lives on Character.challenges (kept through
+// death, so each is done once per account), and everything here is pure. Progress rules arrive with applyChallengeEvent.
 
 import { TUNING } from './constants/tuning';
 import { isDueOn } from './habits';
@@ -47,7 +47,7 @@ export function getChallengeDef(id: ChallengeId): ChallengeDef {
   return def;
 }
 
-/** Challenges not active or finished this run. */
+/** Challenges never taken: not active, and not finished in this run or an earlier one. */
 export function offerableChallenges(character: Character): ChallengeDef[] {
   const held = (character.challenges ?? []).map((e) => e.id);
   return CHALLENGE_DEFS.filter((d) => !held.includes(d.id));
@@ -66,7 +66,7 @@ export function takeChallenge(character: Character, id: ChallengeId, todayKey: s
   return { ...character, challenges: [...(character.challenges ?? []), entry], offeredChallengeId: undefined };
 }
 
-/** The player level at which the Trials section opens, each run. */
+/** The player level at which the Trials section first opens; it stays open through death. */
 export const TRIALS_UNLOCK_LEVEL = 4;
 
 /** The trial handed over when Trials open, so the tab never opens empty. */
@@ -78,12 +78,12 @@ export const TRIAL_MILESTONE_BOSSES: readonly number[] = [5, 10];
 /** A milestone trial is only handed over while fewer than this many trials are active. */
 export const MILESTONE_ACTIVE_CAP = 2;
 
-/** Whether the Trials section is open: unlocked this run, or at the unlock level with its popup up. */
+/** Whether the Trials section is open: unlocked, or at the unlock level with its popup up. */
 export function trialsOpen(character: Character): boolean {
   return character.trialsUnlocked === true || character.level >= TRIALS_UNLOCK_LEVEL;
 }
 
-/** Whether the "Trials unlocked" popup is due: the unlock level reached this run and the section not yet opened. */
+/** Whether the "Trials unlocked" popup is due: the unlock level reached and the section not yet opened. */
 export function trialUnlockPending(character: Character): boolean {
   return !character.trialsUnlocked && character.level >= TRIALS_UNLOCK_LEVEL;
 }

@@ -147,10 +147,11 @@ export interface Character {
   // once if quests carried over from the last run (useCombatActions.restart).
   // Undefined only on a save from before the lock; migrateQuestUnlock settles it.
   questsUnlocked?: boolean;
-  // Whether the Trials section is open this run (see trialsOpen in
-  // challenges.ts). It opens at TRIALS_UNLOCK_LEVEL when the "Trials unlocked"
-  // popup is dismissed, which also hands over the first trial. Undefined only
-  // on a save from before the lock; migrateTrialUnlock settles it.
+  // Whether the Trials section is open (see trialsOpen in challenges.ts). It
+  // opens at TRIALS_UNLOCK_LEVEL when the "Trials unlocked" popup is dismissed,
+  // which also hands over the first trial, and stays open through death
+  // (resolvePlayerDeathIfDead carries it). Undefined only on a save from
+  // before the lock; migrateTrialUnlock settles it.
   trialsUnlocked?: boolean;
   // Whether the Talents tab is open (see talentsOpen in talents.ts). It opens
   // at TALENTS_UNLOCK_LEVEL when the "Talents unlocked" popup is dismissed and
@@ -165,9 +166,10 @@ export interface Character {
   // Gold to spend (see constants/economy.ts). Undefined = 0: a fresh character
   // (createCharacter, so a death too) never sets it, so a death wipes it.
   gold?: number;
-  // Side-quest challenges for this run (see challenges.ts): every one taken,
-  // active and done, so a finished one is never offered again. A death starts
-  // a fresh run with none. Undefined on a save from before challenges.
+  // Side-quest challenges (see challenges.ts): every one taken, active and
+  // done, so a finished one is never offered again. Kept through death
+  // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
+  // once per account. Undefined on a save from before challenges.
   challenges?: ChallengeEntry[];
   // The challenge the level-up side-quest card currently names; kept so the
   // popup shows the same one after a reload. Cleared by any pick.
