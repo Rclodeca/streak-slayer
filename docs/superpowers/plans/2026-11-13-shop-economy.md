@@ -40,7 +40,7 @@ The order is driven by two rules: each milestone must leave the live game cohere
 | # | Milestone | What ships | Blocked on | Push live? |
 |---|---|---|---|---|
 | **A** | **Rogue Legacy loop** | Gold from bosses, gems from level milestones, permanent bought tree. | Rough price sheet (Task A1). | No: gold has nothing to buy past the gem-gated nodes. Hold for B. |
-| **B** | **Shop tab + trial rework** | Shop replaces the Trials tab (gold: basic items, daily rare, rare epic/relic, restock, potion, boosts). Trials become one-time account achievements paying gems/gold/EXP, no relics. Trials stay under the cog. | Shop tab mock pick (`shop-tab-2.html`); new trial list. | **Yes, A + B together.** |
+| **B** | **Shop tab + trial rework** | Shop replaces the Trials tab (gold: basic items, daily rare, rare epic/relic, restock, potion, boosts). Trials become one-time account achievements paying gems/gold/EXP, no relics. Trials stay under the cog. | Shop tab mock pick (`shop-tab-2.html`); new trial list. | **Yes, A + B together.** Built 2026-11-13 (plan `2026-11-13-shop-milestone-b.md`), not pushed. |
 | **C** | **Shop services, fewer level-up events** | Reroll, Overdrive, item slots, enchant, item upgrade move into the Shop. Level-up event choice trimmed or removed. Special/Ult auto at set levels. | §12 "Level-up events" and "Special and Ult". | Yes |
 | **D** | **Vault (gems)** | Revive on the death screen (Phoenix Feather removed), streak freeze (in advance), rotating rare + shop-exclusive items, capped gems → gold. Drops made rarer. | §12 revive limit, gold freeze. | Yes |
 | **E** | **Skins** | Gem hero/base/arena skins, a few gold grind skins. | Pixellab art runs (show inputs + cost first). | Yes |

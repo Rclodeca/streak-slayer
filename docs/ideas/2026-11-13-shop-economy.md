@@ -195,14 +195,14 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 
 ## 12. Open questions
 
-- **Relic sources:** dungeons mostly. Shop, very rare drops? How many dungeons are needed to cover the 17 relics?
+- **Relic sources:** dungeons mostly. Since Milestone B the gold shop has one now and then (an epic or relic on 1 day in 3, a relic 1 time in 3 of those). Very rare drops? How many dungeons are needed to cover the 17 relics?
 - **Gem-bought items lost on death:** do they come back into the rotation later?
 - **Gold streak freeze:** sell it at all? Since buys are used immediately, a freeze would be set up when bought.
 - **Revive limit:** one per boss, one per run, or no limit at a fixed price?
 - **Level-up events:** Overdrive, reroll, item slots and heal move to the shop. Do level-up events go away entirely?
 - **Special and Ult:** leaning towards handing them out automatically at set levels (maybe 5 and 8), because they're a fun mechanic every player should get to use. The alternative is selling them for gold in the shop.
 - **"Kept" vs "This run" on each item:** how it looks. Visual pass later.
-- **Prices and the gem budget:** not tuned. Needs a rough budget (free gems in, gem costs out) before building.
+- **Prices and the gem budget:** not tuned. Needs a rough budget (free gems in, gem costs out) before building. Milestone B's gold prices are multiples of the current boss's gold (common 1×, uncommon 1.5×, rare 2.5×, epic 4×, relic 6×, tonics 1×, restock 0.5× doubling), all in `constants/economy.ts`.
 
 ### Parked ideas
 - **Gold skill.** A rare new habit skill (maybe a 5% roll on a new skill) that earns gold instead of dealing damage or healing. Gold per check would scale with the boss number. Fun, but not planned yet.
