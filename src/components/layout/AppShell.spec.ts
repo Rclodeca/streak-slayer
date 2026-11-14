@@ -52,6 +52,12 @@ describe('AppShell', () => {
     expect(order.indexOf('talent-section-stub')).toBeLessThan(order.indexOf('activity-log-stub'));
   });
 
+  it('puts the Shop on the right under Talents', () => {
+    const side = shallowMount(AppShell).find('.side');
+    const html = side.html();
+    expect(html.indexOf('shop-section-stub')).toBeGreaterThan(html.indexOf('talent-section-stub'));
+  });
+
   it('hides the log until it is switched on', () => {
     const wrapper = shallowMount(AppShell);
     expect(wrapper.find('activity-log-stub').exists()).toBe(false);

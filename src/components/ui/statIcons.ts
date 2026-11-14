@@ -29,6 +29,7 @@ import {
   ShieldOff,
   ShieldX,
   Skull,
+  RefreshCw,
   Sparkles,
   Star,
   Sword,
@@ -66,6 +67,7 @@ export const STAT_ICONS = {
   skull: { icon: Skull, color: 'var(--dmg-physical)' },
   exp: { icon: Sparkles, color: 'var(--icon-exp)' },
   gold: { icon: Coins, color: 'var(--icon-gold)' },
+  restock: { icon: RefreshCw, color: 'var(--icon-gold)' },
   // Not Ult's violet, which shares the Gem glyph.
   gems: { icon: Gem, color: 'var(--icon-arcane)' },
   levelUp: { icon: ChevronsUp, color: 'var(--icon-exp)' },

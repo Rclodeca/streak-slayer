@@ -1125,7 +1125,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     --spine: var(--damage-color);
   }
 
-  :is(.quest-section, .trial-section) {
+  :is(.quest-section, .trial-section, .shop-section) {
     --spine: #{$brass};
   }
 
@@ -1153,7 +1153,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // name on a pixel pennant with a swallowtail, dyed the section's colour,
   // pinned by a solid medallion carrying the icon. The cloth stays dark in
   // every theme, so its letters are always pale.
-  :is(.habit-list-header, .quest-header, .hero-page-header, .talent-header) h2.section-title {
+  :is(.habit-list-header, .quest-header, .hero-page-header, .talent-header, .shop-wares, .shop-header) h2.section-title {
     display: inline-flex;
     align-items: center;
     gap: 0;
@@ -1174,7 +1174,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     --medal-ink: var(--bg);
   }
 
-  :is(.quest-section, .trial-section) .section-title {
+  :is(.quest-section, .trial-section, .shop-section) .section-title {
     --medal: var(--brass-solid);
     --medal-ink: #2a2010;
   }
@@ -4025,6 +4025,163 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .shop-switch .side-vault.selected svg {
     color: var(--icon-arcane);
+  }
+
+  // The Shop's wares (docs/mockups/shop-tab-2.html, A): lifted cards like
+  // the gear rows, each item in a socket lit by its rarity; tonics and the
+  // restock in a plain socket. The buy button is stone, its price in gold
+  // (greyed red when too dear); a spent one (Sold, 2d left) reads dim.
+  :is(.shop-ware-row, .shop-featured).rarity-common {
+    --rarity: var(--rarity-common);
+    --tier: 10%;
+    --tier-soft: 6%;
+  }
+
+  :is(.shop-ware-row, .shop-featured).rarity-uncommon {
+    --rarity: var(--rarity-uncommon);
+    --tier: 24%;
+    --tier-soft: 12%;
+  }
+
+  :is(.shop-ware-row, .shop-featured).rarity-rare {
+    --rarity: var(--rarity-rare);
+    --tier: 38%;
+    --tier-soft: 20%;
+  }
+
+  :is(.shop-ware-row, .shop-featured).rarity-epic {
+    --rarity: var(--rarity-epic);
+    --tier: 52%;
+    --tier-soft: 28%;
+  }
+
+  :is(.shop-ware-row, .shop-featured).rarity-relic {
+    --rarity: var(--rarity-relic);
+    --tier: 68%;
+    --tier-soft: 38%;
+  }
+
+  .shop-ware-row {
+    @include lifted-card;
+  }
+
+  .shop-ware-row .shop-socket {
+    color: var(--moon-solid);
+    @include socket(var(--card-hi));
+  }
+
+  .shop-ware-row.item .shop-socket {
+    @include tier-socket;
+  }
+
+  :is(.shop-ware-row, .shop-featured) .shop-name {
+    @include name-serif(700);
+    font-size: 1rem;
+    line-height: 1.15;
+    color: var(--card-ink);
+  }
+
+  .shop-featured .shop-name {
+    font-size: 1.2rem;
+  }
+
+  :is(.shop-ware-row, .shop-featured) :is(.shop-text, .shop-effect, .shop-bonus) {
+    @include true-sans(0.8rem);
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  :is(.shop-ware-row, .shop-featured) .shop-bonus b {
+    font-weight: 800;
+    color: var(--card-ink);
+  }
+
+  :is(.shop-ware-row, .shop-featured) .shop-bonus.drawback b {
+    color: var(--damage-color);
+  }
+
+  :is(.shop-ware-row, .shop-featured) :is(.shop-warn, .featured-keep) {
+    @include plain-label(0.7rem, 700);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--spent-text);
+  }
+
+  .shop-buy {
+    @include stone-button;
+  }
+
+  .shop-buy .currency .count {
+    @include name-serif(700);
+    font-size: 0.95rem;
+    color: var(--card-ink);
+  }
+
+  .shop-buy.short .currency .count {
+    color: color-mix(in srgb, var(--damage-color) 70%, var(--spent-text));
+  }
+
+  .shop-buy:disabled {
+    cursor: default;
+    background: $well;
+    border-bottom-color: transparent;
+    box-shadow: inset 2px 2px 0 var(--sunk-hi);
+  }
+
+  .shop-buy.spent {
+    color: var(--spent-text);
+  }
+
+  // The day's piece: a lifted card with a velvet well of its rarity on top.
+  .shop-featured {
+    overflow: hidden;
+    @include lifted-card;
+  }
+
+  .shop-featured .velvet {
+    background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--rarity) 34%, #12162a) 0%, #0b0e18 70%);
+  }
+
+  .shop-featured .velvet::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    width: 70px;
+    height: 8px;
+    margin-left: -35px;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
+  }
+
+  .shop-featured .featured-art {
+    position: relative;
+    z-index: 1;
+  }
+
+  .shop-featured .ribbon {
+    padding: 3px 8px;
+    @include plain-label(0.65rem, 700);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #0b0e18;
+    background: var(--rarity);
+    @include pixel-corners(2px);
+  }
+
+  .shop-featured .featured-body {
+    border-top: 2px solid var(--rarity);
+  }
+
+  .shop-note {
+    @include true-sans(0.8rem);
+    color: var(--spent-text);
+  }
+
+  .shop-desk .currency .count {
+    @include brass-count;
+    min-width: 26px;
+    height: 26px;
+    font-size: 0.95rem;
   }
 
   .talent-sealed .lock-text {

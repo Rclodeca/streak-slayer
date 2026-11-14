@@ -173,6 +173,7 @@ watch(
           <aside class="side">
             <ProgressSummary class="progress" />
             <TalentSection v-if="!isPhone" />
+            <ShopSection v-if="!isPhone" />
             <ActivityLog v-if="logVisible.on" />
             <div class="log-end" aria-hidden="true">
               <span class="log-end-rule" />
