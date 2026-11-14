@@ -72,12 +72,18 @@ export function isTalentUnlocked(character: Pick<Character, 'talents'>, id: Tale
   }
 }
 
-/** Whether one more rank of `id` can be bought right now: the tab is open, the node is open and not full, and the gold and `gems` both cover the next rank. */
+/**
+ * Whether one more rank of `id` can be bought right now: the hero is alive,
+ * the tab is open, the node is open and not full, and the gold and `gems` both
+ * cover the next rank. Alive (rounded, as the death check is) because a dead
+ * hero's gold is about to be lost, and a reload can leave the death screen down.
+ */
 export function canBuyTalent(character: Character, gems: number, id: TalentId): boolean {
   const def = defFor(id);
   if (!def) return false;
   const cost = nextTalentCost(character);
-  return talentsOpen(character)
+  return Math.round(character.currentHealth) > 0
+    && talentsOpen(character)
     && isTalentUnlocked(character, id)
     && talentRank(character, id) < def.maxRank
     && characterGold(character) >= cost.gold

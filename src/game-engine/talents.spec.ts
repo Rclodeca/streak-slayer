@@ -170,6 +170,11 @@ describe('buying a rank', () => {
     expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'nonsense' as TalentId)).toBeNull();
   });
 
+  it('is refused while the hero lies dead, so gold due to be lost can’t be spent', () => {
+    expect(canBuyTalent(makeCharacter({ gold: 500, currentHealth: 0 }), 0, 'might')).toBe(false);
+    expect(canBuyTalent(makeCharacter({ gold: 500, currentHealth: 0.3 }), 0, 'might')).toBe(false);
+  });
+
   it('is refused before the Talents tab opens', () => {
     expect(canBuyTalent(makeCharacter({ level: 4, gold: 500 }), 0, 'might')).toBe(false);
   });

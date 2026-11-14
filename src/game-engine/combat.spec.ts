@@ -1063,6 +1063,13 @@ describe('resolvePlayerDeathIfDead', () => {
     expect(result.character.talentsUnlocked).toBe(true);
   });
 
+  it('a death with kept Vigor ranks starts the new run at full health', () => {
+    const dead = makeCharacter({ currentHealth: 0, talents: { vigor: 3 }, talentsUnlocked: true });
+    const { character } = resolvePlayerDeathIfDead(dead, makeBoss(), [], createRng(1));
+    expect(character.currentHealth).toBeCloseTo(effectiveStat(character, 'health'), 6);
+    expect(character.currentHealth).toBeGreaterThan(character.starterStats.health);
+  });
+
   it('a death wipes gold', () => {
     const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0, gold: 900 }), makeBoss(), [], createRng(1));
     expect(characterGold(result.character)).toBe(0);
