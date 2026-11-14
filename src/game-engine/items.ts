@@ -283,6 +283,16 @@ export function recordRelicEarned(character: Character, itemId: string): Charact
 }
 
 /**
+ * Whether a boss kill drops anything: boss 1 always does (each run's first
+ * find), the rest on ITEM_DROP_CHANCE. Always draws one roll, so the rng
+ * sequence after it doesn't depend on the boss.
+ */
+export function rollsBossDrop(bossIndex: number, rng: Rng): boolean {
+  const roll = rng();
+  return bossIndex === 1 || roll < TUNING.ITEM_DROP_CHANCE;
+}
+
+/**
  * Rolls this character's item drop for defeating the boss at `bossIndex`
  * (`maxCount` further caps how many items drop, e.g. 1 for a single-item reward).
  * Desired count follows a step curve (more items from later bosses, capped

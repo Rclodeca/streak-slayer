@@ -15,6 +15,7 @@ import {
   maxEquipSlots,
   recordRelicEarned,
   rollItemDrops,
+  rollsBossDrop,
   unownedDroppableItems,
 } from './items';
 import type { BoostableStat, DropRarity, ItemDef } from './items';
@@ -253,7 +254,28 @@ describe('rollItemDrops', () => {
     const character = makeCharacter();
     expect(rollItemDrops(character, 1, createRng(1))).toHaveLength(1);
     expect(rollItemDrops(character, TUNING.ITEM_DROP_EVERY_N_BOSSES + 1, createRng(1))).toHaveLength(2);
-    expect(rollItemDrops(character, TUNING.ITEM_DROP_EVERY_N_BOSSES * 2 + 1, createRng(1))).toHaveLength(3);
+    expect(rollItemDrops(character, TUNING.ITEM_DROP_EVERY_N_BOSSES * 2 + 1, createRng(1))).toHaveLength(2);
+  });
+
+  it('caps at two', () => {
+    expect(rollItemDrops(makeCharacter(), 12, createRng(1))).toHaveLength(2);
+  });
+});
+
+describe('rollsBossDrop', () => {
+  it('always drops for boss 1', () => {
+    expect(rollsBossDrop(1, () => 0.99)).toBe(true);
+  });
+
+  it('drops on two kills in three after that', () => {
+    expect(rollsBossDrop(5, () => 0.99)).toBe(false);
+    expect(rollsBossDrop(5, () => 0.1)).toBe(true);
+  });
+
+  it('draws one roll even for boss 1, so the sequence stays stable', () => {
+    let draws = 0;
+    rollsBossDrop(1, () => (draws++, 0.5));
+    expect(draws).toBe(1);
   });
 
   it('caps drop count at ITEM_DROP_MAX_COUNT even for very high boss indices', () => {

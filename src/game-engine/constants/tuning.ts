@@ -340,8 +340,9 @@ export const TUNING = {
     SUNDER_FACTOR: 0.5,
     UNDYING_FLOOR_PCT: 10,
   },
-  ITEM_DROP_EVERY_N_BOSSES: 3, // bosses 1-3 drop 1 item, 4-6 drop 2, 7+ drop 3 (capped)
-  ITEM_DROP_MAX_COUNT: 3,
+  ITEM_DROP_EVERY_N_BOSSES: 3, // bosses 1-3 drop 1 item, 4+ drop 2, on 2 kills in 3; boss 1 always
+  ITEM_DROP_MAX_COUNT: 2,
+  ITEM_DROP_CHANCE: 2 / 3, // a boss kill's chance to drop anything; rarer since items can be bought
   // Each rarity's percent share of item drops at a player level, blended
   // linearly between rows; every level past the last row uses it. Commons
   // fade out and stop at 30, epics never get as common as early commons.

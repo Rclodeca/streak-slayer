@@ -233,6 +233,7 @@ export {
   slotUpgradesOf,
   recordRelicEarned,
   rollItemDrops,
+  rollsBossDrop,
   rollScavengerDrop,
 } from './items';
 

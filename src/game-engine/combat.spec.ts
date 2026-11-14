@@ -1017,6 +1017,19 @@ describe('resolveBossDefeatIfDead', () => {
     expect(result.character.ownedItemIds).toEqual(result.itemsDropped.map((item) => item.id));
   });
 
+  it('a kill that misses its drop roll drops nothing but still pays gold and EXP', () => {
+    const character = makeCharacter();
+    const boss = makeBoss({ index: 5, health: 0 });
+    const rng = () => 0.99;
+
+    const result = resolveBossDefeatIfDead(character, boss, rng);
+
+    expect(result.defeated).toBe(true);
+    expect(result.itemsDropped).toEqual([]);
+    expect(result.goldReward).toBe(bossGold(5));
+    expect(result.expReward).toBeGreaterThan(0);
+  });
+
   it('returns no items dropped once the character already owns the full catalog', () => {
     const character = makeCharacter({ ownedItemIds: ITEM_CATALOG.map((item) => item.id) });
     const boss = makeBoss({ index: 5, health: 0 });
