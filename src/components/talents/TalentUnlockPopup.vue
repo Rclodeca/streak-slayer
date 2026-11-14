@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronsUp, Infinity as InfinityIcon, Sprout } from 'lucide-vue-next';
+import { HeartPulse, Shield, Sword } from 'lucide-vue-next';
 import { useModalPriority } from '../../composables/useModalPriority';
 import { useCharacterStore } from '../../store/characterStore';
 import Modal from '../ui/Modal.vue';
@@ -13,9 +13,9 @@ const { talentUnlockVisible } = useModalPriority();
 const characterStore = useCharacterStore();
 
 const RULES: Rule[] = [
-  { icon: Sprout, tone: 'accent', title: 'Learn', text: 'Three paths: strike, endure, mend.' },
-  { icon: ChevronsUp, tone: 'solid', title: 'Grow', text: 'Every rank makes you stronger.' },
-  { icon: InfinityIcon, tone: 'solid', title: 'Keep', text: 'Talents stay when you fall.' },
+  { icon: Sword, tone: 'accent', title: 'Damage', text: 'Hit harder.' },
+  { icon: Shield, tone: 'solid', title: 'Defense', text: 'Take less damage.' },
+  { icon: HeartPulse, tone: 'solid', title: 'Healing', text: 'Heal more.' },
 ];
 
 function onward() {
@@ -29,7 +29,7 @@ function onward() {
       <div class="emblem" aria-hidden="true">
         <component :is="TALENTS_TAB_ICON" :size="34" :stroke-width="1.5" />
       </div>
-      <p class="tagline">The tree remembers.</p>
+      <p class="tagline">Talents make you stronger, and stay when you fall.</p>
       <RuleList :rules="RULES" />
       <button type="button" class="onward primary-button" @click="onward">Onward</button>
     </div>

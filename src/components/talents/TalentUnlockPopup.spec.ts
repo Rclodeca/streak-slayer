@@ -34,7 +34,7 @@ describe('TalentUnlockPopup', () => {
     reachLevel5();
     mount(TalentUnlockPopup, { attachTo: document.body });
     expect(q('.talent-unlock')).not.toBeNull();
-    expect(q('.talent-unlock')?.textContent).toContain('Talents stay when you fall.');
+    expect(q('.talent-unlock')?.textContent).toContain('Talents make you stronger, and stay when you fall.');
     expect(q('.talent-unlock')?.textContent).not.toMatch(/points?|gold|gems?/i);
     expect(q('.talent-unlock .emblem .count')).toBeNull();
   });
