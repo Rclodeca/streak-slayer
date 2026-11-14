@@ -1,6 +1,6 @@
 # Three monetization models
 
-Status: brainstorm (2026-11-10). Nothing here is decided or built. Follows the shop draft (2026-11-10-shop.md) and the monetization brainstorm (2026-11-09-monetization.md).
+Status: superseded by `2026-11-13-shop-economy.md` (gold + gems; Embers dropped). Brainstorm (2026-11-10). Nothing here is decided or built. Follows the shop draft (2026-11-10-shop.md) and the monetization brainstorm (2026-11-09-monetization.md).
 
 All three share one base game so they compare cleanly; each model only differs in what's sold and how. Prices and earn rates are rough first guesses to show the shape. None of them has been simulated.
 
