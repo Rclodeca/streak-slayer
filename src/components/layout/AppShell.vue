@@ -36,6 +36,7 @@ import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useStageFocused } from '../../composables/useStageFocused';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useDevToolsStore } from '../../store/devToolsStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { useTabStore } from '../../store/tabStore';
 import { useTrialsBadge } from '../../composables/useTrialsBadge';
@@ -49,6 +50,7 @@ const { claimCount, newTrial } = useTrialsBadge();
 const stageFocused = useStageFocused();
 
 const isDev = import.meta.env.DEV;
+const devTools = useDevToolsStore();
 
 // Follows the fight stage, which keeps a slain boss up until the next arrives.
 const { displayedBoss } = useCelebration();
@@ -139,8 +141,9 @@ watch(
 
     <HighScorePage v-if="showHighScores" />
     <template v-else>
-      <SkipDayButton v-if="isDev" />
-      <PopupPreview v-if="isDev" />
+      <button v-if="isDev" type="button" class="dev-toggle" :aria-pressed="devTools.on" @click="devTools.toggle()">Dev</button>
+      <SkipDayButton v-if="isDev && devTools.on" />
+      <PopupPreview v-if="isDev && devTools.on" />
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
         <component :is="topBar">
           <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="tabStore.select('trials')" />
@@ -182,6 +185,22 @@ watch(
 </template>
 
 <style scoped>
+/* Dev builds only: shows or hides the testing buttons below it. */
+.dev-toggle {
+  align-self: flex-start;
+  font-size: 0.8em;
+  opacity: 0.7;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: inherit;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+.dev-toggle[aria-pressed='true'] {
+  opacity: 1;
+}
+
 /* Under the menu button, in the stage's corner: a way to the Trials tab. The
    Focus strip is too short to hold both. */
 .stage-trials {
