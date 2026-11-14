@@ -189,6 +189,10 @@ export const TUNING = {
   // the day it's bought.
   EXP_BOOST_BONUS: 0.25,
   EXP_BOOST_DAYS: 3,
+  // The shop's Healing Draught restores DRAUGHT_HEAL_PCT% of max health, then
+  // can't be bought again for DRAUGHT_COOLDOWN_DAYS days, counting the day it's drunk.
+  DRAUGHT_HEAL_PCT: 25,
+  DRAUGHT_COOLDOWN_DAYS: 3,
   // The Double item event (from DOUBLE_ITEM_MIN_LEVEL) multiplies every bonus
   // of one equipped item by DOUBLED_ITEM_MULTIPLIER until that item is discarded,
   // for up to DOUBLE_ITEM_MAX items at a time.

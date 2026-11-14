@@ -26,6 +26,11 @@ export function restockFee(restocksToday: number, bossIndex: number): number {
   return roundPrice(0.5 * bossGold(bossIndex) * 2 ** restocksToday);
 }
 
+/** A tonic's price while boss `bossIndex` is up: one boss kill's gold. Cheap, to be bought again and again. */
+export function tonicPrice(bossIndex: number): number {
+  return roundPrice(bossGold(bossIndex));
+}
+
 /** Each day's stock: up to `basics` common/uncommon items and a rare, and on `featuredChance` of days an epic or relic (a relic `relicShare` of those times). */
 export const SHOP_STOCK = { basics: 3, featuredChance: 1 / 3, relicShare: 1 / 3 };
 

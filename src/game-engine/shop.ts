@@ -3,11 +3,15 @@
 // The stock lives on Character.shop, so a death wipes it. Everything here is
 // pure; composables/useShop.ts runs it against the stores.
 
-import { SHOP_STOCK, restockFee, warePrice } from './constants/economy';
+import { SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
+import { TUNING } from './constants/tuning';
+import { applyCritBoostEvent, applyHealBoostEvent } from './events';
 import { characterGold } from './gold';
 import { ITEM_CATALOG, dropRarityShares, recordRelicEarned } from './items';
 import type { DropRarity, ItemDef } from './items';
+import { activeCritBoost, activeExpBoost, activeHealBoost, applyExpBoost, effectiveStat } from './leveling';
 import { pickRandom, type Rng } from './rng';
+import { daysBetweenDayKeys } from './time';
 import type { Character, ShopStock, ShopWare } from './types';
 
 /** Up to `count` distinct random items from `pool`. */
@@ -90,4 +94,57 @@ export function buyWare(character: Character, itemId: string): { character: Char
     shop: { ...shop, featured: sell(shop.featured), wares: shop.wares.map((w) => sell(w)!) },
   };
   return { character: recordRelicEarned(bought, itemId), item };
+}
+
+export type TonicId = 'draught' | 'crit' | 'heal' | 'exp';
+
+const pct = (bonus: number) => Math.round(bonus * 100);
+
+/** The tonics, always on the shelf. `icon` is a statIcons key. */
+export const TONIC_DEFS: readonly { id: TonicId; name: string; effect: string; icon: string }[] = [
+  { id: 'draught', name: 'Healing Draught', effect: `Heal ${TUNING.DRAUGHT_HEAL_PCT}% of max HP.`, icon: 'healing' },
+  { id: 'crit', name: 'Hawk Tonic', effect: `+${pct(TUNING.CRIT_BOOST_BONUS)}% crit chance for ${TUNING.CRIT_BOOST_DAYS} days.`, icon: 'critBoost' },
+  { id: 'heal', name: 'Verdant Tonic', effect: `+${pct(TUNING.HEAL_BOOST_BONUS)}% healing for ${TUNING.HEAL_BOOST_DAYS} days.`, icon: 'healBoost' },
+  { id: 'exp', name: "Scholar's Tonic", effect: `+${pct(TUNING.EXP_BOOST_BONUS)}% EXP for ${TUNING.EXP_BOOST_DAYS} days.`, icon: 'expBoost' },
+];
+
+const BOOSTS = { crit: activeCritBoost, heal: activeHealBoost, exp: activeExpBoost } as const;
+
+/**
+ * What a tonic's row shows on `dayKey`: buyable, too dear, its boost still
+ * running (`active`), the draught resting (`cooldown`), or the hero at full
+ * health (`full`, draught only). `daysLeft` counts the running boost or the rest.
+ */
+export function tonicState(
+  character: Character,
+  id: TonicId,
+  bossIndex: number,
+  dayKey: string,
+): { price: number; status: 'buy' | 'short' | 'active' | 'cooldown' | 'full'; daysLeft: number } {
+  const price = tonicPrice(bossIndex);
+  const afford = characterGold(character) >= price ? 'buy' : 'short';
+  if (id === 'draught') {
+    const rested = character.draughtDayKey === undefined ? Infinity : daysBetweenDayKeys(character.draughtDayKey, dayKey);
+    if (rested < TUNING.DRAUGHT_COOLDOWN_DAYS) return { price, status: 'cooldown', daysLeft: TUNING.DRAUGHT_COOLDOWN_DAYS - rested };
+    if (character.currentHealth >= effectiveStat(character, 'health')) return { price, status: 'full', daysLeft: 0 };
+    return { price, status: afford, daysLeft: 0 };
+  }
+  const boost = BOOSTS[id](character, dayKey);
+  if (boost) return { price, status: 'active', daysLeft: boost.durationDays - daysBetweenDayKeys(boost.appliedDayKey, dayKey) };
+  return { price, status: afford, daysLeft: 0 };
+}
+
+/** Buys and uses a tonic at once. Null unless its row reads `buy`. `healed` is what the draught restored. */
+export function buyTonic(character: Character, id: TonicId, bossIndex: number, dayKey: string): { character: Character; healed?: number } | null {
+  const { price, status } = tonicState(character, id, bossIndex, dayKey);
+  if (status !== 'buy') return null;
+  const paid = { ...character, gold: characterGold(character) - price };
+  if (id === 'draught') {
+    const max = effectiveStat(paid, 'health');
+    const currentHealth = Math.min(paid.currentHealth + max * (TUNING.DRAUGHT_HEAL_PCT / 100), max);
+    return { character: { ...paid, currentHealth, draughtDayKey: dayKey }, healed: currentHealth - paid.currentHealth };
+  }
+  if (id === 'crit') return { character: applyCritBoostEvent(paid, dayKey) };
+  if (id === 'heal') return { character: applyHealBoostEvent(paid, dayKey) };
+  return { character: applyExpBoost(paid, dayKey) };
 }

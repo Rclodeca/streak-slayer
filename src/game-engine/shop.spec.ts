@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { restockFee, warePrice } from './constants/economy';
+import { restockFee, tonicPrice, warePrice } from './constants/economy';
+import { resolvePlayerDeathIfDead } from './combat';
+import { activeExpBoost, effectiveStat } from './leveling';
 import { ITEM_CATALOG, dropRarityShares } from './items';
 import { createRng } from './rng';
-import { buyWare, restockShop, stockShop, wareState } from './shop';
+import { buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
 import type { Character, ShopWare } from './types';
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
@@ -148,5 +150,54 @@ describe('restockShop', () => {
 
   it('restock with no stock does nothing', () => {
     expect(restockShop(makeCharacter({ gold: 10000 }), 5, createRng(4))).toBeNull();
+  });
+});
+
+describe('tonics', () => {
+  const hurt = (gold = 1000) => {
+    const c = makeCharacter({ gold });
+    return { ...c, currentHealth: effectiveStat(c, 'health') / 2 };
+  };
+
+  it('the draught heals 25% and then rests 3 days', () => {
+    const c = hurt();
+    const max = effectiveStat(c, 'health');
+    const drunk = buyTonic(c, 'draught', 4, DAY)!;
+    expect(drunk.character.currentHealth).toBeCloseTo(c.currentHealth + max * 0.25, 6);
+    expect(drunk.healed).toBeCloseTo(max * 0.25, 6);
+    expect(drunk.character.gold).toBe(1000 - tonicPrice(4));
+    expect(tonicState(drunk.character, 'draught', 4, '2026-11-15')).toMatchObject({ status: 'cooldown', daysLeft: 1 });
+    expect(tonicState(drunk.character, 'draught', 4, '2026-11-16').status).toBe('buy');
+  });
+
+  it('no draught at full health', () => {
+    const base = makeCharacter({ gold: 1000 });
+    const c = { ...base, currentHealth: effectiveStat(base, 'health') };
+    expect(tonicState(c, 'draught', 4, DAY).status).toBe('full');
+    expect(buyTonic(c, 'draught', 4, DAY)).toBeNull();
+  });
+
+  it('one of each boost at a time', () => {
+    const c = buyTonic(hurt(), 'crit', 4, DAY)!.character;
+    expect(tonicState(c, 'crit', 4, DAY)).toMatchObject({ status: 'active', daysLeft: 3 });
+    expect(buyTonic(c, 'crit', 4, DAY)).toBeNull();
+    expect(tonicState(c, 'heal', 4, DAY).status).toBe('buy');
+  });
+
+  it('the EXP tonic grants the EXP boost', () => {
+    const c = buyTonic(hurt(), 'exp', 4, DAY)!.character;
+    expect(activeExpBoost(c, DAY)).toBeDefined();
+  });
+
+  it('short on gold buys no tonic', () => {
+    const c = hurt(0);
+    expect(tonicState(c, 'heal', 4, DAY).status).toBe('short');
+    expect(buyTonic(c, 'heal', 4, DAY)).toBeNull();
+  });
+
+  it('a death clears the draught cooldown', () => {
+    const dead = makeCharacter({ currentHealth: 0, draughtDayKey: DAY });
+    const boss = { index: 1, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
+    expect(resolvePlayerDeathIfDead(dead, { ...boss }, [], createRng(1)).character.draughtDayKey).toBeUndefined();
   });
 });

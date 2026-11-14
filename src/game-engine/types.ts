@@ -169,6 +169,9 @@ export interface Character {
   // Today's shop stock (see shop.ts). A fresh character never has one, so a
   // death wipes it and the new run gets a new stock.
   shop?: ShopStock;
+  // The day the last Healing Draught was drunk (see tonicState in shop.ts).
+  // A fresh character has none, so a death resets the cooldown.
+  draughtDayKey?: string;
   // Side-quest challenges (see challenges.ts): every one taken, active and
   // done, so a finished one is never offered again. Kept through death
   // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
