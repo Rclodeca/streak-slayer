@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { DEFAULT_SCENE_ART, HERO_CLASSES, skinState, skinsFor } from '../../game-engine';
+import { DEFAULT_SCENE_ART, HERO_CLASSES, skinState, skinsFor, wornSkin } from '../../game-engine';
 import type { HeroClass, SkinDef, SkinSlot } from '../../game-engine';
 import { useSkins } from '../../composables/useSkins';
 import { useAccountStore } from '../../store/accountStore';
@@ -52,7 +52,7 @@ const arenaTiles = computed(() => tilesFor('arena', 'Stone Hall', DEFAULT_SCENE_
 /** A tile's button: Worn, Wear, or the gem price (greyed when short). */
 function stateOf(tile: Tile): 'worn' | 'owned' | 'buy' | 'short' {
   if (tile.skin) return skinState(accountStore.account, tile.skin);
-  return accountStore.account.wornSkins?.[tile.slot] ? 'owned' : 'worn';
+  return wornSkin(accountStore.account, tile.slot) ? 'owned' : 'worn';
 }
 const LABELS = { worn: 'Worn', owned: 'Wear' } as const;
 

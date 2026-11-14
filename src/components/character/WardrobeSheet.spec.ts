@@ -72,6 +72,15 @@ describe('WardrobeSheet', () => {
     expect(heroArt(useAccountStore().account, 'warrior')).toBe('player/warrior');
   });
 
+  it('marks the default worn when the worn skin left the catalog', async () => {
+    const accountStore = useAccountStore();
+    accountStore.account = { ...accountStore.account, ownedSkinIds: ['gone'], wornSkins: { arena: 'gone' } };
+    await open();
+    const stoneHall = document.querySelector<HTMLElement>('.wardrobe-arena .wardrobe-tile')!;
+    expect(stoneHall.textContent).toContain('Stone Hall');
+    expect(stoneHall.querySelector('.shop-buy')!.textContent).toBe('Worn');
+  });
+
   it('buys and wears an arena', async () => {
     useAccountStore().addGems(arena.gems);
     await open();
