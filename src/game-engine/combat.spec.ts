@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyResist, bossExpReward } from './boss';
 import { bossGold } from './constants/economy';
+import { characterGold } from './gold';
 import { MILESTONE_EXP } from './constants/milestones';
 import { TUNING } from './constants/tuning';
 import { ITEM_CATALOG, itemBonusPercent, itemFlatBonus } from './items';
@@ -11,7 +12,6 @@ import { createCharacter, heroClassFor } from './character';
 import {
   activeWoundsEffect,
   bossMissDamage,
-  characterGold,
   chooseHero,
   completeHabit,
   effectiveResistAfterPen,
@@ -1056,6 +1056,13 @@ describe('resolveBossDefeatIfDead', () => {
 });
 
 describe('resolvePlayerDeathIfDead', () => {
+  it('a death keeps talents and the open tab', () => {
+    const dead = makeCharacter({ currentHealth: 0, talents: { might: 3 }, talentsUnlocked: true });
+    const result = resolvePlayerDeathIfDead(dead, makeBoss(), [], createRng(1));
+    expect(result.character.talents).toEqual({ might: 3 });
+    expect(result.character.talentsUnlocked).toBe(true);
+  });
+
   it('a death wipes gold', () => {
     const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0, gold: 900 }), makeBoss(), [], createRng(1));
     expect(characterGold(result.character)).toBe(0);

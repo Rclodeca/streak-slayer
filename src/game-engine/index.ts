@@ -134,7 +134,6 @@ export type { CombatResult, HabitDamageBreakdown } from './combat';
 export {
   activeWoundsEffect,
   bossMissDamage,
-  characterGold,
   chooseHero,
   completeHabit,
   DAMAGE_TYPE_STARTER_STAT,
@@ -187,30 +186,31 @@ export {
   unlockTrials,
 } from './challenges';
 
+export { characterGold } from './gold';
+
 export type { Account } from './account';
 export { createAccount, recordLevel, spendGems } from './account';
 
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './talents';
 export {
   bossKillHealPct,
-  canSpendTalent,
+  buyTalent,
+  canBuyTalent,
   dodgeChancePct,
   healsCanCrit,
   isTalentUnlocked,
   lastStandFactor,
   levelUpHealBonusPct,
   milestoneExpMultiplier,
+  nextTalentCost,
   questExpMultiplier,
-  spendTalent,
   talentBonusFlat,
   talentBonusPercent,
   talentCritBonus,
   talentEffectValue,
   TALENT_DEFS,
-  talentPointsInShoot,
-  talentPointsSpent,
-  talentPointsTotal,
-  talentPointsUnspent,
+  talentRanksBought,
+  talentRanksInShoot,
   talentRank,
   talentsOpen,
   TALENT_SHOOTS,

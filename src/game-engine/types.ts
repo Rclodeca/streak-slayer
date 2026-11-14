@@ -152,14 +152,15 @@ export interface Character {
   // popup is dismissed, which also hands over the first trial. Undefined only
   // on a save from before the lock; migrateTrialUnlock settles it.
   trialsUnlocked?: boolean;
-  // Whether the Talents tab is open this run (see talentsOpen in talents.ts).
-  // It opens at TALENTS_UNLOCK_LEVEL when the "Talents unlocked" popup is
-  // dismissed. A save from before talents has none and gets the popup once
-  // at that level, so nothing migrates it.
+  // Whether the Talents tab is open (see talentsOpen in talents.ts). It opens
+  // at TALENTS_UNLOCK_LEVEL when the "Talents unlocked" popup is dismissed and
+  // stays open through death (resolvePlayerDeathIfDead carries it). A save
+  // from before talents has none and gets the popup once at that level, so
+  // nothing migrates it.
   talentsUnlocked?: boolean;
-  // Ranks spent per talent node this run (see talents.ts). Points are never
-  // stored: unspent = (level - 1) - the ranks here. A fresh character
-  // (createCharacter, so a death too) has none; a Phoenix revive keeps them.
+  // Ranks bought per talent node (see buyTalent in talents.ts), with gold and
+  // gems. Kept through death: createCharacter starts with none, and
+  // resolvePlayerDeathIfDead carries these onto the new run's character.
   talents?: Partial<Record<TalentId, number>>;
   // Gold to spend (see constants/economy.ts). Undefined = 0: a fresh character
   // (createCharacter, so a death too) never sets it, so a death wipes it.

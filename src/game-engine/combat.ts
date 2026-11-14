@@ -6,6 +6,7 @@ import type { HeroClass } from './character';
 import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { bossGold } from './constants/economy';
 import { TUNING } from './constants/tuning';
+import { characterGold } from './gold';
 import { crowdingFactor, rerollAllDamageTypes, resetLevelRewards, skillBaseDamage } from './habits';
 import { activeHealBoost, addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { bumpCritStreak, bumpSpellweave, critMultiplierFor, effectDamageMultiplier, effectUsedToday, hasItemEffect, isForcedCrit, stampEffectDay, starfallReady } from './itemEffects';
@@ -512,11 +513,6 @@ export function reviveWithFeatherIfEquipped(character: Character): { character: 
   };
 }
 
-/** Gold the character holds (undefined on a fresh character or an old save = 0). */
-export function characterGold(character: Pick<Character, 'gold'>): number {
-  return character.gold ?? 0;
-}
-
 /**
  * No-op unless the boss's health has reached 0. When it has, grants the
  * boss's EXP reward (resolving any resulting level-ups), rolls this
@@ -609,7 +605,8 @@ export function resolvePlayerDeathIfDead(
   // screen without actually resetting the run.
   if (Math.round(character.currentHealth) > 0) return { character, boss, habits, died: false };
   // Rolled as the fallen hero, which the new-hero screen then offers first.
-  const freshCharacter = createCharacter(rng, heroClassFor(character));
+  // Talents are bought and kept through death, and the tab stays open.
+  const freshCharacter = { ...createCharacter(rng, heroClassFor(character)), talents: character.talents, talentsUnlocked: character.talentsUnlocked };
   return {
     character: freshCharacter,
     boss: generateBoss(1, rng, undefined, bossAttackAnchorHealth(1, freshCharacter.starterStats.health, freshCharacter.level), boss),

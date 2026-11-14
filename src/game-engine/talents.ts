@@ -1,3 +1,5 @@
+import { TALENT_COST } from './constants/economy';
+import { characterGold } from './gold';
 import { HEAL_CRIT_MULTIPLIER, LAST_STAND_BELOW_PCT, TALENT_DEFS } from './constants/talentTree';
 import type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './constants/talentTree';
 import type { BoostableStat } from './items';
@@ -9,7 +11,7 @@ export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './constan
 /** The player level at which the Talents tab opens, each run. */
 export const TALENTS_UNLOCK_LEVEL = 5;
 
-/** Whether the Talents tab is open: unlocked this run, or at the unlock level with its popup up. */
+/** Whether the Talents tab is open: unlocked once (kept through death), or at the unlock level with its popup up. */
 export function talentsOpen(character: Pick<Character, 'level' | 'talentsUnlocked'>): boolean {
   return character.talentsUnlocked === true || character.level >= TALENTS_UNLOCK_LEVEL;
 }
@@ -19,34 +21,29 @@ export function talentUnlockPending(character: Pick<Character, 'level' | 'talent
   return !character.talentsUnlocked && character.level >= TALENTS_UNLOCK_LEVEL;
 }
 
-/** Opens the Talents tab for the rest of the run (the "Talents unlocked" popup's Onward). The same character back if it is already open. */
+/** Opens the Talents tab for good (the "Talents unlocked" popup's Onward). The same character back if it is already open. */
 export function unlockTalents(character: Character): Character {
   return character.talentsUnlocked ? character : { ...character, talentsUnlocked: true };
 }
 
-/** Ranks spent on `id` (0 for a node never spent on, or an id the tree no longer has). */
+/** Ranks bought of `id` (0 for a node never bought, or an id the tree no longer has). */
 export function talentRank(character: Pick<Character, 'talents'>, id: TalentId): number {
   return character.talents?.[id] ?? 0;
 }
 
-/** Talent points earned this run: one per level gained, never stored. */
-export function talentPointsTotal(character: Pick<Character, 'level'>): number {
-  return Math.max(0, character.level - 1);
-}
-
-/** Ranks spent across the whole tree. */
-export function talentPointsSpent(character: Pick<Character, 'talents'>): number {
+/** Ranks bought across the whole tree; the next one's price follows it (see nextTalentCost). */
+export function talentRanksBought(character: Pick<Character, 'talents'>): number {
   return TALENT_DEFS.reduce((sum, def) => sum + talentRank(character, def.id), 0);
 }
 
-/** Points earned and not yet spent. */
-export function talentPointsUnspent(character: Pick<Character, 'level' | 'talents'>): number {
-  return Math.max(0, talentPointsTotal(character) - talentPointsSpent(character));
+/** Ranks bought in one shoot, for the plinths. */
+export function talentRanksInShoot(character: Pick<Character, 'talents'>, shoot: TalentShoot): number {
+  return TALENT_DEFS.filter((def) => def.shoot === shoot).reduce((sum, def) => sum + talentRank(character, def.id), 0);
 }
 
-/** Ranks spent in one shoot, for the plinths. */
-export function talentPointsInShoot(character: Pick<Character, 'talents'>, shoot: TalentShoot): number {
-  return TALENT_DEFS.filter((def) => def.shoot === shoot).reduce((sum, def) => sum + talentRank(character, def.id), 0);
+/** The price of the next rank, whichever node it goes into: it follows how many ranks are already bought. */
+export function nextTalentCost(character: Pick<Character, 'talents'>): { gold: number; gems: number } {
+  return TALENT_COST(talentRanksBought(character) + 1);
 }
 
 function defFor(id: TalentId): TalentDef | undefined {
@@ -75,21 +72,36 @@ export function isTalentUnlocked(character: Pick<Character, 'talents'>, id: Tale
   }
 }
 
-/** Whether one more rank can go into `id` right now: the tab is open, a point is free, the node is open and not full. */
-export function canSpendTalent(character: Pick<Character, 'level' | 'talents' | 'talentsUnlocked'>, id: TalentId): boolean {
+/** Whether one more rank of `id` can be bought right now: the tab is open, the node is open and not full, and the gold and `gems` both cover the next rank. */
+export function canBuyTalent(character: Character, gems: number, id: TalentId): boolean {
   const def = defFor(id);
   if (!def) return false;
-  return talentsOpen(character) && talentPointsUnspent(character) > 0 && isTalentUnlocked(character, id) && talentRank(character, id) < def.maxRank;
+  const cost = nextTalentCost(character);
+  return talentsOpen(character)
+    && isTalentUnlocked(character, id)
+    && talentRank(character, id) < def.maxRank
+    && characterGold(character) >= cost.gold
+    && gems >= cost.gems;
 }
 
 /**
- * Spends one point on `id`. The same character back if it can't be spent.
- * Spent points never move. Max health can change with a rank (Vigor), so the
- * caller clamps current health to the new max, as equipping an item does.
+ * Buys one rank of `id`: the gold comes off the character, and `gemsSpent`
+ * is for the caller to take off the account. Null if it can't be bought.
+ * Bought ranks are kept through death and never move. Max health can change
+ * with a rank (Vigor), so the caller clamps current health to the new max, as
+ * equipping an item does.
  */
-export function spendTalent(character: Character, id: TalentId): Character {
-  if (!canSpendTalent(character, id)) return character;
-  return { ...character, talents: { ...character.talents, [id]: talentRank(character, id) + 1 } };
+export function buyTalent(character: Character, gems: number, id: TalentId): { character: Character; gemsSpent: number } | null {
+  if (!canBuyTalent(character, gems, id)) return null;
+  const cost = nextTalentCost(character);
+  return {
+    character: {
+      ...character,
+      gold: characterGold(character) - cost.gold,
+      talents: { ...character.talents, [id]: talentRank(character, id) + 1 },
+    },
+    gemsSpent: cost.gems,
+  };
 }
 
 /** Summed per-rank percent of every talent that boosts `stat`; added to equipped items' in itemBonusPercent. */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { TALENT_DEFS, TALENT_SHOOTS, talentPointsInShoot, talentRank } from '../../game-engine';
+import { TALENT_DEFS, TALENT_SHOOTS, talentRanksInShoot, talentRank } from '../../game-engine';
 import type { TalentDef, TalentShoot } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
@@ -19,9 +19,9 @@ const characterStore = useCharacterStore();
 const tabStore = useTabStore();
 const character = computed(() => characterStore.character);
 
-/** The shoot shown first: the one with the most points spent, Damage on a tie. */
+/** The shoot shown first: the one with the most ranks bought, Damage on a tie. */
 function busiestShoot(): TalentShoot {
-  return TALENT_SHOOTS.reduce((best, shoot) => (talentPointsInShoot(character.value, shoot) > talentPointsInShoot(character.value, best) ? shoot : best));
+  return TALENT_SHOOTS.reduce((best, shoot) => (talentRanksInShoot(character.value, shoot) > talentRanksInShoot(character.value, best) ? shoot : best));
 }
 const shoot = ref<TalentShoot>(busiestShoot());
 const selected = ref<TalentDef | null>(null);
@@ -120,7 +120,7 @@ const ROOT_X: Record<TalentShoot, number> = { damage: 61, tank: 183, support: 30
           @click="pick(id)"
         >
           <span class="pl-name"><component :is="SHOOT_LOOK[id].icon" :size="14" aria-hidden="true" />{{ SHOOT_LOOK[id].name }}</span>
-          <b>{{ talentPointsInShoot(character, id) }} spent</b>
+          <b>{{ talentRanksInShoot(character, id) }} spent</b>
         </button>
       </div>
     </div>

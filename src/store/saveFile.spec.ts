@@ -2,7 +2,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCharacter, createRng, generateBoss, talentPointsUnspent, talentUnlockPending } from '../game-engine';
+import { createCharacter, createRng, generateBoss, talentUnlockPending } from '../game-engine';
 import { STORAGE_KEY as FOCUS_MODE_KEY } from './focusModeStore';
 import { STORAGE_KEY as HINTS_KEY } from './hintStore';
 import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highScoreStore';
@@ -104,7 +104,6 @@ describe('talents in a save', () => {
     storeTalentedRun();
     const { characterStore } = initializeStores();
     expect(characterStore.character.talents).toEqual({ might: 3, precision: 1, vigor: 2 });
-    expect(talentPointsUnspent(characterStore.character)).toBe(13 - 6);
   });
 
   it('are carried by the export file and back through an import', () => {
@@ -117,12 +116,11 @@ describe('talents in a save', () => {
     expect(characterStore.character.talents).toEqual({ might: 3, precision: 1, vigor: 2 });
   });
 
-  it('let a save from before talents load with an empty tree and every point to spend', () => {
+  it('let a save from before talents load with an empty tree', () => {
     storeRun('Aldric', 14, 8); // a character with no talents field at all
     const { characterStore } = initializeStores();
     expect(characterStore.character.talents).toBeUndefined();
     expect(talentUnlockPending(characterStore.character)).toBe(true);
-    expect(talentPointsUnspent(characterStore.character)).toBe(13);
   });
 });
 

@@ -2,17 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { createCharacter } from './character';
 import { createRng } from './rng';
 import { TALENT_DEFS, TALENT_SHOOTS } from './constants/talentTree';
+import { TALENT_COST } from './constants/economy';
 import {
-  canSpendTalent,
+  buyTalent,
+  canBuyTalent,
   isTalentUnlocked,
-  spendTalent,
+  nextTalentCost,
   talentBonusFlat,
   talentBonusPercent,
   talentEffectValue,
-  talentPointsInShoot,
-  talentPointsSpent,
-  talentPointsTotal,
-  talentPointsUnspent,
+  talentRanksBought,
+  talentRanksInShoot,
   talentRank,
   talentsOpen,
   talentUnlockPending,
@@ -78,28 +78,21 @@ describe('the talent tree', () => {
   });
 });
 
-describe('talent points', () => {
-  it('give one point per level gained, none at level 1', () => {
-    expect(talentPointsTotal(makeCharacter({ level: 1 }))).toBe(0);
-    expect(talentPointsTotal(makeCharacter({ level: 5 }))).toBe(4);
-    expect(talentPointsTotal(makeCharacter({ level: 20 }))).toBe(19);
+describe('ranks bought', () => {
+  it('count every rank across the tree', () => {
+    expect(talentRanksBought(withTalents(makeCharacter(), { might: 3, precision: 1 }))).toBe(4);
   });
 
-  it('count spent ranks and leave the rest unspent, derived from level', () => {
-    const hero = withTalents(makeCharacter({ level: 10 }), { might: 3, precision: 1 });
-    expect(talentPointsSpent(hero)).toBe(4);
-    expect(talentPointsUnspent(hero)).toBe(5);
-  });
-
-  it('hand a hero already in progress its points with no saved field', () => {
-    expect(talentPointsUnspent(makeCharacter({ level: 12 }))).toBe(11);
-  });
-
-  it('count a shoot’s spent points on their own', () => {
+  it('count a shoot’s ranks on their own', () => {
     const hero = withTalents(makeCharacter(), { might: 2, vigor: 3, 'armor-break': 1 });
-    expect(talentPointsInShoot(hero, 'damage')).toBe(3);
-    expect(talentPointsInShoot(hero, 'tank')).toBe(3);
-    expect(talentPointsInShoot(hero, 'support')).toBe(0);
+    expect(talentRanksInShoot(hero, 'damage')).toBe(3);
+    expect(talentRanksInShoot(hero, 'tank')).toBe(3);
+    expect(talentRanksInShoot(hero, 'support')).toBe(0);
+  });
+
+  it('set the price of the next rank', () => {
+    expect(nextTalentCost(makeCharacter())).toEqual(TALENT_COST(1));
+    expect(nextTalentCost(withTalents(makeCharacter(), { might: 3 }))).toEqual(TALENT_COST(4));
   });
 });
 
@@ -131,47 +124,54 @@ describe('unlocking nodes', () => {
   });
 });
 
-describe('spending a rank', () => {
-  it('costs one point and adds a rank', () => {
-    const hero = makeCharacter({ level: 5 });
-    const after = spendTalent(hero, 'might');
-    expect(talentRank(after, 'might')).toBe(1);
-    expect(talentPointsUnspent(after)).toBe(3);
+describe('buying a rank', () => {
+  it('the first rank costs 100 gold', () => {
+    const result = buyTalent(makeCharacter({ gold: 150 }), 0, 'might');
+    expect(result?.character.gold).toBe(50);
+    expect(talentRank(result!.character, 'might')).toBe(1);
+    expect(result?.gemsSpent).toBe(0);
+  });
+
+  it('the fourth rank needs a gem', () => {
+    const hero = withTalents(makeCharacter({ gold: 1000 }), { might: 3 });
+    expect(buyTalent(hero, 0, 'precision')).toBeNull();
+    const result = buyTalent(hero, 1, 'precision');
+    expect(result?.gemsSpent).toBe(1);
+    expect(result?.character.gold).toBe(600);
+    expect(talentRank(result!.character, 'precision')).toBe(1);
+  });
+
+  it('short on gold buys nothing', () => {
+    const hero = makeCharacter({ gold: 99 });
+    expect(canBuyTalent(hero, 0, 'might')).toBe(false);
+    expect(buyTalent(hero, 0, 'might')).toBeNull();
+  });
+
+  it('levels no longer give anything', () => {
+    expect(canBuyTalent(makeCharacter({ level: 30, gold: 0 }), 5, 'might')).toBe(false);
   });
 
   it('does not change the hero it was given', () => {
-    const hero = makeCharacter();
-    spendTalent(hero, 'might');
+    const hero = makeCharacter({ gold: 500 });
+    buyTalent(hero, 0, 'might');
     expect(hero.talents).toBeUndefined();
+    expect(hero.gold).toBe(500);
   });
 
   it('is refused for a locked node', () => {
-    const hero = makeCharacter();
-    expect(canSpendTalent(hero, 'precision')).toBe(false);
-    expect(spendTalent(hero, 'precision')).toBe(hero);
+    expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'precision')).toBeNull();
   });
 
   it('is refused at full ranks', () => {
-    const hero = withTalents(makeCharacter(), { might: 3 });
-    expect(canSpendTalent(hero, 'might')).toBe(false);
-    expect(spendTalent(hero, 'might')).toBe(hero);
-  });
-
-  it('is refused with no points left', () => {
-    const hero = withTalents(makeCharacter({ level: 5 }), { might: 3, precision: 1 });
-    expect(talentPointsUnspent(hero)).toBe(0);
-    expect(canSpendTalent(hero, 'precision')).toBe(false);
-    expect(spendTalent(hero, 'precision')).toBe(hero);
+    expect(buyTalent(withTalents(makeCharacter({ gold: 5000 }), { might: 3 }), 5, 'might')).toBeNull();
   });
 
   it('is refused for an id the tree does not have', () => {
-    const hero = makeCharacter();
-    expect(spendTalent(hero, 'nonsense' as TalentId)).toBe(hero);
+    expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'nonsense' as TalentId)).toBeNull();
   });
 
   it('is refused before the Talents tab opens', () => {
-    const hero = makeCharacter({ level: 4 });
-    expect(canSpendTalent(hero, 'might')).toBe(false);
+    expect(canBuyTalent(makeCharacter({ level: 4, gold: 500 }), 0, 'might')).toBe(false);
   });
 });
 
@@ -202,7 +202,7 @@ describe('a new run', () => {
     const fresh = createCharacter(createRng(1));
     expect(fresh.talents).toBeUndefined();
     expect(fresh.talentsUnlocked).toBe(false);
-    expect(talentPointsSpent(fresh)).toBe(0);
+    expect(talentRanksBought(fresh)).toBe(0);
   });
 });
 

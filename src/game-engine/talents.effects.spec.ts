@@ -429,11 +429,12 @@ describe('Scavenger', () => {
 });
 
 describe('a run’s end', () => {
-  it('empties the tree when the hero dies', () => {
+  it('keeps the tree when the hero dies, and the level resets', () => {
     const fallen = hero({ might: 3, vigor: 2 }, [], { level: 12, currentHealth: 0, talentsUnlocked: true });
     const { character } = resolvePlayerDeathIfDead(fallen, makeBoss(), [], createRng(1));
-    expect(character.talents).toBeUndefined();
-    expect(character.talentsUnlocked).toBe(false);
+    expect(character.talents).toEqual({ might: 3, vigor: 2 });
+    expect(character.talentsUnlocked).toBe(true);
+    expect(character.level).toBe(1);
   });
 
   it('keeps the tree through a Phoenix Feather revive', () => {
