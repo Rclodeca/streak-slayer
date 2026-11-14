@@ -174,8 +174,10 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, createAccount, recordLevel, spendGems } from './account';
+export type { SkinDef, SkinKind, SkinSlot } from './skins';
+export { DEFAULT_SCENE_ART, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
-export { FREEZE, GOLD_POUCH, REVIVE_GEMS, TRIAL_GEMS, VAULT_STOCK_DAYS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { FREEZE, GOLD_POUCH, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, VAULT_STOCK_DAYS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

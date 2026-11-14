@@ -3,12 +3,17 @@
 // store layer (store/accountStore.ts) saves it.
 
 import { LEVEL_GEM_MILESTONES } from './constants/economy';
+import type { SkinSlot } from './skins';
 
 export interface Account {
   gems: number;
   // Highest level any run ever reached, so a level milestone pays once per
   // account, not once per run.
   highestLevel: number;
+  // Skins bought, and the one worn in each slot (a hero class, the home base,
+  // the arena; see skins.ts). Missing on saves from before skins.
+  ownedSkinIds?: string[];
+  wornSkins?: Partial<Record<SkinSlot, string>>;
 }
 
 export function createAccount(): Account {

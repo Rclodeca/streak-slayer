@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { SKIN_CATALOG, sceneArt } from '../game-engine';
 import { useAccountStore } from './accountStore';
 
 describe('accountStore', () => {
@@ -32,5 +33,18 @@ describe('accountStore', () => {
     expect(store.account.gems).toBe(1);
     expect(store.spendGems(1)).toBe(true);
     expect(store.account.gems).toBe(0);
+  });
+
+  it('buySkin spends, owns and wears; wearSkin switches back', () => {
+    const store = useAccountStore();
+    const skin = SKIN_CATALOG.find((s) => s.kind === 'arena')!;
+    store.initFromSave({ gems: skin.gems, highestLevel: 5 }, 1);
+    expect(store.buySkin(skin.id)).toBe(skin);
+    expect(store.account.gems).toBe(0);
+    expect(sceneArt(store.account, 'arena')).toBe(skin.art);
+    expect(store.buySkin(skin.id)).toBeNull();
+    expect(store.wearSkin('arena', null)).toBe(true);
+    expect(sceneArt(store.account, 'arena')).toBe('stage/arena6b');
+    expect(store.wearSkin('home', skin.id)).toBe(false);
   });
 });

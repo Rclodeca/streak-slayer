@@ -1,9 +1,9 @@
-// Thin Pinia wrapper around the account slice (gems, highest level), which
+// Thin Pinia wrapper around the account slice (gems, highest level, skins), which
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, createAccount, recordLevel, spendGems } from '../game-engine';
-import type { Account } from '../game-engine';
+import { addGems, buySkin, createAccount, recordLevel, spendGems, wearSkin } from '../game-engine';
+import type { Account, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
   state: () => ({
@@ -32,6 +32,22 @@ export const useAccountStore = defineStore('account', {
       const spent = spendGems(this.account, gems);
       if (!spent) return false;
       this.account = spent;
+      return true;
+    },
+
+    /** Buys a skin and wears it; the skin, or null (nothing spent) if it can't be bought. */
+    buySkin(skinId: string): SkinDef | null {
+      const result = buySkin(this.account, skinId);
+      if (!result) return null;
+      this.account = result.account;
+      return result.skin;
+    },
+
+    /** Wears an owned skin in `slot`, or the default with null; false if it isn't owned or doesn't fit the slot. */
+    wearSkin(slot: SkinSlot, skinId: string | null): boolean {
+      const worn = wearSkin(this.account, slot, skinId);
+      if (!worn) return false;
+      this.account = worn;
       return true;
     },
   },

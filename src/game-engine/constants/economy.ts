@@ -111,5 +111,8 @@ export const FREEZE = { gemsPerPeriod: 2, maxDays: 7, maxLeadDays: 30, maxWeeks:
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
 export const REVIVE_GEMS = 10;
 
-/** Gem prices beyond the tree that the free budget must also cover (a placeholder until E). */
+/** Gem prices beyond the tree that the free budget must also cover: one hero skin. */
 export const PLANNED_GEM_SINKS = { skin: 40 };
+
+/** A skin's gem price by kind (placeholders, see skins.ts). */
+export const SKIN_PRICES = { hero: PLANNED_GEM_SINKS.skin, home: 30, arena: 30 };
