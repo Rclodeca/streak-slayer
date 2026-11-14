@@ -40,7 +40,7 @@
 11. **Shop is open from level 1.** No seal, no unlock popup.
 12. **Desktop:** a Shop banner and an "Open shop" button in the side column, under Talents. They open a modal with the scene and the wares, the same pattern Talents uses.
 
-**Left for later:** shop services (reroll, Overdrive, slots, enchant, upgrade) are Milestone C. Vault wares are D. A Shop tab pip for new stock is not planned.
+**Left for later:** shop services (reroll, Overdrive, slots, enchant) were built in Milestone C (`2026-11-14-shop-milestone-c.md`); item upgrade is still open. Vault wares are D. A Shop tab pip for new stock is not planned.
 
 ## Review Focus
 

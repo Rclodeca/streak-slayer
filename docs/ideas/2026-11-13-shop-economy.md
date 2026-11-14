@@ -80,7 +80,7 @@ Once a long-time player has earned every free gem, new gems come only from new c
 | Overdrive | This run | Pick the skill. |
 | Item slot increases | This run | Per run, sold for gold. |
 | Enchant an item | This run | Pick the item. The price climbs steeply with each enchant. A main gold sink, since it grows with every item equipped. |
-| Item upgrade | This run | Raise an equipped item one rarity, or reforge its stats. Steep price. |
+| Item upgrade | This run | Raise an equipped item one rarity, or reforge its stats. Steep price. **Not built:** left out of Milestone C until it has its own design (items are fixed catalog entries, so "one rarity up" needs a rule). |
 | Crit boost, heal boost, EXP boost | This run | One of each active at a time. Cheap, bought again and again. |
 | Restock the shop | — | Redraw the stock, including the chance at the epic or relic. The fee climbs with each restock. |
 | A few gold skins | Kept | Very expensive: something for maxed veterans to grind for. Priced to be affordable within one long run, since gold is lost on death, so owning one shows a long run without dying. Gold-only designs that read as grind badges; the best-looking skins stay gem-only so skins still lure towards gems. |
@@ -237,3 +237,4 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - Special and Ult are handed out automatically at levels 5 and 8.
 - All trials are available from level 1.
 - Nothing is pushed live until the whole plan is ready.
+- **Milestone C built (2026-11-14, not pushed).** Item slots, reroll, Overdrive and enchant are gold services in the Shop (prices as boss-gold multiples, climbing per buy this run; slots 4 to 6 to 8). Reroll, Overdrive and enchant pick their target. All 17 trials are live from the start (no unlock popup, no free milestone trials, no "New" tag). Level-up events are gone; a level-up just heals. Special at level 5, Ult at level 8, handed out (and again after a death). No enchant cap: the price is the limit. Plan: `docs/superpowers/plans/2026-11-14-shop-milestone-c.md`.
