@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Coins, Gem, Skull } from 'lucide-vue-next';
+import { ChevronsUp, Infinity as InfinityIcon, Sprout } from 'lucide-vue-next';
 import { useModalPriority } from '../../composables/useModalPriority';
 import { useCharacterStore } from '../../store/characterStore';
 import Modal from '../ui/Modal.vue';
@@ -13,9 +13,9 @@ const { talentUnlockVisible } = useModalPriority();
 const characterStore = useCharacterStore();
 
 const RULES: Rule[] = [
-  { icon: Coins, tone: 'accent', title: 'Earn', text: 'Bosses drop gold.' },
-  { icon: Gem, tone: 'solid', title: 'Rise', text: 'Higher ranks take gems too.' },
-  { icon: Skull, tone: 'danger', title: 'Fall', text: 'Unspent gold dies with you.' },
+  { icon: Sprout, tone: 'accent', title: 'Learn', text: 'Three paths: strike, endure, mend.' },
+  { icon: ChevronsUp, tone: 'solid', title: 'Grow', text: 'Every rank makes you stronger.' },
+  { icon: InfinityIcon, tone: 'solid', title: 'Keep', text: 'Talents stay when you fall.' },
 ];
 
 function onward() {
@@ -29,7 +29,7 @@ function onward() {
       <div class="emblem" aria-hidden="true">
         <component :is="TALENTS_TAB_ICON" :size="34" :stroke-width="1.5" />
       </div>
-      <p class="tagline">Gold buys talents. They stay when you fall.</p>
+      <p class="tagline">The tree remembers.</p>
       <RuleList :rules="RULES" />
       <button type="button" class="onward primary-button" @click="onward">Onward</button>
     </div>

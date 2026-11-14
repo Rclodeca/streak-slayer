@@ -30,12 +30,12 @@ describe('TalentUnlockPopup', () => {
     expect(q('.talent-unlock')).toBeNull();
   });
 
-  it('shows at level 5: gold buys talents and they are kept, with no points', () => {
+  it('shows at level 5: what the tree does and that talents are kept, no points or prices', () => {
     reachLevel5();
     mount(TalentUnlockPopup, { attachTo: document.body });
     expect(q('.talent-unlock')).not.toBeNull();
-    expect(q('.talent-unlock')?.textContent).toContain('Gold buys talents. They stay when you fall.');
-    expect(q('.talent-unlock')?.textContent).not.toMatch(/points?/i);
+    expect(q('.talent-unlock')?.textContent).toContain('Talents stay when you fall.');
+    expect(q('.talent-unlock')?.textContent).not.toMatch(/points?|gold|gems?/i);
     expect(q('.talent-unlock .emblem .count')).toBeNull();
   });
 
