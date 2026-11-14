@@ -129,7 +129,6 @@ export {
   EVENTS_PER_CHOICE,
   getEventDef,
   migrateEventState,
-  recordSideQuestOffer,
   rollEventChoices,
 } from './events';
 export type { EventDef, EventId } from './events';
@@ -176,18 +175,10 @@ export {
   CHALLENGE_DEFS,
   claimableChallenges,
   doneChallenges,
-  drawChallenge,
   getChallengeDef,
   markChallengeClaimed,
-  migrateTrialUnlock,
-  milestoneTrial,
-  offerableChallenges,
   recordBadCheck,
-  takeChallenge,
-  trialsOpen,
-  TRIALS_UNLOCK_LEVEL,
-  trialUnlockPending,
-  unlockTrials,
+  seedChallenges,
 } from './challenges';
 
 export { characterGold } from './gold';

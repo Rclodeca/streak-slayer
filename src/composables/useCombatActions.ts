@@ -43,7 +43,6 @@ import {
   doneChallenges,
   getChallengeDef,
   markChallengeClaimed,
-  milestoneTrial,
   HERO_CLASSES,
   heroClassFor,
   ITEM_CATALOG,
@@ -359,7 +358,6 @@ export function useCombatActions() {
     grantEventPicks(defeatResult.levelsGained);
 
     reportChallenge({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
-    characterStore.setCharacter(milestoneTrial(characterStore.character, slain.index, rng, dailyPeriodKey(debugClockStore.now())));
     if (defeatResult.itemsDropped.some((item) => item.rarity === 'epic')) reportChallenge({ type: 'epic-dropped' });
     reportChallenge({ type: 'state-changed', habits: habitStore.habits });
 

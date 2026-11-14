@@ -7,7 +7,6 @@ import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
-import { trialKey, useTrialSeenStore } from '../../store/trialSeenStore';
 import StatIcon from '../ui/StatIcon.vue';
 import { challengeIcon } from './challengeIcons';
 
@@ -15,7 +14,6 @@ const characterStore = useCharacterStore();
 const habitStore = useHabitStore();
 const bossStore = useBossStore();
 const debugClockStore = useDebugClockStore();
-const trialSeen = useTrialSeenStore();
 const { claimChallenge } = useCombatActions();
 
 // Ready to claim first, then active, and paid ones sink to the bottom. One that
@@ -28,7 +26,6 @@ const cards = computed(() => {
     def: getChallengeDef(entry.id),
     done: !!entry.doneDayKey && !entry.unclaimed,
     ready: !!entry.unclaimed,
-    fresh: trialSeen.fresh.includes(trialKey(entry)),
     progress: challengeProgress(entry, context),
   });
   const paid = doneChallenges(character).filter((entry) => !entry.unclaimed);
@@ -41,7 +38,7 @@ const cards = computed(() => {
     <li v-for="card in cards" :key="card.entry.id" class="challenge" :class="{ done: card.done, ready: card.ready }">
       <span class="challenge-socket"><component :is="challengeIcon(card.def.icon)" :size="22" /></span>
       <div class="challenge-body">
-        <span class="challenge-name">{{ card.def.name }}<span v-if="card.fresh" class="challenge-new">New</span></span>
+        <span class="challenge-name">{{ card.def.name }}</span>
         <span class="challenge-deed">{{ card.def.deed }}</span>
         <template v-if="!card.done && !card.ready">
           <span v-if="card.progress.kind === 'bar'" class="challenge-progress">
@@ -98,12 +95,6 @@ const cards = computed(() => {
 
 .challenge-name {
   color: var(--text-h);
-}
-
-.challenge-new {
-  margin-left: 0.5rem;
-  font-size: 0.7rem;
-  vertical-align: 2px;
 }
 
 .challenge-deed,

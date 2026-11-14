@@ -19,13 +19,13 @@ describe('TalentUnlockPopup', () => {
 
   function reachLevel5() {
     const store = useCharacterStore();
-    store.setCharacter({ ...store.character, level: 5, questsUnlocked: true, trialsUnlocked: true });
+    store.setCharacter({ ...store.character, level: 5, questsUnlocked: true });
     return store;
   }
 
   it('stays away before level 5', () => {
     const store = useCharacterStore();
-    store.setCharacter({ ...store.character, level: 4, questsUnlocked: true, trialsUnlocked: true });
+    store.setCharacter({ ...store.character, level: 4, questsUnlocked: true });
     mount(TalentUnlockPopup, { attachTo: document.body });
     expect(q('.talent-unlock')).toBeNull();
   });
@@ -49,7 +49,7 @@ describe('TalentUnlockPopup', () => {
 
   it('shows once to a save already past level 5', () => {
     const store = useCharacterStore();
-    store.setCharacter({ ...store.character, level: 14, questsUnlocked: true, trialsUnlocked: true });
+    store.setCharacter({ ...store.character, level: 14, questsUnlocked: true });
     mount(TalentUnlockPopup, { attachTo: document.body });
     expect(q('.talent-unlock')).not.toBeNull();
   });

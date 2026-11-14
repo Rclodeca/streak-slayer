@@ -138,21 +138,12 @@ export interface Character {
   spellweave?: { dayKey: string; count: number };
   // Crits landed today while Void Longbow is equipped (see critStreakStacks).
   critStreak?: { dayKey: string; count: number };
-  // Consecutive level-up picks where the side-quest event was eligible but
-  // not offered — drives the guarantee in rollEventChoices.
-  sideQuestPicksMissed?: number;
   // Whether the quests section is open this run (see questsOpen in
   // quests.ts). A new run starts sealed (false) until QUESTS_UNLOCK_LEVEL,
   // when dismissing the "Quests unlocked" popup sets it — or it opens at
   // once if quests carried over from the last run (useCombatActions.restart).
   // Undefined only on a save from before the lock; migrateQuestUnlock settles it.
   questsUnlocked?: boolean;
-  // Whether the Trials section is open (see trialsOpen in challenges.ts). It
-  // opens at TRIALS_UNLOCK_LEVEL when the "Trials unlocked" popup is dismissed,
-  // which also hands over the first trial, and stays open through death
-  // (resolvePlayerDeathIfDead carries it). Undefined only on a save from
-  // before the lock; migrateTrialUnlock settles it.
-  trialsUnlocked?: boolean;
   // Whether the Talents tab is open (see talentsOpen in talents.ts). It opens
   // at TALENTS_UNLOCK_LEVEL when the "Talents unlocked" popup is dismissed and
   // stays open through death (resolvePlayerDeathIfDead carries it). A save
@@ -184,9 +175,6 @@ export interface Character {
   // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
   // once per account. Undefined on a save from before challenges.
   challenges?: ChallengeEntry[];
-  // The challenge the level-up side-quest card currently names; kept so the
-  // popup shows the same one after a reload. Cleared by any pick.
-  offeredChallengeId?: ChallengeId;
   // The last day a bad habit was checked off — Perfect day and Clean slate
   // read it when the day ends.
   lastBadCheckDayKey?: string;

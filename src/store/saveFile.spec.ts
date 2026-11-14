@@ -9,7 +9,6 @@ import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highSc
 import { useAccountStore } from './accountStore';
 import { initializeStores } from './index';
 import { STORAGE_KEY as LOG_VISIBLE_KEY } from './logVisibleStore';
-import { STORAGE_KEY as TRIALS_SEEN_KEY } from './trialSeenStore';
 import { serializeSaveState, STORAGE_KEY as SAVE_KEY } from './plugins/saveState';
 import { applySaveFile, buildSaveFile, readSaveFile, saveFileName } from './saveFile';
 import { STORAGE_KEY as THEME_KEY } from './themeStore';
@@ -38,7 +37,7 @@ describe('save file', () => {
     });
   });
 
-  it('carries all nine stored entries, including the small UI flags', () => {
+  it('carries all eight stored entries, including the small UI flags', () => {
     storeRun('Aldric', 34, 23);
     localStorage.setItem(HIGH_SCORE_KEY, '23');
     localStorage.setItem(RUNS_KEY, '[]');
@@ -47,10 +46,9 @@ describe('save file', () => {
     localStorage.setItem(HINTS_KEY, '["new-habit"]');
     localStorage.setItem(FOCUS_MODE_KEY, 'on');
     localStorage.setItem(LOG_VISIBLE_KEY, 'off');
-    localStorage.setItem(TRIALS_SEEN_KEY, '["first-blood:2026-10-02"]');
     const file = readSaveFile(buildSaveFile())!.file;
     expect(Object.keys(file.entries).sort()).toEqual(
-      ['focusMode', 'highScore', 'hints', 'runStart', 'runs', 'save', 'showLog', 'theme', 'trialsSeen'],
+      ['focusMode', 'highScore', 'hints', 'runStart', 'runs', 'save', 'showLog', 'theme'],
     );
 
     localStorage.clear();
@@ -58,7 +56,6 @@ describe('save file', () => {
     expect(localStorage.getItem(HINTS_KEY)).toBe('["new-habit"]');
     expect(localStorage.getItem(FOCUS_MODE_KEY)).toBe('on');
     expect(localStorage.getItem(LOG_VISIBLE_KEY)).toBe('off');
-    expect(localStorage.getItem(TRIALS_SEEN_KEY)).toBe('["first-blood:2026-10-02"]');
   });
 
   it('rejects anything that is not a loadable save', () => {

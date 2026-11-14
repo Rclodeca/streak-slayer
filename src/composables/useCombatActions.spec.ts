@@ -1146,18 +1146,13 @@ describe('useCombatActions', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
       const { addHabit, checkOffHabit } = useCombatActions();
-      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0, trialsUnlocked: true });
+      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0 });
       bossStore.setBoss({ ...bossStore.boss, index, health: 0.0001, armor: 0 });
       checkOffHabit(addHabit('Gym', 'daily', 'medium', false).id);
     }
 
-    it('slaying boss 5 hands over a free trial', () => {
+    it('slaying a boss hands over no trial: they are all live from the start', () => {
       slayBoss(5);
-      expect(useCharacterStore().character.challenges).toHaveLength(1);
-    });
-
-    it('slaying a boss that is no milestone hands over nothing', () => {
-      slayBoss(4);
       expect(useCharacterStore().character.challenges ?? []).toHaveLength(0);
     });
 

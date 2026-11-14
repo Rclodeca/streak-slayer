@@ -3,7 +3,6 @@
 // id in useEventChoice (src/composables).
 
 import type { HeroClass } from './character';
-import { offerableChallenges, trialsOpen } from './challenges';
 import { TUNING } from './constants/tuning';
 import { healingAllowed, rerollDamageType } from './habits';
 import { doublableItems, equippedDoubledItemIds, unownedDroppableItems } from './items';
@@ -13,7 +12,7 @@ import { assignSpecialIfEligible, assignUltIfEligible, grantOverdrive } from './
 import { shuffle, type Rng } from './rng';
 import type { Character, CritBoostStatusEffect, Habit, HealBoostStatusEffect, Quest } from './types';
 
-export type EventId = 'side-quest' | 'special' | 'ult' | 'overdrive' | 'item-slots' | 'item-slots-2' | 'reroll-skill' | 'heal' | 'item-drop' | 'heal-boost' | 'crit-boost' | 'double-item';
+export type EventId = 'special' | 'ult' | 'overdrive' | 'item-slots' | 'item-slots-2' | 'reroll-skill' | 'heal' | 'item-drop' | 'heal-boost' | 'crit-boost' | 'double-item';
 
 export interface EventDef {
   id: EventId;
@@ -32,14 +31,6 @@ export interface EventDef {
 export const EVENTS_PER_CHOICE = 3;
 
 export const EVENT_DEFS: readonly EventDef[] = [
-  {
-    id: 'side-quest',
-    title: 'Side quest',
-    description: 'Earn gems.',
-    minLevel: 1,
-    oneTime: false,
-    isEligible: (character) => trialsOpen(character) && offerableChallenges(character).length > 0,
-  },
   {
     id: 'special',
     title: 'Gain a Special',
@@ -152,12 +143,7 @@ export function eligibleEvents(character: Character, habits: Habit[], quests: Qu
   return events.length > 0 || todayKey === undefined ? events : eligibleAt(undefined);
 }
 
-/**
- * Up to `count` distinct eligible events in random order; fewer if fewer are eligible.
- * Once TUNING.SIDE_QUEST_GUARANTEE_LEVELS picks have passed with the side-quest
- * event eligible but never offered, it is forced into the choices (replacing the
- * last one) so a run's side-only items stay obtainable.
- */
+/** Up to `count` distinct eligible events in random order; fewer if fewer are eligible. */
 export function rollEventChoices(
   character: Character,
   habits: Habit[],
@@ -166,33 +152,15 @@ export function rollEventChoices(
   count = EVENTS_PER_CHOICE,
   todayKey?: string,
 ): EventDef[] {
-  const eligible = eligibleEvents(character, habits, quests, todayKey);
-  let choices = shuffle(eligible, rng).slice(0, count);
-  const sideQuest = eligible.find((e) => e.id === 'side-quest');
-  if (sideQuest && !choices.includes(sideQuest) && (character.sideQuestPicksMissed ?? 0) >= TUNING.SIDE_QUEST_GUARANTEE_LEVELS) {
-    choices = [...choices.slice(0, Math.max(0, count - 1)), sideQuest];
-  }
-  return choices;
+  return shuffle(eligibleEvents(character, habits, quests, todayKey), rng).slice(0, count);
 }
 
-/**
- * Tracks the side-quest guarantee across picks: a pick where the side-quest
- * event was eligible but not among `offered` counts as a miss; one where it
- * was offered resets the count. Picks where it wasn't eligible leave it alone.
- */
-export function recordSideQuestOffer(character: Character, offered: readonly string[], sideQuestEligible: boolean): Character {
-  if (!sideQuestEligible) return character;
-  const missed = offered.includes('side-quest') ? 0 : (character.sideQuestPicksMissed ?? 0) + 1;
-  return { ...character, sideQuestPicksMissed: missed };
-}
-
-/** Records a pick: marks a one-time event as taken, spends one pending pick and drops the offered cards and challenge. */
+/** Records a pick: marks a one-time event as taken, spends one pending pick and drops the offered cards. */
 export function consumeEventPick(character: Character, id: EventId): Character {
   const taken = character.takenEventIds ?? [];
   return {
     ...character,
     offeredEventIds: undefined,
-    offeredChallengeId: undefined,
     takenEventIds: getEventDef(id).oneTime && !taken.includes(id) ? [...taken, id] : taken,
     pendingEventPicks: Math.max(0, (character.pendingEventPicks ?? 0) - 1),
   };

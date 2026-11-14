@@ -1843,19 +1843,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
   }
 
-  // A trial new since the Trials tab was last open.
-  .challenge-new {
-    margin-left: 7px;
-    padding: 1px 5px;
-    vertical-align: 2px;
-    @include pixel-corners(2px);
-    background: $brass;
-    color: var(--on-brass);
-    @include plain-label(0.65rem, 800);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
   // ---------- The phone's bottom bar ----------
   // (docs/mockups/pixel-tabs-final.html) The stage's night, under a black lip
   // and a shadow cast up over the list. Engraved names, the chosen one lit

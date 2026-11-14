@@ -226,9 +226,6 @@ export const TUNING = {
   QUEST_DIFFICULTY_MULT: { easy: 0.7, medium: 1, hard: 1.3 },
   // Share of a quest's EXP paid when it's finished after its due date (side quests pay this instead of their relic).
   QUEST_OVERDUE_EXP_FRACTION: 0.5,
-  // Level-up picks that can pass with the side-quest event eligible but not
-  // offered before it is forced into the next pick.
-  SIDE_QUEST_GUARANTEE_LEVELS: 5,
   // Side-quest challenge goals (see challenges.ts).
   CHALLENGES: {
     RESISTS: 5,

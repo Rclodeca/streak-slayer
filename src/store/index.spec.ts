@@ -177,6 +177,29 @@ describe('store persistence smoke test', () => {
     expect(characterStore.character.pendingEventPicks).toBe(0);
   });
 
+  it('a new account starts with every trial live', () => {
+    const { characterStore } = initializeStores();
+    expect(characterStore.character.challenges).toHaveLength(17);
+    expect(characterStore.character.challenges!.every((entry) => entry.progress === 0 && !entry.doneDayKey)).toBe(true);
+  });
+
+  it('an old save with two trials gets the other fifteen and keeps its two entries unchanged', () => {
+    const rng = createRng(1);
+    const held = [
+      { id: 'resist', takenDayKey: '2026-11-01', progress: 3 },
+      { id: 'rank-up', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02', unclaimed: true },
+    ];
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ schemaVersion: CURRENT_SCHEMA_VERSION, character: { ...createCharacter(rng), trialsUnlocked: true, challenges: held }, boss: generateBoss(1, rng), habits: [] }),
+    );
+
+    const { characterStore } = initializeStores();
+
+    expect(characterStore.character.challenges).toHaveLength(17);
+    expect(characterStore.character.challenges!.slice(0, 2)).toEqual(held);
+  });
+
   it('does not accumulate duplicate $subscribe listeners when initializeStores() is called again against the same active pinia', () => {
     const first = initializeStores();
     const second = initializeStores(); // same active pinia — setupPersistence should be a no-op the 2nd time

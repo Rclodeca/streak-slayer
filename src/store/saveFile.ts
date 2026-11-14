@@ -1,6 +1,5 @@
 // Export/import of everything the app keeps in storage — the run, the high
-// scores, the theme and the small UI flags (hints, focus mode, log, seen
-// trials) — as one JSON file, so a run can be backed up or
+// scores, the theme and the small UI flags (hints, focus mode, log) — as one JSON file, so a run can be backed up or
 // moved to another install (an iPhone home-screen app has its own storage,
 // apart from Safari's). Entries are stored by name rather than by storage
 // key, so a file still imports after a key rename. Storage only: the share
@@ -13,7 +12,6 @@ import { STORAGE_KEY as LOG_VISIBLE_KEY } from './logVisibleStore';
 import { suspendPersistence } from './plugins/localStoragePersistence';
 import { deserializeSaveState, STORAGE_KEY as SAVE_KEY } from './plugins/saveState';
 import { STORAGE_KEY as THEME_KEY } from './themeStore';
-import { STORAGE_KEY as TRIALS_SEEN_KEY } from './trialSeenStore';
 import { storage } from './storage';
 
 const APP_ID = 'streak-slayer';
@@ -28,7 +26,6 @@ const ENTRY_KEYS = {
   hints: HINTS_KEY,
   focusMode: FOCUS_MODE_KEY,
   showLog: LOG_VISIBLE_KEY,
-  trialsSeen: TRIALS_SEEN_KEY,
 } as const;
 type EntryName = keyof typeof ENTRY_KEYS;
 const ENTRY_NAMES = Object.keys(ENTRY_KEYS) as EntryName[];

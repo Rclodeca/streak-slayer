@@ -28,12 +28,10 @@ import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
 import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
 import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
-import TrialUnlockPopup from '../quests/TrialUnlockPopup.vue';
 import EventChoiceModal from '../events/EventChoiceModal.vue';
 import EnchantReveal from '../shop/EnchantReveal.vue';
 import ReviveNotice from '../ui/ReviveNotice.vue';
 import BossSkillPopup from '../boss/BossSkillPopup.vue';
-import { activeChallenges, trialsOpen } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useStageFocused } from '../../composables/useStageFocused';
@@ -43,7 +41,6 @@ import { useDevToolsStore } from '../../store/devToolsStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { useTabStore } from '../../store/tabStore';
 import { useTrialsBadge } from '../../composables/useTrialsBadge';
-import { trialKey, useTrialSeenStore } from '../../store/trialSeenStore';
 
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
@@ -98,29 +95,15 @@ const topBar = computed(() => {
 const trialsButton = computed(
   () =>
     isPhone.value &&
-    trialsOpen(characterStore.character) &&
     (tabStore.tab === 'hero' || tabStore.tab === 'talents' || tabStore.tab === 'shop' || !stageFocused.value),
 );
-const trialsInMenu = computed(() => isPhone.value && trialsOpen(characterStore.character) && !trialsButton.value);
+const trialsInMenu = computed(() => isPhone.value && !trialsButton.value);
 const scrollBody = ref<HTMLElement | null>(null);
 watch(
   () => tabStore.tab,
   () => {
     if (scrollBody.value) scrollBody.value.scrollTop = 0;
   },
-);
-
-// What's on the Trials tab has been seen: its pip goes, and the new ones
-// keep their "New" tags until the tab is left.
-const trialSeen = useTrialSeenStore();
-const trialKeys = computed(() => activeChallenges(characterStore.character).map(trialKey).join());
-watch(
-  [() => isPhone.value && tabStore.tab === 'trials', trialKeys],
-  ([onTrials]) => {
-    if (onTrials) trialSeen.visit(activeChallenges(characterStore.character));
-    else trialSeen.leave();
-  },
-  { immediate: true },
 );
 </script>
 
@@ -144,7 +127,6 @@ watch(
     <BossSkillPopup />
     <QuestCompletePopup />
     <QuestUnlockPopup />
-    <TrialUnlockPopup />
     <TalentUnlockPopup />
     <ReviveNotice />
 

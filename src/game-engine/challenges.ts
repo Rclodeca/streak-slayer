@@ -1,10 +1,9 @@
-// Side-quest challenges: optional in-game deeds that pay gems, taken from the
-// level-up side-quest card. State lives on Character.challenges (kept through
-// death, so each is done once per account), and everything here is pure. Progress rules arrive with applyChallengeEvent.
+// Trials: in-game deeds that pay gems, every one live from level 1. State lives
+// on Character.challenges (seeded by seedChallenges, kept through death, so each
+// is done once per account), and everything here is pure. Progress rules arrive with applyChallengeEvent.
 
 import { TUNING } from './constants/tuning';
 import { isDueOn } from './habits';
-import { pickRandom, type Rng } from './rng';
 import { dailyPeriodKey, daysBetweenDayKeys } from './time';
 import type { Boss, ChallengeEntry, ChallengeId, Character, Habit, Quest } from './types';
 
@@ -47,77 +46,18 @@ export function getChallengeDef(id: ChallengeId): ChallengeDef {
   return def;
 }
 
-/** Challenges never taken: not active, and not finished in this run or an earlier one. */
-export function offerableChallenges(character: Character): ChallengeDef[] {
-  const held = (character.challenges ?? []).map((e) => e.id);
-  return CHALLENGE_DEFS.filter((d) => !held.includes(d.id));
-}
-
-/** A random offerable challenge, or null when none is left. */
-export function drawChallenge(character: Character, rng: Rng): ChallengeId | null {
-  const offerable = offerableChallenges(character);
-  return offerable.length > 0 ? pickRandom(offerable, rng).id : null;
-}
-
-/** Takes a challenge and clears the offer. The same character back if it is already held. */
-export function takeChallenge(character: Character, id: ChallengeId, todayKey: string): Character {
-  if ((character.challenges ?? []).some((e) => e.id === id)) return character;
-  const entry: ChallengeEntry = { id, takenDayKey: todayKey, progress: 0 };
-  return { ...character, challenges: [...(character.challenges ?? []), entry], offeredChallengeId: undefined };
-}
-
-/** The player level at which the Trials section first opens; it stays open through death. */
-export const TRIALS_UNLOCK_LEVEL = 4;
-
-/** The trial handed over when Trials open, so the tab never opens empty. */
-export const FIRST_TRIAL: ChallengeId = 'new-good';
-
-/** Slaying one of these bosses hands over a free trial (see milestoneTrial). */
-export const TRIAL_MILESTONE_BOSSES: readonly number[] = [5, 10];
-
-/** A milestone trial is only handed over while fewer than this many trials are active. */
-export const MILESTONE_ACTIVE_CAP = 2;
-
-/** Whether the Trials section is open: unlocked, or at the unlock level with its popup up. */
-export function trialsOpen(character: Character): boolean {
-  return character.trialsUnlocked === true || character.level >= TRIALS_UNLOCK_LEVEL;
-}
-
-/** Whether the "Trials unlocked" popup is due: the unlock level reached and the section not yet opened. */
-export function trialUnlockPending(character: Character): boolean {
-  return !character.trialsUnlocked && character.level >= TRIALS_UNLOCK_LEVEL;
-}
-
 /**
- * Opens the Trials section for the rest of the run and hands over the first
- * trial. The same character back if it is already open.
+ * Gives the character every trial it doesn't hold yet, starting `todayKey`:
+ * all of them are live from level 1, and a trial added later is topped up on
+ * load. Entries already held (active, finished or unclaimed) are untouched.
+ * The same character back when it holds them all.
  */
-export function unlockTrials(character: Character, todayKey: string): Character {
-  if (character.trialsUnlocked) return character;
-  return takeChallenge({ ...character, trialsUnlocked: true }, FIRST_TRIAL, todayKey);
-}
-
-/**
- * Settles `trialsUnlocked` on a save from before the trial lock: a hero
- * already at the unlock level, or holding a trial, was already using them, so
- * they stay open with no popup. Anyone else is sealed like any new run.
- */
-export function migrateTrialUnlock(character: Character): Character {
-  if (character.trialsUnlocked !== undefined) return character;
-  const holds = (character.challenges ?? []).length > 0;
-  return { ...character, trialsUnlocked: character.level >= TRIALS_UNLOCK_LEVEL || holds };
-}
-
-/**
- * A free trial for slaying boss `bossIndex`, if it is a milestone boss, Trials
- * are open, fewer than MILESTONE_ACTIVE_CAP trials are active, and one is left
- * to draw. The same character back otherwise.
- */
-export function milestoneTrial(character: Character, bossIndex: number, rng: Rng, todayKey: string): Character {
-  if (!TRIAL_MILESTONE_BOSSES.includes(bossIndex)) return character;
-  if (!trialsOpen(character) || activeChallenges(character).length >= MILESTONE_ACTIVE_CAP) return character;
-  const id = drawChallenge(character, rng);
-  return id === null ? character : takeChallenge(character, id, todayKey);
+export function seedChallenges(character: Character, todayKey: string): Character {
+  const held = character.challenges ?? [];
+  const missing = CHALLENGE_DEFS.filter((def) => !held.some((entry) => entry.id === def.id));
+  if (missing.length === 0) return character;
+  const entries: ChallengeEntry[] = missing.map((def) => ({ id: def.id, takenDayKey: todayKey, progress: 0 }));
+  return { ...character, challenges: [...held, ...entries] };
 }
 
 export function activeChallenges(character: Character): ChallengeEntry[] {

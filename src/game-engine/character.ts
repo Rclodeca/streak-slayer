@@ -45,7 +45,6 @@ export function createCharacter(rng: Rng, heroClass?: HeroClass): Character {
     takenEventIds: [],
     pendingEventPicks: 0,
     questsUnlocked: false,
-    trialsUnlocked: false,
     talentsUnlocked: false,
     heroPending: true,
     // Already at the post-rebalance baseline (BASE_STATS is already the

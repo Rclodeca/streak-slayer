@@ -1063,16 +1063,15 @@ describe('resolvePlayerDeathIfDead', () => {
     expect(result.character.talentsUnlocked).toBe(true);
   });
 
-  it('a death keeps every trial and the open Trials', () => {
+  it('a death keeps every trial', () => {
     const challenges = [
       { id: 'resist' as const, takenDayKey: '2026-11-01', progress: 3 },
       { id: 'rank-up' as const, takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' },
       { id: 'slay-two' as const, takenDayKey: '2026-11-01', progress: 2, doneDayKey: '2026-11-03', unclaimed: true },
     ];
-    const dead = makeCharacter({ currentHealth: 0, trialsUnlocked: true, challenges });
+    const dead = makeCharacter({ currentHealth: 0, challenges });
     const { character } = resolvePlayerDeathIfDead(dead, makeBoss(), [], createRng(1));
     expect(character.challenges).toEqual(challenges);
-    expect(character.trialsUnlocked).toBe(true);
   });
 
   it('a death with kept Vigor ranks starts the new run at full health', () => {

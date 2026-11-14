@@ -6,18 +6,10 @@ import {
   CHALLENGE_DEFS,
   claimableChallenges,
   doneChallenges,
-  drawChallenge,
   getChallengeDef,
   markChallengeClaimed,
-  migrateTrialUnlock,
-  milestoneTrial,
-  offerableChallenges,
   recordBadCheck,
-  takeChallenge,
-  trialsOpen,
-  TRIALS_UNLOCK_LEVEL,
-  trialUnlockPending,
-  unlockTrials,
+  seedChallenges,
 } from './challenges';
 import type { ChallengeEntry, ChallengeId } from './challenges';
 import { resolvePlayerDeathIfDead } from './combat';
@@ -71,52 +63,27 @@ describe('challenge catalog', () => {
   });
 });
 
-describe('offerableChallenges / drawChallenge', () => {
-  it('offers all 17 to a character with none', () => {
-    expect(offerableChallenges(makeCharacter())).toHaveLength(17);
-    expect(offerableChallenges(makeCharacter({ challenges: [] }))).toHaveLength(17);
+describe('seedChallenges', () => {
+  it('gives every trial once, starting today', () => {
+    const seeded = seedChallenges(makeCharacter(), '2026-11-14');
+    expect(seeded.challenges).toHaveLength(17);
+    expect(seeded.challenges!.map((e) => e.id).sort()).toEqual([...allIds].sort());
+    for (const e of seeded.challenges!) expect(e).toEqual({ id: e.id, takenDayKey: '2026-11-14', progress: 0 });
+    expect(seedChallenges(seeded, '2026-11-15')).toBe(seeded);
   });
 
-  it('drops active and done entries', () => {
-    const character = makeCharacter({ challenges: [entry('resist'), entry('rank-up', { doneDayKey: '2026-11-02' })] });
-    const ids = offerableChallenges(character).map((d) => d.id);
-    expect(ids).toHaveLength(15);
-    expect(ids).not.toContain('resist');
-    expect(ids).not.toContain('rank-up');
+  it('keeps entries that are held, finished or unclaimed untouched and adds the rest', () => {
+    const held = [entry('resist', { progress: 3 }), entry('rank-up', { progress: 1, doneDayKey: '2026-11-02', unclaimed: true })];
+    const seeded = seedChallenges(makeCharacter({ challenges: held }), '2026-11-14');
+    expect(seeded.challenges).toHaveLength(17);
+    expect(seeded.challenges!.slice(0, 2)).toEqual(held);
   });
 
-  it('draws an offerable challenge, and null when every challenge is an entry', () => {
-    const character = makeCharacter({ challenges: [entry('resist')] });
-    for (let seed = 1; seed < 20; seed++) {
-      const drawn = drawChallenge(character, createRng(seed));
-      expect(drawn).not.toBeNull();
-      expect(drawn).not.toBe('resist');
-    }
-    const full = makeCharacter({ challenges: allIds.map((id) => entry(id)) });
-    expect(drawChallenge(full, createRng(1))).toBeNull();
-  });
-});
-
-describe('takeChallenge', () => {
-  it('appends an entry with no relic and clears the offer', () => {
-    const character = makeCharacter({ offeredChallengeId: 'resist' });
-    const taken = takeChallenge(character, 'resist', '2026-11-03');
-    expect(taken.offeredChallengeId).toBeUndefined();
-    expect(taken.challenges).toEqual([{ id: 'resist', takenDayKey: '2026-11-03', progress: 0 }]);
-  });
-
-  it('takes every challenge, even with every relic earned', () => {
-    const earned = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
-    let character = makeCharacter({ earnedRelicIds: earned });
-    for (const id of allIds) character = takeChallenge(character, id, '2026-11-03');
-    expect(character.challenges).toHaveLength(17);
-  });
-
-  it('returns the same object for a challenge already held, and keeps the offer', () => {
-    const character = makeCharacter({ challenges: [entry('resist')], offeredChallengeId: 'rank-up' });
-    const again = takeChallenge(character, 'resist', '2026-11-03');
-    expect(again).toBe(character);
-    expect(again.offeredChallengeId).toBe('rank-up');
+  it('a trial seeded today counts today\'s events', () => {
+    const seeded = seedChallenges(makeCharacter(), '2026-11-14');
+    const { character, completed } = applyChallengeEvent(seeded, { type: 'rank-up' }, '2026-11-14');
+    expect(completed.map((e) => e.id)).toEqual(['rank-up']);
+    expect(claimableChallenges(character).map((e) => e.id)).toEqual(['rank-up']);
   });
 });
 
@@ -447,87 +414,10 @@ describe('challengeProgress', () => {
   });
 });
 
-describe('trial unlock', () => {
-  it('stays sealed below the unlock level, then is due at it', () => {
-    const below = makeCharacter({ level: TRIALS_UNLOCK_LEVEL - 1, trialsUnlocked: false });
-    expect(trialsOpen(below)).toBe(false);
-    expect(trialUnlockPending(below)).toBe(false);
-    const at = makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false });
-    expect(trialsOpen(at)).toBe(true);
-    expect(trialUnlockPending(at)).toBe(true);
-  });
-
-  it('unlockTrials opens the section and hands over New discipline', () => {
-    const unlocked = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), '2026-11-05');
-    expect(unlocked.trialsUnlocked).toBe(true);
-    expect(trialUnlockPending(unlocked)).toBe(false);
-    expect(unlocked.challenges).toHaveLength(1);
-    expect(unlocked.challenges?.[0]).toMatchObject({ id: 'new-good', takenDayKey: '2026-11-05', progress: 0 });
-  });
-
-  it('unlockTrials stays open once taken, and never hands over a second first trial', () => {
-    const once = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), '2026-11-05');
-    expect(unlockTrials(once, '2026-11-06')).toBe(once);
-    expect(trialsOpen({ ...once, level: 1 })).toBe(true);
-  });
-
-  it('unlockTrials still opens the section when a new-good trial is already held', () => {
-    const held = makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false, challenges: [entry('new-good')] });
-    const unlocked = unlockTrials(held, '2026-11-05');
-    expect(unlocked.trialsUnlocked).toBe(true);
-    expect(unlocked.challenges).toHaveLength(1);
-  });
-
-  it('migrateTrialUnlock opens a save already at the level or holding a trial, with no popup', () => {
-    expect(migrateTrialUnlock(makeCharacter({ level: TRIALS_UNLOCK_LEVEL })).trialsUnlocked).toBe(true);
-    expect(migrateTrialUnlock(makeCharacter({ level: 2, challenges: [entry('resist')] })).trialsUnlocked).toBe(true);
-    expect(migrateTrialUnlock(makeCharacter({ level: 2 })).trialsUnlocked).toBe(false);
-  });
-
-  it('migrateTrialUnlock leaves a settled flag alone', () => {
-    const character = makeCharacter({ trialsUnlocked: false });
-    expect(migrateTrialUnlock(character)).toBe(character);
-  });
-});
-
-describe('milestoneTrial', () => {
-  const rng = () => createRng(11);
-  const open = (overrides: Partial<Character> = {}) => makeCharacter({ trialsUnlocked: true, ...overrides });
-
-  it('hands over a trial on boss 5 and boss 10', () => {
-    for (const index of [5, 10]) {
-      const next = milestoneTrial(open(), index, rng(), '2026-11-05');
-      expect(next.challenges).toHaveLength(1);
-      expect(next.challenges?.[0].takenDayKey).toBe('2026-11-05');
-    }
-  });
-
-  it('does nothing on other bosses', () => {
-    const character = open();
-    for (const index of [1, 4, 6, 9, 11]) expect(milestoneTrial(character, index, rng(), '2026-11-05')).toBe(character);
-  });
-
-  it('does nothing while two trials are active', () => {
-    const character = open({ challenges: [entry('resist'), entry('new-bad')] });
-    expect(milestoneTrial(character, 5, rng(), '2026-11-05')).toBe(character);
-  });
-
-  it('counts a finished trial as no longer active', () => {
-    const character = open({ challenges: [entry('resist'), entry('new-bad', { doneDayKey: '2026-11-04', unclaimed: true })] });
-    expect(milestoneTrial(character, 5, rng(), '2026-11-05').challenges).toHaveLength(3);
-  });
-
-  it('does nothing while trials are sealed', () => {
-    const character = makeCharacter({ level: 1, trialsUnlocked: false });
-    expect(milestoneTrial(character, 5, rng(), '2026-11-05')).toBe(character);
-  });
-});
-
 describe('trials across deaths', () => {
   const fallen = () => {
     const dead = makeCharacter({
       currentHealth: 0,
-      trialsUnlocked: true,
       challenges: [
         entry('resist', { progress: 3 }),
         entry('rank-up', { progress: 1, doneDayKey: '2026-11-02' }),
@@ -538,11 +428,12 @@ describe('trials across deaths', () => {
     return resolvePlayerDeathIfDead(dead, boss, [], createRng(1)).character;
   };
 
-  it('a trial finished in an earlier run is never offered again', () => {
-    const offered = offerableChallenges(fallen()).map((d) => d.id);
-    expect(offered).not.toContain('resist');
-    expect(offered).not.toContain('rank-up');
-    expect(offered).not.toContain('slay-two');
+  it('a death keeps every entry, and seeding adds nothing back', () => {
+    const fresh = fallen();
+    expect(fresh.challenges).toHaveLength(3);
+    expect(fresh.challenges!.map((e) => e.id)).toEqual(['resist', 'rank-up', 'slay-two']);
+    expect(fresh.challenges!.find((e) => e.id === 'resist')!.progress).toBe(3);
+    expect(seedChallenges(seedChallenges(makeCharacter({ challenges: fresh.challenges }), '2026-11-14'), '2026-11-14').challenges).toHaveLength(17);
   });
 
   it('an unclaimed trial can still be claimed after a death, once', () => {

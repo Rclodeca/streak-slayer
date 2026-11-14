@@ -10,12 +10,12 @@
 // buttons (confirmed via manual testing — see the quests design spec's
 // review notes). This centralizes the precedence order so it's declared
 // once instead of re-derived pairwise per modal:
-// death > item drop > habit miss > quest miss > boss skill > quest complete > quest unlock > trial unlock > talent unlock > event choice.
-// Boss skill, quest unlock, trial unlock, talent unlock and event choice also wait out a kill or level-up
+// death > item drop > habit miss > quest miss > boss skill > quest complete > quest unlock > talent unlock > event choice.
+// Boss skill, quest unlock, talent unlock and event choice also wait out a kill or level-up
 // still playing on the panels (useCelebration), as does the item drop popup itself.
 
 import { computed } from 'vue';
-import { questUnlockPending, talentUnlockPending, trialUnlockPending } from '../game-engine';
+import { questUnlockPending, talentUnlockPending } from '../game-engine';
 import { useBossSkillCard } from './useBossSkillCard';
 import { useCelebration } from './useCelebration';
 import { useDeathScreen } from './useDeathScreen';
@@ -66,26 +66,11 @@ export function useModalPriority() {
       questCompleteCurrent.value === null,
   );
 
-  /** True when the "Trials unlocked" popup is due and nothing higher-priority is up (it follows the quest popup, and comes before the level-up pick). */
-  const trialUnlockVisible = computed(
-    () =>
-      trialUnlockPending(characterStore.character) &&
-      !questUnlockPending(characterStore.character) &&
-      !celebrating.value &&
-      !isDead.value &&
-      itemDropCurrent.value === null &&
-      !habitMissPending.value &&
-      !questMissPending.value &&
-      bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null,
-  );
-
-  /** True when the "Talents unlocked" popup is due and nothing higher-priority is up (it follows the trial popup, and comes before the level-up pick). */
+  /** True when the "Talents unlocked" popup is due and nothing higher-priority is up (it follows the quest popup, and comes before the level-up pick). */
   const talentUnlockVisible = computed(
     () =>
       talentUnlockPending(characterStore.character) &&
       !questUnlockPending(characterStore.character) &&
-      !trialUnlockPending(characterStore.character) &&
       !celebrating.value &&
       !isDead.value &&
       itemDropCurrent.value === null &&
@@ -95,7 +80,7 @@ export function useModalPriority() {
       questCompleteCurrent.value === null,
   );
 
-  /** True only when an event pick (or an enchant reveal) is pending and nothing higher-priority (death, item drop, habit miss, quest miss, boss skill, quest unlock, trial unlock, talent unlock, a celebration) is. */
+  /** True only when an event pick (or an enchant reveal) is pending and nothing higher-priority (death, item drop, habit miss, quest miss, boss skill, quest unlock, talent unlock, a celebration) is. */
   const eventChoiceVisible = computed(
     () =>
       ((characterStore.character.pendingEventPicks ?? 0) > 0 || revealed.value !== null) &&
@@ -107,7 +92,6 @@ export function useModalPriority() {
       bossSkillCurrent.value === null &&
       questCompleteCurrent.value === null &&
       !questUnlockPending(characterStore.character) &&
-      !trialUnlockPending(characterStore.character) &&
       !talentUnlockPending(characterStore.character),
   );
 
@@ -134,5 +118,5 @@ export function useModalPriority() {
       bossSkillCurrent.value === null,
   );
 
-  return { bossSkillVisible, questMissVisible, questUnlockVisible, trialUnlockVisible, talentUnlockVisible, eventChoiceVisible, enchantRevealVisible, questCompleteVisible };
+  return { bossSkillVisible, questMissVisible, questUnlockVisible, talentUnlockVisible, eventChoiceVisible, enchantRevealVisible, questCompleteVisible };
 }

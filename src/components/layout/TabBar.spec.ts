@@ -119,7 +119,7 @@ describe('TabBar', () => {
 
   it('opens a tab again once it unseals', async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, trialsUnlocked: true });
+    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true });
     const wrapper = mount(TabBar);
     expect(tab(wrapper, 'talents').attributes('disabled')).toBeUndefined();
     await tab(wrapper, 'talents').trigger('click');
@@ -128,12 +128,12 @@ describe('TabBar', () => {
 
   it('drops back to Skills when the tab on show seals, as a death does', async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 6, questsUnlocked: true, trialsUnlocked: true });
+    characterStore.setCharacter({ ...characterStore.character, level: 6, questsUnlocked: true });
     const wrapper = mount(TabBar);
     await tab(wrapper, 'talents').trigger('click');
     expect(useTabStore().tab).toBe('talents');
 
-    characterStore.setCharacter({ ...characterStore.character, level: 1, questsUnlocked: false, trialsUnlocked: false, talentsUnlocked: false });
+    characterStore.setCharacter({ ...characterStore.character, level: 1, questsUnlocked: false, talentsUnlocked: false });
     await wrapper.vm.$nextTick();
     expect(useTabStore().tab).toBe('skills');
   });

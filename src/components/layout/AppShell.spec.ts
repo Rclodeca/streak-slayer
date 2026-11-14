@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useCharacterStore } from '../../store/characterStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { useTabStore } from '../../store/tabStore';
-import { useTrialSeenStore } from '../../store/trialSeenStore';
 import Modal from '../ui/Modal.vue';
 import AppMenu from './AppMenu.vue';
 import AppShell from './AppShell.vue';
@@ -110,15 +109,12 @@ describe('AppShell', () => {
       expect(wrapper.find('home-base-stub').exists()).toBe(false);
     });
 
-    it('keeps the Trials button under the menu on the home base, once Trials are open', async () => {
+    it('keeps the Trials button under the menu on the home base, from level 1', async () => {
       const homeBase = { template: '<div class="home-base-slot"><slot /></div>' };
       const mountHero = () => {
         useTabStore().select('hero');
         return shallowMount(AppShell, { global: { stubs: { HomeBase: homeBase } } });
       };
-      expect(mountHero().find('.home-base-slot .stage-trials').exists()).toBe(false);
-
-      useCharacterStore().character.trialsUnlocked = true;
       const wrapper = mountHero();
       await wrapper.vm.$nextTick();
       const button = wrapper.find('.home-base-slot .stage-trials');
@@ -131,7 +127,6 @@ describe('AppShell', () => {
 
     it('pins the shop scene on the Shop tab, with the menu and the Trials button', async () => {
       const shopScene = { template: '<div class="shop-scene-slot"><slot /></div>' };
-      useCharacterStore().character.trialsUnlocked = true;
       useTabStore().select('shop');
       const wrapper = shallowMount(AppShell, { global: { stubs: { ShopScene: shopScene } } });
       await wrapper.vm.$nextTick();
@@ -148,15 +143,15 @@ describe('AppShell', () => {
       expect(wrapper.findAll('.tab-panel.current')[0].find('trial-section-stub').exists()).toBe(true);
     });
 
-    it('the stage Trials button counts the claims waiting, else wears a pip for a new trial', async () => {
+    it('the stage Trials button counts the claims waiting', async () => {
       const homeBase = { template: '<div class="home-base-slot"><slot /></div>' };
       const entry = { id: 'resist' as const, takenDayKey: '2026-11-01', progress: 0 };
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 5, trialsUnlocked: true, challenges: [entry] });
+      characterStore.setCharacter({ ...characterStore.character, level: 5, challenges: [entry] });
       useTabStore().select('hero');
       const wrapper = shallowMount(AppShell, { global: { stubs: { HomeBase: homeBase } } });
       await wrapper.vm.$nextTick();
-      expect(wrapper.find('.stage-trials .trials-pip').exists()).toBe(true);
+      expect(wrapper.find('.stage-trials .trials-count').exists()).toBe(false);
 
       characterStore.setCharacter({
         ...characterStore.character,
@@ -185,7 +180,6 @@ describe('AppShell', () => {
     });
 
     it('keeps the menu and the Trials button on Talents (Trials not listed in the menu)', async () => {
-      useCharacterStore().character.trialsUnlocked = true;
       const wrapper = shallowMount(AppShell, { global: { renderStubDefaultSlot: true } });
       useTabStore().select('talents');
       await wrapper.vm.$nextTick();
@@ -211,28 +205,6 @@ describe('AppShell', () => {
       await wrapper.vm.$nextTick();
       expect(logPopup().props('modelValue')).toBe(true);
       expect(logPopup().find('activity-log-stub').attributes('bare')).toBe('true');
-    });
-
-    it('marks the trials seen once the Trials tab is open', async () => {
-      const characterStore = useCharacterStore();
-      characterStore.setCharacter({
-        ...characterStore.character,
-        level: 5,
-        questsUnlocked: true,
-        challenges: [{ id: 'resist', relicId: 'ember-heart', takenDayKey: '2026-11-01', progress: 0 }],
-      });
-      const wrapper = shallowMount(AppShell);
-      const trialSeen = useTrialSeenStore();
-      expect(trialSeen.unseen(characterStore.character.challenges!)).toBe(true);
-
-      useTabStore().select('trials');
-      await wrapper.vm.$nextTick();
-      expect(trialSeen.unseen(characterStore.character.challenges!)).toBe(false);
-      expect(trialSeen.fresh).toEqual(['resist@2026-11-01']);
-
-      useTabStore().select('skills');
-      await wrapper.vm.$nextTick();
-      expect(trialSeen.fresh).toEqual([]);
     });
   });
 });

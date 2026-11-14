@@ -18,18 +18,13 @@ import {
   consumeEventPick,
   createRng,
   dailyPeriodKey,
-  drawChallenge,
   eligibleEvents,
   EVENT_DEFS,
-  getChallengeDef,
   heroClassFor,
   maxEquipSlots,
-  offerableChallenges,
-  recordSideQuestOffer,
   rollEventChoices,
-  takeChallenge,
 } from '../game-engine';
-import type { Character, ChallengeDef, ChallengeEvent, ChallengeId, EventDef, EventId, ItemDef } from '../game-engine';
+import type { ChallengeEvent, EventDef, EventId, ItemDef } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -57,24 +52,6 @@ export function useEventChoice() {
   const pending = computed(() => characterStore.character.pendingEventPicks ?? 0);
   const choices = computed<EventDef[]>(() => (characterStore.character.offeredEventIds ?? []).flatMap((id) => EVENT_DEFS.find((e) => e.id === id) ?? []));
 
-  /** The challenge the side-quest card names, once rolled. */
-  const offeredChallenge = computed<ChallengeDef | null>(() => {
-    const id = characterStore.character.offeredChallengeId;
-    return id ? getChallengeDef(id) : null;
-  });
-
-  /**
-   * Names the challenge the side-quest card will offer: the one already
-   * persisted if it can still be offered (a reopened popup or a reload shows
-   * the same one), otherwise a fresh draw. With no side-quest card rolled,
-   * nothing is offered.
-   */
-  function settleOfferedChallenge(character: Character, rolled: readonly string[]): ChallengeId | undefined {
-    if (!rolled.includes('side-quest')) return undefined;
-    const current = character.offeredChallengeId;
-    return current && offerableChallenges(character).some((def) => def.id === current) ? current : (drawChallenge(character, rng) ?? undefined);
-  }
-
   /**
    * Rolls the cards for the front pick if none are kept yet (or a kept one is no
    * longer eligible), and clears them once no picks remain. Only writes when
@@ -91,23 +68,16 @@ export function useEventChoice() {
     const eligible = eligibleEvents(character, habitStore.habits, questStore.quests, todayKey);
     const stillValid = kept !== undefined && kept.every((id) => eligible.some((e) => e.id === id));
     const rolled = stillValid ? kept : rollEventChoices(character, habitStore.habits, rng, questStore.quests, undefined, todayKey).map((e) => e.id);
-    const offeredChallengeId = settleOfferedChallenge(character, rolled);
-    if (stillValid && offeredChallengeId === character.offeredChallengeId) return;
-    characterStore.setCharacter({ ...character, offeredEventIds: rolled, offeredChallengeId });
+    if (stillValid) return;
+    characterStore.setCharacter({ ...character, offeredEventIds: rolled });
   }
 
   function finish(id: EventId) {
-    const character = characterStore.character;
-    const offered = character.offeredEventIds ?? [];
-    // Being offered already proves it was eligible; checking again only matters when it wasn't offered, because
-    // the pick itself (e.g. promising the last available relic) can make it ineligible by now.
-    const sideQuestEligible =
-      offered.includes('side-quest') || eligibleEvents(character, habitStore.habits, questStore.quests).some((e) => e.id === 'side-quest');
-    characterStore.setCharacter(recordSideQuestOffer(consumeEventPick(character, id), offered, sideQuestEligible));
+    characterStore.setCharacter(consumeEventPick(characterStore.character, id));
   }
 
-  /** Picks an event that needs no further input (everything except side-quest and reroll-skill). */
-  function choose(id: Exclude<EventId, 'side-quest' | 'reroll-skill'>) {
+  /** Picks an event that needs no further input (everything except reroll-skill). */
+  function choose(id: Exclude<EventId, 'reroll-skill'>) {
     const { level } = characterStore.character;
     // Reported once the pick is spent, so a challenge it finishes pays out on top of it.
     let happened: ChallengeEvent | null = null;
@@ -170,22 +140,9 @@ export function useEventChoice() {
     finish('reroll-skill');
   }
 
-  /** Takes the challenge the side-quest card names; nothing is typed. */
-  function chooseSideQuest() {
-    const character = characterStore.character;
-    const id = character.offeredChallengeId;
-    if (!id) return;
-    const taken = takeChallenge(character, id, dailyPeriodKey(debugClockStore.now()));
-    if (taken === character) return;
-    characterStore.setCharacter(taken);
-    finish('side-quest');
-    // Some challenges (Unbroken) are already true when taken.
-    reportChallenge({ type: 'state-changed', habits: habitStore.habits });
-  }
-
   function dismissReveal() {
     revealed.value = null;
   }
 
-  return { pending, choices, revealed, offeredChallenge, ensureChoices, choose, chooseReroll, chooseSideQuest, dismissReveal };
+  return { pending, choices, revealed, ensureChoices, choose, chooseReroll, dismissReveal };
 }

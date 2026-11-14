@@ -11,13 +11,12 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import RerollSkillRow from '../habits/RerollSkillRow.vue';
 import { sortByDamageType } from '../habits/habitDisplay';
-import { challengeIcon } from '../quests/challengeIcons';
 import ItemHero from '../ui/ItemHero.vue';
 import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON, EVENT_ICON } from '../ui/statIcons';
 
-const { pending, choices, revealed, offeredChallenge, ensureChoices, choose, chooseReroll, chooseSideQuest, dismissReveal } = useEventChoice();
+const { pending, choices, revealed, ensureChoices, choose, chooseReroll, dismissReveal } = useEventChoice();
 const { eventChoiceVisible } = useModalPriority();
 const habitStore = useHabitStore();
 const characterStore = useCharacterStore();
@@ -75,14 +74,8 @@ const subtitle = computed(() => {
   return pending.value > 1 ? `Choose 1 event · ${pending.value} picks waiting` : 'Choose 1 event';
 });
 
-/** The deed follows "Name:" on the side card, so it starts lower case. */
-function deedLower(deed: string) {
-  return deed.charAt(0).toLowerCase() + deed.slice(1);
-}
-
 function onPick(id: EventId) {
-  if (id === 'side-quest') chooseSideQuest();
-  else if (id === 'reroll-skill') {
+  if (id === 'reroll-skill') {
     rerollPickId.value = null;
     step.value = 'reroll';
   }
@@ -119,24 +112,13 @@ function onPick(id: EventId) {
         :key="event.id"
         type="button"
         class="card"
-        :class="{ side: event.id === 'side-quest' && offeredChallenge }"
         @click="onPick(event.id)"
       >
-        <template v-if="event.id === 'side-quest' && offeredChallenge">
-          <span class="side-socket"><component :is="challengeIcon(offeredChallenge.icon)" :size="22" /></span>
-          <span class="card-text">
-            <small class="side-caption">Side quest</small>
-            <strong class="card-title">Complete a challenge for gems</strong>
-            <span class="card-desc"><b class="side-name">{{ offeredChallenge.name }}:</b> {{ deedLower(offeredChallenge.deed) }}</span>
-          </span>
-        </template>
-        <template v-else>
           <StatIcon :name="EVENT_ICON[event.id]" :size="22" class="icon" />
           <span class="card-text">
             <strong class="card-title">{{ event.title }}</strong>
             <span v-if="event.description" class="card-desc">{{ event.description }}</span>
           </span>
-        </template>
       </button>
     </div>
 

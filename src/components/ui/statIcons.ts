@@ -122,7 +122,6 @@ export const BOOST_STAT_ICON: Record<BoostableStat, StatIconName> = {
 };
 
 export const EVENT_ICON: Record<EventId, StatIconName> = {
-  'side-quest': 'quest',
   special: 'special',
   ult: 'ult',
   overdrive: 'streak',

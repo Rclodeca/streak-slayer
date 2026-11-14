@@ -615,7 +615,6 @@ export function resolvePlayerDeathIfDead(
     talents: character.talents,
     talentsUnlocked: character.talentsUnlocked,
     challenges: character.challenges,
-    trialsUnlocked: character.trialsUnlocked,
   };
   const freshCharacter = { ...kept, currentHealth: effectiveStat(kept, 'health') };
   return {

@@ -1,27 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Gift, Lock } from 'lucide-vue-next';
-import { trialsOpen, TRIALS_UNLOCK_LEVEL } from '../../game-engine';
-import { useCharacterStore } from '../../store/characterStore';
+import { Gift } from 'lucide-vue-next';
 import ChallengeList from './ChallengeList.vue';
-import SealedNotice from './SealedNotice.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
 
-// Trials: the side quests, in-game challenges that pay gems
-// (game-engine/challenges.ts). The game sets them, so there's no add button.
-// Sealed until TRIALS_UNLOCK_LEVEL (see trialsOpen); the Trials unlocked popup opens it.
-const characterStore = useCharacterStore();
-const open = computed(() => trialsOpen(characterStore.character));
+// Trials: in-game challenges that pay gems (game-engine/challenges.ts), every
+// one live from level 1. The game sets them, so there's no add button.
 </script>
 
 <template>
-  <section class="trial-section" :class="{ locked: !open }">
+  <section class="trial-section">
     <div class="quest-header">
-      <SectionTitle title="Trials"><Lock v-if="!open" :size="18" class="section-icon lock-icon" /><Gift v-else :size="18" class="section-icon" /></SectionTitle>
+      <SectionTitle title="Trials"><Gift :size="18" class="section-icon" /></SectionTitle>
     </div>
     <p class="section-caption">Sworn deeds</p>
-    <SealedNotice v-if="!open" :level="TRIALS_UNLOCK_LEVEL" />
-    <ChallengeList v-else />
+    <ChallengeList />
   </section>
 </template>
 
@@ -38,9 +30,5 @@ const open = computed(() => trialsOpen(characterStore.character));
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-}
-
-.locked h2 {
-  color: var(--text);
 }
 </style>
