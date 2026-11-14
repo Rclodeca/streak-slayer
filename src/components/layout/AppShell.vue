@@ -9,6 +9,8 @@ import FightStage from '../fight/FightStage.vue';
 import SkipDayButton from '../debug/SkipDayButton.vue';
 import HeroDetails from '../character/HeroDetails.vue';
 import HomeBase from '../character/HomeBase.vue';
+import ShopScene from '../shop/ShopScene.vue';
+import ShopSection from '../shop/ShopSection.vue';
 import MenuCorner from './MenuCorner.vue';
 import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
@@ -81,17 +83,22 @@ const tabStore = useTabStore();
 const showLog = ref(false);
 
 // What sits above the lists on a phone: the fight stage, the home base on the Hero tab,
-// or nothing but the menu's corner on Talents, which fills the screen. Wider screens
-// always have the stage.
+// the shopkeeper's scene on the Shop tab, or nothing but the menu's corner on Talents,
+// which fills the screen. Wider screens always have the stage.
 const topBar = computed(() => {
   if (isPhone.value && tabStore.tab === 'hero') return HomeBase;
+  if (isPhone.value && tabStore.tab === 'shop') return ShopScene;
   if (isPhone.value && tabStore.tab === 'talents') return MenuCorner;
   return FightStage;
 });
 // The Trials button under the menu, where there's room: not on the Focus strip; the menu
-// lists Trials instead. Talents has no stage, so it always has room.
+// lists Trials instead. Talents, the Hero and Shop tabs have no stage, so always have room.
+// Trials has no bottom tab of its own: this button and the menu are the way in.
 const trialsButton = computed(
-  () => isPhone.value && trialsOpen(characterStore.character) && (tabStore.tab === 'hero' || tabStore.tab === 'talents' || !stageFocused.value),
+  () =>
+    isPhone.value &&
+    trialsOpen(characterStore.character) &&
+    (tabStore.tab === 'hero' || tabStore.tab === 'talents' || tabStore.tab === 'shop' || !stageFocused.value),
 );
 const trialsInMenu = computed(() => isPhone.value && trialsOpen(characterStore.character) && !trialsButton.value);
 const scrollBody = ref<HTMLElement | null>(null);
@@ -158,6 +165,7 @@ watch(
           <main class="main">
             <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'quests' }"><QuestSection /></div>
+            <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'shop' }"><ShopSection /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'trials' }"><TrialSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'talents' }"><TalentSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'hero' }"><HeroDetails page /></div>

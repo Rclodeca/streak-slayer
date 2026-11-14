@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
+import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useHeroStats } from '../../composables/useHeroStats';
 import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -42,22 +43,7 @@ const streak = computed(() => bestStreak.value?.streakCount ?? 0);
 const streakLabel = computed(() => `Best streak ${streak.value}${bestStreak.value ? `, ${bestStreak.value.name}` : ''}`);
 
 const frame = ref<HTMLElement | null>(null);
-const offset = ref(0);
-let observer: ResizeObserver | null = null;
-
-function place() {
-  const width = frame.value?.clientWidth ?? ART_W;
-  offset.value = Math.floor((width - ART_W) / 2);
-}
-
-onMounted(() => {
-  place();
-  if (typeof ResizeObserver === 'function' && frame.value) {
-    observer = new ResizeObserver(place);
-    observer.observe(frame.value);
-  }
-});
-onBeforeUnmount(() => observer?.disconnect());
+const offset = useCenteredArt(frame, ART_W);
 </script>
 
 <template>

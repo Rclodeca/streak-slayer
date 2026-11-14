@@ -1,46 +1,43 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { Anvil, Gift, Lock, ScrollText, Sword, UserRound } from 'lucide-vue-next';
-import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, TALENT_DEFS, talentsOpen, trialsOpen } from '../../game-engine';
+import { Anvil, Lock, ScrollText, Store, Sword, UserRound } from 'lucide-vue-next';
+import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, TALENT_DEFS, talentsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
 import { useTalentPurchase } from '../../composables/useTalentPurchase';
-import { useTrialsBadge } from '../../composables/useTrialsBadge';
 
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
-// shows under the stage. Quests counts what's due today or overdue; Trials
-// counts the finished trials waiting to be claimed, or else wears a pip while a
-// new trial waits unseen (a claim outranks a new trial). Talents wears a pip
+// shows under the stage. Quests counts what's due today or overdue. The Shop
+// took Trials' place and is open from the start; Trials, with its claim count,
+// is the stage's Trials button now (AppShell). Talents wears a pip
 // while the gold and gems in hand buy the next rank on some open node. Skills counts the good skills still to do today: the
 // dailies that are due and unchecked, and on a Sunday (the last day of the
-// Monday-start week) the unchecked weeklies too. Sealed (before QUESTS_UNLOCK_LEVEL,
-// TRIALS_UNLOCK_LEVEL and TALENTS_UNLOCK_LEVEL) Quests, Trials and Talents each
+// Monday-start week) the unchecked weeklies too. Sealed (before QUESTS_UNLOCK_LEVEL
+// and TALENTS_UNLOCK_LEVEL) Quests and Talents each
 // grey out under a lock, with no badges, and can't be tapped.
 const tabStore = useTabStore();
 const characterStore = useCharacterStore();
 const questStore = useQuestStore();
 const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
-const { claimCount, newTrial } = useTrialsBadge();
 const talentPurchase = useTalentPurchase();
 
 const TABS = [
   { id: 'skills', label: 'Skills', icon: Sword },
   { id: 'quests', label: 'Quests', icon: ScrollText },
-  { id: 'trials', label: 'Trials', icon: Gift },
+  { id: 'shop', label: 'Shop', icon: Store },
   { id: 'talents', label: 'Talents', icon: Anvil },
   { id: 'hero', label: 'Hero', icon: UserRound },
 ] as const;
 
 const questsSealed = computed(() => !questsOpen(characterStore.character));
-const trialsSealed = computed(() => !trialsOpen(characterStore.character));
 const talentsSealed = computed(() => !talentsOpen(characterStore.character));
 /** Whether a tab is greyed out under its lock. */
 function isSealed(id: (typeof TABS)[number]['id']): boolean {
-  return (id === 'quests' && questsSealed.value) || (id === 'trials' && trialsSealed.value) || (id === 'talents' && talentsSealed.value);
+  return (id === 'quests' && questsSealed.value) || (id === 'talents' && talentsSealed.value);
 }
 // A death can seal the tab on show again (the run starts over at level 1), so it
 // falls back to Skills rather than leaving its seal up with no way to tap it.
@@ -84,8 +81,6 @@ const talentToBuy = computed(() => TALENT_DEFS.some((def) => talentPurchase.canB
       <Lock v-if="isSealed(tab.id)" :size="12" class="tab-lock" aria-hidden="true" />
       <span v-else-if="tab.id === 'skills' && skillsLeft" class="tab-count" aria-label="Left to do today"><span>{{ skillsLeft }}</span></span>
       <span v-else-if="tab.id === 'quests' && dueCount" class="tab-count"><span>{{ dueCount }}</span></span>
-      <span v-else-if="tab.id === 'trials' && claimCount" class="tab-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
-      <span v-else-if="tab.id === 'trials' && newTrial" class="tab-pip" role="img" aria-label="New" />
       <span v-else-if="tab.id === 'talents' && talentToBuy" class="tab-pip" role="img" aria-label="A talent to learn" />
     </button>
   </div>

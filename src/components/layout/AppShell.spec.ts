@@ -123,6 +123,44 @@ describe('AppShell', () => {
       expect(useTabStore().tab).toBe('trials');
     });
 
+    it('pins the shop scene on the Shop tab, with the menu and the Trials button', async () => {
+      const shopScene = { template: '<div class="shop-scene-slot"><slot /></div>' };
+      useCharacterStore().character.trialsUnlocked = true;
+      useTabStore().select('shop');
+      const wrapper = shallowMount(AppShell, { global: { stubs: { ShopScene: shopScene } } });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.layout > .shop-scene-slot').exists()).toBe(true);
+      expect(wrapper.find('fight-stage-stub').exists()).toBe(false);
+      expect(wrapper.find('.shop-scene-slot app-menu-stub').exists()).toBe(true);
+      const current = wrapper.findAll('.tab-panel.current');
+      expect(current).toHaveLength(1);
+      expect(current[0].find('shop-section-stub').exists()).toBe(true);
+
+      await wrapper.find('.shop-scene-slot .stage-trials').trigger('click');
+      expect(useTabStore().tab).toBe('trials');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.findAll('.tab-panel.current')[0].find('trial-section-stub').exists()).toBe(true);
+    });
+
+    it('the stage Trials button counts the claims waiting, else wears a pip for a new trial', async () => {
+      const homeBase = { template: '<div class="home-base-slot"><slot /></div>' };
+      const entry = { id: 'resist' as const, takenDayKey: '2026-11-01', progress: 0 };
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 5, trialsUnlocked: true, challenges: [entry] });
+      useTabStore().select('hero');
+      const wrapper = shallowMount(AppShell, { global: { stubs: { HomeBase: homeBase } } });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.stage-trials .trials-pip').exists()).toBe(true);
+
+      characterStore.setCharacter({
+        ...characterStore.character,
+        challenges: [entry, { id: 'rank-up', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02', unclaimed: true }],
+      });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.stage-trials .trials-count').text()).toBe('1');
+      expect(wrapper.find('.stage-trials .trials-pip').exists()).toBe(false);
+    });
+
     it('fills the screen on Talents: no stage or home base, just the menu\'s corner', async () => {
       const wrapper = shallowMount(AppShell);
       useTabStore().select('talents');
@@ -140,13 +178,13 @@ describe('AppShell', () => {
       expect(wrapper.find('menu-corner-stub').exists()).toBe(false);
     });
 
-    it('keeps the menu on Talents, with Trials listed in it (no button there)', async () => {
+    it('keeps the menu and the Trials button on Talents (Trials not listed in the menu)', async () => {
       useCharacterStore().character.trialsUnlocked = true;
       const wrapper = shallowMount(AppShell, { global: { renderStubDefaultSlot: true } });
       useTabStore().select('talents');
       await wrapper.vm.$nextTick();
-      expect(wrapper.find('.stage-trials').exists()).toBe(false);
-      expect(wrapper.findComponent(AppMenu).props('trialsItem')).toBe(true);
+      expect(wrapper.find('.stage-trials').exists()).toBe(true);
+      expect(wrapper.findComponent(AppMenu).props('trialsItem')).toBe(false);
     });
 
     it('gives Talents a tab of its own, and none on the right', async () => {

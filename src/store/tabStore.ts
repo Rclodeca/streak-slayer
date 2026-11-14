@@ -1,16 +1,22 @@
-// The phone's bottom tabs (TabBar): which one is showing. Not remembered: the
-// app always opens on Skills. Wider screens show every list at once and
-// ignore it.
+// The phone's bottom tabs (TabBar): which one is showing, and on the Shop tab
+// which side of its Shop | Vault switch. Not remembered: the app always opens
+// on Skills, and the Shop on its Shop side. Wider screens show every list at
+// once and ignore the tab. Trials has no bottom tab: the stage's Trials button
+// and the menu open it.
 
 import { defineStore } from 'pinia';
 
-export type TabId = 'skills' | 'quests' | 'trials' | 'talents' | 'hero';
+export type TabId = 'skills' | 'quests' | 'shop' | 'trials' | 'talents' | 'hero';
+export type ShopSide = 'shop' | 'vault';
 
 export const useTabStore = defineStore('tab', {
-  state: () => ({ tab: 'skills' as TabId }),
+  state: () => ({ tab: 'skills' as TabId, shopSide: 'shop' as ShopSide }),
   actions: {
     select(tab: TabId) {
       this.tab = tab;
+    },
+    selectShopSide(side: ShopSide) {
+      this.shopSide = side;
     },
   },
 });

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Lock } from 'lucide-vue-next';
 
-// Quests and Trials each seal until their own level.
-defineProps<{ level: number }>();
+// Quests and Trials each seal until their own level; the shut Vault passes its own `text`.
+defineProps<{ level?: number; text?: string }>();
 </script>
 
 <template>
@@ -11,7 +11,7 @@ defineProps<{ level: number }>();
     <div class="lock-ghost" aria-hidden="true"><i /><i /></div>
     <div class="lock-seal">
       <span class="lock-mark"><Lock :size="18" /></span>
-      <p class="lock-text">Sealed until level {{ level }}</p>
+      <p class="lock-text">{{ text ?? `Sealed until level ${level}` }}</p>
     </div>
   </div>
 </template>
