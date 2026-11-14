@@ -356,6 +356,12 @@ describe('maxEquipSlots', () => {
     expect(maxEquipSlots({ takenEventIds: ['item-slots'] })).toBe(6);
   });
 
+  it('adds two slots for each slot upgrade bought', () => {
+    expect(maxEquipSlots({ slotUpgrades: 1 })).toBe(6);
+    expect(maxEquipSlots({ slotUpgrades: 2 })).toBe(8);
+    expect(maxEquipSlots({ slotUpgrades: 0, takenEventIds: ['item-slots'] })).toBe(4);
+  });
+
   it('is 8 (MAX_EQUIP_SLOTS) once the second item-slots event is taken too', () => {
     expect(maxEquipSlots({ takenEventIds: ['item-slots', 'item-slots-2'] })).toBe(8);
     expect(MAX_EQUIP_SLOTS).toBe(8);

@@ -194,10 +194,22 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, createAccount, recordLevel, spendGems } from './account';
-export { TRIAL_GEMS, restockFee, tonicPrice, warePrice } from './constants/economy';
+export { TRIAL_GEMS, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';
+export {
+  SERVICE_DEFS,
+  buyEnchant,
+  buyOverdrive,
+  buyReroll,
+  buySlot,
+  enchantTargets,
+  overdriveTargets,
+  rerollTargets,
+  serviceState,
+} from './services';
+export type { ServiceId } from './services';
 
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './talents';
 export {
@@ -242,6 +254,7 @@ export {
   itemFlatBonus,
   MAX_EQUIP_SLOTS,
   maxEquipSlots,
+  slotUpgradesOf,
   recordRelicEarned,
   rollItemDrops,
   rollScavengerDrop,

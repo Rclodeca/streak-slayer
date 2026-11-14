@@ -317,8 +317,14 @@ export function rollScavengerDrop(character: Character, dropped: ItemDef[], rng:
 /** The most equip slots a character can ever have (the item grid always shows this many, locked or not). */
 export const MAX_EQUIP_SLOTS = 8;
 
-/** 4 equip slots, 6 after the one-time `item-slots` event, 8 after `item-slots-2`. */
-export function maxEquipSlots(character: Pick<Character, 'takenEventIds'>): number {
-  if (character.takenEventIds?.includes('item-slots-2')) return MAX_EQUIP_SLOTS;
-  return character.takenEventIds?.includes('item-slots') ? 6 : 4;
+/** Slot steps (two slots each) the character has: bought in the Shop, or on an older save taken as the `item-slots` events. */
+export function slotUpgradesOf(character: Pick<Character, 'slotUpgrades' | 'takenEventIds'>): number {
+  if (character.slotUpgrades !== undefined) return character.slotUpgrades;
+  if (character.takenEventIds?.includes('item-slots-2')) return 2;
+  return character.takenEventIds?.includes('item-slots') ? 1 : 0;
+}
+
+/** 4 equip slots, and 2 more for each slot step bought (up to MAX_EQUIP_SLOTS). */
+export function maxEquipSlots(character: Pick<Character, 'slotUpgrades' | 'takenEventIds'>): number {
+  return Math.min(MAX_EQUIP_SLOTS, 4 + 2 * slotUpgradesOf(character));
 }

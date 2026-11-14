@@ -169,6 +169,13 @@ export interface Character {
   // Today's shop stock (see shop.ts). A fresh character never has one, so a
   // death wipes it and the new run gets a new stock.
   shop?: ShopStock;
+  // Slot steps bought this run (0-2, two slots each; see maxEquipSlots), and
+  // the rerolls, Overdrives and enchants bought this run, which set their
+  // climbing prices (see services.ts). A fresh character has none, so a death
+  // resets them. A save from before the shop's slots reads the old
+  // `takenEventIds` instead (see slotUpgradesOf).
+  slotUpgrades?: number;
+  serviceBuys?: { reroll?: number; overdrive?: number; enchant?: number };
   // The day the last Healing Draught was drunk (see tonicState in shop.ts).
   // A fresh character has none, so a death resets the cooldown.
   draughtDayKey?: string;

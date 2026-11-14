@@ -15,7 +15,7 @@ import { daysBetweenDayKeys } from './time';
 import type { Character, ShopStock, ShopWare } from './types';
 
 /** Whether the hero still stands: a reload can leave the death screen down at 0 HP, and a fallen hero buys nothing. */
-function standing(character: Character): boolean {
+export function standing(character: Character): boolean {
   return Math.round(character.currentHealth) > 0;
 }
 

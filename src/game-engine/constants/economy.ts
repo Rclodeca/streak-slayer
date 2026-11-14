@@ -31,6 +31,28 @@ export function tonicPrice(bossIndex: number): number {
   return roundPrice(bossGold(bossIndex));
 }
 
+/** The gold services' base price (as boss kills' worth of gold) and how much it climbs for each one already bought this run. */
+export const SERVICE_PRICES = {
+  reroll: { base: 2, climb: 1.5 },
+  overdrive: { base: 5, climb: 1.5 },
+  enchant: { base: 10, climb: 2 },
+} as const;
+
+/** The price of a reroll, Overdrive or enchant while boss `bossIndex` is up, with `bought` already bought this run. Live, not locked. */
+export function servicePrice(id: keyof typeof SERVICE_PRICES, bought: number, bossIndex: number): number {
+  const { base, climb } = SERVICE_PRICES[id];
+  return roundPrice(base * bossGold(bossIndex) * climb ** bought);
+}
+
+/** Boss kills' worth of gold for the slot steps: 4 to 6 slots, then 6 to 8. */
+export const SLOT_PRICE_FACTORS = [15, 30] as const;
+
+/** The price of the next slot step with `upgrades` bought this run, or null once every step is bought. */
+export function slotPrice(upgrades: number, bossIndex: number): number | null {
+  const factor = SLOT_PRICE_FACTORS[upgrades];
+  return factor === undefined ? null : roundPrice(factor * bossGold(bossIndex));
+}
+
 /** Each day's stock: up to `basics` common/uncommon items and a rare, and on `featuredChance` of days an epic or relic (a relic `relicShare` of those times). */
 export const SHOP_STOCK = { basics: 3, featuredChance: 1 / 3, relicShare: 1 / 3 };
 
