@@ -30,12 +30,14 @@ describe('TalentUnlockPopup', () => {
     expect(q('.talent-unlock')).toBeNull();
   });
 
-  it('shows at level 5: what the tree does and that talents are kept, no points or prices', () => {
+  it('shows at level 5: talents are kept, three paths, bought with gold and gems', () => {
     reachLevel5();
     mount(TalentUnlockPopup, { attachTo: document.body });
     expect(q('.talent-unlock')).not.toBeNull();
-    expect(q('.talent-unlock')?.textContent).toContain('Talents make you stronger, and stay when you fall.');
-    expect(q('.talent-unlock')?.textContent).not.toMatch(/points?|gold|gems?/i);
+    expect(q('.talent-unlock')?.textContent).toContain('Grow stronger with every run.');
+    expect(q('.talent-unlock')?.textContent).toContain('Permanently upgrade your hero.');
+    expect(q('.talent-unlock')?.textContent).toContain('Spend gold and gems to learn.');
+    expect(q('.talent-unlock')?.textContent).not.toMatch(/points?/i);
     expect(q('.talent-unlock .emblem .count')).toBeNull();
   });
 
