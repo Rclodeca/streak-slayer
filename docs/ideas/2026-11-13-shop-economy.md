@@ -51,7 +51,7 @@ Once a long-time player has earned every free gem, new gems come only from new c
 | Revive | — | One fixed price that never climbs. Maybe one per boss. Offered on the death screen. |
 | Streak freeze | Kept until used | Set up **in advance** (vacation, sick day). Frozen days don't add to the streak. It never saves a streak after a miss. |
 | Hero skins, base hero skins, arena skins | Kept | Cosmetic. |
-| A few rotating rare items | This run | Lost on death. Should come back into the rotation later (open, see §11). |
+| A few rotating rare items | This run | Lost on death. Should come back into the rotation later (open, see §12). |
 | A couple of shop-exclusive items | This run | Something for paying players to spend gems on. |
 | Gold | This run | A poor exchange rate, shown clearly, so free players don't spend the gem budget meant for the tree. Capped (for example once a day, or a set amount per run) so money tops gold up but can't buy the gold skins outright, and boss kills stay the main source of gold. |
 
@@ -147,7 +147,7 @@ The death popup's line ("Your skills keep their power") still fits. A revive (ge
 ## 9. Items, relics and drops
 
 - **Drops get rarer** to make up for players being able to buy items.
-- **Relics mostly come from dungeons.** Maybe also the occasional shop relic, or very rare drops. Still to work out (§11).
+- **Relics mostly come from dungeons.** Maybe also the occasional shop relic, or very rare drops. Still to work out (§12).
 - Losing a gem-bought item on death should be clear before the player buys it.
 
 ---
@@ -166,7 +166,34 @@ Saves already go through the store layer, so phase 2 swaps the storage without t
 
 ---
 
-## 11. Open questions
+## 11. Where it lives in the UI
+
+The rule: what you play and spend on daily goes in the bottom bar, and what you visit now and then goes in the side bar.
+
+**Bottom bar:** Skills · Quests · **Shop** · Hero. The Shop takes the Trials tab. It holds every in-game purchase, gold and gems, split into the Shop (gold) and Vault (gems) tabs.
+
+**Side bar** (the right-edge tab on the stage), most used first:
+1. **Trials**, with its claim pip.
+2. **Settings cog.**
+3. **Dungeons**, once they exist and are unlocked. How dungeons are entered and played is decided later.
+4. **Store**, for real-money purchases (gems, dungeon packs, character packs).
+
+Rules for the side bar:
+- Buttons appear only once they exist and are unlocked, so early on the bar is just Trials and the cog.
+- The Store stays hidden until the player has beaten a few bosses, so a new player's first impression isn't a store.
+- The Store button stays calm: no flashing badge, no countdown timers.
+- Four 44px buttons take about 190px of the pinned stage edge. Check this on small phones.
+
+**More ways into the Store.** It's one store, but players reach it where the need arises:
+- tapping the gem count in the Shop or Vault
+- a "Get gems" link when a Vault item costs more gems than the player has
+- the buy button on a locked dungeon
+
+Keeping real money in its own Store, apart from gold and gems, means players always know when they're spending money.
+
+---
+
+## 12. Open questions
 
 - **Relic sources:** dungeons mostly. Shop, very rare drops? How many dungeons are needed to cover the 17 relics?
 - **Gem-bought items lost on death:** do they come back into the rotation later?
@@ -184,7 +211,7 @@ Saves already go through the store layer, so phase 2 swaps the storage without t
 
 ---
 
-## 12. Decisions log (2026-11-13)
+## 13. Decisions log (2026-11-13)
 
 - Death resets (picked over "death is a setback").
 - Free gems finish the whole tree, plus about one skin and a couple of revives or freezes.
