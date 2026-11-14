@@ -87,6 +87,20 @@ export const FREE_GEM_SOURCES = {
   dungeonFirstClears: 0,
 };
 
+/** What a Vault item costs in gems, by rarity. Flat, not by boss: gems don't grow with the run. */
+export const VAULT_PRICES = { rare: 5, epic: 10, relic: 15 } as const;
+
+/** The Vault draws a new stock every this many days (and after a death). */
+export const VAULT_STOCK_DAYS = 3;
+
+/** The Gold Pouch: `gems` for `bossKills` boss kills' worth of gold, once a day. A poor rate on purpose. */
+export const GOLD_POUCH = { gems: 5, bossKills: 3 };
+
+/** The gold the Gold Pouch pays while boss `bossIndex` is up. */
+export function pouchGold(bossIndex: number): number {
+  return roundPrice(GOLD_POUCH.bossKills * bossGold(bossIndex));
+}
+
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
 export const REVIVE_GEMS = 10;
 

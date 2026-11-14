@@ -7,7 +7,7 @@ import { SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/econo
 import { TUNING } from './constants/tuning';
 import { characterGold } from './gold';
 import { ITEM_CATALOG, dropRarityShares, recordRelicEarned } from './items';
-import type { DropRarity, ItemDef } from './items';
+import type { DropRarity, ItemDef, ItemRarity } from './items';
 import { activeCritBoost, activeExpBoost, activeHealBoost, applyCritBoostEffect, applyExpBoost, applyHealBoostEffect, effectiveStat } from './leveling';
 import { pickRandom, type Rng } from './rng';
 import { daysBetweenDayKeys } from './time';
@@ -18,8 +18,20 @@ export function standing(character: Character): boolean {
   return Math.round(character.currentHealth) > 0;
 }
 
+/**
+ * The items a stock can draw from, by rarity: only ones the character doesn't
+ * own, and only rarities that drop at its level (relics go with epics). The
+ * gold shop and the Vault share it.
+ */
+export function stockPool(character: Character): (...rarities: ItemRarity[]) => ItemDef[] {
+  const shares = dropRarityShares(character.level);
+  const pool = ITEM_CATALOG.filter((item) => !character.ownedItemIds.includes(item.id));
+  const allowed = (item: ItemDef) => (item.rarity === 'relic' ? shares.epic > 0 : shares[item.rarity as DropRarity] > 0);
+  return (...rarities) => pool.filter((item) => rarities.includes(item.rarity) && allowed(item));
+}
+
 /** Up to `count` distinct random items from `pool`. */
-function pickSome(pool: ItemDef[], count: number, rng: Rng): ItemDef[] {
+export function pickSome(pool: ItemDef[], count: number, rng: Rng): ItemDef[] {
   const left = [...pool];
   const picked: ItemDef[] = [];
   while (picked.length < count && left.length > 0) {
@@ -32,15 +44,12 @@ function pickSome(pool: ItemDef[], count: number, rng: Rng): ItemDef[] {
 
 /**
  * A fresh stock: up to SHOP_STOCK.basics commons and uncommons, one rare, and
- * on some days an epic or relic. Only items the character doesn't own, and only
- * rarities that drop at its level (relics go with epics). The special takes the
+ * on some days an epic or relic, from stockPool. The special takes the
  * velvet and the rare drops into the rows; otherwise the rare is featured.
  */
 function drawStock(character: Character, bossIndex: number, dayKey: string, restocks: number, rng: Rng): ShopStock {
   const shares = dropRarityShares(character.level);
-  const pool = ITEM_CATALOG.filter((item) => !character.ownedItemIds.includes(item.id));
-  const allowed = (item: ItemDef) => (item.rarity === 'relic' ? shares.epic > 0 : shares[item.rarity as DropRarity] > 0);
-  const of = (...rarities: string[]) => pool.filter((item) => rarities.includes(item.rarity) && allowed(item));
+  const of = stockPool(character);
 
   const basics = pickSome(of('common', 'uncommon'), SHOP_STOCK.basics, rng);
   const rare = pickSome(of('rare'), 1, rng)[0] ?? null;

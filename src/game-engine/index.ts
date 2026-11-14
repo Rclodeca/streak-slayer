@@ -11,6 +11,8 @@ export type {
   Character,
   DamageType,
   ShopStock,
+  VaultStock,
+  VaultWare,
   ShopWare,
   Difficulty,
   Habit,
@@ -171,10 +173,11 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, createAccount, recordLevel, spendGems } from './account';
-export { REVIVE_GEMS, TRIAL_GEMS, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { GOLD_POUCH, REVIVE_GEMS, TRIAL_GEMS, VAULT_STOCK_DAYS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';
+export { buyPouch, buyVaultWare, pouchState, stockVault, vaultWareState, vaultWindowKey } from './vault';
 export {
   SERVICE_DEFS,
   buyEnchant,

@@ -45,6 +45,14 @@ describe('ActivityLog — boss defeated', () => {
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('+2 gems');
   });
 
+  it('shows a Vault buy, and the gold a pouch paid', () => {
+    useActivityLogStore().addEntry({ kind: 'vault-bought', name: 'Chaos Blade', gems: 5 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Bought Chaos Blade −5 gems');
+    setActivePinia(createPinia());
+    useActivityLogStore().addEntry({ kind: 'vault-bought', name: 'Gold Pouch', gems: 5, gold: 420 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Bought Gold Pouch −5 gems +420 gold');
+  });
+
   it('shows a gem revive', () => {
     useActivityLogStore().addEntry({ kind: 'revived', gems: 10 });
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Revived −10 gems');

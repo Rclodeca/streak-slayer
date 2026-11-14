@@ -43,6 +43,7 @@ export type ActivityLogEntry =
   | { id: string; kind: 'revived'; gems: number } // a gem revive on the death screen
   | { id: string; kind: 'shop-bought'; name: string; gold: number } // an item or a tonic
   | { id: string; kind: 'shop-restocked'; gold: number }
+  | { id: string; kind: 'vault-bought'; name: string; gems: number; gold?: number } // an item or the Gold Pouch (gold: what it paid)
   | { id: string; kind: 'special-assigned'; habitName: string }
   | { id: string; kind: 'ult-assigned'; habitName: string }
   | { id: string; kind: 'overdrive-granted'; habitName: string; gold?: number }

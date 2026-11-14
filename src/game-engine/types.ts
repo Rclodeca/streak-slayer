@@ -162,6 +162,11 @@ export interface Character {
   // The boss index this run last revived against for gems (see reviveState in
   // combat.ts): one revive per boss. A fresh character has none.
   revivedAtBoss?: number;
+  // The Vault's stock for its current 3-day window (see vault.ts), and the
+  // day the Gold Pouch was last bought. Gem buys for this run: a fresh
+  // character has neither, so a death redraws the stock and resets the pouch.
+  vault?: VaultStock;
+  pouchDayKey?: string;
   // Side-quest challenges (see challenges.ts): every one taken, active and
   // done, so a finished one is never offered again. Kept through death
   // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
@@ -204,6 +209,20 @@ export interface ShopStock {
   featured: ShopWare | null;
   wares: ShopWare[];
   restocks: number;
+}
+
+/** One item for sale in the Vault, at its gem price. */
+export interface VaultWare {
+  itemId: string;
+  gems: number;
+  sold?: boolean;
+}
+
+/** The Vault's stock for a 3-day window (`windowKey` is its first day): an epic or relic on velvet, and the rows. */
+export interface VaultStock {
+  windowKey: string;
+  featured: VaultWare | null;
+  wares: VaultWare[];
 }
 
 /** A habit or quest added after a challenge was taken; it counts at the next day rollover if it still exists. */
