@@ -13,7 +13,7 @@ import { pickRandom, type Rng } from './rng';
 import { daysBetweenDayKeys } from './time';
 import type { Character, ShopStock, ShopWare } from './types';
 
-/** Whether the hero still stands: a reload can leave the death screen down at 0 HP, and a fallen hero buys nothing. */
+/** Whether the hero still stands: a fallen hero buys nothing, even with the death screen waiting behind a popup. */
 export function standing(character: Character): boolean {
   return Math.round(character.currentHealth) > 0;
 }

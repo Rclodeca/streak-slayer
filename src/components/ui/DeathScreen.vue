@@ -5,6 +5,7 @@ import { REVIVE_GEMS, heroClassFor, reviveState } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useDeathScreen } from '../../composables/useDeathScreen';
+import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import { deathLines } from '../../composables/useHoodedFigure';
 import { useAccountStore } from '../../store/accountStore';
@@ -20,10 +21,11 @@ import StatIcon from './StatIcon.vue';
 // the hooded figure's line over the fallen hero, then a bonfire where each
 // skill that keeps its power burns on. "Rise again" there starts the reset.
 const { isDead } = useDeathScreen();
-// The screen waits while a missed quest is still to land (its popup shows
-// first), so a revive never meets a hit queued that day.
+// The screen waits while the daily update or a missed quest is still to land
+// (their popups show first), so a revive never meets a hit queued that day.
+const { hasPending: habitMissPending } = useMissedSkillsGate();
 const { hasPending: questMissPending } = useQuestMissGate();
-const shown = computed(() => isDead.value && !questMissPending.value);
+const shown = computed(() => isDead.value && !habitMissPending.value && !questMissPending.value);
 const { restart, revive } = useCombatActions();
 const accountStore = useAccountStore();
 const bossStore = useBossStore();

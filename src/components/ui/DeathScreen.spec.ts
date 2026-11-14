@@ -14,6 +14,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
+import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import DeathScreen from './DeathScreen.vue';
 
 enableAutoUnmount(afterEach);
@@ -106,6 +107,17 @@ describe('DeathScreen', () => {
     await nextTick();
     expect(document.querySelector('.death-layer')).toBeNull();
     useQuestMissGate().acknowledge();
+    await nextTick();
+    expect(document.querySelector('.death-layer')).not.toBeNull();
+  });
+
+  it('waits while the daily update is still to land, then opens', async () => {
+    const habit = useHabitStore().addHabit('Read', 'daily', 'medium', false, createRng(9));
+    useMissedSkillsGate().queueMiss(habit, '2026-01-02');
+    mountWith([]);
+    await nextTick();
+    expect(document.querySelector('.death-layer')).toBeNull();
+    useMissedSkillsGate().acknowledge();
     await nextTick();
     expect(document.querySelector('.death-layer')).not.toBeNull();
   });

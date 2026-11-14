@@ -562,6 +562,15 @@ export function useCombatActions() {
   }
 
   /**
+   * Raises the death screen for a hero already fallen, as after a reload: the
+   * screen's flag isn't saved, so a hero who died and closed the app before
+   * rising would otherwise sit at 0 HP with no way to revive or rise.
+   */
+  function raiseDeathIfFallen(): void {
+    if (Math.round(characterStore.character.currentHealth) <= 0) triggerDeath();
+  }
+
+  /**
    * The death screen's revive: brings a fallen hero back at half health for
    * gems, once per boss (see reviveForGems), and closes the death screen.
    * False, with nothing spent, when it can't be bought.
@@ -757,6 +766,7 @@ export function useCombatActions() {
     claimChallenge,
     restart,
     revive,
+    raiseDeathIfFallen,
     beginRun,
     completeQuest,
     failQuest,
