@@ -3,7 +3,7 @@
 // fresh) and wire up debounced localStorage persistence.
 
 import { createPinia, getActivePinia, setActivePinia, type Pinia } from 'pinia';
-import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateEventState, migrateQuestUnlock, seedChallenges } from '../game-engine';
+import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateEventState, grantLevelRewards, migrateQuestUnlock, seedChallenges } from '../game-engine';
 import { useAccountStore } from './accountStore';
 import { useActivityLogStore } from './activityLogStore';
 import { useBossStore } from './bossStore';
@@ -74,6 +74,8 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   bossStore.setBoss(eased.boss);
   characterStore.setCharacter(migrateEventState(characterStore.character, habitStore.habits));
   characterStore.setCharacter(migrateQuestUnlock(characterStore.character, questStore.quests.length > 0));
+  // A save from before Special and Ult were handed out: a hero at level 5 or 8 that holds none gets it now.
+  habitStore.setHabits(grantLevelRewards(habitStore.habits, characterStore.character.level, rng).habits);
   // Every trial is live from the start; a load tops up any the save doesn't hold.
   characterStore.setCharacter(seedChallenges(characterStore.character, dailyPeriodKey(useDebugClockStore(targetPinia).now())));
 

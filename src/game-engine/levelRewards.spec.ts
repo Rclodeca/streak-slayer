@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assignSpecialIfEligible, assignUltIfEligible, grantOverdrive } from './levelRewards';
+import { assignSpecialIfEligible, assignUltIfEligible, grantLevelRewards, grantOverdrive } from './levelRewards';
 import { createRng } from './rng';
 import { TUNING } from './constants/tuning';
 import type { Habit } from './types';
@@ -120,5 +120,51 @@ describe('grantOverdrive', () => {
       const { granted } = grantOverdrive(habits, createRng(seed));
       expect(granted?.id).toBe('new');
     }
+  });
+});
+
+describe('grantLevelRewards', () => {
+  const daily = (id = 'd') => makeHabit({ id, period: 'daily' });
+  const weekly = (id = 'w') => makeHabit({ id, period: 'weekly' });
+
+  it('is at level 5 for the Special and level 8 for the Ult', () => {
+    expect(TUNING.SPECIAL_LEVEL).toBe(5);
+    expect(TUNING.ULT_LEVEL).toBe(8);
+  });
+
+  it('grants nothing at level 4 and returns the same array', () => {
+    const habits = [daily(), weekly()];
+    const result = grantLevelRewards(habits, 4, createRng(1));
+    expect(result.habits).toBe(habits);
+    expect(result.special).toBeUndefined();
+    expect(result.ult).toBeUndefined();
+  });
+
+  it('level 5 with a daily and a weekly grants only the Special', () => {
+    const result = grantLevelRewards([daily(), weekly()], 5, createRng(1));
+    expect(result.special?.id).toBe('d');
+    expect(result.ult).toBeUndefined();
+    expect(result.habits.find((h) => h.id === 'd')?.isSpecial).toBe(true);
+    expect(result.habits.some((h) => h.isUlt)).toBe(false);
+  });
+
+  it('level 8 grants the Ult as well', () => {
+    const result = grantLevelRewards([daily(), weekly()], 8, createRng(1));
+    expect(result.special?.id).toBe('d');
+    expect(result.ult?.id).toBe('w');
+  });
+
+  it('level 8 with only dailies grants the Special alone and leaves the Ult open', () => {
+    const result = grantLevelRewards([daily()], 8, createRng(1));
+    expect(result.special?.id).toBe('d');
+    expect(result.ult).toBeUndefined();
+  });
+
+  it('a second call grants nothing', () => {
+    const first = grantLevelRewards([daily(), weekly()], 8, createRng(1));
+    const again = grantLevelRewards(first.habits, 8, createRng(2));
+    expect(again.habits).toBe(first.habits);
+    expect(again.special).toBeUndefined();
+    expect(again.ult).toBeUndefined();
   });
 });

@@ -1,6 +1,7 @@
-// The permanent habit bonuses (Special/Ult/Overdrive) that the events
-// system grants (see events.ts). Pure functions over a habit list; Special
-// and Ult are idempotent and level-gated.
+// The permanent habit bonuses: Special and Ult are handed out at
+// SPECIAL_LEVEL and ULT_LEVEL (grantLevelRewards), Overdrive is bought in the
+// Shop (services.ts). Pure functions over a habit list; Special and Ult are
+// idempotent and level-gated.
 
 import { TUNING } from './constants/tuning';
 import { pickRandom, type Rng } from './rng';
@@ -28,6 +29,19 @@ export function assignUltIfEligible(habits: Habit[], level: number, rng: Rng): H
   if (eligible.length === 0) return habits;
   const chosen = pickRandom(eligible, rng);
   return habits.map((h) => (h.id === chosen.id ? { ...h, isUlt: true } : h));
+}
+
+/**
+ * Hands out whatever Special and Ult the level has earned and no habit holds
+ * yet: the same `habits` array back when nothing was granted, and `special` /
+ * `ult` naming the habit that just got one. A level that has no habit to take
+ * it leaves it open, so a later call (a new skill) can still grant it.
+ */
+export function grantLevelRewards(habits: Habit[], level: number, rng: Rng): { habits: Habit[]; special?: Habit; ult?: Habit } {
+  const withSpecial = assignSpecialIfEligible(habits, level, rng);
+  const withUlt = assignUltIfEligible(withSpecial, level, rng);
+  const gained = (flag: 'isSpecial' | 'isUlt') => withUlt.find((habit) => habit[flag] && !habits.find((before) => before.id === habit.id)?.[flag]);
+  return { habits: withUlt, special: gained('isSpecial'), ult: gained('isUlt') };
 }
 
 /**

@@ -200,6 +200,24 @@ describe('store persistence smoke test', () => {
     expect(characterStore.character.challenges!.slice(0, 2)).toEqual(held);
   });
 
+  it('a save at level 9 with no Special or Ult gets both on load, once', () => {
+    const rng = createRng(1);
+    const habit = (id: string, period: 'daily' | 'weekly') => ({ id, name: id, period, difficulty: 'easy', damageType: 'physical', isBad: false, streakCount: 0, lastCompletedPeriodKey: null, lastCheckedPeriodKey: null });
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ schemaVersion: CURRENT_SCHEMA_VERSION, character: { ...createCharacter(rng), level: 9 }, boss: generateBoss(1, rng), habits: [habit('d', 'daily'), habit('w', 'weekly')] }),
+    );
+
+    const first = initializeStores();
+    expect(first.habitStore.habits.find((h) => h.id === 'd')?.isSpecial).toBe(true);
+    expect(first.habitStore.habits.find((h) => h.id === 'w')?.isUlt).toBe(true);
+    const before = first.habitStore.habits;
+    const second = initializeStores();
+    expect(second.habitStore.habits.filter((h) => h.isSpecial)).toHaveLength(1);
+    expect(second.habitStore.habits.filter((h) => h.isUlt)).toHaveLength(1);
+    expect(before).toBeDefined();
+  });
+
   it('does not accumulate duplicate $subscribe listeners when initializeStores() is called again against the same active pinia', () => {
     const first = initializeStores();
     const second = initializeStores(); // same active pinia — setupPersistence should be a no-op the 2nd time

@@ -113,7 +113,7 @@ export {
   rollRunDifficultyModifier,
 } from './boss';
 
-export { assignSpecialIfEligible, assignUltIfEligible, grantOverdrive } from './levelRewards';
+export { assignSpecialIfEligible, assignUltIfEligible, grantLevelRewards, grantOverdrive } from './levelRewards';
 export {
   applyCritBoostEvent,
   applyDoubleItemEvent,

@@ -41,6 +41,7 @@ import {
   effectiveStat,
   describeItemBonus,
   doneChallenges,
+  grantLevelRewards,
   getChallengeDef,
   markChallengeClaimed,
   HERO_CLASSES,
@@ -159,6 +160,18 @@ export function useCombatActions() {
     activityLogStore.addEntry({ kind: 'boss-skill', skill: fired.skill, outcome: fired.outcome, ...(fired.amount !== undefined && { amount: fired.amount }), ...(fired.pct !== undefined && { pct: fired.pct }), ...(fired.stat !== undefined && { stat: fired.stat }) });
   }
 
+  /**
+   * Hands out the Special and Ult the hero's level has earned and no skill
+   * holds yet (a level-up, or a new skill that gives one a home), and logs them.
+   */
+  function handOutLevelRewards(): void {
+    const { habits, special, ult } = grantLevelRewards(habitStore.habits, characterStore.character.level, rng);
+    if (habits === habitStore.habits) return;
+    habitStore.setHabits(habits);
+    if (special) activityLogStore.addEntry({ kind: 'special-assigned', habitName: special.name });
+    if (ult) activityLogStore.addEntry({ kind: 'ult-assigned', habitName: ult.name });
+  }
+
   /** Queues one event pick per level gained; the player resolves them in EventChoiceModal. */
   function grantEventPicks(levelsGained: number): void {
     if (levelsGained <= 0) return;
@@ -181,6 +194,7 @@ export function useCombatActions() {
     logLevelUpIfAny(before, character);
     characterStore.setCharacter(character);
     grantEventPicks(levelsGained);
+    handOutLevelRewards();
 
     activityLogStore.addEntry({ kind: 'challenge-completed', name: def.name, amount, gems: TRIAL_GEMS });
     enqueueCompletion({ description: def.name, difficulty: 'medium', amount });
@@ -336,6 +350,7 @@ export function useCombatActions() {
       logLevelUpIfAny(beforeLevelUp, character);
       characterStore.setCharacter(character);
       grantEventPicks(levelsGained);
+    handOutLevelRewards();
     }
 
     const beforeDefeat = characterStore.character;
@@ -356,6 +371,7 @@ export function useCombatActions() {
     characterStore.setCharacter(defeatResult.character);
     bossStore.setBoss(defeatResult.boss);
     grantEventPicks(defeatResult.levelsGained);
+    handOutLevelRewards();
 
     reportChallenge({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
     if (defeatResult.itemsDropped.some((item) => item.rarity === 'epic')) reportChallenge({ type: 'epic-dropped' });
@@ -551,6 +567,7 @@ export function useCombatActions() {
     const habit = { ...created, lastCheckedPeriodKey: periodKeyFor(period, now), createdDayKey: dailyPeriodKey(now) };
     habitStore.updateHabit(habit);
     reportChallenge({ type: 'habit-added', habit });
+    handOutLevelRewards();
     return habit;
   }
 
@@ -681,6 +698,7 @@ export function useCombatActions() {
     logLevelUpIfAny(beforeLevelUp, character);
     characterStore.setCharacter(quest.overdue ? character : { ...character, questWeek: recordQuestCompletion(beforeLevelUp.questWeek, weekKey) });
     grantEventPicks(levelsGained);
+    handOutLevelRewards();
 
     activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount });
     questStore.markDone(questId, dayKey);

@@ -1089,6 +1089,48 @@ describe('useCombatActions', () => {
     });
   });
 
+  describe('Special and Ult handed out', () => {
+    function readyToLevel(level: number) {
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      characterStore.character = { ...characterStore.character, level, exp: expToNextLevel(level) - 0.001 };
+      bossStore.setBoss({ ...bossStore.boss, health: 1e9, maxHealth: 1e9 });
+      return useCombatActions();
+    }
+
+    it('a level-up to 5 gives a daily skill the Special and logs it', () => {
+      const { addHabit, checkOffHabit } = readyToLevel(4);
+      const habit = addHabit('Gym', 'daily', 'medium', false);
+      expect(useHabitStore().habits[0].isSpecial).toBeFalsy();
+      checkOffHabit(habit.id);
+      expect(useCharacterStore().character.level).toBe(5);
+      expect(useHabitStore().habits[0].isSpecial).toBe(true);
+      expect(useActivityLogStore().entries.some((e) => e.kind === 'special-assigned' && e.habitName === 'Gym')).toBe(true);
+    });
+
+    it('a level-up to 8 gives a weekly skill the Ult', () => {
+      const { addHabit, checkOffHabit } = readyToLevel(7);
+      const habit = addHabit('Long run', 'weekly', 'medium', false);
+      checkOffHabit(habit.id);
+      expect(useCharacterStore().character.level).toBe(8);
+      expect(useHabitStore().habits[0].isUlt).toBe(true);
+      expect(useActivityLogStore().entries.some((e) => e.kind === 'ult-assigned')).toBe(true);
+    });
+
+    it('a daily skill added after level 5 takes the Special that had nothing to land on', () => {
+      const characterStore = useCharacterStore();
+      characterStore.character = { ...characterStore.character, level: 8 };
+      const { addHabit } = useCombatActions();
+      addHabit('Long run', 'weekly', 'medium', false);
+      expect(useHabitStore().habits.some((h) => h.isSpecial)).toBe(false);
+      expect(useHabitStore().habits[0].isUlt).toBe(true);
+      addHabit('Gym', 'daily', 'medium', false);
+      const gym = useHabitStore().habits.find((h) => h.name === 'Gym')!;
+      expect(gym.isSpecial).toBe(true);
+      expect(useHabitStore().habits.find((h) => h.name === 'Long run')!.isSpecial).toBeFalsy();
+    });
+  });
+
   describe('rank-up log', () => {
     function checkOff(overrides: Partial<Habit>) {
       const bossStore = useBossStore();

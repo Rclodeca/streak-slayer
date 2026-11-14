@@ -369,22 +369,21 @@ export const TUNING = {
     [0.4, 0.6],
     [0.3, 0.7],
   ],
-  // Special: from SPECIAL_LEVEL the Special event can be picked, making a
-  // random daily good habit permanently deal SPECIAL_MULTIPLIER damage on
+  // Special: at SPECIAL_LEVEL a random daily good habit is handed the Special
+  // and permanently deals SPECIAL_MULTIPLIER damage on
   // its first (non-Overdrive) use each period.
-  SPECIAL_LEVEL: 3,
+  SPECIAL_LEVEL: 5,
   SPECIAL_MULTIPLIER: 1.5,
-  // Ult: from ULT_LEVEL the Ult event can be picked, making a random weekly
-  // good habit permanently deal ULT_MULTIPLIER damage on its first
+  // Ult: at ULT_LEVEL a random weekly good habit is handed the Ult and
+  // permanently deals ULT_MULTIPLIER damage on its first
   // (non-Overdrive) use each period.
-  ULT_LEVEL: 6,
+  ULT_LEVEL: 8,
   ULT_MULTIPLIER: 2.5,
-  // Overdrive: the Overdrive event grants a random good habit (any period)
+  // Overdrive: the Shop's Overdrive service gives a chosen good habit (any period)
   // the ability to be activated OVERDRIVE_MAX_EXTRA_USES extra times per
   // period, each at OVERDRIVE_DAMAGE_FACTOR damage (and never with the
-  // Special/Ult bonus). Permanent and stacking — a habit that already has it
-  // is a valid, no-op pick, so over a long run many habits can end up
-  // Overdrive-capable.
+  // Special/Ult bonus). Permanent for the run, once per habit, so over a long
+  // run many habits can end up Overdrive-capable.
   OVERDRIVE_MAX_EXTRA_USES: 2,
   OVERDRIVE_DAMAGE_FACTOR: 0.5,
   // Epic signature and relic effects (see itemEffects.ts and the item's
