@@ -42,8 +42,6 @@ export function createCharacter(rng: Rng, heroClass?: HeroClass): Character {
     ownedItemIds: [],
     equippedItemIds: [],
     critChance: TUNING.BASE_CRIT_CHANCE,
-    takenEventIds: [],
-    pendingEventPicks: 0,
     questsUnlocked: false,
     talentsUnlocked: false,
     heroPending: true,
@@ -133,6 +131,25 @@ export function migrateCharacter(character: Character, rng: Rng): Character {
     delete (migrated as { doubledItemId?: string }).doubledItemId;
     if (doubledItemId) migrated.doubledItemIds = [...(migrated.doubledItemIds ?? []), doubledItemId];
   }
+  return migrated;
+}
+
+const LEVEL_EVENT_FIELDS = ['takenEventIds', 'pendingEventPicks', 'offeredEventIds', 'offeredChallengeId', 'sideQuestPicksMissed', 'trialsUnlocked'] as const;
+
+/**
+ * Retires the level-up events on an older save: the `item-slots` events taken
+ * become slot steps (`slotUpgrades`, unless the Shop already set it), and the
+ * event fields (taken, pending picks, offered cards, the side-quest guarantee
+ * and the Trials unlock) are dropped, so a pending pick is not paid out. The
+ * same character back when it holds none of them.
+ */
+export function migrateLevelEvents(character: Character): Character {
+  const old = character as unknown as Record<string, unknown>;
+  if (!LEVEL_EVENT_FIELDS.some((key) => key in old)) return character;
+  const taken = (old.takenEventIds as string[] | undefined) ?? [];
+  const bought = taken.includes('item-slots-2') ? 2 : taken.includes('item-slots') ? 1 : 0;
+  const migrated = { ...character, slotUpgrades: character.slotUpgrades ?? bought };
+  for (const key of LEVEL_EVENT_FIELDS) delete (migrated as unknown as Record<string, unknown>)[key];
   return migrated;
 }
 

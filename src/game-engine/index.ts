@@ -44,6 +44,7 @@ export {
   heroClassFor,
   MAX_HERO_NAME_LENGTH,
   migrateCharacter,
+  migrateLevelEvents,
   nameCharacter,
   randomizeStat,
 } from './character';
@@ -55,7 +56,9 @@ export {
   activeCritBoost,
   activeHealBoost,
   activeExpBoost,
+  applyCritBoostEffect,
   applyExpBoost,
+  applyHealBoostEffect,
   critChanceBeforeBlind,
   effectiveCritChance,
   effectiveStat,
@@ -114,24 +117,6 @@ export {
 } from './boss';
 
 export { assignSpecialIfEligible, assignUltIfEligible, grantLevelRewards, grantOverdrive } from './levelRewards';
-export {
-  applyCritBoostEvent,
-  applyDoubleItemEvent,
-  applyHealBoostEvent,
-  applyHealEvent,
-  applyOverdriveEvent,
-  applyRerollSkillEvent,
-  applySpecialEvent,
-  applyUltEvent,
-  consumeEventPick,
-  eligibleEvents,
-  EVENT_DEFS,
-  EVENTS_PER_CHOICE,
-  getEventDef,
-  migrateEventState,
-  rollEventChoices,
-} from './events';
-export type { EventDef, EventId } from './events';
 
 export type { CombatResult, HabitDamageBreakdown } from './combat';
 export {

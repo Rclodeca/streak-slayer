@@ -113,8 +113,8 @@ describe('buySlot', () => {
     expect(buySlot(second.character, 1)).toBeNull();
   });
 
-  it('a save that bought slots through events buys from there', () => {
-    const character = makeCharacter({ gold: 100_000, takenEventIds: ['item-slots'] });
+  it('buys from the steps already bought', () => {
+    const character = makeCharacter({ gold: 100_000, slotUpgrades: 1 });
     const result = buySlot(character, 1)!;
     expect(result.slots).toBe(8);
     expect(result.character.slotUpgrades).toBe(2);

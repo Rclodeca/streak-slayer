@@ -106,20 +106,9 @@ export interface Character {
   // applyBossAttackEase still has to rescale the saved boss; createCharacter
   // sets it true.
   bossAttackEaseApplied?: boolean;
-  // Events mechanic (see events.ts). `takenEventIds` holds one-time events
-  // already picked this run; `pendingEventPicks` is how many level-ups are
-  // still waiting for the player to choose an event. Both optional so an
-  // existing save still loads — the store hydration seeds them once (see
-  // initializeStores). A fresh character starts empty, so death resets them.
-  // The equipped items currently doubled by the Double item event (up to
-  // TUNING.DOUBLE_ITEM_MAX); each leaves the list when it's discarded.
+  // The equipped items currently enchanted (bought in the Shop, see
+  // services.ts); each leaves the list when it's discarded.
   doubledItemIds?: string[];
-  takenEventIds?: string[];
-  pendingEventPicks?: number;
-  // The event cards rolled for the front pick, kept so a reload or reopened
-  // popup shows the same ones instead of a fresh roll. Cleared once the pick
-  // is spent.
-  offeredEventIds?: string[];
   // Regular-quest completions this calendar week (undefined = none yet). Lives
   // on the character, so a death starts a fresh count along with everything
   // else in the run.

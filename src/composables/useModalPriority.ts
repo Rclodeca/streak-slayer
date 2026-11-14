@@ -1,4 +1,4 @@
-// Shared blocking-modal precedence for EventChoiceModal and QuestMissPopup.
+// Shared blocking-modal precedence for the popups that queue behind one another.
 //
 // Each of those is a full-screen, non-dismissible-by-backdrop-click Modal
 // (same as DeathScreen/ItemDropPopup/MissedSkillsPopup), and more than one
@@ -10,8 +10,8 @@
 // buttons (confirmed via manual testing — see the quests design spec's
 // review notes). This centralizes the precedence order so it's declared
 // once instead of re-derived pairwise per modal:
-// death > item drop > habit miss > quest miss > boss skill > quest complete > quest unlock > talent unlock > event choice.
-// Boss skill, quest unlock, talent unlock and event choice also wait out a kill or level-up
+// death > item drop > habit miss > quest miss > boss skill > quest complete > quest unlock > talent unlock > enchant reveal.
+// Boss skill, quest unlock, talent unlock and the enchant reveal also wait out a kill or level-up
 // still playing on the panels (useCelebration), as does the item drop popup itself.
 
 import { computed } from 'vue';
@@ -24,7 +24,6 @@ import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useQuestMissGate } from './useQuestMissGate';
 import { useCharacterStore } from '../store/characterStore';
-import { useEventChoice } from './useEventChoice';
 import { useServices } from './useServices';
 
 export function useModalPriority() {
@@ -33,7 +32,6 @@ export function useModalPriority() {
   const { hasPending: habitMissPending } = useMissedSkillsGate();
   const { hasPending: questMissPending } = useQuestMissGate();
   const characterStore = useCharacterStore();
-  const { revealed } = useEventChoice();
   const { revealed: enchantRevealed } = useServices();
   const { current: questCompleteCurrent } = useQuestCompleteQueue();
   const { celebrating } = useCelebration();
@@ -80,21 +78,6 @@ export function useModalPriority() {
       questCompleteCurrent.value === null,
   );
 
-  /** True only when an event pick (or an enchant reveal) is pending and nothing higher-priority (death, item drop, habit miss, quest miss, boss skill, quest unlock, talent unlock, a celebration) is. */
-  const eventChoiceVisible = computed(
-    () =>
-      ((characterStore.character.pendingEventPicks ?? 0) > 0 || revealed.value !== null) &&
-      !celebrating.value &&
-      !isDead.value &&
-      itemDropCurrent.value === null &&
-      !habitMissPending.value &&
-      !questMissPending.value &&
-      bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null &&
-      !questUnlockPending(characterStore.character) &&
-      !talentUnlockPending(characterStore.character),
-  );
-
   /** True while a shop-enchanted item is on show and nothing higher-priority is up. */
   const enchantRevealVisible = computed(
     () =>
@@ -105,7 +88,9 @@ export function useModalPriority() {
       !habitMissPending.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null,
+      questCompleteCurrent.value === null &&
+      !questUnlockPending(characterStore.character) &&
+      !talentUnlockPending(characterStore.character),
   );
 
   /** True while a quest-completion celebration is queued — it shows before any level-up pick its EXP triggered. */
@@ -118,5 +103,5 @@ export function useModalPriority() {
       bossSkillCurrent.value === null,
   );
 
-  return { bossSkillVisible, questMissVisible, questUnlockVisible, talentUnlockVisible, eventChoiceVisible, enchantRevealVisible, questCompleteVisible };
+  return { bossSkillVisible, questMissVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, questCompleteVisible };
 }

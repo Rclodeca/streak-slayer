@@ -64,10 +64,10 @@ describe('characterStore equip/discard', () => {
     expect(store.character.equippedItemIds).toHaveLength(4);
   });
 
-  it('allows a 6th item once the item-slots event is taken', () => {
+  it('allows a 6th item once a slot step is bought', () => {
     const store = useCharacterStore();
     const owned = ['rusty-blade', 'steel-sword', 'apprentice-wand', 'arcane-staff', 'novices-charm', 'blessed-censer'];
-    store.character = { ...store.character, level: 10, ownedItemIds: owned, equippedItemIds: owned.slice(0, 5), takenEventIds: ['item-slots'] };
+    store.character = { ...store.character, level: 10, ownedItemIds: owned, equippedItemIds: owned.slice(0, 5), slotUpgrades: 1 };
 
     store.equipItem('blessed-censer');
 

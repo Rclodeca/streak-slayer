@@ -559,7 +559,7 @@ describe('useCombatActions', () => {
 
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
     questStore.addQuest('Clean garage', 'medium', '2099-01-01');
-    characterStore.character = { ...characterStore.character, currentHealth: 1, takenEventIds: ['special'], pendingEventPicks: 2 };
+    characterStore.character = { ...characterStore.character, currentHealth: 1, slotUpgrades: 2, serviceBuys: { reroll: 3 }, gold: 500 };
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
     checkMissedHabit(habit.id);
 
@@ -567,22 +567,23 @@ describe('useCombatActions', () => {
 
     expect(questStore.quests).toHaveLength(1);
     expect(questStore.quests[0].description).toBe('Clean garage');
-    expect(characterStore.character.takenEventIds).toEqual([]);
-    expect(characterStore.character.pendingEventPicks).toBe(0);
+    expect(characterStore.character.slotUpgrades).toBeUndefined();
+    expect(characterStore.character.serviceBuys).toBeUndefined();
+    expect(characterStore.character.gold).toBeUndefined();
   });
 
-  it('a level-up queues one pending event pick per level gained', () => {
+  it('a level-up queues no pick: the level just rises and heals', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();
     const { completeQuest } = useCombatActions();
 
     const quest = questStore.addQuest('Clean garage', 'hard', '2099-01-01');
-    characterStore.character = { ...characterStore.character, exp: expToNextLevel(1) - 1, pendingEventPicks: 0 };
+    characterStore.character = { ...characterStore.character, exp: expToNextLevel(1) - 1 };
 
     completeQuest(quest.id);
 
     expect(characterStore.character.level).toBeGreaterThan(1);
-    expect(characterStore.character.pendingEventPicks).toBe(characterStore.character.level - 1);
+    expect('pendingEventPicks' in characterStore.character).toBe(false);
   });
 
   it('restart remembers who fell and where, and the new hero starts unnamed', () => {

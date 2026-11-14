@@ -4,7 +4,7 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
-import { addDaysToDayKey, applyCritBoostEvent, createHabit, createRng, dailyPeriodKey, ITEM_CATALOG, maxEquipSlots } from '../../game-engine';
+import { addDaysToDayKey, applyCritBoostEffect, createHabit, createRng, dailyPeriodKey, ITEM_CATALOG, maxEquipSlots } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -75,7 +75,7 @@ describe('ShopSection', () => {
     it('an active boost shows days left', () => {
       const today = dailyPeriodKey(useDebugClockStore().now());
       const characterStore = hero(100000);
-      characterStore.setCharacter(applyCritBoostEvent(characterStore.character, today));
+      characterStore.setCharacter(applyCritBoostEffect(characterStore.character, today));
       const wrapper = mount(ShopSection);
       const hawk = wrapper.findAll('.shop-ware-row.tonic').find((row) => row.text().includes('Hawk Tonic'))!;
       expect(hawk.find('.shop-buy').text()).toBe('3d left');

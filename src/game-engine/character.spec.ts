@@ -15,6 +15,7 @@ import {
   heroClassFor,
   MAX_HERO_NAME_LENGTH,
   migrateCharacter,
+  migrateLevelEvents,
   nameCharacter,
   randomizeStat,
 } from './character';
@@ -563,5 +564,27 @@ describe('applyBossAttackEase', () => {
 
   it('flags a fresh character', () => {
     expect(createCharacter(createRng(1)).bossAttackEaseApplied).toBe(true);
+  });
+});
+
+describe('migrateLevelEvents', () => {
+  const withOld = (old: Record<string, unknown>): Character => ({ ...createCharacter(createRng(1)), ...old }) as Character;
+  const has = (c: Character, key: string) => key in (c as unknown as Record<string, unknown>);
+
+  it('turns the item-slots events taken into slot steps and drops the event fields', () => {
+    const one = migrateLevelEvents(withOld({ takenEventIds: ['special', 'item-slots'], pendingEventPicks: 2, offeredEventIds: ['heal'], offeredChallengeId: 'resist', sideQuestPicksMissed: 3, trialsUnlocked: true }));
+    expect(one.slotUpgrades).toBe(1);
+    for (const key of ['takenEventIds', 'pendingEventPicks', 'offeredEventIds', 'offeredChallengeId', 'sideQuestPicksMissed', 'trialsUnlocked']) expect(has(one, key)).toBe(false);
+    expect(migrateLevelEvents(withOld({ takenEventIds: ['item-slots', 'item-slots-2'] })).slotUpgrades).toBe(2);
+    expect(migrateLevelEvents(withOld({ takenEventIds: ['special'] })).slotUpgrades).toBe(0);
+  });
+
+  it('keeps slot steps already bought in the Shop', () => {
+    expect(migrateLevelEvents(withOld({ takenEventIds: ['item-slots'], slotUpgrades: 2 })).slotUpgrades).toBe(2);
+  });
+
+  it('returns the same character when none of the old fields are there', () => {
+    const fresh = createCharacter(createRng(1));
+    expect(migrateLevelEvents(fresh)).toBe(fresh);
   });
 });

@@ -195,23 +195,22 @@ $light: ":root[data-theme='light']";
   color: var(--text);
 }
 
-// The find (the title, "Spoils of" and the item), and the level-up's title,
-// level and gains, on a strip of the fight
+// The find (the title, "Spoils of" and the item) on a strip of the fight
 // stage's night with a few stars, as if it just fell from the boss
 // (docs/mockups/pixel-bright-item-popup.html, banner D). It takes the night
 // palette, so its text, stat icons and rarity label come out light.
-#{$light} :is(.modal-content:has(:is(.found, .level-banner)) .modal-header, .found, .level-banner) {
+#{$light} :is(.modal-content:has(.found) .modal-header, .found) {
   @include moonlit.palette;
   @include ashen.derived-tokens;
 }
 
-#{$light} .modal-content:has(:is(.found, .level-banner)) .modal-header {
+#{$light} .modal-content:has(.found) .modal-header {
   margin: -1rem -1.25rem 0;
   padding: 1rem 1.25rem 0.75rem;
   background: #1a1a2f;
 }
 
-#{$light} :is(.found, .level-banner) {
+#{$light} .found {
   position: relative;
   overflow: hidden;
   margin: 0 -1.25rem;
@@ -221,12 +220,6 @@ $light: ":root[data-theme='light']";
 
   > * {
     position: relative;
-  }
-
-  .gains {
-    margin-bottom: 0;
-    background: rgba(255, 255, 255, 0.07);
-    box-shadow: none;
   }
 
   &::before {
@@ -260,10 +253,6 @@ $light: ":root[data-theme='light']";
   box-shadow:
     inset 2px 2px 0 var(--card-hi),
     inset -2px -2px 0 var(--card-lo);
-}
-
-#{$light} .level-banner {
-  margin-bottom: 1rem;
 }
 
 // ---------- Log: a white card, like the skills ----------

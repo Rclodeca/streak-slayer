@@ -31,12 +31,12 @@ describe('HeroDetails', () => {
   });
 
   describe('the gear', () => {
-    const equip = (count: number, takenEventIds: string[] = []) => {
+    const equip = (count: number, slotUpgrades = 0) => {
       const store = useCharacterStore();
       const items = ITEM_CATALOG.filter((item) => item.type === 'equipment').slice(0, count);
       store.character.ownedItemIds = items.map((item) => item.id);
       store.character.equippedItemIds = items.map((item) => item.id);
-      store.character.takenEventIds = takenEventIds as typeof store.character.takenEventIds;
+      store.character.slotUpgrades = slotUpgrades;
       return items;
     };
 
@@ -61,7 +61,7 @@ describe('HeroDetails', () => {
     });
 
     it('lines the card\'s pointer up with the picked socket\'s row', async () => {
-      equip(5, ['item-slots']);
+      equip(5, 1);
       const wrapper = mount(HeroDetails, { props: { page: true } });
       const row = () => wrapper.find('.gear-detail').attributes('style');
       expect(row()).toContain('--row: 0');
@@ -72,9 +72,9 @@ describe('HeroDetails', () => {
     });
 
     it('unlocks sockets as the slot cap grows', () => {
-      equip(2, ['item-slots']);
+      equip(2, 1);
       expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(2);
-      equip(2, ['item-slots', 'item-slots-2']);
+      equip(2, 2);
       expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(0);
     });
 

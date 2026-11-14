@@ -161,20 +161,28 @@ describe('store persistence smoke test', () => {
     expect('expGain' in second.characterStore.character.starterStats).toBe(false);
   });
 
-  it('seeds takenEventIds on a save that predates events, so slots/Special/Ult are not lost or re-offered', () => {
+  it('turns the events\' slots on an old save into slot steps and drops the pending picks', () => {
     const rng = createRng(1);
     const staleSave = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      character: { ...createCharacter(rng), level: 10, takenEventIds: undefined, pendingEventPicks: undefined },
+      character: { ...createCharacter(rng), level: 10, takenEventIds: ['special', 'item-slots'], pendingEventPicks: 2, offeredEventIds: ['heal', 'item-drop'] },
       boss: generateBoss(1, rng),
-      habits: [{ id: 'a', name: 'A', period: 'daily', difficulty: 'easy', damageType: 'physical', isBad: false, isSpecial: true, streakCount: 0, lastCompletedPeriodKey: null, lastCheckedPeriodKey: null }],
+      habits: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(staleSave));
 
     const { characterStore } = initializeStores();
 
-    expect(characterStore.character.takenEventIds?.sort()).toEqual(['item-slots', 'special']);
-    expect(characterStore.character.pendingEventPicks).toBe(0);
+    expect(characterStore.character.slotUpgrades).toBe(1);
+    const raw = characterStore.character as unknown as Record<string, unknown>;
+    expect(raw.takenEventIds).toBeUndefined();
+    expect(raw.pendingEventPicks).toBeUndefined();
+    expect(raw.offeredEventIds).toBeUndefined();
+  });
+
+  it('leaves a save with no event fields untouched', () => {
+    const { characterStore } = initializeStores();
+    expect(characterStore.character.slotUpgrades).toBeUndefined();
   });
 
   it('a new account starts with every trial live', () => {

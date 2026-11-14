@@ -80,7 +80,7 @@ const { isDead } = useDeathScreen();
 const { current: itemDropCurrent } = useItemDropQueue();
 const { hasPending: habitMissPending } = useMissedSkillsGate();
 const { hasPending: questMissPending } = useQuestMissGate();
-const { bossSkillVisible, questUnlockVisible, eventChoiceVisible, questCompleteVisible } = useModalPriority();
+const { bossSkillVisible, questUnlockVisible, enchantRevealVisible, questCompleteVisible } = useModalPriority();
 const popupOpen = computed(
   () =>
     showAddModal.value ||
@@ -91,7 +91,7 @@ const popupOpen = computed(
     questMissPending.value ||
     bossSkillVisible.value ||
     questUnlockVisible.value ||
-    eventChoiceVisible.value ||
+    enchantRevealVisible.value ||
     questCompleteVisible.value,
 );
 

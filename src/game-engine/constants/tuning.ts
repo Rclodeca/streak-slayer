@@ -173,13 +173,11 @@ export const TUNING = {
   // Unconditional per-level heal (see addExpAndResolveLevelUps) — applied once
   // per level gained in a grant. Sage's Codex and the Renewal talents add to it.
   LEVEL_UP_HEAL_PCT: 10,
-  // The Heal event restores this % of max health.
-  EVENT_HEAL_PCT: 10,
-  // The Crit boost event adds CRIT_BOOST_BONUS to crit chance (crit chance
+  // The Crit tonic adds CRIT_BOOST_BONUS to crit chance (crit chance
   // tops out at 100%) for CRIT_BOOST_DAYS days, counting the day it's picked.
   CRIT_BOOST_BONUS: 0.2,
   CRIT_BOOST_DAYS: 3,
-  // The Healing boost event multiplies healing by (1 + HEAL_BOOST_BONUS) for
+  // The Verdant tonic multiplies healing by (1 + HEAL_BOOST_BONUS) for
   // HEAL_BOOST_DAYS days, counting the day it's picked. Stacks multiplicatively
   // with Wounds (see healingMultiplier in combat.ts).
   HEAL_BOOST_BONUS: 0.2,
@@ -193,11 +191,9 @@ export const TUNING = {
   // can't be bought again for DRAUGHT_COOLDOWN_DAYS days, counting the day it's drunk.
   DRAUGHT_HEAL_PCT: 25,
   DRAUGHT_COOLDOWN_DAYS: 3,
-  // The Double item event (from DOUBLE_ITEM_MIN_LEVEL) multiplies every bonus
-  // of one equipped item by DOUBLED_ITEM_MULTIPLIER until that item is discarded,
-  // for up to DOUBLE_ITEM_MAX items at a time.
-  DOUBLE_ITEM_MIN_LEVEL: 10,
-  DOUBLE_ITEM_MAX: 2,
+  // The Shop's Enchant multiplies every bonus of one equipped item by
+  // DOUBLED_ITEM_MULTIPLIER until that item is discarded. The climbing price,
+  // not a cap, limits how many.
   DOUBLED_ITEM_MULTIPLIER: 2,
   // Enchanting doesn't double armorPen/magicPen (too strong) — it adds this many percentage points instead.
   ENCHANT_PEN_BONUS_PCT: 10,

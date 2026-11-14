@@ -1816,33 +1816,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     }
   }
 
-  // The level-up pick's side card (Rim): a brass rim round the card, a
-  // brass-ringed socket, a small brass caption, and the challenge name in
-  // brass at the head of the deed line.
-  .cards > button.card.side {
-    box-shadow:
-      inset 2px 2px 0 var(--card-hi),
-      inset -2px -2px 0 var(--card-lo),
-      inset 0 0 0 3px color-mix(in srgb, #{$brass} 55%, #000);
-  }
-
-  button.card .side-socket {
-    width: 46px;
-    height: 46px;
-    color: $brass;
-    @include socket($brass);
-  }
-
-  button.card .side-caption {
-    @include engraved(0.6rem, 0.24em);
-    color: $brass;
-  }
-
-  button.card .side-name {
-    font-weight: 800;
-    color: $brass;
-  }
-
   // ---------- The phone's bottom bar ----------
   // (docs/mockups/pixel-tabs-final.html) The stage's night, under a black lip
   // and a shadow cast up over the list. Engraved names, the chosen one lit
@@ -2399,81 +2372,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06);
     cursor: default;
     transform: translateY(3px);
-  }
-
-  // The level-up pick's level, cut into a square brass plate (EventChoiceModal).
-  .level-emblem {
-    position: relative;
-    width: 92px;
-    height: 92px;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      @include pixel-corners(3px);
-    }
-
-    &::before {
-      inset: 0;
-      background: linear-gradient(var(--brass), var(--brass-solid));
-    }
-
-    &::after {
-      inset: 4px;
-      background: var(--code-bg);
-      @include bevel(var(--sunk-hi), var(--sunk-lo));
-    }
-  }
-
-  .level-emblem > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .level-emblem-up {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    translate: -50% 0;
-    color: $brass;
-  }
-
-  .level-emblem-number {
-    margin-top: 12px;
-    font-family: var(--heading);
-    font-size-adjust: none;
-    font-size: 2.1rem;
-    font-weight: 700;
-    line-height: 1;
-    color: $brass;
-    text-shadow: 0 2px 0 #0e0e19;
-  }
-
-  .level-emblem-label {
-    position: absolute;
-    bottom: 11px;
-    left: 50%;
-    translate: -50% 0;
-    @include engraved(0.5rem, 0.28em);
-    padding-left: 0.28em;
-    color: $brass-solid;
-  }
-
-  // What the level gave: one sunk well.
-  .gains {
-    @include sunk-well;
-    justify-content: center;
-    gap: 0.35rem 1.25rem;
-    padding: 0.7rem 0.75rem;
-  }
-
-  .subtitle.count {
-    @include engraved($caps-xs, 0.24em);
-    color: var(--text);
   }
 
   .dropped-by-name {

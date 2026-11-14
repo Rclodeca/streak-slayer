@@ -172,13 +172,6 @@ export function useCombatActions() {
     if (ult) activityLogStore.addEntry({ kind: 'ult-assigned', habitName: ult.name });
   }
 
-  /** Queues one event pick per level gained; the player resolves them in EventChoiceModal. */
-  function grantEventPicks(levelsGained: number): void {
-    if (levelsGained <= 0) return;
-    const character = characterStore.character;
-    characterStore.setCharacter({ ...character, pendingEventPicks: (character.pendingEventPicks ?? 0) + levelsGained });
-  }
-
   /**
    * Pays one finished challenge: TRIAL_GEMS gems, and EXP as a medium quest
    * at the current weekly slot — without using that slot up.
@@ -190,10 +183,9 @@ export function useCombatActions() {
     const before = characterStore.character;
     const week = questWeekFor(before.questWeek, weeklyPeriodKey(debugClockStore.now()));
     const amount = questRewardExp(before, 'medium', week.completed);
-    const { character, levelsGained } = addExpAndResolveLevelUps(before, amount, dailyPeriodKey(debugClockStore.now()));
+    const { character } = addExpAndResolveLevelUps(before, amount, dailyPeriodKey(debugClockStore.now()));
     logLevelUpIfAny(before, character);
     characterStore.setCharacter(character);
-    grantEventPicks(levelsGained);
     handOutLevelRewards();
 
     activityLogStore.addEntry({ kind: 'challenge-completed', name: def.name, amount, gems: TRIAL_GEMS });
@@ -346,11 +338,10 @@ export function useCombatActions() {
     const expGained = result.milestoneExp + skillExp;
     if (expGained > 0) {
       const beforeLevelUp = characterStore.character;
-      const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, expGained, dailyPeriodKey(debugClockStore.now()));
+      const { character } = addExpAndResolveLevelUps(beforeLevelUp, expGained, dailyPeriodKey(debugClockStore.now()));
       logLevelUpIfAny(beforeLevelUp, character);
       characterStore.setCharacter(character);
-      grantEventPicks(levelsGained);
-    handOutLevelRewards();
+      handOutLevelRewards();
     }
 
     const beforeDefeat = characterStore.character;
@@ -370,7 +361,6 @@ export function useCombatActions() {
     logLevelUpIfAny(beforeDefeat, defeatResult.character);
     characterStore.setCharacter(defeatResult.character);
     bossStore.setBoss(defeatResult.boss);
-    grantEventPicks(defeatResult.levelsGained);
     handOutLevelRewards();
 
     reportChallenge({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
@@ -694,10 +684,9 @@ export function useCombatActions() {
     const amount = quest.overdue
       ? questOverdueExp(beforeLevelUp, quest.difficulty, week.completed)
       : questRewardExp(beforeLevelUp, quest.difficulty, week.completed);
-    const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, amount, dayKey);
+    const { character } = addExpAndResolveLevelUps(beforeLevelUp, amount, dayKey);
     logLevelUpIfAny(beforeLevelUp, character);
     characterStore.setCharacter(quest.overdue ? character : { ...character, questWeek: recordQuestCompletion(beforeLevelUp.questWeek, weekKey) });
-    grantEventPicks(levelsGained);
     handOutLevelRewards();
 
     activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount });

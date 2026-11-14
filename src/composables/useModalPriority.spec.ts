@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useBossSkillCard } from './useBossSkillCard';
 import { useCelebration } from './useCelebration';
 import { useDeathScreen } from './useDeathScreen';
-import { useEventChoice } from './useEventChoice';
 import { useServices } from './useServices';
 import { useItemDropQueue } from './useItemDropQueue';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
@@ -33,105 +32,74 @@ describe('useModalPriority', () => {
   });
 
   describe('enchantRevealVisible', () => {
-    function enchantOne() {
+    function showReveal() {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 10, gold: 100000, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'] });
+      characterStore.setCharacter({ ...characterStore.character, level: 10, questsUnlocked: true, talentsUnlocked: true, gold: 100000, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'] });
       useServices().buyEnchant('rusty-blade');
     }
 
     afterEach(() => useServices().dismissReveal());
 
-    it('is true once an item is enchanted, and false after the reveal is dismissed', () => {
-      enchantOne();
+    it('is false until an item is enchanted, true then, and false once dismissed', () => {
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
+      showReveal();
       expect(useModalPriority().enchantRevealVisible.value).toBe(true);
       useServices().dismissReveal();
       expect(useModalPriority().enchantRevealVisible.value).toBe(false);
     });
 
+    it('is false while the character is dead', () => {
+      showReveal();
+      useDeathScreen().triggerDeath();
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
+    });
+
     it('is false while an item drop is pending', () => {
-      enchantOne();
+      showReveal();
       useItemDropQueue().enqueueDrops([ITEM_CATALOG[0]]);
       expect(useModalPriority().enchantRevealVisible.value).toBe(false);
     });
-  });
-
-  describe('eventChoiceVisible', () => {
-    function givePendingPick() {
-      const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, pendingEventPicks: 1 });
-    }
-
-    it('stays visible for an enchant reveal even with no picks left', () => {
-      const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 10, questsUnlocked: true, talentsUnlocked: true, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], pendingEventPicks: 1 });
-      const events = useEventChoice();
-      events.choose('double-item');
-      expect(characterStore.character.pendingEventPicks).toBe(0);
-      expect(useModalPriority().eventChoiceVisible.value).toBe(true);
-      events.dismissReveal();
-      expect(useModalPriority().eventChoiceVisible.value).toBe(false);
-    });
-
-    it('is false when no event pick is pending', () => {
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
-    });
-
-    it('is true when an event pick is pending and nothing else is blocking', () => {
-      givePendingPick();
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(true);
-    });
-
-    it('is false while the character is dead', () => {
-      givePendingPick();
-      useDeathScreen().triggerDeath();
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
-    });
-
-    it('is false while an item drop is pending', () => {
-      givePendingPick();
-      useItemDropQueue().enqueueDrops([
-        { id: 'rusty-blade', name: 'Rusty Blade', icon: 'items/rusty-blade', type: 'equipment', rarity: 'common', bonuses: [{ stat: 'physicalDamage', percent: 3 }] },
-      ]);
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
-    });
 
     it('is false while a habit miss is pending', () => {
-      givePendingPick();
+      showReveal();
       const habit = useHabitStore().addHabit('Meditate', 'daily', 'medium', false, createRng());
       useMissedSkillsGate().queueMiss(habit, '2024-01-02');
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
     });
 
     it('is false while a quest miss is pending', () => {
-      givePendingPick();
+      showReveal();
       const quest = useQuestStore().addQuest('Clean garage', 'medium', '2026-01-01');
       useQuestMissGate().queueMiss(quest);
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
     });
 
     it("waits for a boss skill's card", () => {
-      givePendingPick();
+      showReveal();
       const { showBossSkill, dismiss } = useBossSkillCard();
       showBossSkill({ skill: 'blind', outcome: 'landed' });
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
+      const { enchantRevealVisible } = useModalPriority();
+      expect(enchantRevealVisible.value).toBe(false);
       dismiss();
-      expect(eventChoiceVisible.value).toBe(true);
+      expect(enchantRevealVisible.value).toBe(true);
     });
 
     it('waits for the level-up beat to finish playing', () => {
-      givePendingPick();
+      showReveal();
       useCelebration().celebrateLevelUp(1);
-      const { eventChoiceVisible } = useModalPriority();
-      expect(eventChoiceVisible.value).toBe(false);
+      const { enchantRevealVisible } = useModalPriority();
+      expect(enchantRevealVisible.value).toBe(false);
       useCelebration().clear();
-      expect(eventChoiceVisible.value).toBe(true);
+      expect(enchantRevealVisible.value).toBe(true);
+    });
+
+    it('waits for the quest and talent unlock popups', () => {
+      showReveal();
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, questsUnlocked: false });
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
+      characterStore.setCharacter({ ...characterStore.character, questsUnlocked: true, talentsUnlocked: false });
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
     });
   });
 
@@ -177,7 +145,7 @@ describe('useModalPriority', () => {
   describe('questUnlockVisible', () => {
     function reachUnlockLevel() {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 2, questsUnlocked: false, pendingEventPicks: 1 });
+      characterStore.setCharacter({ ...characterStore.character, level: 2, questsUnlocked: false });
     }
 
     it('waits for the level-up beat to finish playing', () => {
@@ -189,19 +157,15 @@ describe('useModalPriority', () => {
       expect(questUnlockVisible.value).toBe(true);
     });
 
-    it('shows on reaching level 2, ahead of the level-up pick', () => {
+    it('shows on reaching level 2', () => {
       reachUnlockLevel();
-      const { questUnlockVisible, eventChoiceVisible } = useModalPriority();
-      expect(questUnlockVisible.value).toBe(true);
-      expect(eventChoiceVisible.value).toBe(false);
+      expect(useModalPriority().questUnlockVisible.value).toBe(true);
     });
 
-    it('hands over to the level-up pick once quests are unlocked', () => {
+    it('closes once quests are unlocked', () => {
       reachUnlockLevel();
       useCharacterStore().unlockQuests();
-      const { questUnlockVisible, eventChoiceVisible } = useModalPriority();
-      expect(questUnlockVisible.value).toBe(false);
-      expect(eventChoiceVisible.value).toBe(true);
+      expect(useModalPriority().questUnlockVisible.value).toBe(false);
     });
 
     it('waits for an item drop', () => {
@@ -214,14 +178,12 @@ describe('useModalPriority', () => {
   describe('talentUnlockVisible', () => {
     function reachTalentLevel() {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, talentsUnlocked: false, pendingEventPicks: 1 });
+      characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, talentsUnlocked: false });
     }
 
-    it('shows on reaching level 5, ahead of the level-up pick', () => {
+    it('shows on reaching level 5', () => {
       reachTalentLevel();
-      const { talentUnlockVisible, eventChoiceVisible } = useModalPriority();
-      expect(talentUnlockVisible.value).toBe(true);
-      expect(eventChoiceVisible.value).toBe(false);
+      expect(useModalPriority().talentUnlockVisible.value).toBe(true);
     });
 
     it('is not due before level 5', () => {
@@ -246,12 +208,10 @@ describe('useModalPriority', () => {
       expect(useModalPriority().talentUnlockVisible.value).toBe(true);
     });
 
-    it('hands over to the level-up pick once talents are unlocked', () => {
+    it('closes once talents are unlocked', () => {
       reachTalentLevel();
       useCharacterStore().unlockTalents();
-      const { talentUnlockVisible, eventChoiceVisible } = useModalPriority();
-      expect(talentUnlockVisible.value).toBe(false);
-      expect(eventChoiceVisible.value).toBe(true);
+      expect(useModalPriority().talentUnlockVisible.value).toBe(false);
     });
   });
 

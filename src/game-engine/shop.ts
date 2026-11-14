@@ -5,11 +5,10 @@
 
 import { SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
 import { TUNING } from './constants/tuning';
-import { applyCritBoostEvent, applyHealBoostEvent } from './events';
 import { characterGold } from './gold';
 import { ITEM_CATALOG, dropRarityShares, recordRelicEarned } from './items';
 import type { DropRarity, ItemDef } from './items';
-import { activeCritBoost, activeExpBoost, activeHealBoost, applyExpBoost, effectiveStat } from './leveling';
+import { activeCritBoost, activeExpBoost, activeHealBoost, applyCritBoostEffect, applyExpBoost, applyHealBoostEffect, effectiveStat } from './leveling';
 import { pickRandom, type Rng } from './rng';
 import { daysBetweenDayKeys } from './time';
 import type { Character, ShopStock, ShopWare } from './types';
@@ -149,7 +148,7 @@ export function buyTonic(character: Character, id: TonicId, bossIndex: number, d
     const currentHealth = Math.min(paid.currentHealth + max * (TUNING.DRAUGHT_HEAL_PCT / 100), max);
     return { character: { ...paid, currentHealth, draughtDayKey: dayKey }, healed: currentHealth - paid.currentHealth };
   }
-  if (id === 'crit') return { character: applyCritBoostEvent(paid, dayKey) };
-  if (id === 'heal') return { character: applyHealBoostEvent(paid, dayKey) };
+  if (id === 'crit') return { character: applyCritBoostEffect(paid, dayKey) };
+  if (id === 'heal') return { character: applyHealBoostEffect(paid, dayKey) };
   return { character: applyExpBoost(paid, dayKey) };
 }

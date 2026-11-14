@@ -347,23 +347,15 @@ describe('rollItemDrops', () => {
 });
 
 describe('maxEquipSlots', () => {
-  it('is 4 until the item-slots event is taken', () => {
+  it('is 4 with no slot step bought', () => {
     expect(maxEquipSlots({})).toBe(4);
-    expect(maxEquipSlots({ takenEventIds: ['special'] })).toBe(4);
+    expect(maxEquipSlots({ slotUpgrades: 0 })).toBe(4);
   });
 
-  it('is 6 once the item-slots event is taken', () => {
-    expect(maxEquipSlots({ takenEventIds: ['item-slots'] })).toBe(6);
-  });
-
-  it('adds two slots for each slot upgrade bought', () => {
+  it('adds two slots for each slot step bought, up to MAX_EQUIP_SLOTS', () => {
     expect(maxEquipSlots({ slotUpgrades: 1 })).toBe(6);
     expect(maxEquipSlots({ slotUpgrades: 2 })).toBe(8);
-    expect(maxEquipSlots({ slotUpgrades: 0, takenEventIds: ['item-slots'] })).toBe(4);
-  });
-
-  it('is 8 (MAX_EQUIP_SLOTS) once the second item-slots event is taken too', () => {
-    expect(maxEquipSlots({ takenEventIds: ['item-slots', 'item-slots-2'] })).toBe(8);
+    expect(maxEquipSlots({ slotUpgrades: 5 })).toBe(8);
     expect(MAX_EQUIP_SLOTS).toBe(8);
   });
 });

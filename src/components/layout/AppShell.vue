@@ -28,7 +28,6 @@ import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
 import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
 import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
-import EventChoiceModal from '../events/EventChoiceModal.vue';
 import EnchantReveal from '../shop/EnchantReveal.vue';
 import ReviveNotice from '../ui/ReviveNotice.vue';
 import BossSkillPopup from '../boss/BossSkillPopup.vue';
@@ -121,7 +120,6 @@ watch(
     <HoodedScene />
     <ItemDropPopup />
     <MissedSkillsPopup />
-    <EventChoiceModal />
     <EnchantReveal />
     <QuestMissPopup />
     <BossSkillPopup />

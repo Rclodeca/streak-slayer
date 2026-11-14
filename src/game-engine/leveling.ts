@@ -145,6 +145,28 @@ export function applyExpBoost(character: Character, dayKey: string): Character {
   return { ...character, statusEffects: [...(character.statusEffects ?? []).filter((e) => e.type !== 'expBoost'), boost] };
 }
 
+/** Grants (or refreshes) the temporary Crit boost, replacing any existing one. */
+export function applyCritBoostEffect(character: Character, dayKey: string): Character {
+  const boost: CritBoostStatusEffect = {
+    type: 'critBoost',
+    appliedDayKey: dayKey,
+    durationDays: TUNING.CRIT_BOOST_DAYS,
+    bonus: TUNING.CRIT_BOOST_BONUS,
+  };
+  return { ...character, statusEffects: [...(character.statusEffects ?? []).filter((e) => e.type !== 'critBoost'), boost] };
+}
+
+/** Grants (or refreshes) the temporary Healing boost, replacing any existing one. */
+export function applyHealBoostEffect(character: Character, dayKey: string): Character {
+  const boost: HealBoostStatusEffect = {
+    type: 'healBoost',
+    appliedDayKey: dayKey,
+    durationDays: TUNING.HEAL_BOOST_DAYS,
+    bonus: TUNING.HEAL_BOOST_BONUS,
+  };
+  return { ...character, statusEffects: [...(character.statusEffects ?? []).filter((e) => e.type !== 'healBoost'), boost] };
+}
+
 function activeTimedBoost<T extends CritBoostStatusEffect | HealBoostStatusEffect | ExpBoostStatusEffect>(
   character: Character,
   type: T['type'],
