@@ -323,6 +323,6 @@ $light: ":root[data-theme='light']";
   text-shadow: none;
 }
 
-#{$light} .challenge.done .challenge-relic {
+#{$light} .challenge .challenge-gems {
   color: var(--brass);
 }

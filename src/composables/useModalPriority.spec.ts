@@ -217,7 +217,7 @@ describe('useModalPriority', () => {
 
     it('hands over to the level-up pick once trials are unlocked, with the first trial in hand', () => {
       reachTrialLevel();
-      useCharacterStore().unlockTrials('2026-11-05', createRng(3));
+      useCharacterStore().unlockTrials('2026-11-05');
       const { trialUnlockVisible, eventChoiceVisible } = useModalPriority();
       expect(trialUnlockVisible.value).toBe(false);
       expect(eventChoiceVisible.value).toBe(true);

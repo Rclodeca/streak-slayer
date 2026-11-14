@@ -1,10 +1,9 @@
-// Side-quest challenges: optional in-game deeds, one per relic, taken from the
+// Side-quest challenges: optional in-game deeds that pay gems, taken from the
 // level-up side-quest card. State lives on Character.challenges (per run), and
 // everything here is pure. Progress rules arrive with applyChallengeEvent.
 
 import { TUNING } from './constants/tuning';
 import { isDueOn } from './habits';
-import { availableRelics } from './items';
 import { pickRandom, type Rng } from './rng';
 import { dailyPeriodKey, daysBetweenDayKeys } from './time';
 import type { Boss, ChallengeEntry, ChallengeId, Character, Habit, Quest } from './types';
@@ -60,15 +59,10 @@ export function drawChallenge(character: Character, rng: Rng): ChallengeId | nul
   return offerable.length > 0 ? pickRandom(offerable, rng).id : null;
 }
 
-/**
- * Takes a challenge, reserving a random available relic for it and clearing
- * the offer. The same character back if it is already held or no relic is left.
- */
-export function takeChallenge(character: Character, id: ChallengeId, rng: Rng, todayKey: string): Character {
+/** Takes a challenge and clears the offer. The same character back if it is already held. */
+export function takeChallenge(character: Character, id: ChallengeId, todayKey: string): Character {
   if ((character.challenges ?? []).some((e) => e.id === id)) return character;
-  const relics = availableRelics(character);
-  if (relics.length === 0) return character;
-  const entry: ChallengeEntry = { id, relicId: pickRandom(relics, rng).id, takenDayKey: todayKey, progress: 0 };
+  const entry: ChallengeEntry = { id, takenDayKey: todayKey, progress: 0 };
   return { ...character, challenges: [...(character.challenges ?? []), entry], offeredChallengeId: undefined };
 }
 
@@ -98,9 +92,9 @@ export function trialUnlockPending(character: Character): boolean {
  * Opens the Trials section for the rest of the run and hands over the first
  * trial. The same character back if it is already open.
  */
-export function unlockTrials(character: Character, rng: Rng, todayKey: string): Character {
+export function unlockTrials(character: Character, todayKey: string): Character {
   if (character.trialsUnlocked) return character;
-  return takeChallenge({ ...character, trialsUnlocked: true }, FIRST_TRIAL, rng, todayKey);
+  return takeChallenge({ ...character, trialsUnlocked: true }, FIRST_TRIAL, todayKey);
 }
 
 /**
@@ -123,7 +117,7 @@ export function milestoneTrial(character: Character, bossIndex: number, rng: Rng
   if (!TRIAL_MILESTONE_BOSSES.includes(bossIndex)) return character;
   if (!trialsOpen(character) || activeChallenges(character).length >= MILESTONE_ACTIVE_CAP) return character;
   const id = drawChallenge(character, rng);
-  return id === null ? character : takeChallenge(character, id, rng, todayKey);
+  return id === null ? character : takeChallenge(character, id, todayKey);
 }
 
 export function activeChallenges(character: Character): ChallengeEntry[] {

@@ -127,21 +127,11 @@ describe('rollEventChoices', () => {
 describe('side-quest event', () => {
   const relicIds = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
 
-  it('is ineligible once every relic is earned, at any level, and eligible while one is left', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 4, earnedRelicIds: relicIds }), []))).not.toContain('side-quest');
-    expect(ids(eligibleEvents(makeCharacter({ level: 30, earnedRelicIds: relicIds }), []))).not.toContain('side-quest');
-    expect(ids(eligibleEvents(makeCharacter({ level: 4, earnedRelicIds: relicIds.slice(1) }), []))).toContain('side-quest');
+  it('stays eligible with every relic earned or owned: trials pay gems', () => {
+    expect(ids(eligibleEvents(makeCharacter({ level: 4, earnedRelicIds: relicIds, ownedItemIds: relicIds }), []))).toContain('side-quest');
   });
 
-  it('is ineligible once every relic is owned or promised to an active challenge', () => {
-    expect(ids(eligibleEvents(makeCharacter({ level: 4, ownedItemIds: relicIds }), []))).not.toContain('side-quest');
-    const challenges = CHALLENGE_DEFS.map((d, i) => ({ id: d.id, relicId: relicIds[i], takenDayKey: '2026-11-01', progress: 0 }));
-    expect(ids(eligibleEvents(makeCharacter({ level: 4, challenges }), []))).not.toContain('side-quest');
-    // One challenge left and one relic left: still eligible.
-    expect(ids(eligibleEvents(makeCharacter({ level: 4, challenges: challenges.slice(1) }), []))).toContain('side-quest');
-  });
-
-  it('is ineligible when no challenge can be offered, even with relics left', () => {
+  it('is ineligible when no challenge can be offered', () => {
     const done = CHALLENGE_DEFS.map((d) => ({ id: d.id, relicId: 'gone', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' }));
     expect(ids(eligibleEvents(makeCharacter({ level: 4, challenges: done }), []))).not.toContain('side-quest');
   });

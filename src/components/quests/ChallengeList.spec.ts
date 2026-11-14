@@ -3,11 +3,11 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng } from '../../game-engine';
+import { createRng, TRIAL_GEMS } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
-import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useHabitStore } from '../../store/habitStore';
 import ChallengeList from './ChallengeList.vue';
@@ -29,7 +29,6 @@ describe('ChallengeList', () => {
 
   const entry = (id: ChallengeEntry['id'], overrides: Partial<ChallengeEntry> = {}): ChallengeEntry => ({
     id,
-    relicId: 'ember-heart',
     takenDayKey: '2026-11-01',
     progress: 0,
     ...overrides,
@@ -60,19 +59,16 @@ describe('ChallengeList', () => {
     expect(mountList().get('.challenge-status').text()).toBe(`Boss ${boss.index} · untouched so far`);
   });
 
-  it('an active card shows a gift "?" and never the relic name', () => {
+  it('an active card shows the gems it pays', () => {
     give([entry('rank-up')]);
-    const card = mountList().get('li.challenge');
-    expect(card.get('.challenge-gift').text()).toContain('?');
-    expect(card.text()).not.toContain('Ember Heart');
+    expect(mountList().get('li.challenge .challenge-gems').text()).toBe(String(TRIAL_GEMS));
   });
 
-  it('a done card sinks and names the relic it paid, in place of the gift', () => {
+  it('a done card sinks and still shows the gems it paid', () => {
     give([entry('rank-up', { progress: 1, doneDayKey: '2026-11-02' })]);
     const card = mountList().get('li.challenge');
     expect(card.classes()).toContain('done');
-    expect(card.find('.challenge-gift').exists()).toBe(false);
-    expect(card.text()).toContain('Ember Heart');
+    expect(card.get('.challenge-gems').text()).toBe(String(TRIAL_GEMS));
   });
 
   it('lists active challenges first and done ones last', () => {
@@ -81,19 +77,18 @@ describe('ChallengeList', () => {
     expect(names).toEqual(['Hold the line', 'Enchanted', 'Rank up']);
   });
 
-  it('a finished trial waits on a Claim button, first in the list, with its relic still hidden', async () => {
+  it('a finished trial waits on a Claim button, first in the list, in place of its gems', async () => {
     give([entry('resist'), entry('rank-up', { progress: 1, doneDayKey: '2026-11-02', unclaimed: true }), entry('enchant', { progress: 1, doneDayKey: '2026-11-02' })]);
     const wrapper = mountList();
     const cards = wrapper.findAll('li.challenge');
     expect(cards.map((c) => c.get('.challenge-name').text())).toEqual(['Rank up', 'Hold the line', 'Enchanted']);
     expect(cards[0].classes()).toContain('ready');
     expect(cards[0].classes()).not.toContain('done');
-    expect(cards[0].text()).not.toContain('Ember Heart');
-    expect(cards[0].find('.challenge-gift').exists()).toBe(false);
+    expect(cards[0].find('.challenge-gems').exists()).toBe(false);
     expect(wrapper.findAll('.challenge-claim')).toHaveLength(1);
   });
 
-  it('tapping Claim pays the trial: the card sinks and names the relic', async () => {
+  it('tapping Claim pays the trial: the card sinks and the gems are added', async () => {
     give([entry('rank-up', { progress: 1, doneDayKey: '2026-11-02', unclaimed: true })]);
     const wrapper = mountList();
 
@@ -102,9 +97,7 @@ describe('ChallengeList', () => {
     const card = wrapper.get('li.challenge');
     expect(card.classes()).toContain('done');
     expect(card.find('.challenge-claim').exists()).toBe(false);
-    expect(card.text()).toContain('Ember Heart');
-    expect(useCharacterStore().character.ownedItemIds).toContain('ember-heart');
-    useItemDropQueue().dismiss();
+    expect(useAccountStore().account.gems).toBe(TRIAL_GEMS);
     useQuestCompleteQueue().dismiss();
   });
 

@@ -7,8 +7,9 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
+import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -1188,7 +1189,7 @@ describe('useCombatActions', () => {
       expect(useQuestCompleteQueue().current.value).toBeNull();
     });
 
-    it('claiming pays the relic and medium EXP, uses no weekly slot, and only once', () => {
+    it('claiming pays TRIAL_GEMS gems and medium EXP, no relic, uses no weekly slot, and only once', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
       take('untouched', 'ember-heart');
@@ -1201,13 +1202,13 @@ describe('useCombatActions', () => {
       claimChallenge('untouched');
 
       expect(entryOf('untouched')?.unclaimed).toBeUndefined();
-      expect(characterStore.character.ownedItemIds.filter((id) => id === 'ember-heart')).toHaveLength(1);
-      expect(characterStore.character.earnedRelicIds).toContain('ember-heart');
+      expect(useAccountStore().account.gems).toBe(TRIAL_GEMS);
+      expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
       expect(characterStore.character.questWeek).toBe(questWeekBefore);
       const logged = useActivityLogStore().entries.filter((e) => e.kind === 'challenge-completed');
       expect(logged).toHaveLength(1);
-      expect(logged[0]).toMatchObject({ name: 'Untouched', amount: questSlotExp(20, 'medium', 0), itemName: 'Ember Heart' });
-      expect(useItemDropQueue().current.value?.id).toBe('ember-heart');
+      expect(logged[0]).toMatchObject({ name: 'Untouched', amount: questSlotExp(20, 'medium', 0), gems: TRIAL_GEMS });
+      expect(useItemDropQueue().current.value).toBeNull();
       expect(useQuestCompleteQueue().current.value).toMatchObject({ description: 'Untouched', difficulty: 'medium', amount: questSlotExp(20, 'medium', 0) });
     });
 

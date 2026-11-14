@@ -22,7 +22,7 @@ export type BoostableStat =
   | 'magicResist' // flat only — player mitigation stat, see combat.ts missHabit
   | 'allDamage'; // percent only — adds to the physical, magic and true damage multipliers (see itemStatMultiplier)
 
-// 'relic' items never drop: challenges pay them (see availableRelics).
+// 'relic' items never drop. Trials paid them until they paid gems; nothing pays one now.
 export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'relic';
 /** The rarities the boss-drop tables weigh. */
 export type DropRarity = Exclude<ItemRarity, 'relic'>;

@@ -2,7 +2,7 @@
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { createAccount, recordLevel, spendGems } from '../game-engine';
+import { addGems, createAccount, recordLevel, spendGems } from '../game-engine';
 import type { Account } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
@@ -20,6 +20,11 @@ export const useAccountStore = defineStore('account', {
       const { account, gemsPaid } = recordLevel(this.account, level);
       if (account !== this.account) this.account = account;
       return gemsPaid;
+    },
+
+    /** Adds `gems` (a claimed trial). */
+    addGems(gems: number) {
+      this.account = addGems(this.account, gems);
     },
 
     /** Spends `gems`; false (and nothing spent) when the account holds too few. */

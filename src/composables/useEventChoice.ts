@@ -170,12 +170,12 @@ export function useEventChoice() {
     finish('reroll-skill');
   }
 
-  /** Takes the challenge the side-quest card names: a relic is reserved for it, and nothing is typed. */
+  /** Takes the challenge the side-quest card names; nothing is typed. */
   function chooseSideQuest() {
     const character = characterStore.character;
     const id = character.offeredChallengeId;
     if (!id) return;
-    const taken = takeChallenge(character, id, rng, dailyPeriodKey(debugClockStore.now()));
+    const taken = takeChallenge(character, id, dailyPeriodKey(debugClockStore.now()));
     if (taken === character) return;
     characterStore.setCharacter(taken);
     finish('side-quest');

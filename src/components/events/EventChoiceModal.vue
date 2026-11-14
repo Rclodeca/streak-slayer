@@ -126,7 +126,7 @@ function onPick(id: EventId) {
           <span class="side-socket"><component :is="challengeIcon(offeredChallenge.icon)" :size="22" /></span>
           <span class="card-text">
             <small class="side-caption">Side quest</small>
-            <strong class="card-title">Complete a challenge for a rare item</strong>
+            <strong class="card-title">Complete a challenge for gems</strong>
             <span class="card-desc"><b class="side-name">{{ offeredChallenge.name }}:</b> {{ deedLower(offeredChallenge.deed) }}</span>
           </span>
         </template>

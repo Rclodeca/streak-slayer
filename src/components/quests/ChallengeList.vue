@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { activeChallenges, challengeProgress, claimableChallenges, doneChallenges, getChallengeDef, ITEM_CATALOG } from '../../game-engine';
+import { activeChallenges, challengeProgress, claimableChallenges, doneChallenges, getChallengeDef, TRIAL_GEMS } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useBossStore } from '../../store/bossStore';
@@ -29,7 +29,6 @@ const cards = computed(() => {
     done: !!entry.doneDayKey && !entry.unclaimed,
     ready: !!entry.unclaimed,
     fresh: trialSeen.fresh.includes(trialKey(entry)),
-    relicName: ITEM_CATALOG.find((item) => item.id === entry.relicId)?.name ?? '',
     progress: challengeProgress(entry, context),
   });
   const paid = doneChallenges(character).filter((entry) => !entry.unclaimed);
@@ -53,8 +52,7 @@ const cards = computed(() => {
         </template>
       </div>
       <button v-if="card.ready" type="button" class="challenge-claim" @click="claimChallenge(card.entry.id)"><StatIcon name="gift" :size="18" />Claim</button>
-      <span v-else-if="!card.done" class="challenge-gift" role="img" aria-label="An unknown item"><StatIcon name="gift" :size="20" /><span class="mark">?</span></span>
-      <span v-else class="challenge-relic">{{ card.relicName }}</span>
+      <span v-else class="challenge-gems" :aria-label="`${TRIAL_GEMS} gems`"><StatIcon name="gems" :size="18" />{{ TRIAL_GEMS }}</span>
     </li>
   </ul>
   <p v-else class="section-empty">Nothing sworn.</p>
@@ -133,11 +131,11 @@ const cards = computed(() => {
   background: var(--accent);
 }
 
-.challenge-gift {
+.challenge-gems {
   display: inline-flex;
   align-items: center;
   flex: none;
-  gap: 0.15rem;
+  gap: 0.2rem;
 }
 
 .challenge-claim {
@@ -147,14 +145,6 @@ const cards = computed(() => {
   gap: 0.35rem;
   min-height: 44px;
   padding: 0 0.9rem;
-}
-
-.challenge-relic {
-  flex: none;
-  max-width: 40%;
-  color: var(--text-h);
-  font-size: 0.8rem;
-  text-align: right;
 }
 
 .challenge.done {

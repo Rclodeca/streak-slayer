@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Check, Flag, Gift, Gem } from 'lucide-vue-next';
 import { useModalPriority } from '../../composables/useModalPriority';
-import { createRng, dailyPeriodKey } from '../../game-engine';
+import { dailyPeriodKey } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import Modal from '../ui/Modal.vue';
@@ -17,11 +17,11 @@ const debugClockStore = useDebugClockStore();
 const RULES: Rule[] = [
   { icon: Flag, tone: 'accent', title: 'Take', text: 'The game names the deed.' },
   { icon: Check, tone: 'solid', title: 'Finish', text: 'Do it, then claim it.' },
-  { icon: Gem, tone: 'accent', title: 'Uncover', text: 'Something hidden waits behind each.' },
+  { icon: Gem, tone: 'accent', title: 'Earn', text: 'Each one pays gems.' },
 ];
 
 function onward() {
-  characterStore.unlockTrials(dailyPeriodKey(debugClockStore.now()), createRng());
+  characterStore.unlockTrials(dailyPeriodKey(debugClockStore.now()));
 }
 </script>
 

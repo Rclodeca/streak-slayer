@@ -97,40 +97,23 @@ describe('offerableChallenges / drawChallenge', () => {
 });
 
 describe('takeChallenge', () => {
-  it('appends an entry with a reserved relic and clears the offer', () => {
+  it('appends an entry with no relic and clears the offer', () => {
     const character = makeCharacter({ offeredChallengeId: 'resist' });
-    const taken = takeChallenge(character, 'resist', createRng(3), '2026-11-03');
+    const taken = takeChallenge(character, 'resist', '2026-11-03');
     expect(taken.offeredChallengeId).toBeUndefined();
-    expect(taken.challenges).toHaveLength(1);
-    const [e] = taken.challenges!;
-    expect(e).toMatchObject({ id: 'resist', takenDayKey: '2026-11-03', progress: 0 });
-    expect(ITEM_CATALOG.find((i) => i.id === e.relicId)?.rarity).toBe('relic');
+    expect(taken.challenges).toEqual([{ id: 'resist', takenDayKey: '2026-11-03', progress: 0 }]);
   });
 
-  it('never reserves an earned, owned or already promised relic: all 17 get distinct relics, a 18th take is a no-op', () => {
-    let character = makeCharacter();
-    for (let i = 0; i < allIds.length; i++) {
-      character = takeChallenge(character, allIds[i], createRng(i * 7 + 1), '2026-11-03');
-    }
-    const relicIds = character.challenges!.map((e) => e.relicId);
-    expect(new Set(relicIds).size).toBe(17);
-    expect(takeChallenge(character, 'resist', createRng(1), '2026-11-03')).toBe(character);
-
+  it('takes every challenge, even with every relic earned', () => {
     const earned = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
-    const some = makeCharacter({ earnedRelicIds: earned.slice(1), ownedItemIds: [] });
-    const taken = takeChallenge(some, 'resist', createRng(2), '2026-11-03');
-    expect(taken.challenges![0].relicId).toBe(earned[0]);
-  });
-
-  it('is a no-op when no relic is available', () => {
-    const earned = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
-    const character = makeCharacter({ earnedRelicIds: earned });
-    expect(takeChallenge(character, 'resist', createRng(1), '2026-11-03')).toBe(character);
+    let character = makeCharacter({ earnedRelicIds: earned });
+    for (const id of allIds) character = takeChallenge(character, id, '2026-11-03');
+    expect(character.challenges).toHaveLength(17);
   });
 
   it('returns the same object for a challenge already held, and keeps the offer', () => {
     const character = makeCharacter({ challenges: [entry('resist')], offeredChallengeId: 'rank-up' });
-    const again = takeChallenge(character, 'resist', createRng(1), '2026-11-03');
+    const again = takeChallenge(character, 'resist', '2026-11-03');
     expect(again).toBe(character);
     expect(again.offeredChallengeId).toBe('rank-up');
   });
@@ -464,8 +447,6 @@ describe('challengeProgress', () => {
 });
 
 describe('trial unlock', () => {
-  const rng = () => createRng(7);
-
   it('stays sealed below the unlock level, then is due at it', () => {
     const below = makeCharacter({ level: TRIALS_UNLOCK_LEVEL - 1, trialsUnlocked: false });
     expect(trialsOpen(below)).toBe(false);
@@ -476,7 +457,7 @@ describe('trial unlock', () => {
   });
 
   it('unlockTrials opens the section and hands over New discipline', () => {
-    const unlocked = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), rng(), '2026-11-05');
+    const unlocked = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), '2026-11-05');
     expect(unlocked.trialsUnlocked).toBe(true);
     expect(trialUnlockPending(unlocked)).toBe(false);
     expect(unlocked.challenges).toHaveLength(1);
@@ -484,14 +465,14 @@ describe('trial unlock', () => {
   });
 
   it('unlockTrials stays open once taken, and never hands over a second first trial', () => {
-    const once = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), rng(), '2026-11-05');
-    expect(unlockTrials(once, rng(), '2026-11-06')).toBe(once);
+    const once = unlockTrials(makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false }), '2026-11-05');
+    expect(unlockTrials(once, '2026-11-06')).toBe(once);
     expect(trialsOpen({ ...once, level: 1 })).toBe(true);
   });
 
   it('unlockTrials still opens the section when a new-good trial is already held', () => {
     const held = makeCharacter({ level: TRIALS_UNLOCK_LEVEL, trialsUnlocked: false, challenges: [entry('new-good')] });
-    const unlocked = unlockTrials(held, rng(), '2026-11-05');
+    const unlocked = unlockTrials(held, '2026-11-05');
     expect(unlocked.trialsUnlocked).toBe(true);
     expect(unlocked.challenges).toHaveLength(1);
   });

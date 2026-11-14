@@ -1660,16 +1660,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     line-height: 1;
   }
 
-  // The prize no one may see yet: a gift and a question mark.
-  @mixin hidden-gift {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    color: var(--icon-gift);
-    @include name-serif(700);
-    font-size: 1rem;
-  }
-
   .challenge-list {
     margin-top: 0;
   }
@@ -1752,12 +1742,14 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
   }
 
-  .challenge .challenge-gift {
+  .challenge .challenge-gems {
     align-self: flex-start;
-    @include hidden-gift;
+    @include name-serif(700);
+    font-size: 1rem;
+    color: $brass;
   }
 
-  // Earned: the card sinks and names what it paid.
+  // Earned: the card sinks.
   .challenge.done {
     --card: var(--struck-card);
     background: var(--struck-card);
@@ -1775,16 +1767,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .challenge.done .challenge-socket {
     opacity: 0.45;
-  }
-
-  .challenge .challenge-relic {
-    align-self: flex-start;
-    max-width: 38%;
-    @include name-serif(700);
-    font-size: 0.9rem;
-    line-height: 1.15;
-    text-align: right;
-    color: $brass;
   }
 
   // Finished and waiting: a brass rim round the card, as on the level-up's
@@ -1842,10 +1824,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   button.card .side-name {
     font-weight: 800;
     color: $brass;
-  }
-
-  .challenge .challenge-gift .mark {
-    font-size: 1.1rem;
   }
 
   // A trial new since the Trials tab was last open.

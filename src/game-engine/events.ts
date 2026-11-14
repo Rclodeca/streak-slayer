@@ -6,7 +6,7 @@ import type { HeroClass } from './character';
 import { offerableChallenges, trialsOpen } from './challenges';
 import { TUNING } from './constants/tuning';
 import { healingAllowed, rerollDamageType } from './habits';
-import { availableRelics, doublableItems, equippedDoubledItemIds, unownedDroppableItems } from './items';
+import { doublableItems, equippedDoubledItemIds, unownedDroppableItems } from './items';
 import type { ItemDef } from './items';
 import { activeCritBoost, activeHealBoost, effectiveStat } from './leveling';
 import { assignSpecialIfEligible, assignUltIfEligible, grantOverdrive } from './levelRewards';
@@ -35,10 +35,10 @@ export const EVENT_DEFS: readonly EventDef[] = [
   {
     id: 'side-quest',
     title: 'Side quest',
-    description: 'Earn a rare and powerful item.',
+    description: 'Earn gems.',
     minLevel: 1,
     oneTime: false,
-    isEligible: (character) => trialsOpen(character) && offerableChallenges(character).length > 0 && availableRelics(character).length > 0,
+    isEligible: (character) => trialsOpen(character) && offerableChallenges(character).length > 0,
   },
   {
     id: 'special',

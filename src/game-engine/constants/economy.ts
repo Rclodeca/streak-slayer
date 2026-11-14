@@ -27,6 +27,9 @@ export const LEVEL_GEM_MILESTONES: readonly { level: number; gems: number }[] = 
   { level: 50, gems: 10 },
 ];
 
+/** Gems a finished trial pays when claimed. Flat until the new trial list (milestone B); 17 trials at 12 sit inside the 210 budget. */
+export const TRIAL_GEMS = 12;
+
 /** Every free gem an account can earn. `trials` and `dungeonFirstClears` are placeholders until milestones B and F. */
 export const FREE_GEM_SOURCES = {
   levels: LEVEL_GEM_MILESTONES.reduce((sum, m) => sum + m.gems, 0),

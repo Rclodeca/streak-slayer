@@ -204,8 +204,8 @@ export interface PendingAddition {
 
 export interface ChallengeEntry {
   id: ChallengeId;
-  /** The relic reserved when the challenge was taken. */
-  relicId: string;
+  /** The relic reserved when the challenge was taken, on a save from before trials paid gems. Unused now. */
+  relicId?: string;
   takenDayKey: string;
   progress: number;
   /** The last day a day-end check ran for this challenge (so a repeat run can't double count). */

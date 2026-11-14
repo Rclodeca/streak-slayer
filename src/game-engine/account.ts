@@ -24,6 +24,11 @@ export function recordLevel(account: Account, level: number): { account: Account
   return { account: { gems: account.gems + gemsPaid, highestLevel: level }, gemsPaid };
 }
 
+/** The account with `gems` added. */
+export function addGems(account: Account, gems: number): Account {
+  return { ...account, gems: account.gems + gems };
+}
+
 /** The account with `gems` spent, or null if it holds too few. */
 export function spendGems(account: Account, gems: number): Account | null {
   if (account.gems < gems) return null;

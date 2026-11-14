@@ -73,8 +73,8 @@ export const useCharacterStore = defineStore('character', {
     },
 
     /** Opens the Trials section for the rest of the run and hands over the first trial (the "Trials unlocked" popup's Onward). */
-    unlockTrials(todayKey: string, rng: Rng = createRng()) {
-      this.character = unlockTrials(this.character, rng, todayKey);
+    unlockTrials(todayKey: string) {
+      this.character = unlockTrials(this.character, todayKey);
     },
 
     /** Opens the Talents tab for good (the "Talents unlocked" popup's Onward). */

@@ -190,6 +190,7 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
         <template v-else-if="entry.kind === 'challenge-completed'">
           <StatIcon name="quest" class="log-icon" /> {{ entry.name }} done —
           <template v-if="entry.itemName">found {{ entry.itemName }}, </template>
+          <template v-if="entry.gems"><span class="log-gems">+{{ formatCompact(entry.gems) }}</span> gems, </template>
           <span class="log-exp">+{{ formatCompact(entry.amount) }}</span> EXP
         </template>
         <template v-else-if="entry.kind === 'quest-failed'">

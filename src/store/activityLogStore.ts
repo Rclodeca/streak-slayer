@@ -56,7 +56,7 @@ export type ActivityLogEntry =
   // Unbroken: a boss hit from a missed skill or quest (name) that did nothing.
   | { id: string; kind: 'dodged'; name: string }
   | { id: string; kind: 'quest-failed'; description: string; amount: number; attackType: 'physical' | 'magic'; crit?: boolean; lifesteal?: number }
-  | { id: string; kind: 'challenge-completed'; name: string; amount: number; itemName?: string }
+  | { id: string; kind: 'challenge-completed'; name: string; amount: number; itemName?: string; gems?: number } // itemName: a relic, on entries from before trials paid gems
   | { id: string; kind: 'doom-landed'; amount: number }
   // A boss skill a blow made fire (a landed Wounds logs 'wounds-applied' instead); amount is HP taken or, for Mend, healed; pct is the share of HP a Doom will take; stat is the one an Empower doubled.
   | { id: string; kind: 'boss-skill'; skill: BossSkillId; outcome: 'landed' | 'failed' | 'resisted'; amount?: number; pct?: number; stat?: BossStat };

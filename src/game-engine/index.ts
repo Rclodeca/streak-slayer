@@ -189,7 +189,8 @@ export {
 export { characterGold } from './gold';
 
 export type { Account } from './account';
-export { createAccount, recordLevel, spendGems } from './account';
+export { addGems, createAccount, recordLevel, spendGems } from './account';
+export { TRIAL_GEMS } from './constants/economy';
 
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './talents';
 export {

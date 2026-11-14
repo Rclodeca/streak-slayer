@@ -245,7 +245,7 @@ describe('useEventChoice', () => {
       expect(events.offeredChallenge.value).toBeNull();
     });
 
-    it('chooseSideQuest takes the challenge with a reserved relic, spends the pick and makes no quest', () => {
+    it('chooseSideQuest takes the challenge with no relic, spends the pick and makes no quest', () => {
       const { characterStore, events } = setupSide();
       const id = characterStore.character.offeredChallengeId;
 
@@ -255,21 +255,20 @@ describe('useEventChoice', () => {
       const [entry] = characterStore.character.challenges!;
       expect(entry).toMatchObject({ id, progress: 0 });
       expect(entry.doneDayKey).toBeUndefined();
-      expect(ITEM_CATALOG.find((i) => i.id === entry.relicId)?.rarity).toBe('relic');
+      expect(entry.relicId).toBeUndefined();
       expect(characterStore.character.pendingEventPicks).toBe(0);
       expect(characterStore.character.takenEventIds).toEqual([]);
       expect(characterStore.character.offeredChallengeId).toBeUndefined();
       expect(useQuestStore().quests).toEqual([]);
     });
 
-    it('resets the guarantee count when taken, even if the pick claims the last available relic', () => {
+    it('resets the guarantee count when taken, even with every relic earned', () => {
       const relics = ITEM_CATALOG.filter((i) => i.rarity === 'relic').map((i) => i.id);
-      const [onlyRelic, ...rest] = relics;
-      const { characterStore, events } = setupSide({ earnedRelicIds: rest });
+      const { characterStore, events } = setupSide({ earnedRelicIds: relics });
 
       events.chooseSideQuest();
 
-      expect(characterStore.character.challenges?.[0].relicId).toBe(onlyRelic);
+      expect(characterStore.character.challenges).toHaveLength(1);
       expect(characterStore.character.sideQuestPicksMissed).toBe(0);
     });
 
@@ -284,7 +283,6 @@ describe('useEventChoice', () => {
       expect(entry.id).toBe('streak-all');
       expect(entry).toMatchObject({ unclaimed: true });
       expect(entry.doneDayKey).toBeDefined();
-      expect(characterStore.character.ownedItemIds).not.toContain(entry.relicId);
     });
   });
 });

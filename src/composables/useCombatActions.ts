@@ -66,11 +66,13 @@ import {
   resolvePlayerDeathIfDead,
   reviveWithFeatherIfEquipped,
   skillCompletionExp,
+  TRIAL_GEMS,
   unlockQuests,
   weeklyPeriodKey,
 } from '../game-engine';
 import type { Boss, Character, ChallengeEntry, ChallengeEvent, ChallengeId, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
+import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -105,6 +107,7 @@ const rng = createRng();
 
 export function useCombatActions() {
   const characterStore = useCharacterStore();
+  const accountStore = useAccountStore();
   const bossStore = useBossStore();
   const habitStore = useHabitStore();
   const activityLogStore = useActivityLogStore();
@@ -115,7 +118,7 @@ export function useCombatActions() {
   const { recordFallen, clearFallen } = useFallenHero();
   const { startScene } = useHoodedFigure();
   const { showReviveNotice } = useReviveNotice();
-  const { enqueueDrops, clear: clearItemDrops } = useItemDropQueue();
+  const { clear: clearItemDrops } = useItemDropQueue();
   const { enqueue: enqueueCompletion } = useQuestCompleteQueue();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
   const { showBossSkill, clear: clearBossSkills } = useBossSkillCard();
@@ -165,14 +168,12 @@ export function useCombatActions() {
   }
 
   /**
-   * Pays one finished challenge: its reserved relic (a relic already owned
-   * still finishes the challenge, just without the item), and EXP as a medium
-   * quest at the current weekly slot — without using that slot up.
+   * Pays one finished challenge: TRIAL_GEMS gems, and EXP as a medium quest
+   * at the current weekly slot — without using that slot up.
    */
   function payChallenge(entry: ChallengeEntry): void {
     const def = getChallengeDef(entry.id);
-    const item = characterStore.grantItem(entry.relicId);
-    if (item) enqueueDrops([item]);
+    accountStore.addGems(TRIAL_GEMS);
 
     const before = characterStore.character;
     const week = questWeekFor(before.questWeek, weeklyPeriodKey(debugClockStore.now()));
@@ -182,7 +183,7 @@ export function useCombatActions() {
     characterStore.setCharacter(character);
     grantEventPicks(levelsGained);
 
-    activityLogStore.addEntry({ kind: 'challenge-completed', name: def.name, amount, ...(item && { itemName: item.name }) });
+    activityLogStore.addEntry({ kind: 'challenge-completed', name: def.name, amount, gems: TRIAL_GEMS });
     enqueueCompletion({ description: def.name, difficulty: 'medium', amount });
   }
 

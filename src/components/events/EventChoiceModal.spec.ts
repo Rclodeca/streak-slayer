@@ -49,7 +49,7 @@ describe('EventChoiceModal side-quest card', () => {
     return wrapper;
   }
 
-  it('offers a rare item for a challenge, naming the challenge and its deed', async () => {
+  it('offers gems for a challenge, naming the challenge and its deed', async () => {
     await mountModal();
     const characterStore = useCharacterStore();
     const def = getChallengeDef(characterStore.character.offeredChallengeId!);
@@ -59,7 +59,7 @@ describe('EventChoiceModal side-quest card', () => {
     expect(card!.textContent).toContain(def.name);
     expect(card!.textContent).toContain(def.deed.charAt(0).toLowerCase() + def.deed.slice(1));
     expect(card!.textContent).toContain('Side quest');
-    expect(card!.querySelector('.card-title')?.textContent).toBe('Complete a challenge for a rare item');
+    expect(card!.querySelector('.card-title')?.textContent).toBe('Complete a challenge for gems');
     expect(card!.querySelector('.side-socket')).not.toBeNull();
   });
 

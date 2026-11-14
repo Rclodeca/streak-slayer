@@ -7,7 +7,7 @@ import ChallengeList from './ChallengeList.vue';
 import SealedNotice from './SealedNotice.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
 
-// Trials: the side quests, in-game challenges each for a hidden relic
+// Trials: the side quests, in-game challenges that pay gems
 // (game-engine/challenges.ts). The game sets them, so there's no add button.
 // Sealed until TRIALS_UNLOCK_LEVEL (see trialsOpen); the Trials unlocked popup opens it.
 const characterStore = useCharacterStore();
