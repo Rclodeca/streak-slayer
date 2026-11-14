@@ -26,6 +26,11 @@ import { useItemDropQueue } from './useItemDropQueue';
 
 const rng = createRng();
 
+// A second Restock within this long of the last is a double tap, not a choice:
+// nothing else stops it, since a restock is never sold out.
+const RESTOCK_GUARD_MS = 500;
+let lastRestockAt = -Infinity;
+
 export function useShop() {
   const characterStore = useCharacterStore();
   const bossStore = useBossStore();
@@ -33,14 +38,19 @@ export function useShop() {
   const activityLogStore = useActivityLogStore();
   const { enqueueDrops } = useItemDropQueue();
 
-  const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
+  /** Today's key, read fresh. `dayTick` makes a computed reading it follow a real day turnover. */
+  function today(): string {
+    void debugClockStore.dayTick;
+    return dailyPeriodKey(debugClockStore.now());
+  }
+  const todayKey = computed(today);
   const stock = computed<ShopStock | null>(() => characterStore.character.shop ?? null);
   const restockPrice = computed(() => restockFee(stock.value?.restocks ?? 0, bossStore.boss.index));
   const slotsFull = computed(() => characterStore.character.equippedItemIds.length >= maxEquipSlots(characterStore.character));
 
   /** Draws today's stock if the character has none for today (first open, a new day, a new run). */
   function ensureStock(): void {
-    const stocked = stockShop(characterStore.character, bossStore.boss.index, todayKey.value, rng);
+    const stocked = stockShop(characterStore.character, bossStore.boss.index, today(), rng);
     if (stocked !== characterStore.character) characterStore.setCharacter(stocked);
   }
 
@@ -57,8 +67,11 @@ export function useShop() {
 
   /** Pays the restock fee and redraws the stock. False if there's no stock or too little gold. */
   function restock(): boolean {
+    const since = Date.now() - lastRestockAt;
+    if (since >= 0 && since < RESTOCK_GUARD_MS) return false;
     const result = restockShop(characterStore.character, bossStore.boss.index, rng);
     if (!result) return false;
+    lastRestockAt = Date.now();
     characterStore.setCharacter(result.character);
     activityLogStore.addEntry({ kind: 'shop-restocked', gold: result.fee });
     return true;
@@ -66,13 +79,13 @@ export function useShop() {
 
   /** A tonic's row: price, status and days left today. */
   function tonic(id: TonicId) {
-    return tonicState(characterStore.character, id, bossStore.boss.index, todayKey.value);
+    return tonicState(characterStore.character, id, bossStore.boss.index, today());
   }
 
   /** Buys a tonic and uses it at once. False (nothing spent) unless its row reads `buy`. */
   function buyTonic(id: TonicId): boolean {
     const { price } = tonic(id);
-    const result = buyTonicRule(characterStore.character, id, bossStore.boss.index, todayKey.value);
+    const result = buyTonicRule(characterStore.character, id, bossStore.boss.index, today());
     if (!result) return false;
     characterStore.setCharacter(result.character);
     const name = TONIC_DEFS.find((def) => def.id === id)?.name ?? id;

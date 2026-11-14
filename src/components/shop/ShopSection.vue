@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { characterGold } from '../../game-engine';
+import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -20,6 +21,12 @@ const characterStore = useCharacterStore();
 const accountStore = useAccountStore();
 const gold = computed(() => characterGold(characterStore.character));
 const shopOpen = ref(false);
+// A bought item's popup opens under the shop modal (both teleport to the body,
+// the shop's later), so the shop steps aside for it.
+const { current: dropShown } = useItemDropQueue();
+watch(dropShown, (item) => {
+  if (item) shopOpen.value = false;
+});
 </script>
 
 <template>

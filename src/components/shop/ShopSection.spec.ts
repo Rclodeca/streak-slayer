@@ -110,4 +110,15 @@ describe('ShopSection', () => {
     expect(document.querySelector('.shop-scene')).not.toBeNull();
     expect(document.querySelector('.shop-featured')).not.toBeNull();
   });
+
+  it('on desktop, buying an item closes the shop so its popup is on top', async () => {
+    hero(100000);
+    const wrapper = mount(ShopSection, { attachTo: document.body });
+    await wrapper.find('.open-shop').trigger('click');
+    await flushPromises();
+    document.querySelector<HTMLButtonElement>('.shop-ware-row.item .shop-buy')!.click();
+    await flushPromises();
+    expect(useItemDropQueue().current.value).not.toBeNull();
+    expect(document.querySelector('.shop-scene')).toBeNull();
+  });
 });

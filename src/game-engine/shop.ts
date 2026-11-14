@@ -14,6 +14,11 @@ import { pickRandom, type Rng } from './rng';
 import { daysBetweenDayKeys } from './time';
 import type { Character, ShopStock, ShopWare } from './types';
 
+/** Whether the hero still stands: a reload can leave the death screen down at 0 HP, and a fallen hero buys nothing. */
+function standing(character: Character): boolean {
+  return Math.round(character.currentHealth) > 0;
+}
+
 /** Up to `count` distinct random items from `pool`. */
 function pickSome(pool: ItemDef[], count: number, rng: Rng): ItemDef[] {
   const left = [...pool];
@@ -61,7 +66,7 @@ export function stockShop(character: Character, bossIndex: number, dayKey: strin
 /** Pays restockFee and redraws today's stock. Null with no stock or too little gold. */
 export function restockShop(character: Character, bossIndex: number, rng: Rng): { character: Character; fee: number } | null {
   const shop = character.shop;
-  if (!shop) return null;
+  if (!shop || !standing(character)) return null;
   const fee = restockFee(shop.restocks, bossIndex);
   const gold = characterGold(character);
   if (gold < fee) return null;
@@ -85,7 +90,7 @@ export function buyWare(character: Character, itemId: string): { character: Char
   const shop = character.shop;
   const ware = shop && [shop.featured, ...shop.wares].find((w) => w?.itemId === itemId);
   const item = ITEM_CATALOG.find((candidate) => candidate.id === itemId);
-  if (!shop || !ware || !item || wareState(character, ware) !== 'buy') return null;
+  if (!shop || !ware || !item || !standing(character) || wareState(character, ware) !== 'buy') return null;
   const sell = (w: ShopWare | null) => (w?.itemId === itemId ? { ...w, sold: true } : w);
   const bought: Character = {
     ...character,
@@ -137,7 +142,7 @@ export function tonicState(
 /** Buys and uses a tonic at once. Null unless its row reads `buy`. `healed` is what the draught restored. */
 export function buyTonic(character: Character, id: TonicId, bossIndex: number, dayKey: string): { character: Character; healed?: number } | null {
   const { price, status } = tonicState(character, id, bossIndex, dayKey);
-  if (status !== 'buy') return null;
+  if (status !== 'buy' || !standing(character)) return null;
   const paid = { ...character, gold: characterGold(character) - price };
   if (id === 'draught') {
     const max = effectiveStat(paid, 'health');

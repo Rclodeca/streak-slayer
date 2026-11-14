@@ -1,11 +1,15 @@
+// @vitest-environment jsdom
+
 import { createPinia, setActivePinia } from 'pinia';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRng, dailyPeriodKey } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useDebugClockStore } from '../store/debugClockStore';
 import { useItemDropQueue } from './useItemDropQueue';
+import { useMissedSkillsGate } from './useMissedSkillsGate';
+import { useRolloverWatch } from './useRolloverWatch';
 import { useShop } from './useShop';
 
 describe('useShop', () => {
@@ -67,5 +71,55 @@ describe('useShop', () => {
     expect(characterStore.character.shop).toBeUndefined();
     shop.ensureStock();
     expect(shop.stock.value?.dayKey).toBe(dailyPeriodKey(useDebugClockStore().now()));
+  });
+
+  it('follows a real day change once the rollover watch notices it', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-25T09:50:00Z')); // 2:50am PDT, still the 24th
+    try {
+      const { shop, characterStore } = stocked();
+      const stop = useRolloverWatch();
+      expect(shop.todayKey.value).toBe('2026-10-24');
+      vi.setSystemTime(new Date('2026-10-25T10:05:00Z')); // 3:05am, the 25th
+      vi.advanceTimersByTime(60_000);
+      expect(shop.todayKey.value).toBe('2026-10-25');
+      shop.ensureStock();
+      expect(characterStore.character.shop?.dayKey).toBe('2026-10-25');
+      stop();
+    } finally {
+      useMissedSkillsGate().acknowledge();
+      vi.useRealTimers();
+    }
+  });
+
+  it('stamps a tonic with the real day even before the watch has caught up', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-25T09:50:00Z'));
+    try {
+      const { shop, characterStore } = stocked();
+      expect(shop.todayKey.value).toBe('2026-10-24');
+      vi.setSystemTime(new Date('2026-10-25T10:05:00Z'));
+      expect(shop.buyTonic('crit')).toBe(true);
+      const boost = characterStore.character.statusEffects?.find((e) => e.type === 'critBoost');
+      expect(boost?.appliedDayKey).toBe('2026-10-25');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a double tap on Restock restocks once', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2030-01-01T12:00:00Z'));
+    try {
+      const { shop, characterStore } = stocked(10000);
+      const fee = shop.restockPrice.value;
+      expect(shop.restock()).toBe(true);
+      expect(shop.restock()).toBe(false);
+      expect(characterStore.character.gold).toBe(10000 - fee);
+      vi.advanceTimersByTime(600);
+      expect(shop.restock()).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

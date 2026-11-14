@@ -200,4 +200,17 @@ describe('tonics', () => {
     const boss = { index: 1, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
     expect(resolvePlayerDeathIfDead(dead, { ...boss }, [], createRng(1)).character.draughtDayKey).toBeUndefined();
   });
+
+describe('a fallen hero', () => {
+  // A reload can leave the death screen down with the hero at 0 HP.
+  const fallen = () => ({ ...stockShop(makeCharacter({ gold: 100000 }), 3, DAY, createRng(7)), currentHealth: 0 });
+
+  it('buys no draught, ware or restock', () => {
+    const c = fallen();
+    expect(buyTonic(c, 'draught', 3, DAY)).toBeNull();
+    expect(buyTonic(c, 'crit', 3, DAY)).toBeNull();
+    expect(buyWare(c, c.shop!.wares[0].itemId)).toBeNull();
+    expect(restockShop(c, 3, createRng(1))).toBeNull();
+  });
+});
 });

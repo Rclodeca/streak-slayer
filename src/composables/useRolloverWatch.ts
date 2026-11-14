@@ -22,6 +22,7 @@ export function useRolloverWatch(now: () => Date = () => useDebugClockStore().no
     const dayKey = dailyPeriodKey(current);
     if (dayKey === lastDayKey) return;
     lastDayKey = dayKey;
+    useDebugClockStore().noteDayChange();
     useDailyRollover(current);
   }
 
