@@ -30,6 +30,51 @@ Entry template:
 
 **Every background (fight-stage arenas, the Hero tab armory, future dungeons and shop backdrops) is 216 x 116 art px**, drawn at 2 CSS px per art pixel (432 x 232), held to the bottom of its box, sides cropped evenly on narrow phones. 116 rows is the phone fight stage's backdrop box at 390 wide (the painted scene's canvas height); the Hero tab's frame was raised to the same 232px. A notched iPhone's status-bar inset above it is a dark bar, not art. On the stage the hero's feet land on row 108 and the boss's on row 86; on the Hero tab the hero's feet are on row 101. Generate new backdrops at 216 x 116 directly. An older 216 x 108 tile is brought to size with the 8-row floor inpaint (`node scripts/pixellab-floor-pad.cjs <tile> <out-dir>`, then the `inpaint_image` call under "Run 6 extended to 216x116" below), which worked well; the 216x148 extension was horrible and must not be repeated. How-to: `docs/pixellab-scenes.md` section 1.
 
+## 2026-11-12: shop marketplace (shop tab backdrop, not yet shipped)
+
+**Run 1, `2026-11-12-shop-market/`, job 1c27ab49-a7d2-49ec-8d38-a50653122e18**
+- Tool + settings: `create_image_pro`, **216x116 directly (standard size, no padding), not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 65c1d7b5, all four aspects), no reference images, no palette. Tile is `tile-01.png` (216x116) plus `gallery.html` at 4x.
+- Description: `fantasy RPG marketplace at dusk, side view with a little depth, camera just above ground level, cobblestone street, timber market stalls with striped cloth awnings along the back, crates barrels and sacks of goods, hanging paper lanterns and strings of lights, potion bottles and weapons on display tables, stone buildings with shuttered windows behind, warm lantern glow with a deep blue evening sky, open clear cobblestone ground in the centre, no characters`
+- Cost + candidates: 10 generations, 1 candidate (the receipt confirmed 10 at 216x116). Took 49s.
+- Why: the user wants a shop tab later and asked for an RPG marketplace backdrop at the same size as the other backgrounds. Dusk with lantern glow chosen so the warm light sits against a blue sky, closer to the blue-black UI than the armory's all-warm look. Open cobblestone centre left for the hero or a shopkeeper drawn in code.
+- Result: striped-awning stalls on both sides (red and green), a display table with potion bottles and weapons left of centre, hanging lanterns, stone buildings with shuttered windows, a blue dusk sky behind, crates and barrels in the foreground, cobblestone street with a clear patch in the middle. No characters. Not yet judged by the user.
+
+**Run 2 (shopkeeper), `2026-11-12-shop-keeper/`, job b2bf3c34-b151-4e34-9cfd-92f5ae4eac50**
+- Tool + settings: `create_image_pro`, **216x116, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 65c1d7b5, all four aspects), no reference images, no palette. Tile is `tile-01.png` plus `gallery.html` at 4x.
+- Description: `fantasy RPG shop stall at dusk, side view with a little depth, camera just above ground level, one large timber market stall in the centre with a striped cloth awning and a wide wooden counter, a friendly merchant shopkeeper with a brown apron and green cap standing behind the counter facing the viewer, shelves behind them of potion bottles weapons and scrolls, wares and a set of scales on the counter, hanging paper lanterns, smaller stalls and stone buildings with shuttered windows at the edges, warm lantern glow with a deep blue evening sky, cobblestone ground in front of the counter, crates and barrels at the sides`
+- Cost + candidates: 10 generations, 1 candidate. Took 70s.
+- Why: the user wanted a similar scene with a shopkeeper. An inpainted shopkeeper in the run 1 market was proposed first, then dropped: the user did not want the shopkeeper in the middle of the street ("We can build one with shopkeeper in mind"), so this is a new scene with the shopkeeper in their own stall, baked into the image.
+- What changed from run 1: one large central stall instead of a row of stalls, a shopkeeper in it, a darker dusk (purple-orange sky, dim cobbles) instead of a blue evening.
+- Result: a big red-and-cream striped awning over a central stall, a shopkeeper (green cap, brown apron) behind a wide wooden counter, shelves of potions and weapons behind, a brass scale on the counter, four lit lanterns, crates, sacks and a barrel at the sides, dark stone houses on both edges, cobblestones in front. Not yet judged by the user.
+
+**Run 2 verdict:** the user said "this one isnt good", the prompt had too much detail and the shopkeeper's face was jumbled (a face a few pixels wide). Not used.
+
+**Run 3 (shopkeeper, simpler prompt), `2026-11-12-shop-keeper-2/`, job 763292e2-c0a8-461b-b237-0be7fb748d33**
+- Tool + settings: `create_image_pro`, **216x116, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 65c1d7b5, all four aspects), no reference images, no palette.
+- Description: `fantasy RPG shop stall at dusk, side view, one wooden market stall in the centre with a striped awning and a plain wooden counter, a hooded merchant shopkeeper standing behind the counter, simple shelves behind them, a few hanging lanterns, stone buildings at the edges, cobblestone ground, warm lantern glow, deep blue evening sky`
+- Cost + candidates: 10 generations, 1 candidate. Took 74s.
+- What changed from run 2: much shorter prompt (no scales, sacks, barrels, crates, shuttered windows, shelf contents), a hooded shopkeeper so there is no small face to jumble, "deep blue evening sky" back from run 1.
+- Result: a central stall with a red-and-cream awning, a hooded shopkeeper in dark grey behind a plain counter, shelves of potions and books, a brass scale, hanging shop signs (potion, sword) on the stone houses either side, sacks and barrels at the foot, cobblestones in front. The face is hidden as hoped, but the shopkeeper is small and dark against a dark stall, so they are easy to miss and read as shadowy rather than friendly. The sky came out purple-dusk, not blue. Not yet judged by the user.
+
+**Run 4 (shop interior, bearded shopkeeper), `2026-11-12-shop-keeper-3/`, job 7aff5d67-38fb-4398-abac-c5594b1982a3**
+- Tool + settings: `create_image_pro`, **216x116, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 65c1d7b5, all four aspects), no reference images, no palette.
+- Description: `fantasy RPG shop interior, side view, a large friendly stout bearded shopkeeper smiling behind a wooden counter in the centre, cream shirt and red apron, wooden shelves of potions and goods on the back wall, a few hanging lanterns, wooden beams, plank floor, warm lantern glow`
+- Cost + candidates: 10 generations, 1 candidate. Took 75s.
+- Why: run 3 (outdoor, hooded) had a small dark shopkeeper who blended in. The user asked for "an inside scene with a friendly shopkeeper (i'm thinking slightly fat beared man)". Beard covers the lower face so less to jumble; light clothes against dark wood.
+- What changed from run 3: interior instead of a stall, a bearded smiling shopkeeper (cream shirt, red apron) instead of a hooded one, "large" for size, no sky.
+- Result: shopkeeper centred behind a wooden counter, big and clearly readable, a clean smiling bearded face. Shelves of potions, books and sacks behind, two hanging lanterns, wooden ceiling beams, a brass scale and an open book on the counter, barrels, crates and chests at the sides, plank floor. Warm lantern-lit browns. Not yet judged by the user.
+
+**Runs 5 and 6 (run 4's prompt again, for options), `2026-11-12-shop-keeper-4/` (job 4c74bf7c-ee7e-4f3f-ac7a-22a3d1682040) and `2026-11-12-shop-keeper-5/` (job bd2826d5-67fb-47c5-ae0d-1959b43f5b9b)**
+- Tool + settings: both `create_image_pro`, 216x116, not transparent, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 65c1d7b5, all four aspects), no reference images, no palette, no seed.
+- Description (both, unchanged from run 4): `fantasy RPG shop interior, side view, a large friendly stout bearded shopkeeper smiling behind a wooden counter in the centre, cream shirt and red apron, wooden shelves of potions and goods on the back wall, a few hanging lanterns, wooden beams, plank floor, warm lantern glow`
+- Cost + candidates: 10 generations each (20 in all), 1 candidate each. Both took 87s.
+- Why: the user called run 4 "perfect" and asked for 2 more of these to choose from.
+- Result (all three shown together in a comparison gallery):
+  - Run 5 (`-4`): the widest, busiest shop. A wide plain counter, a smiling bearded shopkeeper, herbs hanging from the beams, potion shelves left, sacks, barrels and a red-lined chest at the sides, three lanterns. Lots of detail at the edges.
+  - Run 6 (`-5`): the most centred and readable. A stocky bearded shopkeeper with a rosy face, a long shelf of potions behind him, books and pots right, tools on a rack and a brass scale on the counter, hanging herbs, lanterns left, centre and right, a post at the right edge. The counter front has a small sign. His left eye looks slightly off.
+  - Run 4 (`-3`): see above.
+- User picked run 4 (`2026-11-12-shop-keeper-3/tile-01.png`): "first one is best. keep it". **Kept as the shop backdrop**, not yet shipped (no shop tab yet; copy it to `public/sprites/home/shop.png` when the tab is built). Runs 5 and 6 and the earlier market and stall runs are kept in `assets/pixellab/` as alternatives.
+
 ## 2026-11-12: armory and run 7 brought to the standard size (216 x 116)
 
 **Armory, `2026-11-12-armory-floor8/`, job 253d1e9d-454a-4e38-ba30-25814fe1d6d9** (shipped as `public/sprites/home/armory.png`; the original 216x108 tile stays in `2026-11-12-armory/`)

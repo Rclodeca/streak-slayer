@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Shop tab, round two</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The Shop tab (replaces Trials) under the pinned shopkeeper backdrop. Pixel-cut Moonlit only. Wares are placeholders
+   from docs/ideas/2026-11-10-shop.md: gold buys for this run, gems buy for good. Item art is the native 32x32 at 2 CSS px. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col p { margin: 0 0 12px; min-height: 108px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #7d8190; --touch: #dbe2ee; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --health: #c33a2e; --crit: #d6a24f; --steel: #a8a092; --arcane: #8d9bd1; --life: #b8433a; --exp: #d8b46a;
+  --common: #9d9382; --uncommon: #6cc47f; --rare: #5f95e6; --epic: #b57be8; --relic: #f58a35;
+  --gold: #f0c64e; --gem: #6fd6ea; --broke: #b65a50;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 390px; height: 840px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; color: inherit; }
+
+/* pinned shop (like HomeBase) */
+.home { flex: none; position: relative; z-index: 3; background: #07080c; border-bottom: 3px solid #05060a; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); padding-top: 14px; }
+.crop { position: relative; height: 232px; overflow: hidden; }
+.art { position: absolute; top: 0; left: -21px; width: 432px; height: 232px; }
+.art > img { position: absolute; inset: 0; width: 432px; height: 232px; image-rendering: pixelated; max-width: none; }
+.plate { position: absolute; z-index: 1; background: rgba(7,8,12,.88); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; color: var(--ink); }
+.plate.title { left: 12px; top: 12px; font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.purse { position: absolute; z-index: 1; display: flex; gap: 6px; }
+.purse .plate { position: static; display: flex; align-items: center; gap: 5px; font: 700 16px/1 'Alegreya', serif; }
+.purse .plate .i { font-size: 14px; }
+.menu { position: absolute; top: 20px; right: 0; z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; background: #2d2c50; color: #d9b96e; clip-path: polygon(3px 0, 100% 0, 100% 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px); }
+.menu .i { font-size: 20px; }
+.c-gold { color: var(--gold); --c: var(--gold); } .c-gem { color: var(--gem); --c: var(--gem); }
+
+.scroll { flex: 1; overflow-y: auto; padding: 14px 16px 18px; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px; }
+.scroll::-webkit-scrollbar { display: none; }
+.tabbar { flex: none; height: 58px; background: #0a0c12; border-top: 2px solid #05060a; display: flex; justify-content: space-around; align-items: center; font: 600 10px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: #6b7080; }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tabbar .i { font-size: 18px; }
+.tabbar .on { color: var(--touch); }
+
+/* banner (section title, option B cloth) */
+.banner { display: flex; align-items: center; height: 38px; flex: none; }
+.banner .medal { width: 38px; height: 38px; flex: none; z-index: 1; display: grid; place-items: center; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--brass); font-size: 20px; }
+.banner .cloth { margin-left: -4px; flex: 1; height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px 0 14px; background: #202a40; color: var(--ink); font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); }
+.banner .cloth em { font: 700 12px 'Alegreya Sans'; letter-spacing: .06em; color: var(--dim); font-style: normal; text-transform: none; }
+.banner.gems .cloth { background: #1a3040; }
+
+.panel { background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); position: relative; }
+.r-common { --rar: var(--common); } .r-uncommon { --rar: var(--uncommon); } .r-rare { --rar: var(--rare); } .r-epic { --rar: var(--epic); } .r-relic { --rar: var(--relic); } .r-none { --rar: #4a5570; }
+.rar { font: 700 10px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: var(--rar); }
+.name { font: 700 16px/1.15 'Alegreya', serif; color: var(--ink); }
+.eff { font-size: 13px; color: #cdbf9a; line-height: 1.25; }
+.keep { font: 700 10px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.b { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 13px; }
+.b .i { font-size: 13px; color: var(--c); } .b b { color: var(--ink); font-weight: 800; } .b span { color: var(--text); }
+.bons { display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.c-health { --c: var(--health); } .c-phys { --c: var(--phys); } .c-magic { --c: var(--magic); } .c-true { --c: var(--true); } .c-heal { --c: var(--heal); } .c-crit { --c: var(--crit); } .c-life { --c: var(--life); } .c-exp { --c: var(--exp); }
+
+/* sockets: item art at native 2 CSS px, or an icon for tonics/services */
+.sock { position: relative; flex: none; display: grid; place-items: center; overflow: hidden; background: color-mix(in srgb, var(--rar) 14%, var(--well)); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 color-mix(in srgb, var(--rar) 40%, var(--well-hi)); clip-path: var(--px2); }
+.sock img { width: 64px; height: 64px; image-rendering: pixelated; max-width: none; }
+.sock.s48 img { width: 48px; height: 48px; }
+.sock .i { font-size: 26px; color: var(--c, var(--ink)); }
+.sock.on { box-shadow: inset 0 0 0 2px var(--touch), inset 4px 4px 0 var(--well-lo); background: color-mix(in srgb, var(--rar) 28%, var(--well)); }
+.sock.sold { opacity: .35; }
+
+/* prices + buy */
+.price { display: inline-flex; align-items: center; gap: 4px; font: 700 14px/1 'Alegreya', serif; color: var(--ink); white-space: nowrap; }
+.price .i { font-size: 13px; }
+.price.no { color: var(--broke); }
+.buy { border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 14px; background: #2a3348; color: var(--ink); clip-path: var(--px2);
+  box-shadow: inset 2px 2px 0 #4a5672, inset -2px -4px 0 #10141e; font: 600 12px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; }
+.buy:active { box-shadow: inset 2px 4px 0 #10141e, inset -2px -2px 0 #4a5672; }
+.buy .price { font-size: 15px; letter-spacing: 0; }
+.buy.no { background: #1a1d27; color: var(--dim); box-shadow: inset 2px 2px 0 #262b38, inset -2px -2px 0 #0b0d13; cursor: default; }
+.climb { display: inline-flex; gap: 2px; vertical-align: middle; }
+.climb i { width: 6px; height: 6px; background: #2a3042; display: block; }
+.climb i.f { background: var(--brass); }
+
+/* ===== A: the counter ===== */
+.on-counter { position: absolute; z-index: 1; left: 84px; top: 88px; width: 64px; height: 64px; display: grid; place-items: center; filter: drop-shadow(0 2px 0 rgba(0,0,0,.6)); transition: transform .15s; }
+.on-counter img { width: 64px; height: 64px; image-rendering: pixelated; }
+.on-counter .i { font-size: 34px; color: var(--c); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--c) 60%, transparent)); }
+.on-counter::after { content: ''; position: absolute; left: 6px; right: 6px; bottom: -2px; height: 6px; background: radial-gradient(closest-side, color-mix(in srgb, var(--rar) 70%, transparent), transparent); }
+.tag { position: absolute; z-index: 1; left: 80px; top: 158px; padding: 4px 9px 4px; background: #e9dcc0; color: #2a2014; clip-path: var(--px2); box-shadow: inset -2px -2px 0 #b9a47e; font: 700 15px/1 'Alegreya', serif; display: flex; align-items: center; gap: 4px; }
+.tag::before { content: ''; position: absolute; left: 50%; top: -6px; width: 2px; height: 6px; background: #6b5434; }
+.tag .i { font-size: 13px; color: #8a6a1c; } .tag.g .i { color: #2a7f93; }
+.say { position: absolute; z-index: 1; right: 44px; top: 62px; max-width: 128px; padding: 6px 9px; background: rgba(240,243,247,.94); color: #141822; clip-path: var(--px2); font: 600 13px/1.2 'Alegreya', serif; }
+.say::after { content: ''; position: absolute; left: -6px; bottom: 6px; border: 6px solid transparent; border-left: 0; border-right-color: rgba(240,243,247,.94); }
+.a-card { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; border-top: 2px solid var(--rar); }
+.a-card .head { display: flex; gap: 10px; align-items: center; }
+.a-card .head > div { flex: 1; min-width: 0; }
+.a-card .foot { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin-top: 2px; }
+.a-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.ware { border: 0; padding: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.ware .sock { width: 100%; height: 72px; }
+.ware .price { font-size: 13px; }
+
+/* ===== B: shopkeeper's word ===== */
+.dialog { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: #0f121b; clip-path: var(--px3); box-shadow: inset 2px 2px 0 #2a3246, inset -2px -2px 0 #05060a; }
+.dialog .who { font: 600 10px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+.dialog .line { font: 600 16px/1.25 'Alegreya', serif; color: var(--ink); }
+.dialog .line::after { content: '▾'; color: var(--dim); font-size: 11px; margin-left: 6px; animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.feat { padding: 0; overflow: hidden; }
+.feat .velvet { position: relative; height: 120px; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--rar) 34%, #12162a) 0%, #0b0e18 70%); }
+.feat .velvet img { width: 96px; height: 96px; image-rendering: pixelated; position: relative; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+.feat .velvet::after { content: ''; position: absolute; left: 50%; bottom: 14px; width: 70px; height: 8px; margin-left: -35px; background: radial-gradient(closest-side, rgba(0,0,0,.6), transparent); }
+.feat .ribbon { position: absolute; left: 10px; top: 10px; padding: 3px 8px; background: var(--rar); color: #0b0e18; font: 700 10px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; clip-path: var(--px2); }
+.feat .dots { position: absolute; right: 12px; top: 13px; display: flex; gap: 4px; }
+.feat .dots i { width: 6px; height: 6px; background: #3a4256; } .feat .dots i.on { background: var(--touch); }
+.feat .arrowl, .feat .arrowr { position: absolute; top: 38px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--dim); font-size: 22px; cursor: pointer; border: 0; background: none; }
+.feat .arrowl { left: 0; } .feat .arrowr { right: 0; }
+.feat .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 5px; border-top: 2px solid var(--rar); }
+.feat .foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 7px; }
+.row .sock { width: 52px; height: 52px; }
+.row .mid { flex: 1; min-width: 0; }
+.row .mid .eff { font-size: 12.5px; }
+.row .buy { min-width: 76px; padding: 0 10px; }
+.row .buy .price { font-size: 15px; }
+
+/* ===== C: two purses ===== */
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); padding: 3px; flex: none; }
+.seg button { border: 0; background: transparent; color: var(--text); padding: 7px 0 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; clip-path: var(--px2); min-height: 44px; }
+.seg button .t { font: 600 11px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.seg button .v { display: flex; align-items: center; gap: 5px; font: 700 18px/1 'Alegreya', serif; color: var(--ink); }
+.seg button .v .i { font-size: 15px; }
+.seg button.on { background: #202a40; color: var(--ink); box-shadow: inset 0 2px 0 var(--hi); }
+.seg button.on.gem { background: #1a3040; }
+.seg button:not(.on) .v { color: var(--dim); }
+.c-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.c-card { border: 0; cursor: pointer; padding: 8px 6px 9px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+.c-card::before { content: ''; position: absolute; left: 3px; right: 3px; top: 0; height: 2px; background: var(--rar); }
+.c-card .sock { width: 76px; height: 72px; }
+.c-card .name { font-size: 13.5px; line-height: 1.1; min-height: 30px; display: flex; align-items: center; }
+.c-card .pp { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 8px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); width: 100%; }
+.c-note { font-size: 12.5px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
+.c-note .i { font-size: 13px; }
+.cd { font: 700 11px 'Alegreya Sans'; letter-spacing: .06em; color: var(--dim); display: inline-flex; gap: 4px; align-items: center; }
+.slots8 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 4px 0 2px; }
+.slots8 i { height: 22px; background: color-mix(in srgb, var(--gem) 30%, var(--well)); clip-path: var(--px2); display: block; box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--gem) 50%, var(--well-hi)); }
+.slots8 i.next { background: var(--well); box-shadow: inset 0 0 0 2px var(--gem); animation: blink 1.6s steps(2) infinite; }
+.slots8 i.lock { background: #080a10; box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.swatches { display: flex; gap: 6px; margin-top: 2px; }
+.swatches i { width: 26px; height: 26px; display: block; clip-path: var(--px2); box-shadow: inset 2px 2px 0 rgba(255,255,255,.18), inset -2px -2px 0 rgba(0,0,0,.35); }
+.big-card { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.big-card .head { display: flex; gap: 10px; align-items: center; }
+.big-card .head > div { flex: 1; min-width: 0; }
+
+/* ===== D: shelves ===== */
+.cab { --wood: #2c2018; --wood-hi: #4a3626; --wood-lo: #140e09; position: relative; padding: 10px 10px 4px; background: linear-gradient(#1d150f, #241a13); clip-path: var(--px3); box-shadow: inset 3px 3px 0 var(--wood-hi), inset -3px -3px 0 var(--wood-lo); }
+.cab.vault { --wood: #1d2735; --wood-hi: #3a4a62; --wood-lo: #080b11; background: linear-gradient(#111826, #182132); }
+.cab.vault::after { content: ''; position: absolute; inset: 6px; background: linear-gradient(115deg, transparent 30%, rgba(160,220,255,.07) 38%, transparent 44%, transparent 62%, rgba(160,220,255,.05) 68%, transparent 72%); pointer-events: none; }
+.cab .lbl { display: flex; justify-content: center; margin: -2px 0 8px; }
+.cab .lbl span { padding: 3px 12px 4px; background: #3a2c1c; color: #e2c98d; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #6a5332, inset -2px -2px 0 #1b130b; display: flex; gap: 6px; align-items: center; }
+.cab.vault .lbl span { background: #22324a; color: #bfe4f0; box-shadow: inset 2px 2px 0 #3e5676, inset -2px -2px 0 #0a1018; }
+.shelf { display: grid; grid-template-columns: repeat(4, 1fr); align-items: end; gap: 4px; padding: 0 4px; min-height: 76px; }
+.board { height: 8px; margin: 0 -10px 22px; background: var(--wood); box-shadow: inset 0 2px 0 var(--wood-hi), inset 0 -3px 0 var(--wood-lo), 0 4px 6px rgba(0,0,0,.5); position: relative; }
+.on-shelf { position: relative; border: 0; padding: 0; background: none; cursor: pointer; height: 74px; display: grid; place-items: end center; }
+.on-shelf img { width: 64px; height: 64px; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)); }
+.on-shelf .jar { width: 46px; height: 52px; margin-bottom: 2px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 16%, #0b0e15); clip-path: polygon(8px 0, calc(100% - 8px) 0, calc(100% - 8px) 6px, 100% 12px, 100% 100%, 0 100%, 0 12px, 8px 6px); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--c) 45%, transparent), inset -2px -2px 0 rgba(0,0,0,.4); }
+.on-shelf .jar .i { font-size: 22px; color: var(--c); }
+.on-shelf .ptag { position: absolute; left: 50%; bottom: -26px; transform: translateX(-50%); padding: 3px 6px; background: #e9dcc0; color: #2a2014; clip-path: var(--px2); box-shadow: inset -2px -2px 0 #b9a47e; font: 700 12px/1 'Alegreya', serif; display: flex; align-items: center; gap: 3px; white-space: nowrap; z-index: 1; }
+.on-shelf .ptag .i { font-size: 11px; color: #8a6a1c; }
+.cab.vault .ptag { background: #cfe7ee; box-shadow: inset -2px -2px 0 #8db3bf; } .cab.vault .ptag .i { color: #2a7f93; }
+.on-shelf .ptag.no { color: #8a3328; }
+.on-shelf.sel::before { content: ''; position: absolute; left: 50%; bottom: 0; width: 64px; height: 64px; margin-left: -32px; background: radial-gradient(closest-side, color-mix(in srgb, var(--rar, var(--c)) 45%, transparent), transparent); }
+.on-shelf:not(.sel) img, .on-shelf:not(.sel) .jar { transition: transform .12s; }
+.on-shelf:hover img { transform: translateY(-2px); }
+.scrim { position: absolute; inset: 0; z-index: 5; background: rgba(3,4,8,.55); display: none; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; transform: translateY(105%); transition: transform .22s ease-out; padding: 0 10px calc(10px + env(safe-area-inset-bottom)); }
+.sheet .panel { padding: 14px 14px 14px; display: flex; flex-direction: column; gap: 8px; border-top: 2px solid var(--rar); }
+.sheet .grab { width: 40px; height: 4px; background: #3a4256; margin: 0 auto 2px; }
+.sheet .head { display: flex; gap: 12px; align-items: center; }
+.sheet .head > div { flex: 1; }
+.sheet .name { font-size: 19px; }
+.sheet .acts { display: flex; gap: 8px; margin-top: 4px; }
+.sheet .acts .buy { flex: 1; }
+.sheet .acts .buy.ghost { flex: none; background: transparent; box-shadow: inset 0 0 0 2px #333c52; color: var(--text); }
+.phone.open .scrim { display: block; } .phone.open .sheet { transform: none; }
+/* ---- round two: dialogue on the scene, Shop | Vault tabs ---- */
+.cold::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(40,90,140,.38), rgba(20,50,90,.5)); mix-blend-mode: color; pointer-events: none; transition: opacity .25s; }
+.art .tint { position: absolute; inset: 0; pointer-events: none; transition: opacity .3s; opacity: 0; background: linear-gradient(rgba(30,70,120,.45), rgba(10,30,60,.55)); mix-blend-mode: color; }
+.art > img { transition: filter .3s; } .vaulted .art:has(.tint.dark) > img { filter: brightness(.55) saturate(.75); }
+.scroll > * { flex-shrink: 0; }
+.vaulted .art .tint { opacity: 1; } .art .tint.none { display: none; }
+/* speech bubble beside his head */
+.bub { position: absolute; z-index: 2; left: 236px; top: 64px; max-width: 132px; padding: 6px 9px 7px; background: rgba(240,243,247,.95); color: #141822; clip-path: var(--px2); font: 600 13px/1.2 'Alegreya', serif; }
+.bub-tail { position: absolute; z-index: 2; left: 230px; top: 84px; width: 8px; height: 8px; background: rgba(240,243,247,.95); clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+.bub, .strip .line, .sign .line { animation: pop .25s steps(3); }
+@keyframes pop { from { opacity: 0; transform: translateY(3px); } }
+/* RPG text box across the foot of the scene */
+.strip { position: absolute; z-index: 2; left: 29px; right: 29px; bottom: 8px; padding: 7px 11px 8px; background: rgba(9,11,17,.9); clip-path: var(--px3); box-shadow: inset 2px 2px 0 #3a4560, inset -2px -2px 0 #05060a; }
+.strip .who { position: absolute; top: 6px; right: 11px; font: 600 9px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--brass); }
+.strip .line { font: 600 15px/1.25 'Alegreya', serif; color: var(--ink); }
+.strip .line::after { content: '▾'; color: var(--dim); font-size: 11px; margin-left: 6px; animation: blink 1.2s steps(2) infinite; }
+/* hanging wooden sign under the lantern */
+.sign { position: absolute; z-index: 2; left: 226px; top: 54px; width: 142px; }
+.sign::before, .sign::after { content: ''; position: absolute; top: -12px; width: 2px; height: 12px; background: #6b5434; }
+.sign::before { left: 18px; } .sign::after { right: 18px; }
+.sign .line { padding: 6px 9px 7px; background: #3a2c1c; color: #f1e2bd; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #6a5332, inset -2px -2px 0 #1b130b; font: 600 13px/1.2 'Alegreya', serif; }
+.vaulted .sign .line { background: #22324a; color: #d8eef6; box-shadow: inset 2px 2px 0 #3e5676, inset -2px -2px 0 #0a1018; }
+
+/* tabs: 1 segmented (gold | gem) */
+.seg2 { display: grid; grid-template-columns: 1fr 1fr; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); padding: 3px; flex: none; }
+.seg2 button { border: 0; background: transparent; color: var(--dim); min-height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; clip-path: var(--px2); font: 600 12px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; }
+.seg2 button .i { font-size: 16px; }
+.seg2 button.on { background: #202a40; color: var(--ink); box-shadow: inset 0 2px 0 var(--hi); }
+.seg2 button.on.v { background: #1a3040; }
+/* tabs: 2 folder tabs rising into the content, joined to the panel below */
+.folders { display: flex; gap: 4px; padding: 0 6px; margin-bottom: -12px; position: relative; z-index: 1; flex: none; }
+.folders button { flex: 1; border: 0; cursor: pointer; min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 12px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase;
+  background: #121624; color: var(--dim); clip-path: polygon(3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% 100%, 0 100%, 0 3px, 3px 3px); box-shadow: inset 2px 2px 0 #20263a; }
+.folders button .i { font-size: 16px; }
+.folders button.on { background: var(--card); color: var(--ink); box-shadow: inset 2px 2px 0 var(--hi); padding-bottom: 0; }
+.folders button.on.v { background: #172636; box-shadow: inset 2px 2px 0 #2e4a62; }
+.folders button.on .cur { color: var(--brass); }
+.binder { padding: 10px 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.binder.v { background: #172636; box-shadow: inset 2px 2px 0 #2e4a62, inset -2px -2px 0 #070d14; }
+.binder .row, .binder .feat { box-shadow: inset 2px 2px 0 #3a4560, inset -2px -2px 0 var(--lo); background: #222839; }
+.binder.v .row, .binder.v .feat { background: #1d3246; box-shadow: inset 2px 2px 0 #36587a, inset -2px -2px 0 #070d14; }
+.binder .sub { font: 600 11px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); display: flex; align-items: center; gap: 6px; margin: 2px 2px -4px; }
+.binder .sub .i { font-size: 13px; color: var(--brass); } .binder.v .sub .i { color: var(--gem); }
+/* tabs: 3 plates on the scene's foot */
+.foot-tabs { position: absolute; z-index: 2; left: 12px; right: 12px; bottom: 10px; display: flex; gap: 8px; }
+.foot-tabs button { flex: 1; border: 0; cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px; background: rgba(7,8,12,.86); clip-path: var(--px2); box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; color: var(--dim); }
+.foot-tabs button .t { font: 600 11px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.foot-tabs button .n { display: flex; align-items: center; gap: 4px; font: 700 16px/1 'Alegreya', serif; color: var(--text); }
+.foot-tabs button .n .i { font-size: 13px; }
+.foot-tabs button.on { background: rgba(32,42,64,.95); color: var(--ink); box-shadow: inset 0 0 0 2px var(--touch); }
+.foot-tabs button.on.v { background: rgba(26,48,64,.95); box-shadow: inset 0 0 0 2px var(--gem); }
+.foot-tabs button.on .n { color: var(--ink); }
+/* tabs: 4 two pennants hung from a rod */
+.rod { flex: none; position: relative; height: 66px; margin: -2px -4px 0; }
+.rod::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 6px; background: #3a2c20; box-shadow: inset 0 2px 0 #5a4430, inset 0 -2px 0 #1e150e; }
+.rod .flags { position: absolute; left: 10px; right: 10px; top: 8px; display: flex; gap: 10px; }
+.rod button { flex: 1; border: 0; cursor: pointer; height: 50px; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 12px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--dim);
+  background: #161b29; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 10px), 0 100%); box-shadow: inset 0 2px 0 #262d42; transition: height .15s; }
+.rod button .i { font-size: 16px; }
+.rod button.on { height: 58px; background: #2a3550; color: var(--ink); box-shadow: inset 0 2px 0 #4a5878; }
+.rod button.on.v { background: #1d3a50; box-shadow: inset 0 2px 0 #3e6884; }
+.rod button.on .i { color: var(--brass); } .rod button.on.v .i { color: var(--gem); }
+.c-gem .feat .velvet { --rar: var(--gem); }
+.vault-feat .velvet { background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--rar) 30%, #0d1a28) 0%, #07101a 70%); }
+.slotline { display: flex; gap: 3px; margin-top: 4px; }
+.slotline i { width: 14px; height: 12px; display: block; clip-path: var(--px2); background: color-mix(in srgb, var(--gem) 32%, var(--well)); }
+.slotline i.next { background: var(--well); box-shadow: inset 0 0 0 2px var(--gem); animation: blink 1.6s steps(2) infinite; }
+.slotline i.lock { background: #080a10; }
+.note { font-size: 12.5px; color: var(--dim); display: flex; align-items: center; gap: 6px; padding: 0 2px; }
+.note .i { font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Shop tab — round two</h1>
+  <p class="lede">B's scene with the shopkeeper's line moved onto the art, and the wares split into two tabs: the Shop (gold, this run) and the Vault (gems, kept for good). Switching to the Vault changes his line and cools the scene. The stand-in wares are the same as in round one.</p>
+  <div class="grid">
+    <div class="col"><h2>A · Bubble + switch</h2><p>A speech bubble beside his head. Under the scene, a plain Shop | Vault switch. Each tab opens with its featured piece on velvet (a rare in the Shop, a Vault relic in the Vault), then rows. The scene is unchanged on either tab apart from his line.</p><div class="phone" id="A"></div></div>
+    <div class="col"><h2>B · Text box + folder tabs</h2><p>An RPG text box across the foot of the scene, with his name in the corner. The tabs are folder tabs joined to a binder that holds the wares; the Vault binder is cold blue steel and the scene cools to match.</p><div class="phone" id="B"></div></div>
+    <div class="col"><h2>C · Tabs on the scene</h2><p>The tabs live on the art itself as two plates at the counter's foot, each with its purse (gold on Shop, gems on Vault), so the scene doubles as the switch. His line hangs on a wooden sign by the lantern and turns to iron in the Vault.</p><div class="phone" id="C"></div></div>
+    <div class="col"><h2>D · Pennants</h2><p>Two cloth pennants hang from a rod under the scene; the chosen one drops lower. Bubble line on the art. The Vault turns the scene dark and blue, as if he has led you into the back room.</p><div class="phone" id="D"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {"coins":"<path d=\"M13.744 17.736a6 6 0 1 1-7.48-7.48\"/><path d=\"M15 6h1v4\"/><path d=\"m6.134 14.768.866-.5 2 3.464\"/><circle cx=\"16\" cy=\"8\" r=\"6\"/>","gem":"<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\"/><path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\"/><path d=\"M2 9h20\"/>","snowflake":"<path d=\"m10 20-1.25-2.5L6 18\"/><path d=\"M10 4 8.75 6.5 6 6\"/><path d=\"m14 20 1.25-2.5L18 18\"/><path d=\"m14 4 1.25 2.5L18 6\"/><path d=\"m17 21-3-6h-4\"/><path d=\"m17 3-3 6 1.5 3\"/><path d=\"M2 12h6.5L10 9\"/><path d=\"m20 10-1.5 2 1.5 2\"/><path d=\"M22 12h-6.5L14 15\"/><path d=\"m4 10 1.5 2L4 14\"/><path d=\"m7 21 3-6-1.5-3\"/><path d=\"m7 3 3 6h4\"/>","dices":"<rect width=\"12\" height=\"12\" x=\"2\" y=\"10\" rx=\"2\" ry=\"2\"/><path d=\"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6\"/><path d=\"M6 18h.01\"/><path d=\"M10 14h.01\"/><path d=\"M15 6h.01\"/><path d=\"M18 9h.01\"/>","arrow-big-up-dash":"<path d=\"M9 13a1 1 0 0 0-1-1H5.061a1 1 0 0 1-.75-1.811l6.836-6.835a1.207 1.207 0 0 1 1.707 0l6.835 6.835a1 1 0 0 1-.75 1.811H16a1 1 0 0 0-1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z\"/><path d=\"M9 20h6\"/>","heart-plus":"<path d=\"m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49\"/><path d=\"M15 15h6\"/><path d=\"M18 12v6\"/>","sparkles":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>","hourglass":"<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\"/><path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","store":"<path d=\"M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5\"/><path d=\"M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244\"/><path d=\"M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05\"/>","chevrons-up":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","target":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","leaf":"<path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z\"/><path d=\"M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>","settings":"<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","crown":"<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\"/><path d=\"M5 21h14\"/>","palette":"<path d=\"M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\"/><circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","wand-sparkles":"<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\"/><path d=\"m14 7 3 3\"/><path d=\"M5 6v4\"/><path d=\"M19 14v4\"/><path d=\"M10 2v2\"/><path d=\"M7 8H3\"/><path d=\"M21 16h-4\"/><path d=\"M11 3H9\"/>","heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>","heart-pulse":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","crosshair":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"22\" x2=\"18\" y1=\"12\" y2=\"12\"/><line x1=\"6\" x2=\"2\" y1=\"12\" y2=\"12\"/><line x1=\"12\" x2=\"12\" y1=\"6\" y2=\"2\"/><line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"18\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>","shield-half":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"M12 22V2\"/>","droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","package":"<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\"/><path d=\"M12 22V12\"/><polyline points=\"3.29 7 12 12 20.71 7\"/><path d=\"m7.5 4.27 9 5.15\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","infinity":"<path d=\"M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8\"/>"};
+const ic = (n, extra = '') => `<svg class="i ${extra}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const IM = (id) => `../../public/sprites/items/${id}.png`;
+const GOLD = 1540, GEMS = 85;
+const fmt = (n) => n.toLocaleString('en-US');
+const STAT = { phys: ['Phys', 'sword', 'c-phys'], magic: ['Magic', 'wand-sparkles', 'c-magic'], heal: ['Heal', 'heart-pulse', 'c-heal'], hp: ['HP', 'heart', 'c-health'], crit: ['Crit', 'crosshair', 'c-crit'], life: ['Lifesteal', 'droplet', 'c-life'], exp: ['EXP', 'star', 'c-exp'], true: ['True', 'zap', 'c-true'] };
+const bon = (b) => `<span class="b ${STAT[b[0]][2]}">${ic(STAT[b[0]][1])}<b>${b[1]}</b><span>${STAT[b[0]][0]}</span></span>`;
+
+// stand-in wares. cur g = gold (this run), m = gems (kept)
+const RARES = [
+  { id: 'crystal-longbow', name: 'Crystal Longbow', r: 'rare', cur: 'g', p: 1600, b: [['true', '+50%']] },
+  { id: 'duelists-signet', name: "Duelist's Signet", r: 'rare', cur: 'g', p: 1400, b: [['phys', '+18%'], ['crit', '+10%'], ['life', '+1%']] },
+  { id: 'stormcaller-staff', name: 'Stormcaller Staff', r: 'rare', cur: 'g', p: 1500, b: [['magic', '+30%'], ['crit', '+10%']] },
+];
+const ITEMS = [
+  { id: 'steel-sword', name: 'Steel Sword', r: 'common', cur: 'g', p: 180, b: [['phys', '+5%']] },
+  { id: 'blessed-censer', name: 'Blessed Censer', r: 'common', cur: 'g', p: 180, b: [['heal', '+6%']] },
+  { id: 'assassins-edge', name: "Assassin's Edge", r: 'common', cur: 'g', p: 220, b: [['crit', '+5%']] },
+  ...RARES,
+];
+const TONICS = [
+  { k: 'draught', name: 'Healing Draught', icon: 'heart-plus', c: 'c-heal', cur: 'g', p: 120, eff: 'Heal 30% of max HP.', cd: 'Once a day' },
+  { k: 'crit', name: 'Hawk Tonic', icon: 'target', c: 'c-crit', cur: 'g', p: 220, eff: '+10% crit for 2 days.', cd: 'Ready' },
+  { k: 'exp', name: "Scholar's Tonic", icon: 'star', c: 'c-exp', cur: 'g', p: 260, eff: '+25% EXP for 2 days.', cd: '1d left' },
+];
+const SERVICES = [
+  { k: 'enchant', name: 'Enchant', icon: 'sparkles', c: 'c-magic', cur: 'g', p: 900, eff: 'Enchant one worn item.', climb: [2, 6] },
+  { k: 'over', name: 'Overdrive', icon: 'arrow-big-up-dash', c: 'c-phys', cur: 'g', p: 400, eff: 'Overdrive one skill.', climb: [1, 5] },
+  { k: 'reroll', name: 'Reroll', icon: 'dices', c: 'c-true', cur: 'g', p: 150, eff: 'Reroll one skill.', climb: [0, 5] },
+];
+const VAULT = [
+  { k: 'slot', name: 'Seventh Slot', icon: 'lock', c: 'c-gem', cur: 'm', p: 300, eff: 'One more item slot.', keep: true },
+  { k: 'talent', name: 'Talent Point', icon: 'chevrons-up', c: 'c-gem', cur: 'm', p: 40, eff: 'One talent point.', keep: true },
+  { k: 'freeze', name: 'Streak Freeze', icon: 'snowflake', c: 'c-gem', cur: 'm', p: 25, eff: 'Covers one missed day.', keep: true },
+  { id: 'scales-of-fate', name: 'Coin of Fate', r: 'relic', cur: 'm', p: 150, b: [['hp', '+28%'], ['exp', '+15%']], eff: 'Boss skills have a 50% chance to fail.' },
+  { k: 'theme', name: 'Ember Theme', icon: 'palette', c: 'c-gem', cur: 'm', p: 120, eff: 'A new look for the game.', keep: true },
+  { k: 'pouch', name: 'Gold Pouch', icon: 'coins', c: 'c-gold', cur: 'm', p: 50, eff: '+1,000 gold.' },
+];
+const ALL = [...ITEMS, ...TONICS, ...SERVICES, ...VAULT];
+const can = (w) => (w.cur === 'g' ? GOLD : GEMS) >= w.p;
+const curIc = (w) => ic(w.cur === 'g' ? 'coins' : 'gem', w.cur === 'g' ? 'c-gold' : 'c-gem');
+const price = (w) => `<span class="price ${can(w) ? '' : 'no'}">${curIc(w)}${fmt(w.p)}</span>`;
+const buyBtn = (w, label = 'Buy') => `<button class="buy ${can(w) ? '' : 'no'}">${label ? label + ' ' : ''}${price(w)}</button>`;
+const rarOf = (w) => w.r || 'none';
+const sock = (w, cls = '', size = '') => `<span class="sock r-${rarOf(w)} ${w.c || ''} ${cls}" style="${size}">${w.id ? `<img src="${IM(w.id)}" alt="">` : ic(w.icon)}</span>`;
+const climb = (w) => w.climb ? `<span class="climb">${Array.from({ length: w.climb[1] }, (_, i) => `<i class="${i < w.climb[0] ? 'f' : ''}"></i>`).join('')}</span>` : '';
+const what = (w) => w.b ? `<div class="bons">${w.b.map(bon).join('')}</div>${w.eff ? `<div class="eff">${w.eff}</div>` : ''}` : `<div class="eff">${w.eff}</div>`;
+const tagLine = (w) => w.r ? `<span class="rar">${w.r}</span>` : w.keep ? `<span class="keep">Kept for good</span>` : w.climb ? `<span class="keep">Price climbs ${climb(w)}</span>` : w.cd ? `<span class="keep">${w.cd}</span>` : `<span class="keep">This run</span>`;
+const banner = (title, icon, extra = '', cls = '') => `<div class="banner ${cls}"><span class="medal">${ic(icon)}</span><span class="cloth">${title}${extra ? `<em>${extra}</em>` : ''}</span></div>`;
+const purse = (style) => `<span class="purse" style="${style}"><span class="plate">${ic('coins', 'c-gold')}${fmt(GOLD)}</span><span class="plate">${ic('gem', 'c-gem')}${GEMS}</span></span>`;
+const tabbar = `<div class="tabbar"><span>${ic('swords')}Skills</span><span>${ic('scroll-text')}Quests</span><span class="on">${ic('store')}Shop</span><span>${ic('shield')}Hero</span></div>`;
+const head = (over = '', withPurse = true) => `<div class="home"><div class="crop"><div class="art"><img src="sprites/shop.png" alt="">${over}</div>
+${withPurse ? purse('left:12px;top:12px') : ''}</div><span class="menu">${ic('settings')}</span></div>`;
+const LINES = { common: 'Plain steel. Honest.', uncommon: 'Not bad at all.', rare: 'Rare. Fell off a boss.', relic: 'Gone if you fall.', none: 'Fresh this morning.' };
+const lineFor = (w) => w.keep ? 'That one stays with you.' : w.k === 'pouch' ? 'Coin for gems. Fair.' : w.climb ? 'Dearer every time.' : LINES[rarOf(w)];
+
+
+const LINE = { g: 'Back again? Still breathing, I see.', m: 'Gems. Now we talk.' };
+const LINE_SHORT = { g: 'Still breathing, I see.', m: 'Gems. Now we talk.' };
+const VAULT_FEAT = VAULT[3];
+const mount = (root, draw, state) => {
+  const render = () => {
+    const sc = root.querySelector('.scroll'); const top = state.lastTab === state.tab && sc ? sc.scrollTop : 0;
+    state.lastTab = state.tab;
+    root.innerHTML = draw(state);
+    const sc2 = root.querySelector('.scroll'); if (sc2) sc2.scrollTop = top;
+    root.classList.toggle('vaulted', state.tab === 'm');
+    root.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { state.tab = b.dataset.tab; render(); }));
+    root.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => { state.feat = (state.feat + +b.dataset.step + RARES.length) % RARES.length; render(); }));
+  };
+  render();
+};
+const scene = (over, withPurse = true, tint = '') => `<div class="home"><div class="crop"><div class="art"><img src="sprites/shop.png" alt=""><span class="tint ${tint}"></span>${over}</div>
+${withPurse ? purse('left:12px;top:12px') : ''}</div><span class="menu">${ic('settings')}</span></div>`;
+const bubble = (t) => `<span class="bub-tail"></span><span class="bub">${t}</span>`;
+const row = (x) => `<div class="panel row">${sock(x)}<div class="mid"><div class="name">${x.name}</div>${x.b ? `<div class="bons">${x.b.map(bon).join('')}</div>` : `<div class="eff">${x.eff}</div>`}${x.climb ? `<div style="margin-top:3px">${climb(x)}</div>` : ''}${x.k === 'slot' ? `<div class="slotline">${'<i></i>'.repeat(6)}<i class="next"></i><i class="lock"></i></div>` : ''}</div>${buyBtn(x, '')}</div>`;
+const featRare = (s) => { const w = RARES[s.feat]; return `<div class="panel feat r-${w.r}"><div class="velvet"><span class="ribbon">Rare of the run</span><span class="dots">${RARES.map((_, i) => `<i class="${i === s.feat ? 'on' : ''}"></i>`).join('')}</span>
+<button class="arrowl" data-step="-1" aria-label="Previous">‹</button><img src="${IM(w.id)}" alt=""><button class="arrowr" data-step="1" aria-label="Next">›</button></div>
+<div class="body"><div class="name" style="font-size:19px">${w.name}</div>${what(w)}<div class="foot"><span class="keep">Gone when you fall</span>${buyBtn(w)}</div></div></div>`; };
+const featVault = () => { const w = VAULT_FEAT; return `<div class="panel feat vault-feat r-${w.r}"><div class="velvet"><span class="ribbon">Vault relic</span><img src="${IM(w.id)}" alt=""></div>
+<div class="body"><div class="name" style="font-size:19px">${w.name}</div>${what(w)}<div class="foot"><span class="keep">Only here · lost if you fall</span>${buyBtn(w)}</div></div></div>`; };
+const VAULT_ROWS = VAULT.filter((x) => x !== VAULT_FEAT);
+// the two tab bodies, with banners (A, C, D) or sub-heads inside a binder (B)
+const shopBody = (s, sub) => `${featRare(s)}
+${sub('Wares', 'swords')}<div class="rows">${ITEMS.slice(0, 3).map(row).join('')}</div>
+${sub('Tonics', 'flame')}<div class="rows">${TONICS.map(row).join('')}</div>
+${sub('Services', 'sparkles', 'price climbs')}<div class="rows">${SERVICES.map(row).join('')}</div>
+<div class="note">${ic('refresh-cw')}New stock when you fall.</div>`;
+const vaultBody = (sub) => `${featVault()}
+${sub('For good', 'gem', 'never lost', 'gems')}<div class="rows">${VAULT_ROWS.slice(0, 4).map(row).join('')}</div>
+${sub('For this run', 'coins', '', 'gems')}<div class="rows">${row(VAULT_ROWS[4])}</div>`;
+const bannerSub = (t, i, e, cls) => banner(t, i, e, cls);
+const binderSub = (t, i) => `<div class="sub">${ic(i)}${t}</div>`;
+
+/* A · bubble + switch */
+mount(document.getElementById('A'), (s) => scene(bubble(LINE[s.tab]), true, "none") + `<div class="scroll">
+<div class="seg2"><button data-tab="g" class="${s.tab === 'g' ? 'on' : ''}">${ic('store', s.tab === 'g' ? 'c-gold' : '')}Shop</button><button data-tab="m" class="v ${s.tab === 'm' ? 'on' : ''}">${ic('gem', s.tab === 'm' ? 'c-gem' : '')}Vault</button></div>
+${s.tab === 'g' ? shopBody(s, bannerSub) : vaultBody(bannerSub)}</div>` + tabbar, { tab: 'g', feat: 0 });
+
+/* B · text box + folder tabs */
+mount(document.getElementById('B'), (s) => scene(`<div class="strip"><span class="who">Shopkeeper</span><div class="line">${LINE[s.tab]}</div></div>`) + `<div class="scroll" style="gap:0">
+<div class="folders"><button data-tab="g" class="${s.tab === 'g' ? 'on' : ''}">${ic('store', 'cur')}Shop</button><button data-tab="m" class="v ${s.tab === 'm' ? 'on' : ''}">${ic('gem', s.tab === 'm' ? 'c-gem' : '')}Vault</button></div>
+<div class="panel binder ${s.tab === 'm' ? 'v' : ''}" style="margin-top:12px">${s.tab === 'g' ? shopBody(s, binderSub) : vaultBody(binderSub)}</div></div>` + tabbar, { tab: 'g', feat: 0 });
+
+/* C · tabs on the scene */
+mount(document.getElementById('C'), (s) => scene(`<span class="sign"><span class="line">${LINE_SHORT[s.tab]}</span></span>`, false) .replace('</div><span class="menu">', `<div class="foot-tabs"><button data-tab="g" class="${s.tab === 'g' ? 'on' : ''}"><span class="t">Shop</span><span class="n">${ic('coins', 'c-gold')}${fmt(GOLD)}</span></button><button data-tab="m" class="v ${s.tab === 'm' ? 'on' : ''}"><span class="t">Vault</span><span class="n">${ic('gem', 'c-gem')}${GEMS}</span></button></div></div><span class="menu">`)
+  + `<div class="scroll">${s.tab === 'g' ? shopBody(s, bannerSub) : vaultBody(bannerSub)}</div>` + tabbar, { tab: 'g', feat: 0 });
+
+/* D · pennants */
+mount(document.getElementById('D'), (s) => scene(bubble(LINE[s.tab]), true, 'dark') + `<div class="scroll" style="padding-top:0">
+<div class="rod"><div class="flags"><button data-tab="g" class="${s.tab === 'g' ? 'on' : ''}">${ic('coins')}Shop</button><button data-tab="m" class="v ${s.tab === 'm' ? 'on' : ''}">${ic('gem')}Vault</button></div></div>
+${s.tab === 'g' ? shopBody(s, bannerSub) : vaultBody(bannerSub)}</div>` + tabbar, { tab: 'm', feat: 0 });
+</script>
+</body>
+</html>
