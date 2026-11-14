@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { createPinia, setActivePinia } from 'pinia';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHabit, createRng, ITEM_CATALOG } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -11,7 +11,15 @@ import { useServices } from './useServices';
 const item = ITEM_CATALOG.find((candidate) => candidate.type !== 'consumable' && candidate.bonuses.length > 0)!;
 
 describe('useServices', () => {
-  beforeEach(() => setActivePinia(createPinia()));
+  // The slot buy ignores a second tap within a moment, so each test starts a while after the last one.
+  let clock = Date.parse('2026-11-14T12:00:00Z');
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.useFakeTimers({ toFake: ['Date'] });
+    clock += 10_000;
+    vi.setSystemTime(clock);
+  });
+  afterEach(() => vi.useRealTimers());
 
   // The reveal is module-scoped, so clear it between tests.
   afterEach(() => useServices().dismissReveal());
@@ -71,6 +79,16 @@ describe('useServices', () => {
     expect(services.buySlot()).toBe(false);
     expect(characterStore.character.slotUpgrades).toBe(1);
     expect(useActivityLogStore().entries.filter((entry) => entry.kind === 'item-slots-gained')).toHaveLength(1);
+  });
+
+  it('a quick double tap buys one slot step even with gold for both', () => {
+    const { characterStore, services } = setup(1_000_000);
+    expect(services.buySlot()).toBe(true);
+    expect(services.buySlot()).toBe(false);
+    expect(characterStore.character.slotUpgrades).toBe(1);
+    vi.setSystemTime(clock + 5_000);
+    expect(services.buySlot()).toBe(true);
+    expect(characterStore.character.slotUpgrades).toBe(2);
   });
 
   it('a skill deleted meanwhile buys nothing', () => {

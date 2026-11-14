@@ -25,6 +25,11 @@ const rng = createRng();
 // Module-scoped because the reveal is mounted once, like the item drop queue.
 const revealed = ref<ItemDef | null>(null);
 
+// A second slot buy within this long of the last is a double tap, not a choice:
+// the next step costs more but can still be afforded, so nothing else stops it.
+const SLOT_GUARD_MS = 500;
+let lastSlotAt = -Infinity;
+
 export function useServices() {
   const characterStore = useCharacterStore();
   const habitStore = useHabitStore();
@@ -72,9 +77,12 @@ export function useServices() {
   }
 
   function buySlot(): boolean {
+    const since = Date.now() - lastSlotAt;
+    if (since >= 0 && since < SLOT_GUARD_MS) return false;
     const price = priceOf('slot');
     const result = buySlotRule(characterStore.character, bossStore.boss.index);
     if (!result) return false;
+    lastSlotAt = Date.now();
     characterStore.setCharacter(result.character);
     activityLogStore.addEntry({ kind: 'item-slots-gained', slots: result.slots, gold: price });
     return true;
