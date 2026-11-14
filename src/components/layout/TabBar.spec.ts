@@ -62,20 +62,22 @@ describe('TabBar', () => {
     expect(talents.find('.tab-count').exists()).toBe(false);
   });
 
-  it('counts the unspent talent points on Talents from level 5, and drops the count at 0', async () => {
+  it('puts a pip on Talents while the next rank is affordable on an open node, with no number', async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 5 });
+    characterStore.setCharacter({ ...characterStore.character, level: 5, gold: 99 });
     const wrapper = mount(TabBar);
     expect(tab(wrapper, 'talents').classes()).not.toContain('sealed');
-    expect(tab(wrapper, 'talents').find('.tab-count').text()).toBe('4');
+    expect(tab(wrapper, 'talents').find('.tab-pip').exists()).toBe(false);
 
-    characterStore.spendTalent('might');
+    characterStore.setCharacter({ ...characterStore.character, gold: 100 });
     await wrapper.vm.$nextTick();
-    expect(tab(wrapper, 'talents').find('.tab-count').text()).toBe('3');
-
-    characterStore.setCharacter({ ...characterStore.character, talents: { might: 3, precision: 1 } });
-    await wrapper.vm.$nextTick();
+    expect(tab(wrapper, 'talents').find('.tab-pip').exists()).toBe(true);
     expect(tab(wrapper, 'talents').find('.tab-count').exists()).toBe(false);
+
+    // The 4th rank needs a gem the account doesn't have.
+    characterStore.setCharacter({ ...characterStore.character, gold: 5000, talents: { might: 3 } });
+    await wrapper.vm.$nextTick();
+    expect(tab(wrapper, 'talents').find('.tab-pip').exists()).toBe(false);
   });
 
   it('puts a pip on Trials while a new trial waits unseen', async () => {

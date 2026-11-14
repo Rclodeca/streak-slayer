@@ -1,27 +1,33 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { canSpendTalent, talentRank } from '../../game-engine';
+import { talentRank } from '../../game-engine';
 import type { TalentDef } from '../../game-engine';
+import { useTalentPurchase } from '../../composables/useTalentPurchase';
 import { useCharacterStore } from '../../store/characterStore';
+import CurrencyChips from '../ui/CurrencyChips.vue';
 import Modal from '../ui/Modal.vue';
 import { TALENT_LOOK, talentAmount, talentDescription, talentState } from './talentDisplay';
 
 // A node's popup (docs/mockups/pixel-talents.html, "Tap a node"): what it does,
-// what the rank in hand gives and what the next would. Spent points can't be
-// taken back, so Learn is the confirm: the tap on the node, then this one. It
-// stays up so the next rank is one more tap, and greys out when it can't be taken.
+// what the rank in hand gives and what the next would. A bought rank can't be
+// taken back, so Learn, with the next rank's price on it, is the confirm: the
+// tap on the node, then this one. It stays up so the next rank is one more tap,
+// and greys out when it can't be bought ("Not enough" when the purse is short).
 const props = defineProps<{ def: TalentDef | null }>();
 const emit = defineEmits<{ close: [] }>();
 const characterStore = useCharacterStore();
+const purchase = useTalentPurchase();
 
 const rank = computed(() => (props.def ? talentRank(characterStore.character, props.def.id) : 0));
 const look = computed(() => (props.def ? TALENT_LOOK[props.def.id] : null));
 const full = computed(() => !!props.def && rank.value >= props.def.maxRank);
 const state = computed(() => (props.def ? talentState(characterStore.character, props.def) : 'open'));
-const canLearn = computed(() => !!props.def && canSpendTalent(characterStore.character, props.def.id));
+const canLearn = computed(() => !!props.def && purchase.canBuy(props.def.id));
+// Open and not full, so only the price stands in the way.
+const short = computed(() => !full.value && state.value !== 'locked' && !canLearn.value);
 
 function learn() {
-  if (props.def) characterStore.spendTalent(props.def.id);
+  if (props.def) purchase.buy(props.def.id);
 }
 </script>
 
@@ -48,7 +54,7 @@ function learn() {
       </div>
       <button type="button" class="learn primary-button" :disabled="!canLearn" @click="learn">
         <template v-if="full">Full</template>
-        <template v-else>Learn <span class="count">1</span></template>
+        <template v-else>{{ short ? 'Not enough' : 'Learn' }} <CurrencyChips :gold="purchase.cost.value.gold" :gems="purchase.cost.value.gems" /></template>
       </button>
     </div>
   </Modal>

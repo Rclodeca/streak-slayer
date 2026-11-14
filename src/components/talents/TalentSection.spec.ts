@@ -3,8 +3,9 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { talentPointsUnspent, talentRank } from '../../game-engine';
+import { talentRank } from '../../game-engine';
 import type { TalentId } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import TalentSection from './TalentSection.vue';
 
@@ -32,9 +33,10 @@ describe('TalentSection', () => {
   const node = (wrapper: ReturnType<typeof mount>, name: string) => wrapper.findAll('.cell').find((cell) => cell.find('.nm').text() === name)!;
   const plinth = (wrapper: ReturnType<typeof mount>, name: string) => wrapper.findAll('.pl').find((pl) => pl.text().startsWith(name))!;
 
-  function heroAt(level: number, talents?: Partial<Record<TalentId, number>>) {
+  function heroAt(level: number, talents?: Partial<Record<TalentId, number>>, gold = 5000, gems = 0) {
     const store = useCharacterStore();
-    store.setCharacter({ ...store.character, level, talents });
+    store.setCharacter({ ...store.character, level, talents, gold });
+    useAccountStore().initFromSave({ gems, highestLevel: level }, level);
     return store;
   }
 
@@ -45,16 +47,21 @@ describe('TalentSection', () => {
     expect(wrapper.find('.cell').exists()).toBe(false);
   });
 
-  it('shows the banner with the points to spend', () => {
-    heroAt(9, { might: 2 });
+  it('shows the gold and gems in the banner, and that talents are kept', () => {
+    heroAt(9, { might: 2 }, 250, 3);
     const wrapper = mountSection();
     expect(wrapper.find('.section-title').text()).toContain('Talents');
-    expect(wrapper.find('.points .count').text()).toBe('6');
+    expect(wrapper.find('.talent-header .currency .gold .count').text()).toBe('250');
+    expect(wrapper.find('.talent-header .currency .gems .count').text()).toBe('3');
+    expect(wrapper.text()).toContain('Kept through death.');
+    expect(wrapper.text()).not.toMatch(/points?/i);
   });
 
-  it('greys the points when none are left', () => {
-    heroAt(5, { might: 3, precision: 1 });
-    expect(mountSection().find('.points .count').classes()).toContain('zero');
+  it('greys an empty purse', () => {
+    heroAt(5, { might: 3 }, 0, 0);
+    const wrapper = mountSection();
+    expect(wrapper.find('.talent-header .gold .count').classes()).toContain('zero');
+    expect(wrapper.find('.talent-header .gems .count').classes()).toContain('zero');
   });
 
   it('shows the Damage shoot from its top node down, a node each with its name', () => {
@@ -138,14 +145,14 @@ describe('TalentSection', () => {
       expect(q('.talent-popup .plate.next')?.textContent).toContain('+2%');
     });
 
-    it('spends a point with Learn, and shows the new rank', async () => {
-      const store = heroAt(9);
+    it('buys a rank with Learn for its gold, and shows the new rank', async () => {
+      const store = heroAt(9, undefined, 150);
       const wrapper = mountSection();
       await node(wrapper, 'Might').find('button').trigger('click');
       q('.talent-popup .learn')!.click();
       await wrapper.vm.$nextTick();
       expect(talentRank(store.character, 'might')).toBe(1);
-      expect(talentPointsUnspent(store.character)).toBe(7);
+      expect(store.character.gold).toBe(50);
       expect(q('.talent-popup .plate.now')?.textContent).toContain('Now · 1/3');
       expect(node(wrapper, 'Might').findAll('.pip.lit')).toHaveLength(1);
     });
@@ -170,11 +177,27 @@ describe('TalentSection', () => {
       expect(talentRank(store.character, 'precision')).toBe(0);
     });
 
-    it('greys Learn out with no points left', async () => {
-      heroAt(5, { might: 3, precision: 1 });
+    it('reads the next rank’s cost on Learn', async () => {
+      heroAt(9, { might: 3 }, 1000, 1);
       const wrapper = mountSection();
       await node(wrapper, 'Precision').find('button').trigger('click');
-      expect((q('.talent-popup .learn') as HTMLButtonElement).disabled).toBe(true);
+      const learn = q('.talent-popup .learn') as HTMLButtonElement;
+      expect(learn.disabled).toBe(false);
+      expect(learn.textContent).toContain('Learn');
+      expect(learn.querySelector('.gold .count')?.textContent).toBe('400');
+      expect(learn.querySelector('.gems .count')?.textContent).toBe('1');
+    });
+
+    it('greys Learn out and says Not enough when short', async () => {
+      const store = heroAt(9, { might: 3 }, 1000, 0);
+      const wrapper = mountSection();
+      await node(wrapper, 'Precision').find('button').trigger('click');
+      const learn = q('.talent-popup .learn') as HTMLButtonElement;
+      expect(learn.disabled).toBe(true);
+      expect(learn.textContent).toContain('Not enough');
+      learn.click();
+      expect(talentRank(store.character, 'precision')).toBe(0);
+      expect(store.character.gold).toBe(1000);
     });
 
     it('says a full node is full', async () => {
@@ -209,30 +232,31 @@ describe('TalentSection on desktop', () => {
   const q = (selector: string) => document.body.querySelector<HTMLElement>(selector);
   const mountSection = () => mount(TalentSection, { attachTo: document.body });
 
-  function heroAt(level: number, talents?: Partial<Record<TalentId, number>>) {
+  function heroAt(level: number, talents?: Partial<Record<TalentId, number>>, gold = 5000, gems = 0) {
     const store = useCharacterStore();
-    store.setCharacter({ ...store.character, level, talents });
+    store.setCharacter({ ...store.character, level, talents, gold });
+    useAccountStore().initFromSave({ gems, highestLevel: level }, level);
     return store;
   }
 
-  it('shows the banner, the points and an Open tree button, with no tree on the page', () => {
-    heroAt(9, { might: 2 });
+  it('shows the banner, the gold and an Open tree button, with no tree on the page', () => {
+    heroAt(9, { might: 2 }, 250);
     const wrapper = mountSection();
     expect(wrapper.find('.section-title').text()).toContain('Talents');
-    expect(wrapper.find('.points .count').text()).toBe('6');
+    expect(wrapper.find('.talent-header .gold .count').text()).toBe('250');
     expect(wrapper.find('.open-tree').exists()).toBe(true);
     expect(wrapper.find('.cell').exists()).toBe(false);
     expect(q('.talent-tree-view')).toBeNull();
   });
 
-  it('opens the tree in a modal on the button, with the points and the plinths', async () => {
-    heroAt(9, { might: 2 });
+  it('opens the tree in a modal on the button, with the gold and the plinths', async () => {
+    heroAt(9, { might: 2 }, 250);
     const wrapper = mountSection();
     await wrapper.find('.open-tree').trigger('click');
     expect(q('.talent-tree-view')).not.toBeNull();
     expect(q('.talent-tree-view .cell .nm')?.textContent).toBe('Executioner');
     expect(document.body.querySelectorAll('.talent-tree-view .pl')).toHaveLength(3);
-    expect(q('.talent-modal-points .points .count')?.textContent).toBe('6');
+    expect(q('.talent-modal-points .gold .count')?.textContent).toBe('250');
   });
 
   it('is sealed under a lock before level 5, with no button', () => {
@@ -242,8 +266,8 @@ describe('TalentSection on desktop', () => {
     expect(wrapper.find('.open-tree').exists()).toBe(false);
   });
 
-  it('spends a point from a node popup opened over the tree', async () => {
-    const store = heroAt(9);
+  it('buys a rank from a node popup opened over the tree', async () => {
+    const store = heroAt(9, undefined, 150);
     const wrapper = mountSection();
     await wrapper.find('.open-tree').trigger('click');
     const might = [...document.body.querySelectorAll<HTMLElement>('.talent-tree-view .cell')].find((cell) => cell.querySelector('.nm')?.textContent === 'Might')!;
@@ -253,6 +277,6 @@ describe('TalentSection on desktop', () => {
     q('.talent-popup .learn')!.click();
     await wrapper.vm.$nextTick();
     expect(talentRank(store.character, 'might')).toBe(1);
-    expect(talentPointsUnspent(store.character)).toBe(7);
+    expect(store.character.gold).toBe(50);
   });
 });

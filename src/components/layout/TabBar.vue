@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { Anvil, Gift, Lock, ScrollText, Sword, UserRound } from 'lucide-vue-next';
-import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, talentPointsUnspent, talentsOpen, trialsOpen } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, TALENT_DEFS, talentsOpen, trialsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
+import { useTalentPurchase } from '../../composables/useTalentPurchase';
 import { useTrialsBadge } from '../../composables/useTrialsBadge';
 
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
 // shows under the stage. Quests counts what's due today or overdue; Trials
 // counts the finished trials waiting to be claimed, or else wears a pip while a
-// new trial waits unseen (a claim outranks a new trial). Talents counts the
-// points still to spend. Skills counts the good skills still to do today: the
+// new trial waits unseen (a claim outranks a new trial). Talents wears a pip
+// while the gold and gems in hand buy the next rank on some open node. Skills counts the good skills still to do today: the
 // dailies that are due and unchecked, and on a Sunday (the last day of the
 // Monday-start week) the unchecked weeklies too. Sealed (before QUESTS_UNLOCK_LEVEL,
 // TRIALS_UNLOCK_LEVEL and TALENTS_UNLOCK_LEVEL) Quests, Trials and Talents each
@@ -24,6 +25,7 @@ const questStore = useQuestStore();
 const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
 const { claimCount, newTrial } = useTrialsBadge();
+const talentPurchase = useTalentPurchase();
 
 const TABS = [
   { id: 'skills', label: 'Skills', icon: Sword },
@@ -61,7 +63,7 @@ const skillsLeft = computed(() => {
       habit.lastCompletedPeriodKey !== periodKeyFor(habit.period, now),
   ).length;
 });
-const points = computed(() => talentPointsUnspent(characterStore.character));
+const talentToBuy = computed(() => TALENT_DEFS.some((def) => talentPurchase.canBuy(def.id)));
 </script>
 
 <template>
@@ -84,7 +86,7 @@ const points = computed(() => talentPointsUnspent(characterStore.character));
       <span v-else-if="tab.id === 'quests' && dueCount" class="tab-count"><span>{{ dueCount }}</span></span>
       <span v-else-if="tab.id === 'trials' && claimCount" class="tab-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
       <span v-else-if="tab.id === 'trials' && newTrial" class="tab-pip" role="img" aria-label="New" />
-      <span v-else-if="tab.id === 'talents' && points" class="tab-count" aria-label="Points to spend"><span>{{ points }}</span></span>
+      <span v-else-if="tab.id === 'talents' && talentToBuy" class="tab-pip" role="img" aria-label="A talent to learn" />
     </button>
   </div>
 </template>

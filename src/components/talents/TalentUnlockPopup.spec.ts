@@ -30,12 +30,13 @@ describe('TalentUnlockPopup', () => {
     expect(q('.talent-unlock')).toBeNull();
   });
 
-  it('shows at level 5 with the points already waiting on the plate', () => {
+  it('shows at level 5: gold buys talents and they are kept, with no points', () => {
     reachLevel5();
     mount(TalentUnlockPopup, { attachTo: document.body });
     expect(q('.talent-unlock')).not.toBeNull();
-    expect(q('.talent-unlock .emblem .count')?.textContent).toBe('4');
-    expect(q('.talent-unlock')?.textContent).toContain('Every level leaves its mark.');
+    expect(q('.talent-unlock')?.textContent).toContain('Gold buys talents. They stay when you fall.');
+    expect(q('.talent-unlock')?.textContent).not.toMatch(/points?/i);
+    expect(q('.talent-unlock .emblem .count')).toBeNull();
   });
 
   it('wears the Talents anvil on its emblem, as the tab and banner do', () => {
@@ -44,11 +45,11 @@ describe('TalentUnlockPopup', () => {
     expect(q('.talent-unlock .emblem svg')?.getAttribute('class')).toContain('anvil');
   });
 
-  it('shows once to a save already past level 5, with every point it has earned', () => {
+  it('shows once to a save already past level 5', () => {
     const store = useCharacterStore();
     store.setCharacter({ ...store.character, level: 14, questsUnlocked: true, trialsUnlocked: true });
     mount(TalentUnlockPopup, { attachTo: document.body });
-    expect(q('.talent-unlock .emblem .count')?.textContent).toBe('13');
+    expect(q('.talent-unlock')).not.toBeNull();
   });
 
   it('opens the tab and goes away on Onward', async () => {

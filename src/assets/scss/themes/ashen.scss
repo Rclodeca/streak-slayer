@@ -3992,21 +3992,20 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include inset-focus;
   }
 
-  // The points: a brass plate, as earned things are.
-  :is(.talent-header, .talent-modal-points) .points {
-    @include plain-label($label-md, 600);
-    color: var(--text);
-  }
-
-  :is(.talent-header, .talent-modal-points) .count,
-  .talent-unlock .emblem .count {
+  // The purse: gold and gems on brass plates, as earned things are.
+  :is(.talent-header, .talent-modal-points) .currency .count {
     @include brass-count;
     min-width: 26px;
     height: 26px;
     font-size: 0.95rem;
   }
 
-  :is(.talent-header, .talent-modal-points) .count.zero {
+  .talent-kept {
+    @include plain-label($label-sm, 600);
+    color: var(--spent-text);
+  }
+
+  :is(.talent-header, .talent-modal-points) .currency .count.zero {
     color: var(--spent-text);
     background: $well;
     box-shadow: inset 2px 2px 0 var(--sunk-hi);

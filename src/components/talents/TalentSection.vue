@@ -1,23 +1,26 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Lock } from 'lucide-vue-next';
-import { TALENTS_UNLOCK_LEVEL, talentPointsUnspent, talentsOpen } from '../../game-engine';
+import { characterGold, TALENTS_UNLOCK_LEVEL, talentsOpen } from '../../game-engine';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
+import CurrencyChips from '../ui/CurrencyChips.vue';
 import Modal from '../ui/Modal.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
 import TalentTree from './TalentTree.vue';
 import { TALENTS_TAB_ICON } from './talentDisplay';
 
 // The Talents tab (docs/mockups/pixel-talents.html, Plinths). On a phone it is the
-// banner (with the points) pinned over the tree (TalentTree) with its plinths
+// banner (with the gold and gems, and a word that talents are kept) pinned over the tree (TalentTree) with its plinths
 // pinned under it, only the tree scrolling between. On a wider screen the tab is
 // the banner and a button, and the tree opens in a modal. Sealed until
 // TALENTS_UNLOCK_LEVEL.
 const characterStore = useCharacterStore();
 const isPhone = usePhoneLayout();
 const open = computed(() => talentsOpen(characterStore.character));
-const unspent = computed(() => talentPointsUnspent(characterStore.character));
+const accountStore = useAccountStore();
+const gold = computed(() => characterGold(characterStore.character));
 const treeOpen = ref(false);
 </script>
 
@@ -30,13 +33,14 @@ const treeOpen = ref(false);
     <template v-else>
       <div class="talent-header">
         <SectionTitle title="Talents"><component :is="TALENTS_TAB_ICON" :size="18" class="section-icon" /></SectionTitle>
-        <span class="points"><span class="count" :class="{ zero: unspent === 0 }">{{ unspent }}</span>points</span>
+        <CurrencyChips :gold="gold" :gems="accountStore.account.gems" show-zero />
       </div>
+      <p class="talent-kept">Kept through death.</p>
       <TalentTree v-if="isPhone" />
       <template v-else>
         <button type="button" class="open-tree primary-button" @click="treeOpen = true">Open tree</button>
         <Modal v-model="treeOpen" title="Talents" max-width="460px">
-          <div class="talent-modal-points"><span class="points"><span class="count" :class="{ zero: unspent === 0 }">{{ unspent }}</span>points</span></div>
+          <div class="talent-modal-points"><CurrencyChips :gold="gold" :gems="accountStore.account.gems" show-zero /></div>
           <TalentTree />
         </Modal>
       </template>
@@ -69,18 +73,8 @@ const treeOpen = ref(false);
   margin-bottom: 0.5rem;
 }
 
-.points {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 6px;
+.talent-kept {
+  margin: 0 0 0.5rem;
 }
 
 .open-tree {

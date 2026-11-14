@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { ChevronsUp, Skull, Sprout } from 'lucide-vue-next';
+import { Coins, Gem, Skull } from 'lucide-vue-next';
 import { useModalPriority } from '../../composables/useModalPriority';
-import { talentPointsUnspent } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import Modal from '../ui/Modal.vue';
 import RuleList from '../ui/RuleList.vue';
@@ -10,16 +8,14 @@ import { TALENTS_TAB_ICON } from './talentDisplay';
 import type { Rule } from '../ui/RuleList.vue';
 
 // Shown every run on reaching TALENTS_UNLOCK_LEVEL (see talentUnlockPending), and
-// once to a save already past it. "Onward" opens the Talents tab; the brass count
-// on the plate is the points already waiting.
+// once to a save already past it. "Onward" opens the Talents tab for good.
 const { talentUnlockVisible } = useModalPriority();
 const characterStore = useCharacterStore();
-const points = computed(() => talentPointsUnspent(characterStore.character));
 
 const RULES: Rule[] = [
-  { icon: ChevronsUp, tone: 'accent', title: 'Earn', text: 'Each level brings a point.' },
-  { icon: Sprout, tone: 'solid', title: 'Grow', text: 'Spent points stay spent.' },
-  { icon: Skull, tone: 'danger', title: 'Fall', text: 'The tree dies with you.' },
+  { icon: Coins, tone: 'accent', title: 'Earn', text: 'Bosses drop gold.' },
+  { icon: Gem, tone: 'solid', title: 'Rise', text: 'Higher ranks take gems too.' },
+  { icon: Skull, tone: 'danger', title: 'Fall', text: 'Unspent gold dies with you.' },
 ];
 
 function onward() {
@@ -32,9 +28,8 @@ function onward() {
     <div class="talent-unlock">
       <div class="emblem" aria-hidden="true">
         <component :is="TALENTS_TAB_ICON" :size="34" :stroke-width="1.5" />
-        <span class="count">{{ points }}</span>
       </div>
-      <p class="tagline">Every level leaves its mark.</p>
+      <p class="tagline">Gold buys talents. They stay when you fall.</p>
       <RuleList :rules="RULES" />
       <button type="button" class="onward primary-button" @click="onward">Onward</button>
     </div>
@@ -54,22 +49,6 @@ function onward() {
   border: 1px solid var(--accent-border);
   border-radius: 50%;
   box-shadow: 0 0 24px -8px var(--accent);
-}
-
-/* The points already waiting, on a plate at the emblem's corner. */
-.count {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 6px;
-  font-weight: 800;
-  color: var(--on-brass);
-  background: var(--brass);
 }
 
 .tagline {
