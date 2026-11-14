@@ -91,6 +91,9 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
             <StatIcon name="gold" class="log-icon" /> <span class="log-gold">+{{ formatCompact(entry.gold) }}</span> gold
           </template>
         </template>
+        <template v-else-if="entry.kind === 'gems'">
+          <StatIcon name="gems" class="log-icon" /> <span class="log-gems">+{{ formatCompact(entry.amount) }}</span> gems
+        </template>
         <template v-else-if="entry.kind === 'special-assigned'">
           <StatIcon name="special" class="log-icon" /> "{{ entry.habitName }}" is now your Special skill!
         </template>
@@ -283,6 +286,11 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
 
 .log-gold {
   color: var(--icon-gold);
+  font-weight: 700;
+}
+
+.log-gems {
+  color: var(--icon-arcane);
   font-weight: 700;
 }
 </style>

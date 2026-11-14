@@ -6,6 +6,7 @@ import { createCharacter, createRng, generateBoss, talentPointsUnspent, talentUn
 import { STORAGE_KEY as FOCUS_MODE_KEY } from './focusModeStore';
 import { STORAGE_KEY as HINTS_KEY } from './hintStore';
 import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highScoreStore';
+import { useAccountStore } from './accountStore';
 import { initializeStores } from './index';
 import { STORAGE_KEY as LOG_VISIBLE_KEY } from './logVisibleStore';
 import { STORAGE_KEY as TRIALS_SEEN_KEY } from './trialSeenStore';
@@ -122,6 +123,35 @@ describe('talents in a save', () => {
     expect(characterStore.character.talents).toBeUndefined();
     expect(talentUnlockPending(characterStore.character)).toBe(true);
     expect(talentPointsUnspent(characterStore.character)).toBe(13);
+  });
+});
+
+describe('the account in a save file', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    setActivePinia(createPinia());
+  });
+
+  it('is carried by the export file and back through an import', () => {
+    const rng = createRng(1);
+    const character = { ...createCharacter(rng), level: 3 };
+    localStorage.setItem(SAVE_KEY, serializeSaveState({ character, boss: generateBoss(2, rng), habits: [], account: { gems: 9, highestLevel: 30 } }));
+    const file = readSaveFile(buildSaveFile())!.file;
+    localStorage.clear();
+
+    applySaveFile(file);
+    initializeStores();
+    expect(useAccountStore().account).toEqual({ gems: 9, highestLevel: 30 });
+  });
+
+  it('imports a file from before accounts', () => {
+    storeRun('Aldric', 12, 8);
+    const file = readSaveFile(buildSaveFile())!.file;
+    localStorage.clear();
+
+    applySaveFile(file);
+    initializeStores();
+    expect(useAccountStore().account).toEqual({ gems: 2 + 3, highestLevel: 12 });
   });
 });
 

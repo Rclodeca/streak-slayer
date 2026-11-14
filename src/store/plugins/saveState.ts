@@ -1,7 +1,7 @@
 // Persistence schema and localStorage read/write helpers. Pure serialization
 // concerns only — no game logic lives here.
 
-import type { Boss, Character, Habit, Quest } from '../../game-engine';
+import type { Account, Boss, Character, Habit, Quest } from '../../game-engine';
 import type { ActivityLogEntry } from '../activityLogStore';
 import { storage } from '../storage';
 
@@ -28,6 +28,10 @@ export interface SaveStateV5 {
   // and reads as the oldest. Epoch ms of the write, so a restored or synced
   // copy can be compared against another by how recently it was saved.
   savedAt?: number;
+  // Optional, added after v5 shipped — same precedent: an old save has none
+  // and starts at 0 gems, paid its past level milestones once on load (see
+  // accountStore.initFromSave). Kept through death, unlike everything above.
+  account?: Account;
 }
 
 export function serializeSaveState(state: Omit<SaveStateV5, 'schemaVersion'>): string {

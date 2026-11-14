@@ -187,6 +187,9 @@ export {
   unlockTrials,
 } from './challenges';
 
+export type { Account } from './account';
+export { createAccount, recordLevel, spendGems } from './account';
+
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './talents';
 export {
   bossKillHealPct,

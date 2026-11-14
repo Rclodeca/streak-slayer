@@ -38,6 +38,8 @@ export type ActivityLogEntry =
   | { id: string; kind: 'lifesteal'; amount: number; healedWho: 'player' | 'boss' }
   | { id: string; kind: 'reflect'; amount: number }
   | { id: string; kind: 'boss-defeated'; bossIndex: number; amount?: number; gold?: number }
+  // Gems the account was paid; reason says what for ('level': a level milestone first reached).
+  | { id: string; kind: 'gems'; amount: number; reason: 'level' }
   | { id: string; kind: 'special-assigned'; habitName: string }
   | { id: string; kind: 'ult-assigned'; habitName: string }
   | { id: string; kind: 'overdrive-granted'; habitName: string }

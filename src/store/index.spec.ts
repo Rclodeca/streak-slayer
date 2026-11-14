@@ -9,6 +9,8 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bossBaseHealth, createCharacter, createHabit, createRng, generateBoss } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
+import { useAccountStore } from './accountStore';
+import { RUNS_KEY } from './highScoreStore';
 import { initializeStores } from './index';
 import { CURRENT_SCHEMA_VERSION, STORAGE_KEY } from './plugins/saveState';
 
@@ -194,5 +196,50 @@ describe('store persistence smoke test', () => {
     expect(setItemSpy).toHaveBeenCalledTimes(1);
 
     setItemSpy.mockRestore();
+  });
+});
+
+describe('the account in a save', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    setActivePinia(createPinia());
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function storeOldSave(level: number) {
+    const rng = createRng(1);
+    const character = { ...createCharacter(rng), level };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ schemaVersion: CURRENT_SCHEMA_VERSION, character, boss: generateBoss(8, rng), habits: [] }));
+  }
+
+  it('an old v5 save without account loads with 0 gems and pays its past milestones once', () => {
+    storeOldSave(12);
+    initializeStores();
+    expect(useAccountStore().account).toEqual({ gems: 2 + 3, highestLevel: 12 });
+    vi.advanceTimersByTime(300);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) as string).account).toEqual({ gems: 2 + 3, highestLevel: 12 });
+
+    setActivePinia(createPinia());
+    initializeStores();
+    expect(useAccountStore().account).toEqual({ gems: 2 + 3, highestLevel: 12 });
+  });
+
+  it('seeds from the best level in the high-score list when it beats the current run', () => {
+    storeOldSave(3);
+    localStorage.setItem(RUNS_KEY, JSON.stringify([{ id: 'r1', bossIndex: 9, level: 21, startedDayKey: '2026-10-01', endedDayKey: '2026-10-09', daysLived: 9 }]));
+    initializeStores();
+    expect(useAccountStore().account).toEqual({ gems: 2 + 3 + 4 + 5, highestLevel: 21 });
+  });
+
+  it('pays a milestone as the hero levels up, and logs it', () => {
+    storeOldSave(4);
+    const { characterStore, activityLogStore } = initializeStores();
+    characterStore.setCharacter({ ...characterStore.character, level: 5 });
+    expect(useAccountStore().account).toEqual({ gems: 2, highestLevel: 5 });
+    expect(activityLogStore.entries.at(-1)).toMatchObject({ kind: 'gems', amount: 2, reason: 'level' });
   });
 });

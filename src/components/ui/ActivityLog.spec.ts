@@ -18,6 +18,11 @@ describe('ActivityLog — boss defeated', () => {
     const text = mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim();
     expect(text).toBe('Boss #3 defeated! +104 EXP +70 gold');
   });
+
+  it('shows gems a level milestone paid', () => {
+    useActivityLogStore().addEntry({ kind: 'gems', amount: 2, reason: 'level' });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('+2 gems');
+  });
 });
 
 describe('ActivityLog — boss skills', () => {

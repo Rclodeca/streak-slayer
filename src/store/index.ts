@@ -4,13 +4,16 @@
 
 import { createPinia, getActivePinia, setActivePinia, type Pinia } from 'pinia';
 import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateEventState, migrateQuestUnlock, migrateTrialUnlock } from '../game-engine';
+import { useAccountStore } from './accountStore';
 import { useActivityLogStore } from './activityLogStore';
 import { useBossStore } from './bossStore';
 import { useCharacterStore } from './characterStore';
 import { useDebugClockStore } from './debugClockStore';
 import { useHabitStore } from './habitStore';
+import { useHighScoreStore } from './highScoreStore';
 import { useHintStore } from './hintStore';
 import { useQuestStore } from './questStore';
+import { setupAccountTracking } from './plugins/accountTracking';
 import { setupHighScoreTracking } from './plugins/highScoreTracking';
 import { setupPersistence } from './plugins/localStoragePersistence';
 import { loadSaveState } from './plugins/saveState';
@@ -38,6 +41,7 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   const habitStore = useHabitStore(targetPinia);
   const activityLogStore = useActivityLogStore(targetPinia);
   const questStore = useQuestStore(targetPinia);
+  const accountStore = useAccountStore(targetPinia);
 
   // Wired up BEFORE the initFromSave calls below (not after), so a
   // one-time, in-place migration those calls perform (e.g.
@@ -58,6 +62,10 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   habitStore.initFromSave(saved?.habits ?? null, rng);
   activityLogStore.initFromSave(saved?.activityLog ?? null);
   questStore.initFromSave(saved?.quests ?? null);
+  // A save from before accounts is paid its past milestones from its best
+  // level so far: this run's, or a finished run's on the high-score list.
+  const bestRunLevel = Math.max(0, ...useHighScoreStore(targetPinia).topRuns.map((run) => run.level));
+  accountStore.initFromSave(saved?.account ?? null, Math.max(characterStore.character.level, bestRunLevel));
   const rebalanced = applyRankRebalance(characterStore.character, bossStore.boss);
   characterStore.setCharacter(rebalanced.character);
   bossStore.setBoss(rebalanced.boss);
@@ -69,9 +77,12 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   characterStore.setCharacter(migrateTrialUnlock(characterStore.character));
 
   setupHighScoreTracking(targetPinia, dailyPeriodKey(useDebugClockStore(targetPinia).now()));
+  // After hydration too: wired earlier, loading the save's character would
+  // read as a level-up and log gems for it.
+  setupAccountTracking(targetPinia);
   useHintStore(targetPinia).settle(habitStore.habits.length > 0);
 
-  return { characterStore, bossStore, habitStore, activityLogStore, questStore };
+  return { characterStore, bossStore, habitStore, activityLogStore, questStore, accountStore };
 }
 
 export { useActivityLogStore, useBossStore, useCharacterStore, useHabitStore };
