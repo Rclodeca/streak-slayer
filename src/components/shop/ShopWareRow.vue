@@ -9,7 +9,7 @@ import ShopItemLines from './ShopItemLines.vue';
 // restock), its name and what it does, and the buy button. `warn` is a small
 // line under it, e.g. that a buy swaps out a worn item.
 defineProps<{
-  kind: 'item' | 'tonic' | 'restock';
+  kind: 'item' | 'tonic' | 'restock' | 'service';
   name: string;
   item?: ItemDef;
   icon?: StatIconName;
@@ -19,6 +19,8 @@ defineProps<{
   short?: boolean;
   label?: string;
   warn?: string;
+  /** What the service has cost this run; its price climbs with it. */
+  bought?: number;
 }>();
 defineEmits<{ buy: [] }>();
 const baseUrl = import.meta.env.BASE_URL;
@@ -34,6 +36,7 @@ const baseUrl = import.meta.env.BASE_URL;
       <strong class="shop-name">{{ name }}</strong>
       <ShopItemLines v-if="item" :item="item" />
       <p v-else class="shop-text">{{ text }}</p>
+      <p v-if="bought" class="shop-warn shop-climb">Bought {{ bought }} · dearer each time</p>
       <p v-if="warn" class="shop-warn">{{ warn }}</p>
     </div>
     <ShopBuyButton :price="price" :buyable="buyable" :short="short" :label="label" @buy="$emit('buy')" />

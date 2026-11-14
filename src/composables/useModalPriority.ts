@@ -25,6 +25,7 @@ import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useQuestMissGate } from './useQuestMissGate';
 import { useCharacterStore } from '../store/characterStore';
 import { useEventChoice } from './useEventChoice';
+import { useServices } from './useServices';
 
 export function useModalPriority() {
   const { isDead } = useDeathScreen();
@@ -33,6 +34,7 @@ export function useModalPriority() {
   const { hasPending: questMissPending } = useQuestMissGate();
   const characterStore = useCharacterStore();
   const { revealed } = useEventChoice();
+  const { revealed: enchantRevealed } = useServices();
   const { current: questCompleteCurrent } = useQuestCompleteQueue();
   const { celebrating } = useCelebration();
   const { current: bossSkillCurrent } = useBossSkillCard();
@@ -109,6 +111,19 @@ export function useModalPriority() {
       !talentUnlockPending(characterStore.character),
   );
 
+  /** True while a shop-enchanted item is on show and nothing higher-priority is up. */
+  const enchantRevealVisible = computed(
+    () =>
+      enchantRevealed.value !== null &&
+      !celebrating.value &&
+      !isDead.value &&
+      itemDropCurrent.value === null &&
+      !habitMissPending.value &&
+      !questMissPending.value &&
+      bossSkillCurrent.value === null &&
+      questCompleteCurrent.value === null,
+  );
+
   /** True while a quest-completion celebration is queued — it shows before any level-up pick its EXP triggered. */
   const questCompleteVisible = computed(
     () =>
@@ -119,5 +134,5 @@ export function useModalPriority() {
       bossSkillCurrent.value === null,
   );
 
-  return { bossSkillVisible, questMissVisible, questUnlockVisible, trialUnlockVisible, talentUnlockVisible, eventChoiceVisible, questCompleteVisible };
+  return { bossSkillVisible, questMissVisible, questUnlockVisible, trialUnlockVisible, talentUnlockVisible, eventChoiceVisible, enchantRevealVisible, questCompleteVisible };
 }

@@ -4,9 +4,10 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
-import { addDaysToDayKey, applyCritBoostEvent, dailyPeriodKey, ITEM_CATALOG, maxEquipSlots } from '../../game-engine';
+import { addDaysToDayKey, applyCritBoostEvent, createHabit, createRng, dailyPeriodKey, ITEM_CATALOG, maxEquipSlots } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
+import { useHabitStore } from '../../store/habitStore';
 import ShopSection from './ShopSection.vue';
 
 enableAutoUnmount(afterEach);
@@ -79,6 +80,60 @@ describe('ShopSection', () => {
       const hawk = wrapper.findAll('.shop-ware-row.tonic').find((row) => row.text().includes('Hawk Tonic'))!;
       expect(hawk.find('.shop-buy').text()).toBe('3d left');
       expect(hawk.find('.shop-buy').attributes('disabled')).toBeDefined();
+    });
+
+    describe('services', () => {
+      const services = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('.shop-ware-row.service');
+      const rowFor = (wrapper: ReturnType<typeof mount>, name: string) => services(wrapper).find((row) => row.find('.shop-name').text() === name)!;
+
+      it('come after the tonics and the restock, as four rows', () => {
+        hero(1000);
+        const wrapper = mount(ShopSection);
+        const html = wrapper.html();
+        expect(html.indexOf('shop-restock')).toBeLessThan(html.indexOf('Services'));
+        expect(services(wrapper).map((row) => row.find('.shop-name').text())).toEqual(['Reroll', 'Overdrive', 'Enchant', 'Item slots']);
+      });
+
+      it('read what stands in the way', () => {
+        useHabitStore().setHabits([]);
+        hero(100000);
+        const wrapper = mount(ShopSection);
+        expect(rowFor(wrapper, 'Reroll').find('.shop-buy').text()).toBe('No skills');
+        expect(rowFor(wrapper, 'Overdrive').find('.shop-buy').text()).toBe('No skills');
+        expect(rowFor(wrapper, 'Enchant').find('.shop-buy').text()).toBe('Nothing worn');
+        expect(rowFor(wrapper, 'Reroll').find('.shop-buy').attributes('disabled')).toBeDefined();
+      });
+
+      it('a row short on gold is disabled and slots at 8 read Full', () => {
+        useHabitStore().setHabits([createHabit('Read', 'daily', 'easy', false, createRng(3))]);
+        hero(0);
+        const wrapper = mount(ShopSection);
+        expect(rowFor(wrapper, 'Reroll').find('.shop-buy').attributes('disabled')).toBeDefined();
+        hero(100000, { slotUpgrades: 2 });
+        const full = mount(ShopSection);
+        expect(rowFor(full, 'Item slots').find('.shop-buy').text()).toBe('Full');
+      });
+
+      it('Item slots buys in one tap and names the step', async () => {
+        useHabitStore().setHabits([]);
+        const characterStore = hero(100000);
+        const wrapper = mount(ShopSection);
+        expect(rowFor(wrapper, 'Item slots').text()).toContain('4 → 6');
+        await rowFor(wrapper, 'Item slots').find('.shop-buy').trigger('click');
+        expect(maxEquipSlots(characterStore.character)).toBe(6);
+        expect(rowFor(wrapper, 'Item slots').text()).toContain('6 → 8');
+      });
+
+      it('Reroll opens the picker instead of buying', async () => {
+        useHabitStore().setHabits([createHabit('Read', 'daily', 'easy', false, createRng(3))]);
+        const characterStore = hero(100000);
+        const wrapper = mount(ShopSection, { attachTo: document.body });
+        await rowFor(wrapper, 'Reroll').find('.shop-buy').trigger('click');
+        await flushPromises();
+        expect(characterStore.character.gold).toBe(100000);
+        expect(document.querySelector('.reroll-row')).not.toBeNull();
+        wrapper.unmount();
+      });
     });
 
     it('the Vault side shows the shut vault', async () => {

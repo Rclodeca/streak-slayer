@@ -5,6 +5,7 @@ import { useBossSkillCard } from './useBossSkillCard';
 import { useCelebration } from './useCelebration';
 import { useDeathScreen } from './useDeathScreen';
 import { useEventChoice } from './useEventChoice';
+import { useServices } from './useServices';
 import { useItemDropQueue } from './useItemDropQueue';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useModalPriority } from './useModalPriority';
@@ -29,6 +30,29 @@ describe('useModalPriority', () => {
     useQuestMissGate().acknowledge();
     useCelebration().clear();
     useBossSkillCard().clear();
+  });
+
+  describe('enchantRevealVisible', () => {
+    function enchantOne() {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 10, gold: 100000, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'] });
+      useServices().buyEnchant('rusty-blade');
+    }
+
+    afterEach(() => useServices().dismissReveal());
+
+    it('is true once an item is enchanted, and false after the reveal is dismissed', () => {
+      enchantOne();
+      expect(useModalPriority().enchantRevealVisible.value).toBe(true);
+      useServices().dismissReveal();
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
+    });
+
+    it('is false while an item drop is pending', () => {
+      enchantOne();
+      useItemDropQueue().enqueueDrops([ITEM_CATALOG[0]]);
+      expect(useModalPriority().enchantRevealVisible.value).toBe(false);
+    });
   });
 
   describe('eventChoiceVisible', () => {

@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { Flame, Swords } from 'lucide-vue-next';
-import { ITEM_CATALOG, TONIC_DEFS, characterGold, wareState } from '../../game-engine';
-import type { ItemDef, ShopWare, TonicId } from '../../game-engine';
+import { computed, ref, watch } from 'vue';
+import { Flame, Sparkles, Swords } from 'lucide-vue-next';
+import { ITEM_CATALOG, SERVICE_DEFS, TONIC_DEFS, characterGold, maxEquipSlots, wareState } from '../../game-engine';
+import type { ItemDef, ServiceId, ShopWare, TonicId } from '../../game-engine';
+import { useServices } from '../../composables/useServices';
 import { useShop } from '../../composables/useShop';
 import { useCharacterStore } from '../../store/characterStore';
 import SectionTitle from '../ui/SectionTitle.vue';
 import type { StatIconName } from '../ui/statIcons';
 import ShopFeatured from './ShopFeatured.vue';
+import ShopServicePicker from './ShopServicePicker.vue';
 import ShopWareRow from './ShopWareRow.vue';
 
 // The Shop side (docs/mockups/shop-tab-2.html, A): the day's piece on velvet,
@@ -16,6 +18,7 @@ import ShopWareRow from './ShopWareRow.vue';
 // first open, a new day (or the dev Skip day), and a new run after a death.
 const characterStore = useCharacterStore();
 const shop = useShop();
+const services = useServices();
 
 watch(
   () => characterStore.character.shop?.dayKey !== shop.todayKey.value,
@@ -76,6 +79,39 @@ const restockBuyable = computed(() => shop.stock.value !== null && characterGold
 function buyTonic(id: TonicId) {
   shop.buyTonic(id);
 }
+
+// The services: a slot buys in one tap, the others ask for a target first.
+const SERVICE_LABELS = { none: { reroll: 'No skills', overdrive: 'No skills', enchant: 'Nothing worn', slot: '' }, maxed: 'Full' } as const;
+const pickerService = ref<'reroll' | 'overdrive' | 'enchant' | null>(null);
+const pickerOpen = computed({
+  get: () => pickerService.value !== null,
+  set: (open) => {
+    if (!open) pickerService.value = null;
+  },
+});
+
+const serviceRows = computed(() =>
+  SERVICE_DEFS.map((def) => {
+    const state = services.state(def.id);
+    const slots = maxEquipSlots(characterStore.character);
+    const label = state.status === 'none' ? SERVICE_LABELS.none[def.id] : state.status === 'maxed' ? SERVICE_LABELS.maxed : undefined;
+    return {
+      ...def,
+      icon: def.icon as StatIconName,
+      text: def.id === 'slot' && state.status !== 'maxed' ? `${slots} → ${slots + 2} slots.` : def.effect,
+      price: state.price,
+      bought: def.id === 'slot' ? 0 : state.bought,
+      buyable: state.status === 'buy',
+      short: state.status === 'short',
+      label,
+    };
+  }),
+);
+
+function onService(id: ServiceId) {
+  if (id === 'slot') services.buySlot();
+  else pickerService.value = id;
+}
 </script>
 
 <template>
@@ -135,6 +171,25 @@ function buyTonic(id: TonicId) {
         @buy="shop.restock()"
       />
     </div>
+
+    <SectionTitle title="Services"><Sparkles :size="20" class="section-icon" /></SectionTitle>
+    <div class="shop-rows">
+      <ShopWareRow
+        v-for="service in serviceRows"
+        :key="service.id"
+        kind="service"
+        :name="service.name"
+        :icon="service.icon"
+        :text="service.text"
+        :price="service.price"
+        :buyable="service.buyable"
+        :short="service.short"
+        :label="service.label"
+        :bought="service.bought"
+        @buy="onService(service.id)"
+      />
+    </div>
+    <ShopServicePicker v-if="pickerService" v-model="pickerOpen" :service="pickerService" />
 
     <p class="shop-note">New stock each dawn, and when you fall.</p>
   </div>
