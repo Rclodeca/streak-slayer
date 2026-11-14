@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { bossSkillEffectText, formatCompact } from '../../game-engine';
+import { bossSkillEffectText, formatCompact, formatDayKey } from '../../game-engine';
 import type { BossSkillId } from '../../game-engine';
 import { useActivityLogStore } from '../../store/activityLogStore';
 import { rankNumeral } from '../habits/habitDisplay';
@@ -97,6 +97,10 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
         <template v-else-if="entry.kind === 'vault-bought'">
           <StatIcon name="gems" class="log-icon" /> Bought {{ entry.name }} <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems
           <template v-if="entry.gold"><span class="log-gold">+{{ formatCompact(entry.gold) }}</span> gold</template>
+        </template>
+        <template v-else-if="entry.kind === 'freeze-bought'">
+          <StatIcon name="freeze" class="log-icon" /> Froze {{ entry.days === 1 ? '1 day' : `${entry.days} days` }} from {{ formatDayKey(entry.fromDayKey) }}
+          <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems
         </template>
         <template v-else-if="entry.kind === 'revived'">
           <StatIcon name="gems" class="log-icon" /> Revived <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems

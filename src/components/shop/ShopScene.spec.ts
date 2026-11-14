@@ -26,7 +26,7 @@ describe('ShopScene', () => {
     useTabStore().selectShopSide('vault');
     await wrapper.vm.$nextTick();
     expect(wrapper.classes()).toContain('vaulted');
-    expect(wrapper.find('.shop-say .line').text()).toBe('Gems. Not yet.');
+    expect(wrapper.find('.shop-say .line').text()).toBe('Gems. Now we talk.');
   });
 
   it('the purse shows gold and gems', () => {

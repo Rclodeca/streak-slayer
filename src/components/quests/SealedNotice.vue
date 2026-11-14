@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Lock } from 'lucide-vue-next';
 
-// Quests and Trials each seal until their own level; the shut Vault passes its own `text`.
+// Quests seal until their level; a caller can pass its own `text`.
 defineProps<{ level?: number; text?: string }>();
 </script>
 

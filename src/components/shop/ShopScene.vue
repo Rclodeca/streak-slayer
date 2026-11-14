@@ -20,7 +20,7 @@ const baseUrl = import.meta.env.BASE_URL;
 const ART_W = 432;
 const ART_H = 232;
 
-const LINES = { shop: 'Back again? Still breathing, I see.', vault: 'Gems. Not yet.' } as const;
+const LINES = { shop: 'Back again? Still breathing, I see.', vault: 'Gems. Now we talk.' } as const;
 
 const characterStore = useCharacterStore();
 const accountStore = useAccountStore();

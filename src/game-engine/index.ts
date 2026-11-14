@@ -220,7 +220,7 @@ export {
   weeklyMightMultiplier,
 } from './talents';
 
-export { formatCompact } from './format';
+export { formatCompact, formatDayKey } from './format';
 
 export type { BoostableStat, DropRarity, ItemBonus, ItemDef, ItemEffectId, ItemRarity } from './items';
 export {

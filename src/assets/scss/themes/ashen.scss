@@ -4083,6 +4083,28 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--spent-text);
   }
 
+  // The Vault's gem prices, in the gems' cold blue rather than the card ink.
+  .vault-wares .shop-buy:not(.short) .price {
+    color: var(--icon-arcane);
+  }
+
+  // The streak freeze picker: two steppers, stone keys either side of the value.
+  .freeze-step button {
+    @include stone-button;
+  }
+
+  .freeze-step .freeze-label {
+    @include plain-label(0.7rem, 700);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--spent-text);
+  }
+
+  .freeze-step .freeze-value {
+    @include name-serif(700);
+    color: var(--text-h);
+  }
+
   .shop-desk .currency .count {
     @include brass-count;
     min-width: 26px;

@@ -4,7 +4,9 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
-import { addDaysToDayKey, applyCritBoostEffect, createHabit, createRng, dailyPeriodKey, ITEM_CATALOG, maxEquipSlots } from '../../game-engine';
+import { addDaysToDayKey, applyCritBoostEffect, createHabit, createRng, dailyPeriodKey, ITEM_CATALOG, maxEquipSlots, pouchGold } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
+import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -136,12 +138,40 @@ describe('ShopSection', () => {
       });
     });
 
-    it('the Vault side shows the shut vault', async () => {
+    it('the Vault opens on its velvet piece, then For good and For this run', async () => {
       hero(1000);
       const wrapper = mount(ShopSection);
       await wrapper.find('.side-vault').trigger('click');
-      expect(wrapper.text()).toContain('The vault is shut.');
-      expect(wrapper.find('.shop-ware-row').exists()).toBe(false);
+      expect(wrapper.text()).not.toContain('The vault is shut.');
+      const html = wrapper.html();
+      const order = ['shop-featured', 'For good', 'Streak Freeze', 'For this run', 'shop-ware-row item', 'Gold Pouch'].map((mark) => html.indexOf(mark));
+      expect(order.every((at) => at >= 0)).toBe(true);
+      expect([...order].sort((a, b) => a - b)).toEqual(order);
+      expect(wrapper.find('.shop-featured .price').attributes('aria-label')).toMatch(/gems$/);
+      expect(wrapper.text()).toContain('Lost when you fall');
+    });
+
+    it('the Gold Pouch adds gold and takes 5 gems', async () => {
+      const characterStore = hero(100);
+      useAccountStore().addGems(7);
+      const wrapper = mount(ShopSection);
+      await wrapper.find('.side-vault').trigger('click');
+      const pouch = wrapper.findAll('.shop-ware-row').find((row) => row.text().includes('Gold Pouch'))!;
+      await pouch.find('.shop-buy').trigger('click');
+      expect(characterStore.character.gold).toBe(100 + pouchGold(useBossStore().boss.index));
+      expect(useAccountStore().account.gems).toBe(2);
+    });
+
+    it('a Vault item bought with gems is marked Sold', async () => {
+      const characterStore = hero(0);
+      useAccountStore().addGems(99);
+      const wrapper = mount(ShopSection);
+      await wrapper.find('.side-vault').trigger('click');
+      const ware = characterStore.character.vault!.wares[0];
+      const row = () => wrapper.findAll('.shop-ware-row.item')[0];
+      await row().find('.shop-buy').trigger('click');
+      expect(useAccountStore().account.gems).toBe(99 - ware.gems);
+      expect(row().find('.shop-buy').text()).toBe('Sold');
     });
 
     it('a day change redraws the stock', async () => {

@@ -7,16 +7,17 @@ import ShopItemLines from './ShopItemLines.vue';
 // The day's piece on velvet (docs/mockups/shop-tab-2.html): an epic or relic on
 // the days the shop has one, else its rare. The art is drawn at 3 CSS px per
 // art pixel (96px), whole device pixels on 2x and 3x screens.
-const props = defineProps<{ item: ItemDef; price: number; buyable: boolean; short?: boolean; label?: string; warn?: string }>();
+// The Vault passes its own `ribbon`, `keep` line and gem `currency`.
+const props = defineProps<{ item: ItemDef; price: number; buyable: boolean; short?: boolean; label?: string; warn?: string; ribbon?: string; keep?: string; currency?: 'gold' | 'gems' }>();
 defineEmits<{ buy: [] }>();
 const baseUrl = import.meta.env.BASE_URL;
-const ribbon = computed(() => `${props.item.rarity.charAt(0).toUpperCase()}${props.item.rarity.slice(1)} of the day`);
+const ribbonText = computed(() => props.ribbon ?? `${props.item.rarity.charAt(0).toUpperCase()}${props.item.rarity.slice(1)} of the day`);
 </script>
 
 <template>
   <article class="shop-featured" :class="`rarity-${item.rarity}`">
     <div class="velvet">
-      <span class="ribbon">{{ ribbon }}</span>
+      <span class="ribbon">{{ ribbonText }}</span>
       <img class="featured-art" :src="`${baseUrl}sprites/${item.icon}.png`" :alt="item.name" />
     </div>
     <div class="featured-body">
@@ -24,8 +25,8 @@ const ribbon = computed(() => `${props.item.rarity.charAt(0).toUpperCase()}${pro
       <ShopItemLines :item="item" />
       <p v-if="warn" class="shop-warn">{{ warn }}</p>
       <div class="featured-foot">
-        <span class="featured-keep">Gone when you fall</span>
-        <ShopBuyButton :price="price" :buyable="buyable" :short="short" :label="label" @buy="$emit('buy')" />
+        <span class="featured-keep">{{ keep ?? 'Gone when you fall' }}</span>
+        <ShopBuyButton :price="price" :buyable="buyable" :short="short" :label="label" :currency="currency" @buy="$emit('buy')" />
       </div>
     </div>
   </article>

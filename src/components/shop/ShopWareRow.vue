@@ -21,6 +21,7 @@ defineProps<{
   warn?: string;
   /** What the service has cost this run; its price climbs with it. */
   bought?: number;
+  currency?: 'gold' | 'gems';
 }>();
 defineEmits<{ buy: [] }>();
 const baseUrl = import.meta.env.BASE_URL;
@@ -39,7 +40,7 @@ const baseUrl = import.meta.env.BASE_URL;
       <p v-if="bought" class="shop-warn shop-climb">Bought {{ bought }} · dearer each time</p>
       <p v-if="warn" class="shop-warn">{{ warn }}</p>
     </div>
-    <ShopBuyButton :price="price" :buyable="buyable" :short="short" :label="label" @buy="$emit('buy')" />
+    <ShopBuyButton :price="price" :buyable="buyable" :short="short" :label="label" :currency="currency" @buy="$emit('buy')" />
   </div>
 </template>
 

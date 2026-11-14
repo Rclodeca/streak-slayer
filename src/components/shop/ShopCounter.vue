@@ -2,12 +2,12 @@
 import { Gem, Store } from 'lucide-vue-next';
 import { useTabStore } from '../../store/tabStore';
 import type { ShopSide } from '../../store/tabStore';
-import SealedNotice from '../quests/SealedNotice.vue';
 import ShopWares from './ShopWares.vue';
+import VaultWares from './VaultWares.vue';
 
 // Under the shopkeeper's scene (docs/mockups/shop-tab-2.html, A's UI): a plain
-// Shop | Vault switch, then that side's wares. The Shop sells for gold; the
-// Vault (gems) stays shut until it has wares of its own.
+// Shop | Vault switch, then that side's wares. The Shop sells for gold, the
+// Vault for gems.
 const tabStore = useTabStore();
 const SIDES: { id: ShopSide; label: string; icon: typeof Store }[] = [
   { id: 'shop', label: 'Shop', icon: Store },
@@ -32,7 +32,7 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Store }[] = [
       </button>
     </div>
     <ShopWares v-if="tabStore.shopSide === 'shop'" />
-    <SealedNotice v-else text="The vault is shut." />
+    <VaultWares v-else />
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCompact } from './format';
+import { formatCompact, formatDayKey } from './format';
 
 describe('formatCompact', () => {
   it('rounds to a whole number below 1000', () => {
@@ -54,5 +54,13 @@ describe('formatCompact', () => {
   it('keeps the sign', () => {
     expect(formatCompact(-1345)).toBe('-1.34K');
     expect(formatCompact(-0.3)).toBe('0');
+  });
+});
+
+describe('formatDayKey', () => {
+  it('reads a day key as a short date, with the weekday when asked', () => {
+    expect(formatDayKey('2026-11-20')).toBe('Nov 20');
+    expect(formatDayKey('2026-11-20', true)).toBe('Fri, Nov 20');
+    expect(formatDayKey('2027-01-03', true)).toBe('Sun, Jan 3');
   });
 });

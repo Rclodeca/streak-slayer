@@ -22,3 +22,13 @@ export function formatCompact(value: number): string {
   }
   return String(n);
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** A `YYYY-MM-DD` day key as a short date ("Nov 20", or "Fri, Nov 20"), read off the key itself so no time zone can slip it a day. */
+export function formatDayKey(dayKey: string, withWeekday = false): string {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  const date = `${MONTHS[month - 1]} ${day}`;
+  return withWeekday ? `${WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]}, ${date}` : date;
+}

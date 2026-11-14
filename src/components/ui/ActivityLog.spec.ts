@@ -53,6 +53,11 @@ describe('ActivityLog — boss defeated', () => {
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Bought Gold Pouch −5 gems +420 gold');
   });
 
+  it('shows a streak freeze bought', () => {
+    useActivityLogStore().addEntry({ kind: 'freeze-bought', fromDayKey: '2026-11-20', days: 3, gems: 6 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Froze 3 days from Nov 20 −6 gems');
+  });
+
   it('shows a gem revive', () => {
     useActivityLogStore().addEntry({ kind: 'revived', gems: 10 });
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Revived −10 gems');
