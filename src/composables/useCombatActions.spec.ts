@@ -505,10 +505,8 @@ describe('useCombatActions', () => {
   it("a skill can't be checked on a frozen day", () => {
     const habitStore = useHabitStore();
     const bossStore = useBossStore();
-    const accountStore = useAccountStore();
     const habit = habitStore.addHabit('Read', 'daily', 'medium', false, createRng());
-    habitStore.updateHabit({ ...habit, streakCount: 4 });
-    accountStore.account = { ...accountStore.account, frozenDayKeys: [dailyPeriodKey(useDebugClockStore().now())] };
+    habitStore.updateHabit({ ...habit, streakCount: 4, frozenDayKeys: [dailyPeriodKey(useDebugClockStore().now())] });
     const bossHealth = bossStore.boss.health;
 
     useCombatActions().checkOffHabit(habit.id);

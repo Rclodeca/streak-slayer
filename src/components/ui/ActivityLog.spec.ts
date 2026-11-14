@@ -54,8 +54,11 @@ describe('ActivityLog — boss defeated', () => {
   });
 
   it('shows a streak freeze bought', () => {
-    useActivityLogStore().addEntry({ kind: 'freeze-bought', fromDayKey: '2026-11-20', days: 3, gems: 6 });
-    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Froze 3 days from Nov 20 −6 gems');
+    useActivityLogStore().addEntry({ kind: 'freeze-bought', habitName: 'Read', fromDayKey: '2026-11-20', count: 3, period: 'daily', gems: 6 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Froze "Read" 3 days from Nov 20 −6 gems');
+    setActivePinia(createPinia());
+    useActivityLogStore().addEntry({ kind: 'freeze-bought', habitName: 'Hike', fromDayKey: '2026-11-16', count: 1, period: 'weekly', gems: 2 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Froze "Hike" 1 week from Nov 16 −2 gems');
   });
 
   it('shows a gem revive', () => {

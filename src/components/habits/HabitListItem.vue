@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { dailyPeriodKey, dayOfWeekIndex, formatCompact, frozenDays, habitDamageBreakdown, isDueOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown, isDueOn, isFrozenOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
-import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
@@ -29,14 +28,13 @@ const debugClockStore = useDebugClockStore();
 const characterStore = useCharacterStore();
 const bossStore = useBossStore();
 const habitStore = useHabitStore();
-const accountStore = useAccountStore();
 
 const currentPeriodKey = computed(() => periodKeyFor(props.habit.period, debugClockStore.now()));
 const isCompletedThisPeriod = computed(() => props.habit.lastCompletedPeriodKey === currentPeriodKey.value);
-// A set-day skill on one of its rest days, or any skill on a day a streak
-// freeze covers: can't be struck or overdriven. A frozen one says so.
-const isFrozen = computed(() => !isDueOn(props.habit, debugClockStore.now(), frozenDays(accountStore.account)) && isDueOn(props.habit, debugClockStore.now()));
-const isResting = computed(() => isFrozen.value || !isDueOn(props.habit, debugClockStore.now()));
+// A set-day skill on one of its rest days, or a skill a streak freeze covers
+// today: can't be struck or overdriven. A frozen one says so.
+const isFrozen = computed(() => isFrozenOn(props.habit, debugClockStore.now()));
+const isResting = computed(() => !isDueOn(props.habit, debugClockStore.now()));
 const nextDayLabel = computed(() =>
   props.habit.days ? WEEKDAY_SHORT[nextDueDay(props.habit.days, dayOfWeekIndex(debugClockStore.now()))] : '',
 );

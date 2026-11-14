@@ -3,7 +3,7 @@
 // fresh) and wire up debounced localStorage persistence.
 
 import { createPinia, getActivePinia, setActivePinia, type Pinia } from 'pinia';
-import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateLevelEvents, grantLevelRewards, migrateQuestUnlock, seedChallenges } from '../game-engine';
+import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateLevelEvents, grantLevelRewards, migrateQuestUnlock, pruneFrozenDays, seedChallenges } from '../game-engine';
 import { useAccountStore } from './accountStore';
 import { useActivityLogStore } from './activityLogStore';
 import { useBossStore } from './bossStore';
@@ -66,7 +66,10 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   // level so far: this run's, or a finished run's on the high-score list.
   const bestRunLevel = Math.max(0, ...useHighScoreStore(targetPinia).topRuns.map((run) => run.level));
   accountStore.initFromSave(saved?.account ?? null, Math.max(characterStore.character.level, bestRunLevel));
-  accountStore.pruneFrozenDays(dailyPeriodKey(useDebugClockStore(targetPinia).now()));
+  // Frozen days long past are dropped from each skill's streak freeze.
+  const loadDayKey = dailyPeriodKey(useDebugClockStore(targetPinia).now());
+  const pruned = habitStore.habits.map((habit) => pruneFrozenDays(habit, loadDayKey));
+  if (pruned.some((habit, i) => habit !== habitStore.habits[i])) habitStore.setHabits(pruned);
   const rebalanced = applyRankRebalance(characterStore.character, bossStore.boss);
   characterStore.setCharacter(rebalanced.character);
   bossStore.setBoss(rebalanced.boss);

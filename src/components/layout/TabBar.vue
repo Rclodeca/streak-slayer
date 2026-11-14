@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { Anvil, Lock, ScrollText, Store, Sword, UserRound } from 'lucide-vue-next';
-import { dailyPeriodKey, dayOfWeekIndex, frozenDays, isDueOn, periodKeyFor, questsOpen, TALENT_DEFS, talentsOpen } from '../../game-engine';
-import { useAccountStore } from '../../store/accountStore';
+import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, TALENT_DEFS, talentsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -24,7 +23,6 @@ const characterStore = useCharacterStore();
 const questStore = useQuestStore();
 const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
-const accountStore = useAccountStore();
 const talentPurchase = useTalentPurchase();
 
 const TABS = [
@@ -55,12 +53,11 @@ const dueCount = computed(() => questStore.quests.filter((quest) => !quest.doneD
 const skillsLeft = computed(() => {
   const now = debugClockStore.now();
   const sunday = dayOfWeekIndex(now) === 6;
-  const frozen = frozenDays(accountStore.account);
   return habitStore.habits.filter(
     (habit) =>
       !habit.isBad &&
       (habit.period === 'daily' || sunday) &&
-      isDueOn(habit, now, frozen) &&
+      isDueOn(habit, now) &&
       habit.lastCompletedPeriodKey !== periodKeyFor(habit.period, now),
   ).length;
 });

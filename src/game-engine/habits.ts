@@ -86,12 +86,17 @@ export function normalizeDays(days: number[] | undefined): number[] | undefined 
   return unique.length === 0 || unique.length === 7 ? undefined : unique;
 }
 
-/** Whether `habit` can be used on `date`'s day: false on a set-day daily's rest days, and on days a streak freeze covers (a weekly's week once TUNING.WEEK_FREEZE_MIN_DAYS of it are). */
-export function isDueOn(habit: Habit, date: Date, frozenDayKeys: readonly string[] = []): boolean {
-  if (frozenDayKeys.length > 0) {
-    if (habit.period === 'daily' && frozenDayKeys.includes(dailyPeriodKey(date))) return false;
-    if (habit.period === 'weekly' && weekDayKeys(date).filter((key) => frozenDayKeys.includes(key)).length >= TUNING.WEEK_FREEZE_MIN_DAYS) return false;
-  }
+/** Whether a streak freeze covers `habit` on `date`: its day for a daily, its whole week for a weekly. */
+export function isFrozenOn(habit: Habit, date: Date): boolean {
+  const frozen = habit.frozenDayKeys;
+  if (!frozen?.length) return false;
+  if (habit.period === 'daily') return frozen.includes(dailyPeriodKey(date));
+  return weekDayKeys(date).every((key) => frozen.includes(key));
+}
+
+/** Whether `habit` can be used on `date`'s day: false on a set-day daily's rest days, and while a streak freeze covers it. */
+export function isDueOn(habit: Habit, date: Date): boolean {
+  if (isFrozenOn(habit, date)) return false;
   if (habit.period !== 'daily' || !habit.days) return true;
   return habit.days.includes(dayOfWeekIndex(date));
 }

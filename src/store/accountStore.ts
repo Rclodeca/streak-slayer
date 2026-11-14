@@ -1,8 +1,8 @@
-// Thin Pinia wrapper around the account slice (gems, highest level, frozen days), which
+// Thin Pinia wrapper around the account slice (gems, highest level), which
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buyFreeze, createAccount, pruneFrozenDays, recordLevel, spendGems } from '../game-engine';
+import { addGems, createAccount, recordLevel, spendGems } from '../game-engine';
 import type { Account } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
@@ -33,20 +33,6 @@ export const useAccountStore = defineStore('account', {
       if (!spent) return false;
       this.account = spent;
       return true;
-    },
-
-    /** Buys a streak freeze (see buyFreeze in account.ts); returns the gems spent, or null with nothing spent. */
-    buyFreeze(todayKey: string, fromDayKey: string, days: number): number | null {
-      const result = buyFreeze(this.account, todayKey, fromDayKey, days);
-      if (!result) return null;
-      this.account = result.account;
-      return result.gemsSpent;
-    },
-
-    /** Drops frozen days long past (see pruneFrozenDays in account.ts). */
-    pruneFrozenDays(todayKey: string) {
-      const pruned = pruneFrozenDays(this.account, todayKey);
-      if (pruned !== this.account) this.account = pruned;
     },
   },
 });

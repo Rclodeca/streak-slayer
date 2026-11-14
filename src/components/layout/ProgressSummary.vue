@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { frozenDays, isDueOn, periodKeyFor } from '../../game-engine';
+import { isDueOn, periodKeyFor } from '../../game-engine';
 import type { Period } from '../../game-engine';
-import { useAccountStore } from '../../store/accountStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import StatIcon from '../ui/StatIcon.vue';
 
 const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
-const accountStore = useAccountStore();
 
 // Bad habits are left out: checking one off means you gave in, so counting it
 // as "done" would read backwards. So are skills resting today, set-day or frozen.
 function progress(period: Period) {
   const now = debugClockStore.now();
   const key = periodKeyFor(period, now);
-  const habits = habitStore.habits.filter((h) => h.period === period && !h.isBad && isDueOn(h, now, frozenDays(accountStore.account)));
+  const habits = habitStore.habits.filter((h) => h.period === period && !h.isBad && isDueOn(h, now));
   const done = habits.filter((h) => h.lastCompletedPeriodKey === key).length;
   return { done, total: habits.length, percent: habits.length ? (done / habits.length) * 100 : 0 };
 }

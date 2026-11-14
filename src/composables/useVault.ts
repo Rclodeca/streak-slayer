@@ -1,16 +1,18 @@
-// The Vault run against the stores (rules in game-engine/vault.ts): draws the
-// window's stock and buys its items and the Gold Pouch with the account's gems.
-// A bought item goes through the drop popup like the gold shop's, so it's
-// equipped, swapped in or dropped at once (there's no inventory).
+// The Vault run against the stores (rules in game-engine/vault.ts and
+// freeze.ts): draws the window's stock and buys its items, the Gold Pouch and
+// a skill's streak freeze with the account's gems. A bought item goes through
+// the drop popup like the gold shop's, so it's equipped, swapped in or dropped
+// at once (there's no inventory).
 
 import { computed } from 'vue';
-import { buyPouch as buyPouchRule, buyVaultWare, createRng, dailyPeriodKey, pouchState, stockVault } from '../game-engine';
+import { buyFreeze as buyFreezeRule, buyPouch as buyPouchRule, buyVaultWare, createRng, dailyPeriodKey, pouchState, stockVault } from '../game-engine';
 import type { VaultStock } from '../game-engine';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useDebugClockStore } from '../store/debugClockStore';
+import { useHabitStore } from '../store/habitStore';
 import { useItemDropQueue } from './useItemDropQueue';
 
 const rng = createRng();
@@ -21,6 +23,7 @@ export function useVault() {
   const bossStore = useBossStore();
   const debugClockStore = useDebugClockStore();
   const activityLogStore = useActivityLogStore();
+  const habitStore = useHabitStore();
   const { enqueueDrops } = useItemDropQueue();
 
   /** Today's key, read fresh. `dayTick` makes a computed reading it follow a real day turnover. */
@@ -57,5 +60,15 @@ export function useVault() {
     return true;
   }
 
-  return { stock, todayKey, ensureStock, buy, pouch, buyPouch };
+  /** Freezes one skill for `count` periods from `fromDayKey` (see buyFreeze in freeze.ts). False (nothing spent) if it can't be bought or the skill is gone. */
+  function buyFreeze(habitId: string, fromDayKey: string, count: number): boolean {
+    const habit = habitStore.habits.find((h) => h.id === habitId);
+    const result = habit && buyFreezeRule(habit, today(), fromDayKey, count, accountStore.account.gems);
+    if (!habit || !result || !accountStore.spendGems(result.gemsSpent)) return false;
+    habitStore.updateHabit(result.habit);
+    activityLogStore.addEntry({ kind: 'freeze-bought', habitName: habit.name, fromDayKey, count, period: habit.period, gems: result.gemsSpent });
+    return true;
+  }
+
+  return { stock, todayKey, ensureStock, buy, pouch, buyPouch, buyFreeze };
 }

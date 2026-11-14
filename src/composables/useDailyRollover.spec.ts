@@ -8,7 +8,6 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weekDayKeys } from '../game-engine';
-import { useAccountStore } from '../store/accountStore';
 import type { ChallengeEntry } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -578,9 +577,11 @@ describe('useDailyRollover — frozen days', () => {
     useMissedSkillsGate().acknowledge();
   });
 
-  function freeze(...dayKeys: string[]) {
-    const accountStore = useAccountStore();
-    accountStore.account = { ...accountStore.account, frozenDayKeys: dayKeys };
+  /** Freezes `dayKeys` on the habit `id`. */
+  function freeze(id: string, ...dayKeys: string[]) {
+    const habitStore = useHabitStore();
+    const habit = habitStore.habits.find((h) => h.id === id)!;
+    habitStore.updateHabit({ ...habit, frozenDayKeys: dayKeys });
   }
 
   function addUnfinished(isBad = false, period: 'daily' | 'weekly' = 'daily') {
@@ -594,7 +595,7 @@ describe('useDailyRollover — frozen days', () => {
 
   it('yesterday frozen: no miss queued, streak unchanged, stamped', () => {
     const habit = addUnfinished();
-    freeze(yesterdayKey);
+    freeze(habit.id, yesterdayKey);
     useDailyRollover(now);
     expect(useMissedSkillsGate().misses.value).toHaveLength(0);
     const updated = useHabitStore().habits.find((h) => h.id === habit.id)!;
@@ -602,52 +603,27 @@ describe('useDailyRollover — frozen days', () => {
     expect(updated.lastCheckedPeriodKey).toBe(periodKeyFor('daily', now));
   });
 
-  it('a bad habit on a frozen day pays no reward', () => {
-    addUnfinished(true);
-    freeze(yesterdayKey);
+  it('only the frozen skill rests: another skill missed that day still queues its miss', () => {
+    const frozen = addUnfinished();
+    const other = addUnfinished();
+    freeze(frozen.id, yesterdayKey);
     useDailyRollover(now);
-    expect(useMissedSkillsGate().rewards.value).toHaveLength(0);
+    expect(useMissedSkillsGate().misses.value.map((m) => m.habitId)).toEqual([other.id]);
   });
 
-  it('a weekly whose last week was mostly frozen queues no miss', () => {
-    addUnfinished(false, 'weekly');
-    freeze(...weekDayKeys(new Date(now.getTime() - 7 * DAY_MS)).slice(0, 4));
+  it('a weekly whose last week was frozen queues no miss', () => {
+    const habit = addUnfinished(false, 'weekly');
+    freeze(habit.id, ...weekDayKeys(new Date(now.getTime() - 7 * DAY_MS)));
     useDailyRollover(now);
-    expect(useMissedSkillsGate().misses.value.filter((m) => m.period === 'weekly')).toHaveLength(0);
+    expect(useMissedSkillsGate().misses.value).toHaveLength(0);
   });
 
   it('a day not frozen still queues its miss', () => {
-    addUnfinished();
-    freeze(dailyPeriodKey(now));
+    const habit = addUnfinished();
+    freeze(habit.id, dailyPeriodKey(now));
     useDailyRollover(now);
     expect(useMissedSkillsGate().misses.value).toHaveLength(1);
   });
-
-  it('a frozen day does not report day-end', () => {
-    const characterStore = useCharacterStore();
-    const today = dailyPeriodKey(now);
-    characterStore.setCharacter({
-      ...characterStore.character,
-      challenges: [{ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today, -5), progress: 0 }],
-    });
-    freeze(today);
-    useDailyRollover(new Date(now.getTime() + DAY_MS));
-    expect(useCharacterStore().character.challenges?.find((e) => e.id === 'clean-days')?.progress).toBe(0);
-  });
-
-  it('a Clean slate run carries over frozen days through the rollover', () => {
-    const characterStore = useCharacterStore();
-    const today = dailyPeriodKey(now);
-    characterStore.setCharacter({
-      ...characterStore.character,
-      challenges: [{ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today, -9), progress: 1, lastDayKey: addDaysToDayKey(today, -3) }],
-    });
-    freeze(addDaysToDayKey(today, -2), addDaysToDayKey(today, -1));
-    useDailyRollover(new Date(now.getTime() + DAY_MS));
-    expect(useCharacterStore().character.challenges?.find((e) => e.id === 'clean-days')).toMatchObject({ progress: 2, lastDayKey: today });
-  });
-
-
 });
 
 describe('useDailyRollover — a miss before a freeze', () => {
@@ -663,9 +639,11 @@ describe('useDailyRollover — a miss before a freeze', () => {
     useMissedSkillsGate().acknowledge();
   });
 
-  function freeze(...dayKeys: string[]) {
-    const accountStore = useAccountStore();
-    accountStore.account = { ...accountStore.account, frozenDayKeys: dayKeys };
+  /** Freezes `dayKeys` on the habit `id`. */
+  function freeze(id: string, ...dayKeys: string[]) {
+    const habitStore = useHabitStore();
+    const habit = habitStore.habits.find((h) => h.id === id)!;
+    habitStore.updateHabit({ ...habit, frozenDayKeys: dayKeys });
   }
 
   it('a daily missed the day before a freeze still counts when the app stayed closed through it', () => {
@@ -673,7 +651,7 @@ describe('useDailyRollover — a miss before a freeze', () => {
     useBossStore();
     const habit = habitStore.addHabit('Read', 'daily', 'medium', false, createRng());
     habitStore.updateHabit({ ...habit, streakCount: 5, lastCheckedPeriodKey: dailyPeriodKey(back(3)), lastCompletedPeriodKey: null });
-    freeze(dailyPeriodKey(back(2)), dailyPeriodKey(back(1)));
+    freeze(habit.id, dailyPeriodKey(back(2)), dailyPeriodKey(back(1)));
 
     useDailyRollover(now);
 
@@ -685,7 +663,7 @@ describe('useDailyRollover — a miss before a freeze', () => {
     useBossStore();
     const habit = habitStore.addHabit('Read', 'daily', 'medium', false, createRng());
     habitStore.updateHabit({ ...habit, lastCheckedPeriodKey: dailyPeriodKey(back(3)), lastCompletedPeriodKey: dailyPeriodKey(back(3)) });
-    freeze(dailyPeriodKey(back(2)), dailyPeriodKey(back(1)));
+    freeze(habit.id, dailyPeriodKey(back(2)), dailyPeriodKey(back(1)));
 
     useDailyRollover(now);
 
@@ -697,7 +675,7 @@ describe('useDailyRollover — a miss before a freeze', () => {
     useBossStore();
     const habit = habitStore.addHabit('Hike', 'weekly', 'medium', false, createRng());
     habitStore.updateHabit({ ...habit, lastCheckedPeriodKey: periodKeyFor('weekly', back(14)), lastCompletedPeriodKey: null });
-    freeze(...weekDayKeys(back(7)));
+    freeze(habit.id, ...weekDayKeys(back(7)));
 
     useDailyRollover(now);
 

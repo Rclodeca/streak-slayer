@@ -36,7 +36,6 @@ import {
   completeHabit,
   createRng,
   dailyPeriodKey,
-  frozenDays,
   DEFAULT_HERO_NAME,
   effectiveCritChance,
   effectiveStat,
@@ -473,7 +472,7 @@ export function useCombatActions() {
   function checkOffHabit(habitId: string): RewardResult {
     const habit = habitStore.habits.find((h) => h.id === habitId);
     if (!habit) return { itemsDropped: [] };
-    if (!isDueOn(habit, debugClockStore.now(), frozenDays(accountStore.account))) return { itemsDropped: [] };
+    if (!isDueOn(habit, debugClockStore.now())) return { itemsDropped: [] };
 
     const currentPeriodKey = periodKeyFor(habit.period, debugClockStore.now());
     if (habit.lastCompletedPeriodKey === currentPeriodKey) return { itemsDropped: [] };
@@ -530,7 +529,7 @@ export function useCombatActions() {
   function activateOverdrive(habitId: string): RewardResult {
     const habit = habitStore.habits.find((h) => h.id === habitId);
     if (!habit || habit.isBad || !habit.isOverdrive) return { itemsDropped: [] };
-    if (!isDueOn(habit, debugClockStore.now(), frozenDays(accountStore.account))) return { itemsDropped: [] };
+    if (!isDueOn(habit, debugClockStore.now())) return { itemsDropped: [] };
 
     const currentPeriodKey = periodKeyFor(habit.period, debugClockStore.now());
     if (habit.lastCompletedPeriodKey !== currentPeriodKey) return { itemsDropped: [] };

@@ -4,7 +4,7 @@
 // after each engine call resolves.
 
 import { defineStore } from 'pinia';
-import type { BossSkillId, BossStat } from '../game-engine';
+import type { BossSkillId, BossStat, Period } from '../game-engine';
 
 export type ActivityLogEntry =
   // isTrueDamage is set only for a 'trueDamage'-type habit, so ActivityLog
@@ -41,7 +41,7 @@ export type ActivityLogEntry =
   // Gems the account was paid; reason says what for ('level': a level milestone first reached).
   | { id: string; kind: 'gems'; amount: number; reason: 'level' }
   | { id: string; kind: 'revived'; gems: number } // a gem revive on the death screen
-  | { id: string; kind: 'freeze-bought'; fromDayKey: string; days: number; gems: number }
+  | { id: string; kind: 'freeze-bought'; habitName: string; fromDayKey: string; count: number; period: Period; gems: number } // count: days, or weeks for a weekly
   | { id: string; kind: 'shop-bought'; name: string; gold: number } // an item or a tonic
   | { id: string; kind: 'shop-restocked'; gold: number }
   | { id: string; kind: 'vault-bought'; name: string; gems: number; gold?: number } // an item or the Gold Pouch (gold: what it paid)

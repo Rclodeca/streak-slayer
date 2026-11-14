@@ -49,7 +49,7 @@ Once a long-time player has earned every free gem, new gems come only from new c
 |---|---|---|
 | Talent tree nodes (higher up) | Kept | Gold + gems, see §5. |
 | Revive | — | One fixed price that never climbs. Maybe one per boss. Offered on the death screen. |
-| Streak freeze | Kept until used | Set up **in advance** (vacation, sick day). Frozen days don't add to the streak. It never saves a streak after a miss. |
+| Streak freeze | Kept until used | Set up **in advance** (vacation, sick day), for **one skill** (decided 2026-11-14). Frozen days don't add to the streak. It never saves a streak after a miss. |
 | Hero skins, base hero skins, arena skins | Kept | Cosmetic. |
 | A few rotating rare items | This run | Lost on death. Should come back into the rotation later (open, see §12). |
 | A couple of shop-exclusive items | This run | Something for paying players to spend gems on. **Not built:** left out of Milestone D until they have their own design and art; the Vault rotates catalog items for now. |
@@ -239,3 +239,4 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - Nothing is pushed live until the whole plan is ready.
 - **Milestone C built (2026-11-14, not pushed).** Item slots, reroll, Overdrive and enchant are gold services in the Shop (prices as boss-gold multiples, climbing per buy this run; slots 4 to 6 to 8). Reroll, Overdrive and enchant pick their target. All 17 trials are live from the start (no unlock popup, no free milestone trials, no "New" tag). Level-up events are gone; a level-up just heals. Special at level 5, Ult at level 8, handed out (and again after a death). No enchant cap: the price is the limit. Plan: `docs/superpowers/plans/2026-11-14-shop-milestone-c.md`.
 - **Milestone D built (2026-11-14, not pushed).** The Vault opens. A gem revive on the death screen (10 gems, half health, once per boss), replacing the Phoenix Feather code. A streak freeze for gems only (2 a day, 1 to 7 days, from tomorrow to 30 days out; frozen days rest every skill, a weekly once 4 of its days are frozen; Doom waits). A Vault stock from the catalog every 3 days (an epic or relic and a rare; 5/10/15 gems) and a Gold Pouch (5 gems for 3 boss kills' gold, once a day). Boss drops are rarer: 2 kills in 3 (boss 1 always), at most 2 items. Shop-exclusive items are deferred. Plan: `docs/superpowers/plans/2026-11-14-shop-milestone-d.md`.
+- **After the D build (2026-11-14):** the streak freeze is bought per skill: you pick the skill, and only it rests (dailies by the day from tomorrow, weeklies by the week from next week, 2 gems each). Every hit queued that day (missed quests, a due Doom) lands before the death screen offers a revive.

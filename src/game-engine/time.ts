@@ -128,6 +128,13 @@ export function addDaysToDayKey(dayKey: string, days: number): string {
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
+/** The Monday that starts `dayKey`'s week (`YYYY-MM-DD`), read off the key itself. */
+export function weekStartOf(dayKey: string): string {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  const isoDay = (new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7;
+  return addDaysToDayKey(dayKey, -isoDay);
+}
+
 /** The seven day keys (Monday first) of the week `date`'s business day falls in, matching `weeklyPeriodKey`. */
 export function weekDayKeys(date: Date): string[] {
   const monday = addDaysToDayKey(dailyPeriodKey(date), -dayOfWeekIndex(date));

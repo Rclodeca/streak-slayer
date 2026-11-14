@@ -2,7 +2,8 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { GOLD_POUCH, pouchGold } from '../game-engine';
+import { GOLD_POUCH, addDaysToDayKey, createRng, dailyPeriodKey, pouchGold } from '../game-engine';
+import { useHabitStore } from '../store/habitStore';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -67,5 +68,32 @@ describe('useVault', () => {
     expect(useAccountStore().account.gems).toBe(20 - GOLD_POUCH.gems);
     expect(vault.pouch.value.status).toBe('cooldown');
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'vault-bought', name: 'Gold Pouch', gems: GOLD_POUCH.gems, gold });
+  });
+
+  it('buyFreeze freezes one skill for gems and logs it', () => {
+    stocked(10);
+    const habitStore = useHabitStore();
+    const read = habitStore.addHabit('Read', 'daily', 'easy', false, createRng(1));
+    const run = habitStore.addHabit('Run', 'daily', 'easy', false, createRng(2));
+    const vault = useVault();
+    const tomorrow = addDaysToDayKey(dailyPeriodKey(new Date()), 1);
+
+    expect(vault.buyFreeze(read.id, tomorrow, 2)).toBe(true);
+
+    expect(habitStore.habits.find((h) => h.id === read.id)!.frozenDayKeys).toEqual([tomorrow, addDaysToDayKey(tomorrow, 1)]);
+    expect(habitStore.habits.find((h) => h.id === run.id)!.frozenDayKeys).toBeUndefined();
+    expect(useAccountStore().account.gems).toBe(6);
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'freeze-bought', habitName: 'Read', fromDayKey: tomorrow, count: 2, period: 'daily', gems: 4 });
+  });
+
+  it('buyFreeze on a skill deleted meanwhile, or short on gems, spends nothing', () => {
+    stocked(1);
+    const habitStore = useHabitStore();
+    const read = habitStore.addHabit('Read', 'daily', 'easy', false, createRng(1));
+    const tomorrow = addDaysToDayKey(dailyPeriodKey(new Date()), 1);
+    const vault = useVault();
+    expect(vault.buyFreeze(read.id, tomorrow, 1)).toBe(false);
+    expect(vault.buyFreeze('gone', tomorrow, 1)).toBe(false);
+    expect(useAccountStore().account.gems).toBe(1);
   });
 });

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Gem, Hourglass } from 'lucide-vue-next';
-import { FREEZE, ITEM_CATALOG, addDaysToDayKey, daysBetweenDayKeys, formatDayKey, frozenDays, vaultWareState, vaultWindowKey } from '../../game-engine';
+import { FREEZE, ITEM_CATALOG, addDaysToDayKey, daysBetweenDayKeys, formatDayKey, vaultWareState, vaultWindowKey } from '../../game-engine';
 import type { ItemDef, VaultWare } from '../../game-engine';
 import { useVault } from '../../composables/useVault';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useHabitStore } from '../../store/habitStore';
 import SectionTitle from '../ui/SectionTitle.vue';
 import FreezePicker from './FreezePicker.vue';
 import ShopFeatured from './ShopFeatured.vue';
@@ -18,6 +19,7 @@ import ShopWareRow from './ShopWareRow.vue';
 // a new run after a death.
 const characterStore = useCharacterStore();
 const accountStore = useAccountStore();
+const habitStore = useHabitStore();
 const vault = useVault();
 
 watch(
@@ -61,20 +63,26 @@ const pouch = computed(() => {
   return { ...state, text: `${state.gold.toLocaleString('en-US')} gold, now. Once a day.`, label: state.status === 'cooldown' ? 'Tomorrow' : undefined };
 });
 
-// The streak freeze: bought in a picker. The next run of frozen days ahead is
-// shown under the row, e.g. "Frozen: Nov 20 – Nov 24".
+// The streak freeze: bought for one skill in a picker. The soonest freeze
+// ahead is shown under the row, e.g. "Read: Nov 20 – Nov 24 · +1 more".
 const freezeOpen = ref(false);
 const frozenAhead = computed(() => {
-  const ahead = frozenDays(accountStore.account).filter((key) => daysBetweenDayKeys(vault.todayKey.value, key) >= 0);
-  if (ahead.length === 0) return undefined;
-  let end = ahead[0];
-  for (const key of ahead.slice(1)) {
-    if (key !== addDaysToDayKey(end, 1)) break;
-    end = key;
-  }
-  return end === ahead[0] ? `Frozen: ${formatDayKey(end)}` : `Frozen: ${formatDayKey(ahead[0])} – ${formatDayKey(end)}`;
+  const runs = habitStore.habits.flatMap((habit) => {
+    const ahead = (habit.frozenDayKeys ?? []).filter((key) => daysBetweenDayKeys(vault.todayKey.value, key) >= 0);
+    if (ahead.length === 0) return [];
+    let end = ahead[0];
+    for (const key of ahead.slice(1)) {
+      if (key !== addDaysToDayKey(end, 1)) break;
+      end = key;
+    }
+    return [{ name: habit.name, start: ahead[0], end }];
+  });
+  if (runs.length === 0) return undefined;
+  const soonest = runs.reduce((a, b) => (b.start < a.start ? b : a));
+  const span = soonest.end === soonest.start ? formatDayKey(soonest.start) : `${formatDayKey(soonest.start)} – ${formatDayKey(soonest.end)}`;
+  return `${soonest.name}: ${span}${runs.length > 1 ? ` · +${runs.length - 1} more` : ''}`;
 });
-const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerDay);
+const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerPeriod);
 </script>
 
 <template>
@@ -98,8 +106,8 @@ const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerDay
         kind="tonic"
         name="Streak Freeze"
         icon="freeze"
-        text="Skills rest on the days you pick. Streaks hold, but don't grow."
-        :price="FREEZE.gemsPerDay"
+        text="One skill rests on the days you pick. Its streak holds, but doesn't grow."
+        :price="FREEZE.gemsPerPeriod"
         :buyable="!freezeShort"
         :short="freezeShort"
         :warn="frozenAhead"

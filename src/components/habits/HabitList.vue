@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Plus, Shield, Sword } from 'lucide-vue-next';
-import { frozenDays, isDueOn, periodKeyFor } from '../../game-engine';
+import { isDueOn, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
@@ -9,7 +9,6 @@ import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useModalPriority } from '../../composables/useModalPriority';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
-import { useAccountStore } from '../../store/accountStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useHintStore } from '../../store/hintStore';
@@ -50,10 +49,8 @@ const badHabits = computed(() => habitStore.habits.filter((habit) => habit.isBad
 
 const dailyHabits = computed(() => sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'daily')));
 // Set-day skills resting today stay at the bottom of Daily, greyed out, and
-// so does every skill on a day a streak freeze covers.
-const accountStore = useAccountStore();
-const frozen = computed(() => frozenDays(accountStore.account));
-const dueNow = (habit: Habit) => isDueOn(habit, debugClockStore.now(), frozen.value);
+// so do skills a streak freeze covers today.
+const dueNow = (habit: Habit) => isDueOn(habit, debugClockStore.now());
 const orderedDailyHabits = computed(() => [...dailyHabits.value.filter(dueNow), ...dailyHabits.value.filter((habit) => !dueNow(habit))]);
 const weeklyHabits = computed(() =>
   sortByDamageType(goodHabits.value.filter((habit) => habit.period === 'weekly')),
@@ -102,7 +99,7 @@ const checkHint = computed<{ id: HintId; habit: Habit } | null>(() => {
   for (const id of ['checkGood', 'checkBad'] as const) {
     if (hintStore.seen[id]) continue;
     const habit = habitStore.habits.find(
-      (h) => h.isBad === (id === 'checkBad') && isDueOn(h, now, frozen.value) && h.lastCompletedPeriodKey !== periodKeyFor(h.period, now),
+      (h) => h.isBad === (id === 'checkBad') && isDueOn(h, now) && h.lastCompletedPeriodKey !== periodKeyFor(h.period, now),
     );
     if (habit) return { id, habit };
   }

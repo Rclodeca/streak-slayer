@@ -5,7 +5,6 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addDaysToDayKey, createHabit, createRng, dailyPeriodKey, periodKeyFor, weekDayKeys } from '../../game-engine';
 import type { ChallengeEntry } from '../../game-engine';
-import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -171,12 +170,12 @@ describe('TabBar', () => {
       expect(tab(mount(TabBar), 'skills').find('.tab-count').text()).toBe('3');
     });
 
-    it('wears no count on a frozen day', () => {
+    it('leaves out a frozen skill', () => {
       vi.useFakeTimers({ now: SUNDAY });
       addHabits(SUNDAY);
-      const accountStore = useAccountStore();
-      accountStore.account = { ...accountStore.account, frozenDayKeys: weekDayKeys(SUNDAY) };
-      expect(tab(mount(TabBar), 'skills').find('.tab-count').exists()).toBe(false);
+      const habitStore = useHabitStore();
+      habitStore.habits = habitStore.habits.map((h) => (h.name === 'Meditate' || h.name === 'Long run' ? { ...h, frozenDayKeys: weekDayKeys(SUNDAY) } : h));
+      expect(tab(mount(TabBar), 'skills').find('.tab-count').text()).toBe('1');
     });
 
     it('leaves out a skill resting today and wears no count when nothing is left', () => {

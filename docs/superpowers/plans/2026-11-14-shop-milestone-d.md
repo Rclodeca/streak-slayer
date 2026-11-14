@@ -29,14 +29,14 @@
 3. **The Vault stock comes from the existing catalog** (user's pick). Shop-only exclusives wait for their own design and a Pixellab run.
 4. **Drops: fewer items per boss** (user's pick), with the same rarity odds. A boss kill drops on 2 kills in 3, and boss 1 always drops (the first find of every run stays). The count is 1, or 2 from boss 4 on (the cap falls from 3 to 2). Scavenger is unchanged.
 5. **Revive:** 10 gems, back at half max health, against the same boss, with nothing else changed. It appears on the bonfire screen above "Rise again". The old `ReviveNotice` toast is kept with new copy.
-6. **Freeze rules:**
-   - A freeze covers whole days, bought 1 to 7 at a time at 2 gems a day.
-   - It starts tomorrow at the earliest and no more than 30 days out, so it can never cover a day already under way.
-   - Days already frozen aren't charged again. There's no cancel and no refund.
-   - A frozen day rests every daily skill, good and bad: it can't be checked, no miss, no avoid reward, and the streak neither grows nor breaks.
-   - A weekly skill rests for a week when 4 or more of that week's 7 days are frozen.
-   - Quests are not touched: they have their own dates. A due Doom waits for the first day that isn't frozen.
-   - The day-end trial check skips a frozen day, so a frozen day neither counts towards a trial nor breaks one.
+6. **Freeze rules** (changed after the build, 2026-11-14: the user made the freeze per skill):
+   - A freeze is bought for **one skill**, picked in the picker. Only that skill rests. Bad habits can't be frozen: they never miss on their own.
+   - A daily freezes by the day: 1 to 7 days, from tomorrow at the earliest and no more than 30 days out.
+   - A weekly freezes by the whole week: 1 to 4 weeks, from next week at the earliest and no more than 4 weeks out. A week under way can't be frozen.
+   - Each frozen day or week costs 2 gems. Periods already frozen aren't charged again. There's no cancel and no refund.
+   - A frozen skill can't be checked, has no miss, and its streak neither grows nor breaks. The freeze lives on the skill (`Habit.frozenDayKeys`), so a death keeps it, and deleting the skill loses it.
+   - The rollover looks back past frozen periods, so a freeze never hides a real miss on the day before it.
+   - Quests, the Doom and trials are not touched, except that Perfect day leaves out a skill frozen that day.
 7. **Vault stock:** a new draw every 3 days, and after a death. It holds an epic or relic on velvet (a relic 1 time in 3 when one is left) and one rare in the rows. Prices: rare 5, epic 10, relic 15 gems. It draws only unowned items that aren't in the gold shop's stock, by the same level rule as the gold shop.
 8. **Gold Pouch:** 5 gems for 3 boss kills' gold at the current boss, once a day. The pouch's day mark is on `Character`, so a death resets it, but the gold it bought is lost with the death anyway.
 9. **The death screen** offers no "get gems" link yet. The Store comes with Milestone G.
@@ -49,10 +49,10 @@
 
 ## Review Focus
 
-1. **A freeze bought for today.** A late-night buy for the day under way is refused, and so is any start before tomorrow. A frozen day never turns a miss already detected into a rest. (D4)
+1. **A freeze bought for today.** A late-night buy for the day under way is refused, and so is any start before tomorrow (next week, for a weekly). A frozen day never turns a miss already detected into a rest. (D4)
 2. **Revive twice.** A double tap spends 10 gems once. A second death to the same boss offers only "Rise again". A revive with 9 gems is disabled and spends nothing. (D2)
 3. **Death.** It wipes the Vault stock, the pouch mark and the revive mark. Frozen days, gems, trials and talents are kept. (D2, D3, D4)
-4. **A freeze across a week boundary.** Fri–Mon freezes those dailies, but neither weekly week has 4 frozen days, so both weeklies stay due. The streak count is the same before and after the frozen days. (D4)
+4. **Revive and queued hits** (added after the build). A revive is offered only once every hit queued that day has landed: the missed-quest popup shows over a death and the death screen waits for it, and a due Doom on a fallen hero is spent without a hit.
 5. **Old saves.** An account with no `frozenDayKeys` and a character with no `vault`, `pouchDayKey` or `revivedAtBoss` load unchanged. An exported save round-trips the frozen days. (D3, D4)
 
 ---

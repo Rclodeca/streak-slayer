@@ -33,23 +33,4 @@ describe('accountStore', () => {
     expect(store.spendGems(1)).toBe(true);
     expect(store.account.gems).toBe(0);
   });
-
-  it('buyFreeze spends the gems and returns them, or null and nothing spent', () => {
-    const store = useAccountStore();
-    store.addGems(4);
-    expect(store.buyFreeze('2026-11-14', '2026-11-15', 3)).toBeNull();
-    expect(store.account.gems).toBe(4);
-    expect(store.buyFreeze('2026-11-14', '2026-11-15', 2)).toBe(4);
-    expect(store.account).toMatchObject({ gems: 0, frozenDayKeys: ['2026-11-15', '2026-11-16'] });
-  });
-
-  it('pruneFrozenDays leaves the account alone when nothing is old', () => {
-    const store = useAccountStore();
-    store.account = { gems: 0, highestLevel: 1, frozenDayKeys: ['2026-11-15'] };
-    const before = store.account;
-    store.pruneFrozenDays('2026-11-14');
-    expect(store.account).toBe(before);
-    store.pruneFrozenDays('2026-12-30');
-    expect(store.account.frozenDayKeys).toEqual([]);
-  });
 });

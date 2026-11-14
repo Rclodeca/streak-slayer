@@ -2,11 +2,12 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, createCharacter, createRng, dailyPeriodKey, generateBoss, talentUnlockPending } from '../game-engine';
+import { addDaysToDayKey, createCharacter, createHabit, createRng, dailyPeriodKey, generateBoss, talentUnlockPending } from '../game-engine';
 import { STORAGE_KEY as FOCUS_MODE_KEY } from './focusModeStore';
 import { STORAGE_KEY as HINTS_KEY } from './hintStore';
 import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highScoreStore';
 import { useAccountStore } from './accountStore';
+import { useHabitStore } from './habitStore';
 import { initializeStores } from './index';
 import { STORAGE_KEY as LOG_VISIBLE_KEY } from './logVisibleStore';
 import { serializeSaveState, STORAGE_KEY as SAVE_KEY } from './plugins/saveState';
@@ -151,17 +152,17 @@ describe('the account in a save file', () => {
     expect(useAccountStore().account).toEqual({ gems: 9, highestLevel: 30 });
   });
 
-  it('carries frozen days through an export and import', () => {
+  it("carries a skill's frozen days through an export and import", () => {
     const rng = createRng(1);
     const ahead = addDaysToDayKey(dailyPeriodKey(new Date()), 3);
-    const account = { gems: 9, highestLevel: 30, frozenDayKeys: [ahead] };
-    localStorage.setItem(SAVE_KEY, serializeSaveState({ character: createCharacter(rng), boss: generateBoss(2, rng), habits: [], account }));
+    const habit = { ...createHabit('Read', 'daily', 'easy', false, rng), frozenDayKeys: [ahead] };
+    localStorage.setItem(SAVE_KEY, serializeSaveState({ character: createCharacter(rng), boss: generateBoss(2, rng), habits: [habit], account: { gems: 9, highestLevel: 30 } }));
     const file = readSaveFile(buildSaveFile())!.file;
     localStorage.clear();
 
     applySaveFile(file);
     initializeStores();
-    expect(useAccountStore().account.frozenDayKeys).toEqual([ahead]);
+    expect(useHabitStore().habits[0].frozenDayKeys).toEqual([ahead]);
   });
 
   it('imports a file from before accounts', () => {

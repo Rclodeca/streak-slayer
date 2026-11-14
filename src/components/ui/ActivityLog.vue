@@ -99,7 +99,7 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           <template v-if="entry.gold"><span class="log-gold">+{{ formatCompact(entry.gold) }}</span> gold</template>
         </template>
         <template v-else-if="entry.kind === 'freeze-bought'">
-          <StatIcon name="freeze" class="log-icon" /> Froze {{ entry.days === 1 ? '1 day' : `${entry.days} days` }} from {{ formatDayKey(entry.fromDayKey) }}
+          <StatIcon name="freeze" class="log-icon" /> Froze "{{ entry.habitName }}" {{ entry.count }} {{ entry.period === 'weekly' ? 'week' : 'day' }}{{ entry.count === 1 ? '' : 's' }} from {{ formatDayKey(entry.fromDayKey) }}
           <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems
         </template>
         <template v-else-if="entry.kind === 'revived'">

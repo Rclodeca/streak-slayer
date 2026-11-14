@@ -411,6 +411,10 @@ export interface Habit {
   overdriveUsesThisPeriod?: number;
   rank?: number; // 0-8, earned at streak milestones and never lost (see rankForStreak); undefined reads as 0
   createdDayKey?: string; // dailyPeriodKey of the day it was added; undefined (older saves) means it can be removed any time
+  // Days a streak freeze covers for this skill (sorted day keys; a weekly's
+  // frozen weeks as all seven of their days), bought ahead with gems (see
+  // freeze.ts). The skill rests on them. Kept through death, like the skill.
+  frozenDayKeys?: string[];
 }
 
 export interface Quest {

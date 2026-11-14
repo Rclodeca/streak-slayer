@@ -317,6 +317,11 @@ describe('applyChallengeEvent: day-end challenges', () => {
     expect(dayEnd(withEntry('perfect-day'), [doneToday({ id: 'a' }), rest]).completed).toHaveLength(1);
   });
 
+  it('Perfect day ignores a skill frozen that day', () => {
+    const frozen = makeHabit({ id: 'frozen', frozenDayKeys: [D] });
+    expect(dayEnd(withEntry('perfect-day'), [doneToday({ id: 'a' }), frozen]).completed).toHaveLength(1);
+  });
+
   it('nothing reacts to a day that ended before the challenge was taken', () => {
     const result = dayEnd(withEntry('perfect-day', { takenDayKey: TODAY }), [doneToday()]);
     expect(result.completed).toEqual([]);
@@ -346,20 +351,6 @@ describe('applyChallengeEvent: day-end challenges', () => {
     const second = dayEnd(first.character);
     expect(only(first).progress).toBe(1);
     expect(second.character).toBe(first.character);
-  });
-
-  it('Clean slate carries over days a streak freeze covered', () => {
-    const entryAt = { progress: 2, lastDayKey: addDaysToDayKey(D, -3) };
-    const frozen = [addDaysToDayKey(D, -2), addDaysToDayKey(D, -1)];
-    const result = applyChallengeEvent(withEntry('clean-days', entryAt), { type: 'day-end', endedDate: ENDED, habits: [], quests: [], frozenDayKeys: frozen }, TODAY);
-    expect(only(result)).toMatchObject({ progress: 3, lastDayKey: D });
-  });
-
-  it('Clean slate still resets when the gap holds a day not frozen', () => {
-    const entryAt = { progress: 2, lastDayKey: addDaysToDayKey(D, -3) };
-    const frozen = [addDaysToDayKey(D, -1)];
-    const result = applyChallengeEvent(withEntry('clean-days', entryAt), { type: 'day-end', endedDate: ENDED, habits: [], quests: [], frozenDayKeys: frozen }, TODAY);
-    expect(only(result)).toMatchObject({ progress: 1, lastDayKey: D });
   });
 
   it('Clean slate resets across a gap of days (no protection)', () => {
