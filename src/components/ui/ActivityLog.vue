@@ -110,7 +110,8 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           <StatIcon name="streak" class="log-icon" /> "{{ entry.habitName }}" · Rank {{ rankNumeral(entry.rank) }}
         </template>
         <template v-else-if="entry.kind === 'overdrive-granted'">
-          <StatIcon name="streak" class="log-icon" /> "{{ entry.habitName }}" gained Overdrive!
+          <StatIcon name="streak" class="log-icon" /> "{{ entry.habitName }}" gained Overdrive!{{ ' ' }}
+          <template v-if="entry.gold"> <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold</template>
         </template>
         <template v-else-if="entry.kind === 'event-heal'">
           <StatIcon name="healing" class="log-icon" /> Restored <span class="log-heal">+{{ formatCompact(entry.amount) }}</span> HP
@@ -119,7 +120,8 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           <StatIcon name="healing" class="log-icon" /> {{ entry.itemName }} <span class="log-heal">+{{ formatCompact(entry.amount) }}</span> HP
         </template>
         <template v-else-if="entry.kind === 'item-doubled'">
-          <StatIcon name="itemDoubled" class="log-icon" /> "{{ entry.itemName }}" now has double stats!
+          <StatIcon name="itemDoubled" class="log-icon" /> "{{ entry.itemName }}" now has double stats!{{ ' ' }}
+          <template v-if="entry.gold"> <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold</template>
         </template>
         <template v-else-if="entry.kind === 'heal-boost-gained'">
           <StatIcon name="healBoost" class="log-icon" /> Healing boosted for {{ entry.days }} days
@@ -128,10 +130,12 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           <StatIcon name="critBoost" class="log-icon" /> Crit chance boosted for {{ entry.days }} days
         </template>
         <template v-else-if="entry.kind === 'item-slots-gained'">
-          <StatIcon name="slots" class="log-icon" /> Item slots increased to {{ entry.slots ?? 6 }}!
+          <StatIcon name="slots" class="log-icon" /> Item slots increased to {{ entry.slots ?? 6 }}!{{ ' ' }}
+          <template v-if="entry.gold"> <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold</template>
         </template>
         <template v-else-if="entry.kind === 'skill-rerolled'">
-          <StatIcon name="reroll" class="log-icon" /> "{{ entry.habitName }}" was re-rolled to {{ entry.damageType }}
+          <StatIcon name="reroll" class="log-icon" /> "{{ entry.habitName }}" was re-rolled to {{ entry.damageType }}{{ ' ' }}
+          <template v-if="entry.gold"> <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold</template>
         </template>
         <template v-else-if="entry.kind === 'wounds-applied'">
           <StatIcon name="wounds" class="log-icon" /> Wounded for {{ entry.durationDays }} day(s) — healing at {{ (entry.effectRate * 100).toFixed(0) }}%

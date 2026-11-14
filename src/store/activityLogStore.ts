@@ -44,15 +44,15 @@ export type ActivityLogEntry =
   | { id: string; kind: 'shop-restocked'; gold: number }
   | { id: string; kind: 'special-assigned'; habitName: string }
   | { id: string; kind: 'ult-assigned'; habitName: string }
-  | { id: string; kind: 'overdrive-granted'; habitName: string }
+  | { id: string; kind: 'overdrive-granted'; habitName: string; gold?: number }
   | { id: string; kind: 'rank-up'; habitName: string; rank: number }
-  | { id: string; kind: 'item-slots-gained'; slots?: number } // slots: the new cap; undefined on entries logged before 8 slots existed (they meant 6)
+  | { id: string; kind: 'item-slots-gained'; slots?: number; gold?: number } // slots: the new cap; undefined on entries logged before 8 slots existed (they meant 6)
   | { id: string; kind: 'event-heal'; amount: number }
   | { id: string; kind: 'item-heal'; itemName: string; amount: number }
   | { id: string; kind: 'heal-boost-gained'; days: number }
-  | { id: string; kind: 'item-doubled'; itemName: string }
+  | { id: string; kind: 'item-doubled'; itemName: string; gold?: number }
   | { id: string; kind: 'crit-boost-gained'; days: number }
-  | { id: string; kind: 'skill-rerolled'; habitName: string; damageType: string }
+  | { id: string; kind: 'skill-rerolled'; habitName: string; damageType: string; gold?: number }
   | { id: string; kind: 'wounds-applied'; durationDays: number; effectRate: number }
   | { id: string; kind: 'quest-completed'; description: string; amount: number; itemName?: string }
   // Unbroken: a boss hit from a missed skill or quest (name) that did nothing.

@@ -24,6 +24,17 @@ describe('ActivityLog — boss defeated', () => {
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Bought Steel Sword −50 gold');
   });
 
+  it('service entries show what they cost, and older ones show no gold', () => {
+    const log = useActivityLogStore();
+    log.addEntry({ kind: 'item-doubled', itemName: 'Steel Sword', gold: 1400 });
+    log.addEntry({ kind: 'item-doubled', itemName: 'Old Sword' });
+    const lines = mount(ActivityLog)
+      .findAll('li')
+      .map((li) => li.text().replace(/\s+/g, ' ').trim());
+    expect(lines).toContain('"Steel Sword" now has double stats! −1.4K gold');
+    expect(lines).toContain('"Old Sword" now has double stats!');
+  });
+
   it('a restock shows its fee', () => {
     useActivityLogStore().addEntry({ kind: 'shop-restocked', gold: 25 });
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Restocked −25 gold');
