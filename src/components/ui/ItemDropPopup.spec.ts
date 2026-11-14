@@ -53,4 +53,16 @@ describe('ItemDropPopup', () => {
     expect(document.querySelector('.modal-scroll')).toBe(scroller);
     expect(scroller.scrollTop).toBe(0);
   });
+
+  it('a bought item says Bought! and names no boss', async () => {
+    const item = ITEM_CATALOG.find((i) => i.type === 'equipment')!;
+    const characterStore = useCharacterStore();
+    characterStore.character = { ...characterStore.character, ownedItemIds: [item.id], equippedItemIds: [] };
+    useItemDropQueue().enqueueDrops([item], undefined, true);
+    mount(ItemDropPopup, { attachTo: document.body, global: { plugins: [pinia] } });
+    await flushPromises();
+    expect(document.body.textContent).toContain('Bought!');
+    expect(document.body.textContent).not.toContain('Item found!');
+    expect(document.querySelector('.dropped-by')).toBeNull();
+  });
 });

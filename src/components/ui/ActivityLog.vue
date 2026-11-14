@@ -94,6 +94,12 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
         <template v-else-if="entry.kind === 'gems'">
           <StatIcon name="gems" class="log-icon" /> <span class="log-gems">+{{ formatCompact(entry.amount) }}</span> gems
         </template>
+        <template v-else-if="entry.kind === 'shop-bought'">
+          <StatIcon name="gold" class="log-icon" /> Bought {{ entry.name }} <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold
+        </template>
+        <template v-else-if="entry.kind === 'shop-restocked'">
+          <StatIcon name="gold" class="log-icon" /> Restocked <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold
+        </template>
         <template v-else-if="entry.kind === 'special-assigned'">
           <StatIcon name="special" class="log-icon" /> "{{ entry.habitName }}" is now your Special skill!
         </template>

@@ -19,6 +19,16 @@ describe('ActivityLog — boss defeated', () => {
     expect(text).toBe('Boss #3 defeated! +104 EXP +70 gold');
   });
 
+  it('shop entries show the item and the gold', () => {
+    useActivityLogStore().addEntry({ kind: 'shop-bought', name: 'Steel Sword', gold: 50 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Bought Steel Sword −50 gold');
+  });
+
+  it('a restock shows its fee', () => {
+    useActivityLogStore().addEntry({ kind: 'shop-restocked', gold: 25 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Restocked −25 gold');
+  });
+
   it('shows gems a level milestone paid', () => {
     useActivityLogStore().addEntry({ kind: 'gems', amount: 2, reason: 'level' });
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('+2 gems');

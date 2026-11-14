@@ -40,6 +40,8 @@ export type ActivityLogEntry =
   | { id: string; kind: 'boss-defeated'; bossIndex: number; amount?: number; gold?: number }
   // Gems the account was paid; reason says what for ('level': a level milestone first reached).
   | { id: string; kind: 'gems'; amount: number; reason: 'level' }
+  | { id: string; kind: 'shop-bought'; name: string; gold: number } // an item or a tonic
+  | { id: string; kind: 'shop-restocked'; gold: number }
   | { id: string; kind: 'special-assigned'; habitName: string }
   | { id: string; kind: 'ult-assigned'; habitName: string }
   | { id: string; kind: 'overdrive-granted'; habitName: string }

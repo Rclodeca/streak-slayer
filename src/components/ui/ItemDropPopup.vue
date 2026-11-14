@@ -10,7 +10,7 @@ import Modal from './Modal.vue';
 import StatIcon from './StatIcon.vue';
 import { BOOST_STAT_ICON } from './statIcons';
 
-const { current, droppedBy, dismiss, replace } = useItemDropQueue();
+const { current, droppedBy, bought, dismiss, replace } = useItemDropQueue();
 // A kill's drops wait until the boss has fallen on screen.
 const { celebrating } = useCelebration();
 const characterStore = useCharacterStore();
@@ -38,7 +38,7 @@ const isCurrentEquipped = computed(
     :model-value="current !== null && !celebrating"
     :dismissible="isCurrentEquipped"
     :scroll-key="current"
-    title="Item found!"
+    :title="bought ? 'Bought!' : 'Item found!'"
     max-width="460px"
     @update:model-value="dismiss"
   >

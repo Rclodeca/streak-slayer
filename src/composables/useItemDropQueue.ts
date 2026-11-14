@@ -12,7 +12,8 @@
 // remaining slots before the forced-choice popup ever appears.
 //
 // A boss kill's drops carry the boss's name (`droppedBy`) so the popup can
-// say where they came from; event, quest and backfilled drops have none.
+// say where they came from; event, quest and backfilled drops have none. A
+// shop purchase is marked `bought`, so the popup says so instead.
 
 import { computed, ref } from 'vue';
 import { maxEquipSlots } from '../game-engine';
@@ -20,7 +21,7 @@ import type { ItemDef } from '../game-engine';
 import { useCharacterStore } from '../store/characterStore';
 import { useDeathScreen } from './useDeathScreen';
 
-const queue = ref<{ item: ItemDef; droppedBy?: string }[]>([]);
+const queue = ref<{ item: ItemDef; droppedBy?: string; bought?: boolean }[]>([]);
 
 export function useItemDropQueue() {
   const characterStore = useCharacterStore();
@@ -31,6 +32,7 @@ export function useItemDropQueue() {
   // screen. The run is over, so `clear()` (called on restart) discards them.
   const current = computed<ItemDef | null>(() => (isDead.value ? null : queue.value[0]?.item ?? null));
   const droppedBy = computed<string | null>(() => (isDead.value ? null : queue.value[0]?.droppedBy ?? null));
+  const bought = computed(() => !isDead.value && queue.value[0]?.bought === true);
   const isFull = computed(() => characterStore.character.equippedItemIds.length >= maxEquipSlots(characterStore.character));
 
   function processFront() {
@@ -40,8 +42,8 @@ export function useItemDropQueue() {
     }
   }
 
-  function enqueueDrops(items: ItemDef[], droppedBy?: string) {
-    queue.value.push(...items.map((item) => ({ item, droppedBy })));
+  function enqueueDrops(items: ItemDef[], droppedBy?: string, bought?: boolean) {
+    queue.value.push(...items.map((item) => ({ item, droppedBy, ...(bought && { bought }) })));
     processFront();
   }
 
@@ -69,5 +71,5 @@ export function useItemDropQueue() {
     queue.value = [];
   }
 
-  return { current, droppedBy, isFull, enqueueDrops, dismiss, replace, clear };
+  return { current, droppedBy, bought, isFull, enqueueDrops, dismiss, replace, clear };
 }
