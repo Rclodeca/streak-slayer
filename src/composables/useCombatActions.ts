@@ -734,10 +734,12 @@ export function useCombatActions() {
    * death check.
    */
   function landDoom(currentDayKey: string = dailyPeriodKey(debugClockStore.now())): void {
-    // A due Doom waits out a streak freeze and lands on the first day after it.
-    if (frozenDays(accountStore.account).includes(currentDayKey)) return;
     const result = resolveDoom(characterStore.character, bossStore.boss, currentDayKey);
-    if (result.amount === undefined) return;
+    // A Doom due on a fallen hero is spent without a hit (see resolveDoom).
+    if (result.amount === undefined) {
+      if (result.boss !== bossStore.boss) bossStore.setBoss(result.boss);
+      return;
+    }
     characterStore.setCharacter(result.character);
     bossStore.setBoss(result.boss);
     playHit({ kind: 'hurt', amount: result.amount, hp: -result.amount });

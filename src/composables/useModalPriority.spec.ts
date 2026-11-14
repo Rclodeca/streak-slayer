@@ -118,14 +118,14 @@ describe('useModalPriority', () => {
       expect(questMissVisible.value).toBe(true);
     });
 
-    it('is false while the character is dead, even with a quest miss pending', () => {
+    it('still shows while the character is dead, so its hits land before the death screen', () => {
       const questStore = useQuestStore();
       const quest = questStore.addQuest('Clean garage', 'medium', '2026-01-01');
       useQuestMissGate().queueMiss(quest);
       useDeathScreen().triggerDeath();
 
       const { questMissVisible } = useModalPriority();
-      expect(questMissVisible.value).toBe(false);
+      expect(questMissVisible.value).toBe(true);
     });
 
     it('is false while a habit miss is pending, even with a quest miss pending', () => {

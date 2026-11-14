@@ -554,9 +554,16 @@ describe('resolveDoom', () => {
     expect(resolveDoom(late.character, late.boss, '2026-01-11').amount).toBeUndefined();
   });
 
-  it('never hits a fallen hero', () => {
+  it('never hits a fallen hero, but is spent on one, so a revive does not meet it', () => {
     const fallen = hero({ currentHealth: 0 });
-    expect(resolveDoom(fallen, dooming, '2026-01-04').character).toBe(fallen);
+    const spent = resolveDoom(fallen, dooming, '2026-01-04');
+    expect(spent.character).toBe(fallen);
+    expect(spent.amount).toBeUndefined();
+    expect(spent.boss.doomDueDayKey).toBeUndefined();
+  });
+
+  it('a Doom not yet due waits even on a fallen hero', () => {
+    expect(resolveDoom(hero({ currentHealth: 0 }), dooming, '2026-01-03').boss).toBe(dooming);
   });
 });
 

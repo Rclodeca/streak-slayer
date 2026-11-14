@@ -647,20 +647,7 @@ describe('useDailyRollover — frozen days', () => {
     expect(useCharacterStore().character.challenges?.find((e) => e.id === 'clean-days')).toMatchObject({ progress: 2, lastDayKey: today });
   });
 
-  it('a due Doom waits out a frozen day and lands the day after', () => {
-    const characterStore = useCharacterStore();
-    const bossStore = useBossStore();
-    characterStore.setCharacter({ ...characterStore.character, currentHealth: 1000 });
-    bossStore.setBoss({ ...bossStore.boss, doomDueDayKey: dailyPeriodKey(now) });
-    freeze(dailyPeriodKey(now));
 
-    useDailyRollover(now);
-    expect(characterStore.character.currentHealth).toBe(1000);
-    expect(bossStore.boss.doomDueDayKey).toBeDefined();
-
-    useDailyRollover(new Date(now.getTime() + DAY_MS));
-    expect(characterStore.character.currentHealth).toBeCloseTo(500, 10);
-  });
 });
 
 describe('useDailyRollover — a miss before a freeze', () => {

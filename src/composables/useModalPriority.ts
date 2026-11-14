@@ -37,8 +37,12 @@ export function useModalPriority() {
   const { celebrating } = useCelebration();
   const { current: bossSkillCurrent } = useBossSkillCard();
 
-  /** True only when a quest miss is pending and nothing higher-priority (death, habit miss) is. */
-  const questMissVisible = computed(() => questMissPending.value && !isDead.value && !habitMissPending.value);
+  /**
+   * True when a quest miss is pending and no habit miss is. It shows even after
+   * a death: the death screen waits for it (DeathScreen), so every hit queued
+   * that day lands before a gem revive is offered.
+   */
+  const questMissVisible = computed(() => questMissPending.value && !habitMissPending.value);
 
   /** True when a fired boss skill's card is queued and nothing higher-priority (death, item drop, habit miss, quest miss, a celebration) is. */
   const bossSkillVisible = computed(

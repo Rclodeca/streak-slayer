@@ -310,7 +310,13 @@ export function spendPassedBreakpoints(boss: Boss): Boss {
  */
 export function resolveDoom(character: Character, boss: Boss, currentDayKey: string): { character: Character; boss: Boss; amount?: number } {
   if (!boss.doomDueDayKey || daysBetweenDayKeys(boss.doomDueDayKey, currentDayKey) < 0) return { character, boss };
-  if (Math.round(character.currentHealth) <= 0) return { character, boss };
+  // A fallen hero takes no hit, but the Doom is spent on them: one queued that
+  // day must never wait to meet a hero revived for gems.
+  if (Math.round(character.currentHealth) <= 0) {
+    const spent = { ...boss };
+    delete spent.doomDueDayKey;
+    return { character, boss: spent };
+  }
   const amount = hpHitDamage(character.currentHealth, doomPct(character) * lastStandFactor(character, effectiveStat(character, 'health')));
   const cleared = { ...boss };
   delete cleared.doomDueDayKey;

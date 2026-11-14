@@ -12,6 +12,8 @@ import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
+import { useQuestStore } from '../../store/questStore';
+import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import DeathScreen from './DeathScreen.vue';
 
 enableAutoUnmount(afterEach);
@@ -95,6 +97,17 @@ describe('DeathScreen', () => {
     await nextTick();
     expect(useDeathScreen().isDead.value).toBe(false);
     expect(document.querySelector('.death-layer')).toBeNull();
+  });
+
+  it('waits while a missed quest is still to land, then opens', async () => {
+    const quest = useQuestStore().addQuest('Clean garage', 'medium', '2026-01-01');
+    useQuestMissGate().queueMiss(quest);
+    mountWith([]);
+    await nextTick();
+    expect(document.querySelector('.death-layer')).toBeNull();
+    useQuestMissGate().acknowledge();
+    await nextTick();
+    expect(document.querySelector('.death-layer')).not.toBeNull();
   });
 
   describe('the gem revive', () => {

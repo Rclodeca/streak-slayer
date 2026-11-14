@@ -24,6 +24,8 @@ import { useDeathScreen } from './useDeathScreen';
 import { useFallenHero } from './useFallenHero';
 import { useHoodedFigure } from './useHoodedFigure';
 import { useItemDropQueue } from './useItemDropQueue';
+import { useMissedSkillsGate } from './useMissedSkillsGate';
+import { useQuestMissGate } from './useQuestMissGate';
 import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useUndoCheck } from './useUndoCheck';
 import { setHitPlayer } from './useHitFeed';
@@ -528,6 +530,31 @@ describe('useCombatActions', () => {
 
     expect(useDeathScreen().isDead.value).toBe(true);
     expect(useAccountStore().account.gems).toBe(50);
+  });
+
+  it('every hit queued that day lands before a revive, so none meets the revived hero', () => {
+    const habitStore = useHabitStore();
+    const characterStore = useCharacterStore();
+    const bossStore = useBossStore();
+    useAccountStore().addGems(REVIVE_GEMS);
+    const today = dailyPeriodKey(useDebugClockStore().now());
+    const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
+    const quest = useQuestStore().addQuest('Clean garage', 'medium', addDaysToDayKey(today, -1));
+    characterStore.character = { ...characterStore.character, currentHealth: 1 };
+    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3, doomDueDayKey: today });
+
+    useMissedSkillsGate().queueMiss(habit, periodKeyFor('daily', useDebugClockStore().now()));
+    useQuestMissGate().queueMiss(quest);
+    useMissedSkillsGate().acknowledge();
+    expect(useDeathScreen().isDead.value).toBe(true);
+    useQuestMissGate().acknowledge();
+
+    expect(bossStore.boss.doomDueDayKey).toBeUndefined();
+    expect(useCombatActions().revive()).toBe(true);
+    const revivedHealth = characterStore.character.currentHealth;
+    expect(revivedHealth).toBeGreaterThan(0);
+    useCombatActions().landDoom();
+    expect(characterStore.character.currentHealth).toBe(revivedHealth);
   });
 
   it('revive spends the gems once, closes the death screen and keeps the boss', () => {

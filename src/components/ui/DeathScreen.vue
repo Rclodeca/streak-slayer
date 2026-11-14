@@ -5,6 +5,7 @@ import { REVIVE_GEMS, heroClassFor, reviveState } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useDeathScreen } from '../../composables/useDeathScreen';
+import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import { deathLines } from '../../composables/useHoodedFigure';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
@@ -19,6 +20,10 @@ import StatIcon from './StatIcon.vue';
 // the hooded figure's line over the fallen hero, then a bonfire where each
 // skill that keeps its power burns on. "Rise again" there starts the reset.
 const { isDead } = useDeathScreen();
+// The screen waits while a missed quest is still to land (its popup shows
+// first), so a revive never meets a hit queued that day.
+const { hasPending: questMissPending } = useQuestMissGate();
+const shown = computed(() => isDead.value && !questMissPending.value);
 const { restart, revive } = useCombatActions();
 const accountStore = useAccountStore();
 const bossStore = useBossStore();
@@ -39,7 +44,7 @@ function unlock() {
   releaseScrollLock = null;
 }
 watch(
-  isDead,
+  shown,
   (dead) => {
     if (dead) {
       phase.value = 'speak';
@@ -86,7 +91,7 @@ const sparks = Array.from({ length: 14 }, () => ({
 
 <template>
   <Teleport to="body">
-    <div v-if="isDead" class="death-layer">
+    <div v-if="shown" class="death-layer">
       <HoodedSpeech v-if="phase === 'speak'" :lines="lines" kind="death" :hero-class="heroClass" @done="phase = 'fire'" />
 
       <div v-else class="bonfire">
