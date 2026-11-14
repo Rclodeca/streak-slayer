@@ -131,6 +131,7 @@ The death popup's line ("Your skills keep their power") still fits. A revive (ge
 - **Rewards:** gems from most, gold from some, EXP from all.
 - **No more relics from trials.**
 - **Where they live:** under the cog button (already moved). The Trials tab becomes the Shop.
+- **All available from level 1** (decided 2026-11-14): every trial is there from the start, with no level unlock and no level-up card handing them out.
 
 ---
 
@@ -199,8 +200,6 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - **Gem-bought items lost on death:** do they come back into the rotation later?
 - **Gold streak freeze:** sell it at all? Since buys are used immediately, a freeze would be set up when bought.
 - **Revive limit:** one per boss, one per run, or no limit at a fixed price?
-- **Level-up events:** Overdrive, reroll, item slots and heal move to the shop. Do level-up events go away entirely?
-- **Special and Ult:** leaning towards handing them out automatically at set levels (maybe 5 and 8), because they're a fun mechanic every player should get to use. The alternative is selling them for gold in the shop.
 - **"Kept" vs "This run" on each item:** how it looks. Visual pass later.
 - **Prices and the gem budget:** not tuned. Needs a rough budget (free gems in, gem costs out) before building. Milestone B's gold prices are multiples of the current boss's gold (common 1×, uncommon 1.5×, rare 2.5×, epic 4×, relic 6×, tonics 1×, restock 0.5× doubling), all in `constants/economy.ts`.
 
@@ -232,3 +231,9 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - A few very expensive gold skins, affordable within one long run, different from the gem skins.
 - Gems can buy gold at a poor, capped rate.
 - Rejected: boss prep (paying gold to weaken the current boss), gold-to-gem conversion, skill ranks for gold.
+
+### 2026-11-14
+- Level-up events are removed. What they gave moves to the Shop or is handed out.
+- Special and Ult are handed out automatically at levels 5 and 8.
+- All trials are available from level 1.
+- Nothing is pushed live until the whole plan is ready.
