@@ -5,7 +5,7 @@ import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
-import CurrencyChips from '../ui/CurrencyChips.vue';
+import StatIcon from '../ui/StatIcon.vue';
 
 // The phone's Shop tab banner (docs/mockups/shop-tab-2.html, B's scene): the
 // shopkeeper's room, pinned at the top where the fight stage would be, with
@@ -25,7 +25,8 @@ const LINES = { shop: 'Back again? Still breathing, I see.', vault: 'Gems. Not y
 const characterStore = useCharacterStore();
 const accountStore = useAccountStore();
 const tabStore = useTabStore();
-const gold = computed(() => characterGold(characterStore.character));
+const gold = computed(() => characterGold(characterStore.character).toLocaleString('en-US'));
+const gems = computed(() => accountStore.account.gems.toLocaleString('en-US'));
 const vaulted = computed(() => tabStore.shopSide === 'vault');
 
 const frame = ref<HTMLElement | null>(null);
@@ -39,7 +40,10 @@ const offset = useCenteredArt(frame, ART_W);
         <img class="shop-room" :src="`${baseUrl}sprites/home/shop.png`" alt="" />
         <span class="shop-tint" aria-hidden="true" />
       </div>
-      <span class="shop-purse plate"><CurrencyChips :gold="gold" :gems="accountStore.account.gems" show-zero /></span>
+      <span class="shop-purse">
+        <span class="plate" :aria-label="`${gold} gold`"><StatIcon name="gold" />{{ gold }}</span>
+        <span class="plate" :aria-label="`${gems} gems`"><StatIcon name="gems" />{{ gems }}</span>
+      </span>
       <div class="shop-say" aria-live="polite">
         <span class="who">Shopkeeper</span>
         <p :key="tabStore.shopSide" class="line">{{ LINES[tabStore.shopSide] }}</p>
@@ -103,8 +107,6 @@ const offset = useCenteredArt(frame, ART_W);
 
 /* Dark plates and the text box, the same in every theme (the room is always night). */
 .plate {
-  position: absolute;
-  z-index: 1;
   padding: 5px 10px;
   background: rgba(7, 8, 12, 0.88);
   box-shadow:
@@ -114,9 +116,24 @@ const offset = useCenteredArt(frame, ART_W);
   color: #f0f3f7;
 }
 
+/* The purse: a plate each for the gold and the gems, the mock's bold serif numbers. */
 .shop-purse {
+  position: absolute;
+  z-index: 1;
   left: 12px;
   top: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.shop-purse .plate {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .shop-say {

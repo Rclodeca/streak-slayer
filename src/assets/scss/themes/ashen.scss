@@ -4111,14 +4111,18 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include stone-button;
   }
 
-  .shop-buy .currency .count {
+  // The price as in the mock: a bold serif number beside a 13px coin.
+  .shop-buy .price {
     @include name-serif(700);
-    font-size: 0.95rem;
+    font-size: 15px;
+    font-size-adjust: none;
+    line-height: 1;
+    letter-spacing: 0;
     color: var(--card-ink);
   }
 
-  .shop-buy.short .currency .count {
-    color: color-mix(in srgb, var(--damage-color) 70%, var(--spent-text));
+  .shop-buy.short .price {
+    color: #b65a50;
   }
 
   .shop-buy:disabled {
