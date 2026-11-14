@@ -116,8 +116,8 @@ function previewDaily() {
     <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>
     <button type="button" @click="showNextKnight">Show next dark knight (testing)</button>
     <button type="button" @click="showNextBoss">Next boss {{ bossArtPosition + 1 }}/{{ ALL_BOSS_ART.length }} (testing)</button>
-    <button type="button" @click="backdrop.toggleStage()">Stage backdrop: {{ backdrop.stage }} (testing)</button>
-    <button type="button" @click="backdrop.toggleHome()">Hero tab backdrop: {{ backdrop.home }} (testing)</button>
+    <button type="button" @click="backdrop.toggleStage()">Stage backdrop: {{ backdrop.stage ?? 'worn' }} (testing)</button>
+    <button type="button" @click="backdrop.toggleHome()">Hero tab backdrop: {{ backdrop.home ?? 'worn' }} (testing)</button>
     <button type="button" @click="trialsBadge.set(null, true)">Trials dot (testing)</button>
     <button type="button" @click="trialsBadge.set(3, null)">Trials 3 (testing)</button>
     <button type="button" @click="trialsBadge.set(12, null)">Trials 12 (testing)</button>

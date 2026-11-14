@@ -4,7 +4,8 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PERSONALITY_NAME } from '../../game-engine';
+import { PERSONALITY_NAME, SKIN_CATALOG } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { holdHp, playHit } from '../../composables/useHitFeed';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -119,6 +120,16 @@ describe('FightStage', () => {
     await nextTick();
     expect(stage().classes()).toContain('day-stage');
     expect(stage().attributes('style')).toContain('--plinth: #a85e3a');
+  });
+
+  it('draws the default arena, or the worn arena skin', async () => {
+    const wrapper = mountStage();
+    expect(wrapper.find('.arena-img').attributes('src')).toContain('sprites/stage/arena6b.png');
+    const skin = SKIN_CATALOG.find((s) => s.kind === 'arena')!;
+    useAccountStore().addGems(skin.gems);
+    useAccountStore().buySkin(skin.id);
+    await nextTick();
+    expect(wrapper.find('.arena-img').attributes('src')).toContain(`sprites/${skin.art}.png`);
   });
 
   it('keeps the light ink over the arena, which is always night, even for a boss with a day scene', async () => {

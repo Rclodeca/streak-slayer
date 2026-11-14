@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { heroClassFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useHeroStats } from '../../composables/useHeroStats';
-import { useDebugBackdropStore } from '../../store/debugBackdropStore';
+import { useSkins } from '../../composables/useSkins';
 import { useHabitStore } from '../../store/habitStore';
 import { baseSpriteUrl } from '../ui/spriteUrl';
 import StatIcon from '../ui/StatIcon.vue';
@@ -26,14 +25,11 @@ const baseUrl = import.meta.env.BASE_URL;
 const ART_W = 432;
 const ART_H = 232;
 
-const { character, heroName, displayLevel } = useHeroStats();
+const { heroName, displayLevel } = useHeroStats();
 const habitStore = useHabitStore();
-// Testing: the debug menu can swap the armory for one of the stage's arenas.
-const debugBackdrop = useDebugBackdropStore();
-const roomUrl = computed(() =>
-  debugBackdrop.home === 'armory' ? `${baseUrl}sprites/home/armory.png` : `${baseUrl}sprites/stage/${debugBackdrop.home}.png`,
-);
-const heroClass = computed(() => heroClassFor(character.value));
+// The worn home base and hero skins (the debug menu can swap the room for testing).
+const skins = useSkins();
+const roomUrl = computed(() => `${baseUrl}sprites/${skins.homeArt.value}.png`);
 
 // The longest streak running now, and whose it is.
 const bestStreak = computed(() =>
@@ -55,7 +51,7 @@ const offset = useCenteredArt(frame, ART_W);
     >
       <div class="home-art">
         <img class="home-room" :src="roomUrl" alt="" />
-        <img class="home-hero" :src="baseSpriteUrl(`player/${heroClass}`)" alt="" />
+        <img class="home-hero" :src="baseSpriteUrl(skins.heroArt.value)" alt="" />
       </div>
       <h2 class="home-name plate">{{ heroName }}</h2>
       <span class="home-stat plate level"><StatIcon name="levelUp" /><small>Level</small><b class="home-value">{{ displayLevel }}</b></span>

@@ -7,6 +7,7 @@ import { useCombatActions } from '../../composables/useCombatActions';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
+import { useSkins } from '../../composables/useSkins';
 import { deathLines } from '../../composables/useHoodedFigure';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
@@ -36,6 +37,7 @@ const phase = ref<'speak' | 'fire'>('speak');
 const lines = ref<string[]>([]);
 
 const heroClass = computed(() => heroClassFor(characterStore.character));
+const skins = useSkins();
 // The gem revive: once per boss, so it's gone after one against this boss.
 const revival = computed(() => reviveState(characterStore.character, bossStore.boss, accountStore.account.gems));
 const heroLabel = computed(() => heroClass.value.charAt(0).toUpperCase() + heroClass.value.slice(1));
@@ -94,7 +96,7 @@ const sparks = Array.from({ length: 14 }, () => ({
 <template>
   <Teleport to="body">
     <div v-if="shown" class="death-layer">
-      <HoodedSpeech v-if="phase === 'speak'" :lines="lines" kind="death" :hero-class="heroClass" @done="phase = 'fire'" />
+      <HoodedSpeech v-if="phase === 'speak'" :lines="lines" kind="death" :hero-art="skins.heroArtFor(heroClass)" @done="phase = 'fire'" />
 
       <div v-else class="bonfire">
         <p class="who">{{ characterStore.character.name }}</p>
@@ -104,7 +106,7 @@ const sparks = Array.from({ length: 14 }, () => ({
           <span class="stars" />
           <div class="mound" />
           <span class="glow" />
-          <img class="spirit" :src="spriteUrl(`player/${heroClass}`)" alt="" />
+          <img class="spirit" :src="spriteUrl(skins.heroArtFor(heroClass))" alt="" />
           <span class="blade" />
           <span class="logs" />
           <span class="fire"><i v-for="(frame, n) in flames" :key="n" :style="{ boxShadow: frame }" /></span>

@@ -11,7 +11,7 @@ describe('HoodedSpeech', () => {
   afterEach(() => vi.useRealTimers());
 
   const mountLines = (lines: string[], kind: 'intro' | 'death' | 'back' = 'intro') =>
-    mount(HoodedSpeech, { props: { lines, kind, heroClass: 'warrior' } });
+    mount(HoodedSpeech, { props: { lines, kind, heroArt: 'player/warrior' } });
 
   it('types the line out letter by letter', async () => {
     const wrapper = mountLines(['Hello']);

@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, watch } from 'vue';
 import { heroClassFor } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useHoodedFigure } from '../../composables/useHoodedFigure';
+import { useSkins } from '../../composables/useSkins';
 import { useCharacterStore } from '../../store/characterStore';
 import HoodedSpeech from './HoodedSpeech.vue';
 
@@ -13,6 +14,7 @@ import HoodedSpeech from './HoodedSpeech.vue';
 const { scene, endScene } = useHoodedFigure();
 const characterStore = useCharacterStore();
 const heroClass = computed(() => heroClassFor(characterStore.character));
+const { heroArtFor } = useSkins();
 
 let releaseScrollLock: (() => void) | null = null;
 function unlock() {
@@ -33,7 +35,7 @@ onBeforeUnmount(unlock);
 <template>
   <Teleport to="body">
     <div v-if="scene" class="scene-layer">
-      <HoodedSpeech :lines="scene.lines" :kind="scene.kind" :hero-class="heroClass" @done="endScene" />
+      <HoodedSpeech :lines="scene.lines" :kind="scene.kind" :hero-art="heroArtFor(heroClass)" @done="endScene" />
     </div>
   </Teleport>
 </template>

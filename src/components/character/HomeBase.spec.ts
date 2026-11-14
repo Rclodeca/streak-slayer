@@ -3,7 +3,8 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRng, heroClassFor } from '../../game-engine';
+import { SKIN_CATALOG, createCharacter, createRng, heroClassFor } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import HomeBase from './HomeBase.vue';
@@ -20,6 +21,19 @@ describe('HomeBase', () => {
     const wrapper = mount(HomeBase);
     expect(wrapper.find('img.home-room').attributes('src')).toContain('sprites/home/armory.png');
     expect(wrapper.find('img.home-hero').attributes('src')).toContain(`sprites/player/${heroClassFor(useCharacterStore().character)}.png`);
+  });
+
+  it('draws the worn home base and hero skins', () => {
+    useCharacterStore().setCharacter({ ...createCharacter(createRng(1), 'ranger'), name: 'Ash' });
+    const hero = SKIN_CATALOG.find((skin) => skin.heroClass === 'ranger')!;
+    const home = SKIN_CATALOG.find((skin) => skin.kind === 'home')!;
+    const accountStore = useAccountStore();
+    accountStore.addGems(100);
+    accountStore.buySkin(hero.id);
+    accountStore.buySkin(home.id);
+    const wrapper = mount(HomeBase);
+    expect(wrapper.find('img.home-room').attributes('src')).toContain(`sprites/${home.art}.png`);
+    expect(wrapper.find('img.home-hero').attributes('src')).toContain(`sprites/${hero.art}.png`);
   });
 
   it('shows the name, level and best streak on plates', () => {

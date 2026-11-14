@@ -1,7 +1,7 @@
-// The fight stage's backdrop (the default boss arena, run 6 with 8 rows of floor added,
-// arena6b in docs/pixellab-runs.md)
-// and the phone's Hero tab's, with testing-only buttons to try the other
-// backdrops in place. The desktop stage does not fit the arena yet.
+// Testing-only overrides for the fight stage's backdrop and the phone's Hero
+// tab's, from the debug menu's buttons, to try the other backdrops in place.
+// Null (the first stop) draws the worn skin (composables/useSkins.ts). The
+// desktop stage does not fit the arena yet.
 // Not persisted: it resets on reload.
 
 import { defineStore } from 'pinia';
@@ -12,13 +12,13 @@ export type ArenaBackdrop = (typeof ARENAS)[number];
 export type StageBackdrop = 'painted' | ArenaBackdrop;
 export type HomeBackdrop = 'armory' | ArenaBackdrop;
 
-const STAGE_BACKDROPS: StageBackdrop[] = ['painted', ...ARENAS];
-const HOME_BACKDROPS: HomeBackdrop[] = ['armory', ...ARENAS];
+const STAGE_BACKDROPS: (StageBackdrop | null)[] = [null, 'painted', ...ARENAS];
+const HOME_BACKDROPS: (HomeBackdrop | null)[] = [null, 'armory', ...ARENAS];
 
 const next = <T>(list: T[], current: T) => list[(list.indexOf(current) + 1) % list.length];
 
 export const useDebugBackdropStore = defineStore('debugBackdrop', {
-  state: () => ({ stage: 'arena6b' as StageBackdrop, home: 'armory' as HomeBackdrop }),
+  state: () => ({ stage: null as StageBackdrop | null, home: null as HomeBackdrop | null }),
   actions: {
     toggleStage() {
       this.stage = next(STAGE_BACKDROPS, this.stage);

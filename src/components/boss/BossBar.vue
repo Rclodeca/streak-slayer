@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { formatCompact } from '../../game-engine';
-import type { HeroClass } from '../../game-engine';
 import type { CelebrationPhase } from '../../composables/useCelebration';
 import { useDamagePopup } from '../../composables/useDamagePopup';
 import { HERO_STRIP } from '../character/heroArt';
@@ -25,7 +24,8 @@ const props = defineProps<{
   bossIndex: number;
   current: number;
   max: number;
-  heroClass: HeroClass;
+  /** The hero's sprite path (useSkins: the class's art or its worn skin). */
+  heroArt: string;
   heroName: string;
   heroCurrent: number;
   heroMax: number;
@@ -56,7 +56,7 @@ const { popups: heroPopups, isHit: heroHit } = useDamagePopup(() => props.heroCu
   <div class="boss-bar" :class="{ shown }" :inert="!shown || undefined">
     <div class="strip">
       <span class="hero-fig" :class="{ hit: heroHit }" :style="{ width: heroWidth }">
-        <img class="hero" :src="spriteUrl(`player/${heroClass}`)" alt="" />
+        <img class="hero" :src="spriteUrl(heroArt)" alt="" />
       </span>
       <span class="side hero-side" :class="{ low: heroLow }">
         <span class="label">

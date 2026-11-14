@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { bossSkillMarks, effectiveStat, expToNextLevel, heroClassFor, PERSONALITY_NAME } from '../../game-engine';
+import { bossSkillMarks, effectiveStat, expToNextLevel, PERSONALITY_NAME } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { setHitPlayer, useHitFeed } from '../../composables/useHitFeed';
 import { useScrolledPast } from '../../composables/useScrolledPast';
+import { useSkins } from '../../composables/useSkins';
 import { useStageFocused } from '../../composables/useStageFocused';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -33,6 +34,7 @@ const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const focused = useStageFocused();
 const backdrop = useDebugBackdropStore();
+const skins = useSkins();
 
 // The slain boss stays up while a kill plays out, as on the stage.
 const { phase, displayedBoss, heldLevel } = useCelebration();
@@ -195,7 +197,7 @@ onBeforeUnmount(() => {
         :boss-index="boss.index"
         :current="bossHp"
         :max="boss.maxHealth"
-        :hero-class="heroClassFor(hero)"
+        :hero-art="skins.heroArt.value"
         :hero-name="hero.name ?? 'Character'"
         :hero-current="heroHp"
         :hero-max="heroMax"

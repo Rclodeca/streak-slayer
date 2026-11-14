@@ -8,16 +8,25 @@
 // on a 64-pixel grid, 1.5 CSS px per art pixel (3 device px on 2x screens),
 // and <class>@3x.png on a 72-pixel grid, 4/3 CSS px (4 device px on 3x),
 // the same two builds spriteUrl.ts picks between. Heroes face the boss as the
-// art is drawn, so they aren't mirrored.
+// art is drawn, so they aren't mirrored. Hero skins (skins.json, ids from
+// SKIN_CATALOG in game-engine/skins.ts) are built the same way into
+// public/sprites/player/skins/<id>.png and <id>@3x.png.
 const fs = require('fs')
 const path = require('path')
 const { decode, encode } = require('../lib/pnglib.cjs')
 
 const root = path.join(__dirname, '../..')
 const heroes = require('./heroes.json')
+const skins = require('./skins.json')
 const BUILDS = [{ suffix: '', grid: 64 }, { suffix: '@3x', grid: 72 }]
+const skinDir = path.join(root, 'public/sprites/player/skins')
+fs.mkdirSync(skinDir, { recursive: true })
+const jobs = [
+  ...Object.entries(heroes).map(([name, source]) => ({ name, source, dir: path.join(root, 'public/sprites/player') })),
+  ...Object.entries(skins).map(([name, source]) => ({ name, source, dir: skinDir })),
+]
 
-for (const [name, source] of Object.entries(heroes)) {
+for (const { name, source, dir } of jobs) {
   const file = path.join(root, 'assets/pixellab', source)
   if (!fs.existsSync(file)) { console.error(`missing Pixellab art: ${file}`); process.exit(1) }
   const art = decode(file)
@@ -37,8 +46,8 @@ for (const [name, source] of Object.entries(heroes)) {
       art.data.copy(out, to, from, from + 3)
       out[to + 3] = 255
     }
-    fs.writeFileSync(path.join(root, 'public/sprites/player', `${name}${suffix}.png`), encode(grid, grid, out))
+    fs.writeFileSync(path.join(dir, `${name}${suffix}.png`), encode(grid, grid, out))
     if (!suffix) console.log(`${name}: figure ${w}x${h} at x ${offX}, y ${offY} in the base grid`)
   }
 }
-console.log('built player/warrior, cleric, ranger, each as <name>.png and <name>@3x.png')
+console.log(`built player/warrior, cleric, ranger and ${Object.keys(skins).length} skins in player/skins, each as <name>.png and <name>@3x.png`)

@@ -13,7 +13,7 @@ describe('BossBar', () => {
     bossIndex: 9,
     current: 431.4,
     max: 604.3,
-    heroClass: 'warrior' as const,
+    heroArt: 'player/skins/warrior-steel',
     heroName: 'Ryn',
     heroCurrent: 980,
     heroMax: 1232,
@@ -22,6 +22,11 @@ describe('BossBar', () => {
     heroExpMax: 100,
     shown: false,
   };
+
+  it("draws the hero with the art it's handed (a worn skin)", () => {
+    const wrapper = mount(BossBar, { props });
+    expect(wrapper.find('img.hero').attributes('src')).toContain('sprites/player/skins/warrior-steel.png');
+  });
 
   it('mirrors breakpoint marks, since its bar drains toward the portrait on the right', () => {
     const wrapper = mount(BossBar, { props: { ...props, marks: [{ at: 0.75, state: 'armed' as const }] } });

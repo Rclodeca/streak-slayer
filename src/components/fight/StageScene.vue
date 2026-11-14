@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { Personality } from '../../game-engine';
+import { useSkins } from '../../composables/useSkins';
 import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import { useThemeStore } from '../../store/themeStore';
 import { createPainter, FRAME_W } from './stage/painter';
@@ -18,9 +19,11 @@ import { sceneMotion } from './stage/sceneFx';
 const props = defineProps<{ personality: Personality }>();
 
 const themeStore = useThemeStore();
-// Testing: the debug menu can swap the painted scene for the generated arena.
+// The worn arena (the default arena6b, or a skin). Testing: the debug menu can
+// swap it for another arena or the painted scene.
 const debugBackdrop = useDebugBackdropStore();
-const arena = computed(() => (debugBackdrop.stage === 'painted' ? null : debugBackdrop.stage));
+const skins = useSkins();
+const arena = computed(() => (debugBackdrop.stage === 'painted' ? null : skins.arenaArt.value));
 const baseUrl = import.meta.env.BASE_URL;
 const root = ref<HTMLElement | null>(null);
 const art = ref<HTMLCanvasElement | null>(null);
@@ -159,7 +162,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="root" class="stage-scene" aria-hidden="true">
-    <img v-if="arena" class="arena-img" :src="`${baseUrl}sprites/stage/${arena}.png`" alt="" />
+    <img v-if="arena" class="arena-img" :src="`${baseUrl}sprites/${arena}.png`" alt="" />
     <canvas v-show="!arena" ref="art" />
     <canvas v-show="!arena" ref="fx" />
   </div>

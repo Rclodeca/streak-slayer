@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import type { HeroClass } from '../../game-engine';
 import { baseSpriteUrl, spriteUrl } from './spriteUrl';
 
 // The hooded figure's line box (docs/mockups/pixel-hooded-flow.html): his
 // scene fills the screen, his words type out in a box below it. A tap finishes
 // the line being typed, the next tap moves on, and after the last line the
 // scene says `done`. `death` adds the red "You died" and lays the hero down.
-const props = defineProps<{ lines: string[]; kind: 'intro' | 'death' | 'back'; heroClass: HeroClass }>();
+const props = defineProps<{ lines: string[]; kind: 'intro' | 'death' | 'back'; heroArt: string }>();
 const emit = defineEmits<{ done: [] }>();
 
 const TYPE_MS = 42;
@@ -63,7 +62,7 @@ onBeforeUnmount(stopTyping);
     <div class="scene">
       <p v-if="kind === 'death'" class="died">You died</p>
       <img class="boss" :src="baseSpriteUrl('bosses/hooded')" alt="" draggable="false" />
-      <img class="me" :src="spriteUrl(`player/${heroClass}`)" alt="" draggable="false" />
+      <img class="me" :src="spriteUrl(heroArt)" alt="" draggable="false" />
       <div class="floor" />
     </div>
     <button ref="box" type="button" class="dlg">

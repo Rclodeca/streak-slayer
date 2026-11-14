@@ -7,6 +7,7 @@ import { useCombatActions } from '../../composables/useCombatActions';
 import type { HeroPick } from '../../composables/useCombatActions';
 import type { HeroClass } from '../../game-engine';
 import { useFallenHero } from '../../composables/useFallenHero';
+import { useSkins } from '../../composables/useSkins';
 import { useCharacterStore } from '../../store/characterStore';
 import { HERO_PICK_PLACEMENT } from '../character/heroArt';
 import PlayerSprite from '../character/PlayerSprite.vue';
@@ -20,6 +21,7 @@ import { spriteUrl } from '../ui/spriteUrl';
 // its hero here, turning through them by the fire; a run already under way
 // (an old save named late) just gets its name.
 const characterStore = useCharacterStore();
+const skins = useSkins();
 const { fallen } = useFallenHero();
 const { beginRun } = useCombatActions();
 
@@ -97,7 +99,7 @@ function begin() {
               v-for="heroClass in HERO_CLASSES"
               v-show="heroClass === shownClass"
               :key="heroClass"
-              :src="spriteUrl(`player/${heroClass}`)"
+              :src="spriteUrl(skins.heroArtFor(heroClass))"
               :style="placementFor(heroClass)"
               alt=""
               draggable="false"
