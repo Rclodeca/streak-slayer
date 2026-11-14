@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, msUntilRollover, periodKeyFor, weeklyPeriodKey } from './time';
+import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, msUntilRollover, periodKeyFor, weekDayKeys, weeklyPeriodKey } from './time';
 
 describe('dailyPeriodKey', () => {
   it('formats a date as YYYY-MM-DD using its Pacific business day', () => {
@@ -117,5 +117,19 @@ describe('msUntilRollover', () => {
     expect(msUntilRollover('weekly', new Date('2026-11-02T11:00:00Z'))).toBe(7 * 24 * HOUR);
     // Monday 2026-11-09 02:00 PST still belongs to the old week: one hour left.
     expect(msUntilRollover('weekly', new Date('2026-11-09T10:00:00Z'))).toBe(HOUR);
+  });
+});
+
+describe('weekDayKeys', () => {
+  it("lists the seven days of the date's Monday-start week", () => {
+    // Wed 2026-11-18, 20:00 UTC (midday Pacific).
+    expect(weekDayKeys(new Date(Date.UTC(2026, 10, 18, 20)))).toEqual([
+      '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22',
+    ]);
+  });
+
+  it('follows the 3am rollover: early Monday morning is still last week', () => {
+    // Mon 2026-11-16 02:00 PST = 10:00 UTC, still Sunday's business day.
+    expect(weekDayKeys(new Date(Date.UTC(2026, 10, 16, 10)))[0]).toBe('2026-11-09');
   });
 });

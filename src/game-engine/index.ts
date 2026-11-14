@@ -172,8 +172,8 @@ export {
 export { characterGold } from './gold';
 
 export type { Account } from './account';
-export { addGems, createAccount, recordLevel, spendGems } from './account';
-export { GOLD_POUCH, REVIVE_GEMS, TRIAL_GEMS, VAULT_STOCK_DAYS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { addGems, buyFreeze, createAccount, freezeCost, frozenDays, pruneFrozenDays, recordLevel, spendGems } from './account';
+export { FREEZE, GOLD_POUCH, REVIVE_GEMS, TRIAL_GEMS, VAULT_STOCK_DAYS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';
@@ -261,7 +261,7 @@ export {
 export type { Rng } from './rng';
 export { createRng, pickRandom, pickWeighted, shuffle } from './rng';
 
-export { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weeklyPeriodKey } from './time';
+export { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weekDayKeys, weeklyPeriodKey } from './time';
 
 export {
   activeBlind,

@@ -7,7 +7,8 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor } from '../game-engine';
+import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weekDayKeys } from '../game-engine';
+import { useAccountStore } from '../store/accountStore';
 import type { ChallengeEntry } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -560,5 +561,92 @@ describe('useDailyRollover — run again before the popup is acknowledged', () =
       useDailyRollover(new Date(Date.now() + DAY_MS));
       expect(characterStore.character).toBe(before);
     });
+  });
+});
+
+describe('useDailyRollover — frozen days', () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - DAY_MS);
+  const yesterdayKey = periodKeyFor('daily', yesterday);
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  afterEach(() => {
+    useMissedSkillsGate().acknowledge();
+  });
+
+  function freeze(...dayKeys: string[]) {
+    const accountStore = useAccountStore();
+    accountStore.account = { ...accountStore.account, frozenDayKeys: dayKeys };
+  }
+
+  function addUnfinished(isBad = false, period: 'daily' | 'weekly' = 'daily') {
+    const habitStore = useHabitStore();
+    useBossStore();
+    const habit = habitStore.addHabit('Gym', period, 'medium', isBad, createRng());
+    const lastKey = period === 'daily' ? yesterdayKey : periodKeyFor('weekly', new Date(now.getTime() - 7 * DAY_MS));
+    habitStore.updateHabit({ ...habit, streakCount: 5, lastCheckedPeriodKey: lastKey, lastCompletedPeriodKey: null });
+    return habit;
+  }
+
+  it('yesterday frozen: no miss queued, streak unchanged, stamped', () => {
+    const habit = addUnfinished();
+    freeze(yesterdayKey);
+    useDailyRollover(now);
+    expect(useMissedSkillsGate().misses.value).toHaveLength(0);
+    const updated = useHabitStore().habits.find((h) => h.id === habit.id)!;
+    expect(updated.streakCount).toBe(5);
+    expect(updated.lastCheckedPeriodKey).toBe(periodKeyFor('daily', now));
+  });
+
+  it('a bad habit on a frozen day pays no reward', () => {
+    addUnfinished(true);
+    freeze(yesterdayKey);
+    useDailyRollover(now);
+    expect(useMissedSkillsGate().rewards.value).toHaveLength(0);
+  });
+
+  it('a weekly whose last week was mostly frozen queues no miss', () => {
+    addUnfinished(false, 'weekly');
+    freeze(...weekDayKeys(new Date(now.getTime() - 7 * DAY_MS)).slice(0, 4));
+    useDailyRollover(now);
+    expect(useMissedSkillsGate().misses.value.filter((m) => m.period === 'weekly')).toHaveLength(0);
+  });
+
+  it('a day not frozen still queues its miss', () => {
+    addUnfinished();
+    freeze(dailyPeriodKey(now));
+    useDailyRollover(now);
+    expect(useMissedSkillsGate().misses.value).toHaveLength(1);
+  });
+
+  it('a frozen day does not report day-end', () => {
+    const characterStore = useCharacterStore();
+    const today = dailyPeriodKey(now);
+    characterStore.setCharacter({
+      ...characterStore.character,
+      challenges: [{ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today, -5), progress: 0 }],
+    });
+    freeze(today);
+    useDailyRollover(new Date(now.getTime() + DAY_MS));
+    expect(useCharacterStore().character.challenges?.find((e) => e.id === 'clean-days')?.progress).toBe(0);
+  });
+
+  it('a due Doom waits out a frozen day and lands the day after', () => {
+    const characterStore = useCharacterStore();
+    const bossStore = useBossStore();
+    characterStore.setCharacter({ ...characterStore.character, currentHealth: 1000 });
+    bossStore.setBoss({ ...bossStore.boss, doomDueDayKey: dailyPeriodKey(now) });
+    freeze(dailyPeriodKey(now));
+
+    useDailyRollover(now);
+    expect(characterStore.character.currentHealth).toBe(1000);
+    expect(bossStore.boss.doomDueDayKey).toBeDefined();
+
+    useDailyRollover(new Date(now.getTime() + DAY_MS));
+    expect(characterStore.character.currentHealth).toBeCloseTo(500, 10);
   });
 });

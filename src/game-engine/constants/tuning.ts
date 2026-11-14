@@ -342,6 +342,7 @@ export const TUNING = {
   },
   ITEM_DROP_EVERY_N_BOSSES: 3, // bosses 1-3 drop 1 item, 4+ drop 2, on 2 kills in 3; boss 1 always
   ITEM_DROP_MAX_COUNT: 2,
+  WEEK_FREEZE_MIN_DAYS: 4, // a weekly rests for a week once a streak freeze covers this many of its days
   ITEM_DROP_CHANCE: 2 / 3, // a boss kill's chance to drop anything; rarer since items can be bought
   // Each rarity's percent share of item drops at a player level, blended
   // linearly between rows; every level past the last row uses it. Commons

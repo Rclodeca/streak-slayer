@@ -101,6 +101,9 @@ export function pouchGold(bossIndex: number): number {
   return roundPrice(GOLD_POUCH.bossKills * bossGold(bossIndex));
 }
 
+/** The streak freeze: gems per frozen day, the most days one buy covers, and how far ahead it may start. */
+export const FREEZE = { gemsPerDay: 2, maxDays: 7, maxLeadDays: 30 };
+
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
 export const REVIVE_GEMS = 10;
 

@@ -127,3 +127,9 @@ export function addDaysToDayKey(dayKey: string, days: number): string {
   const [year, month, day] = dayKey.split('-').map(Number);
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
+
+/** The seven day keys (Monday first) of the week `date`'s business day falls in, matching `weeklyPeriodKey`. */
+export function weekDayKeys(date: Date): string[] {
+  const monday = addDaysToDayKey(dailyPeriodKey(date), -dayOfWeekIndex(date));
+  return Array.from({ length: 7 }, (_, i) => addDaysToDayKey(monday, i));
+}

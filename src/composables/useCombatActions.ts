@@ -36,6 +36,7 @@ import {
   completeHabit,
   createRng,
   dailyPeriodKey,
+  frozenDays,
   DEFAULT_HERO_NAME,
   effectiveCritChance,
   effectiveStat,
@@ -463,7 +464,7 @@ export function useCombatActions() {
    * change, double damage, double milestone EXP), independent of any
    * UI-layer `:disabled` binding. Mirrors the `isCompletedThisPeriod`
    * predicate used in `HabitListItem.vue`. A set-day habit can't be
-   * checked off on a rest day either (`isDueOn`).
+   * checked off on a rest day or a frozen day either (`isDueOn`).
    *
    * A plain blow is offered to the menu's Undo (see useUndoCheck); a
    * level-up, a boss kill, or a fall sets off too much to wind back, so it
@@ -472,7 +473,7 @@ export function useCombatActions() {
   function checkOffHabit(habitId: string): RewardResult {
     const habit = habitStore.habits.find((h) => h.id === habitId);
     if (!habit) return { itemsDropped: [] };
-    if (!isDueOn(habit, debugClockStore.now())) return { itemsDropped: [] };
+    if (!isDueOn(habit, debugClockStore.now(), frozenDays(accountStore.account))) return { itemsDropped: [] };
 
     const currentPeriodKey = periodKeyFor(habit.period, debugClockStore.now());
     if (habit.lastCompletedPeriodKey === currentPeriodKey) return { itemsDropped: [] };
@@ -529,7 +530,7 @@ export function useCombatActions() {
   function activateOverdrive(habitId: string): RewardResult {
     const habit = habitStore.habits.find((h) => h.id === habitId);
     if (!habit || habit.isBad || !habit.isOverdrive) return { itemsDropped: [] };
-    if (!isDueOn(habit, debugClockStore.now())) return { itemsDropped: [] };
+    if (!isDueOn(habit, debugClockStore.now(), frozenDays(accountStore.account))) return { itemsDropped: [] };
 
     const currentPeriodKey = periodKeyFor(habit.period, debugClockStore.now());
     if (habit.lastCompletedPeriodKey !== currentPeriodKey) return { itemsDropped: [] };
@@ -733,6 +734,8 @@ export function useCombatActions() {
    * death check.
    */
   function landDoom(currentDayKey: string = dailyPeriodKey(debugClockStore.now())): void {
+    // A due Doom waits out a streak freeze and lands on the first day after it.
+    if (frozenDays(accountStore.account).includes(currentDayKey)) return;
     const result = resolveDoom(characterStore.character, bossStore.boss, currentDayKey);
     if (result.amount === undefined) return;
     characterStore.setCharacter(result.character);

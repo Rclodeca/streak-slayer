@@ -217,6 +217,36 @@ describe('set days', () => {
     expect(isDueOn(makeHabit({ period: 'weekly', days: [0] }), tue)).toBe(true);
   });
 
+  describe('isDueOn with frozen days', () => {
+    // Wed 2026-11-18 midday Pacific; its week runs Mon 11-16 to Sun 11-22.
+    const wed = new Date(Date.UTC(2026, 10, 18, 20));
+    const sun = new Date(Date.UTC(2026, 10, 22, 20));
+    const mon = new Date(Date.UTC(2026, 10, 23, 20));
+
+    it('rests a daily on a frozen day, and not the day after', () => {
+      expect(isDueOn(makeHabit(), wed, ['2026-11-18'])).toBe(false);
+      expect(isDueOn(makeHabit(), wed, ['2026-11-17'])).toBe(true);
+    });
+
+    it('rests a set-day habit on a frozen due day', () => {
+      expect(isDueOn(makeHabit({ days: [2] }), wed, ['2026-11-18'])).toBe(false);
+    });
+
+    it('rests a weekly once 4 of its 7 days are frozen', () => {
+      const weekly = makeHabit({ period: 'weekly' });
+      expect(isDueOn(weekly, wed, ['2026-11-16', '2026-11-17', '2026-11-18'])).toBe(true);
+      expect(isDueOn(weekly, wed, ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-22'])).toBe(false);
+    });
+
+    it('a Fri-Mon freeze across the week boundary rests the dailies but neither weekly', () => {
+      const frozen = ['2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23'];
+      expect(isDueOn(makeHabit(), sun, frozen)).toBe(false);
+      expect(isDueOn(makeHabit(), mon, frozen)).toBe(false);
+      expect(isDueOn(makeHabit({ period: 'weekly' }), sun, frozen)).toBe(true);
+      expect(isDueOn(makeHabit({ period: 'weekly' }), mon, frozen)).toBe(true);
+    });
+  });
+
   it('nextDueDay wraps around the week', () => {
     expect(nextDueDay([0, 2, 5], 1)).toBe(2);
     expect(nextDueDay([0, 2, 5], 5)).toBe(0);

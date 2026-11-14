@@ -500,6 +500,21 @@ describe('useCombatActions', () => {
     expect(isDead.value).toBe(true);
   });
 
+  it("a skill can't be checked on a frozen day", () => {
+    const habitStore = useHabitStore();
+    const bossStore = useBossStore();
+    const accountStore = useAccountStore();
+    const habit = habitStore.addHabit('Read', 'daily', 'medium', false, createRng());
+    habitStore.updateHabit({ ...habit, streakCount: 4 });
+    accountStore.account = { ...accountStore.account, frozenDayKeys: [dailyPeriodKey(useDebugClockStore().now())] };
+    const bossHealth = bossStore.boss.health;
+
+    useCombatActions().checkOffHabit(habit.id);
+
+    expect(bossStore.boss.health).toBe(bossHealth);
+    expect(habitStore.habits.find((h) => h.id === habit.id)!.streakCount).toBe(4);
+  });
+
   it('a lethal miss raises the death screen, even with gems in hand', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();

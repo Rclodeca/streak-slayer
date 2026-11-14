@@ -2,7 +2,7 @@ import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { TUNING } from './constants/tuning';
 import type { HeroClass } from './character';
 import { pickWeighted, type Rng } from './rng';
-import { dayOfWeekIndex } from './time';
+import { dailyPeriodKey, dayOfWeekIndex, weekDayKeys } from './time';
 import type { DamageType, Difficulty, Habit, Period } from './types';
 
 /**
@@ -86,8 +86,12 @@ export function normalizeDays(days: number[] | undefined): number[] | undefined 
   return unique.length === 0 || unique.length === 7 ? undefined : unique;
 }
 
-/** Whether `habit` can be used on `date`'s day — false only on a set-day daily's rest days. */
-export function isDueOn(habit: Habit, date: Date): boolean {
+/** Whether `habit` can be used on `date`'s day: false on a set-day daily's rest days, and on days a streak freeze covers (a weekly's week once TUNING.WEEK_FREEZE_MIN_DAYS of it are). */
+export function isDueOn(habit: Habit, date: Date, frozenDayKeys: readonly string[] = []): boolean {
+  if (frozenDayKeys.length > 0) {
+    if (habit.period === 'daily' && frozenDayKeys.includes(dailyPeriodKey(date))) return false;
+    if (habit.period === 'weekly' && weekDayKeys(date).filter((key) => frozenDayKeys.includes(key)).length >= TUNING.WEEK_FREEZE_MIN_DAYS) return false;
+  }
   if (habit.period !== 'daily' || !habit.days) return true;
   return habit.days.includes(dayOfWeekIndex(date));
 }

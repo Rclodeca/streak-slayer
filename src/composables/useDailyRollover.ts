@@ -23,8 +23,9 @@
 // counts when the app first opens on Wednesday after a Tuesday rest day. If
 // it only rested since, there's nothing to resolve and it's just stamped.
 
-import { applyDailyRegen, dailyPeriodKey, daysBetweenDayKeys, isDueOn, periodKeyFor } from '../game-engine';
+import { applyDailyRegen, dailyPeriodKey, daysBetweenDayKeys, frozenDays, isDueOn, periodKeyFor } from '../game-engine';
 import type { Habit, Period } from '../game-engine';
+import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
@@ -44,15 +45,19 @@ function previousPeriodKey(period: Period, date: Date): string {
 /**
  * The period key a habit's rollover resolves: the period just before `now`
  * — or, for a set-day daily, its most recent due day (at most a week back)
- * no earlier than `lastCheckedPeriodKey`. Undefined when it only rested.
+ * no earlier than `lastCheckedPeriodKey`. Undefined when it only rested,
+ * including on days a streak freeze covered (`frozen`).
  */
-function periodKeyToResolve(habit: Habit, now: Date): string | undefined {
-  if (habit.period !== 'daily' || !habit.days) return previousPeriodKey(habit.period, now);
+function periodKeyToResolve(habit: Habit, now: Date, frozen: readonly string[]): string | undefined {
+  if (habit.period !== 'daily' || !habit.days) {
+    const before = new Date(now.getTime() - (habit.period === 'daily' ? MS_PER_DAY : 7 * MS_PER_DAY));
+    return isDueOn(habit, before, frozen) ? previousPeriodKey(habit.period, now) : undefined;
+  }
   for (let back = 1; back <= 7; back++) {
     const day = new Date(now.getTime() - back * MS_PER_DAY);
     const dayKey = dailyPeriodKey(day);
     if (habit.lastCheckedPeriodKey && daysBetweenDayKeys(habit.lastCheckedPeriodKey, dayKey) < 0) return undefined;
-    if (isDueOn(habit, day)) return dayKey;
+    if (isDueOn(habit, day, frozen)) return dayKey;
   }
   return undefined;
 }
@@ -71,11 +76,14 @@ export function useDailyRollover(now: Date = new Date()): void {
   const questStore = useQuestStore();
   const { queueMiss: queueQuestMiss, hasPending: questMissesPending } = useQuestMissGate();
 
+  // Days a streak freeze covers rest every skill: no miss, no avoid reward.
+  const frozen = frozenDays(useAccountStore().account);
+
   for (const habit of habitStore.habits) {
     const currentPeriodKey = periodKeyFor(habit.period, now);
     if (habit.lastCheckedPeriodKey === currentPeriodKey) continue; // no boundary crossed
 
-    const keyToResolve = periodKeyToResolve(habit, now);
+    const keyToResolve = periodKeyToResolve(habit, now, frozen);
     if (keyToResolve !== undefined && habit.lastCompletedPeriodKey !== keyToResolve) {
       // Not completed in the preceding period: a miss for a good habit, but
       // the win condition (avoided) for a bad one.
@@ -100,12 +108,13 @@ export function useDailyRollover(now: Date = new Date()): void {
   }
 
   // Challenges look back at the day that just ended, before a quest finished
-  // that day leaves the list. Safe to repeat: a day is only counted once.
+  // that day leaves the list. Safe to repeat: a day is only counted once. A
+  // frozen day isn't looked at: it neither counts towards a trial nor breaks one.
   const combat = useCombatActions();
-  combat.reportChallenge(
-    { type: 'day-end', endedDate: new Date(now.getTime() - MS_PER_DAY), habits: habitStore.habits, quests: questStore.quests },
-    todayKey,
-  );
+  const endedDate = new Date(now.getTime() - MS_PER_DAY);
+  if (!frozen.includes(dailyPeriodKey(endedDate))) {
+    combat.reportChallenge({ type: 'day-end', endedDate, habits: habitStore.habits, quests: questStore.quests }, todayKey);
+  }
 
   // A quest checked off on an earlier day leaves with the turn of the day; one already overdue took its hit.
   questStore.clearDone(todayKey);

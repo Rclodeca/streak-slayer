@@ -66,6 +66,7 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   // level so far: this run's, or a finished run's on the high-score list.
   const bestRunLevel = Math.max(0, ...useHighScoreStore(targetPinia).topRuns.map((run) => run.level));
   accountStore.initFromSave(saved?.account ?? null, Math.max(characterStore.character.level, bestRunLevel));
+  accountStore.pruneFrozenDays(dailyPeriodKey(useDebugClockStore(targetPinia).now()));
   const rebalanced = applyRankRebalance(characterStore.character, bossStore.boss);
   characterStore.setCharacter(rebalanced.character);
   bossStore.setBoss(rebalanced.boss);
