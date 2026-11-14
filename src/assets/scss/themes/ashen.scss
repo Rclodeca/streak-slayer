@@ -3645,7 +3645,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .modal-content .rule-list li {
-    grid-template-columns: 34px 3.6rem 1fr;
+    // The keyword column fits the longest in use ("Rank up", "Uncover") in
+    // spaced caps, with air before the line.
+    grid-template-columns: 34px 4.75rem 1fr;
     gap: 8px;
     padding: 8px 0;
     border-bottom: 0;
