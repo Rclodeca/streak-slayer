@@ -20,9 +20,9 @@ export const useBossStore = defineStore('boss', {
       this.boss = boss;
     },
 
-    /** No-op unless the boss is dead; otherwise spawns the next boss. */
-    resolveBossDefeatIfDead(character: Character, rng: Rng) {
-      const result = resolveBossDefeatIfDead(character, this.boss, rng);
+    /** No-op unless the boss is dead; otherwise spawns the next boss. `currentDayKey` lets an EXP boost count. */
+    resolveBossDefeatIfDead(character: Character, rng: Rng, currentDayKey?: string) {
+      const result = resolveBossDefeatIfDead(character, this.boss, rng, currentDayKey);
       this.boss = result.boss;
       return result;
     },

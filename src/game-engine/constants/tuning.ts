@@ -184,6 +184,11 @@ export const TUNING = {
   // with Wounds (see healingMultiplier in combat.ts).
   HEAL_BOOST_BONUS: 0.2,
   HEAL_BOOST_DAYS: 3,
+  // The EXP boost (the shop's Scholar's Tonic) adds EXP_BOOST_BONUS to the EXP
+  // multiplier, beside any expGain items, for EXP_BOOST_DAYS days, counting
+  // the day it's bought.
+  EXP_BOOST_BONUS: 0.25,
+  EXP_BOOST_DAYS: 3,
   // The Double item event (from DOUBLE_ITEM_MIN_LEVEL) multiplies every bonus
   // of one equipped item by DOUBLED_ITEM_MULTIPLIER until that item is discarded,
   // for up to DOUBLE_ITEM_MAX items at a time.

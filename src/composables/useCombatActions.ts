@@ -178,7 +178,7 @@ export function useCombatActions() {
     const before = characterStore.character;
     const week = questWeekFor(before.questWeek, weeklyPeriodKey(debugClockStore.now()));
     const amount = questRewardExp(before, 'medium', week.completed);
-    const { character, levelsGained } = addExpAndResolveLevelUps(before, amount);
+    const { character, levelsGained } = addExpAndResolveLevelUps(before, amount, dailyPeriodKey(debugClockStore.now()));
     logLevelUpIfAny(before, character);
     characterStore.setCharacter(character);
     grantEventPicks(levelsGained);
@@ -333,7 +333,7 @@ export function useCombatActions() {
     const expGained = result.milestoneExp + skillExp;
     if (expGained > 0) {
       const beforeLevelUp = characterStore.character;
-      const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, expGained);
+      const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, expGained, dailyPeriodKey(debugClockStore.now()));
       logLevelUpIfAny(beforeLevelUp, character);
       characterStore.setCharacter(character);
       grantEventPicks(levelsGained);
@@ -341,7 +341,7 @@ export function useCombatActions() {
 
     const beforeDefeat = characterStore.character;
     const slain = bossStore.boss;
-    const defeatResult = resolveBossDefeatIfDead(characterStore.character, slain, rng);
+    const defeatResult = resolveBossDefeatIfDead(characterStore.character, slain, rng, dailyPeriodKey(debugClockStore.now()));
     if (!defeatResult.defeated) {
       reportChallenge({ type: 'state-changed', habits: habitStore.habits });
       return { itemsDropped: [] };
@@ -679,7 +679,7 @@ export function useCombatActions() {
     const amount = quest.overdue
       ? questOverdueExp(beforeLevelUp, quest.difficulty, week.completed)
       : questRewardExp(beforeLevelUp, quest.difficulty, week.completed);
-    const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, amount);
+    const { character, levelsGained } = addExpAndResolveLevelUps(beforeLevelUp, amount, dayKey);
     logLevelUpIfAny(beforeLevelUp, character);
     characterStore.setCharacter(quest.overdue ? character : { ...character, questWeek: recordQuestCompletion(beforeLevelUp.questWeek, weekKey) });
     grantEventPicks(levelsGained);

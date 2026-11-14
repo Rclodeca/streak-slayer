@@ -9,6 +9,7 @@ import {
   activeBlind,
   activeSever,
   activeCritBoost,
+  activeExpBoost,
   activeHealBoost,
   activeSunder,
   activeWoundsEffect,
@@ -90,6 +91,10 @@ export function useHeroStats() {
   const healBoost = computed(() => activeHealBoost(character.value, currentDayKey.value));
   const healBoostDaysLeft = computed(() =>
     healBoost.value ? healBoost.value.durationDays - daysBetweenDayKeys(healBoost.value.appliedDayKey, currentDayKey.value) : 0,
+  );
+  const expBoost = computed(() => activeExpBoost(character.value, currentDayKey.value));
+  const expBoostDaysLeft = computed(() =>
+    expBoost.value ? expBoost.value.durationDays - daysBetweenDayKeys(expBoost.value.appliedDayKey, currentDayKey.value) : 0,
   );
   const woundsDaysLeft = computed(() =>
     woundsEffect.value ? woundsEffect.value.durationDays - daysBetweenDayKeys(woundsEffect.value.appliedDayKey, currentDayKey.value) : 0,
@@ -195,6 +200,7 @@ export function useHeroStats() {
     const effects: { icon: StatIconName; text: string; days: number; tone: 'boon' | 'bane' }[] = [];
     if (critBoost.value) effects.push({ icon: 'critBoost', text: `+${(critBoost.value.bonus * 100).toFixed(0)}% crit`, days: critBoostDaysLeft.value, tone: 'boon' });
     if (healBoost.value) effects.push({ icon: 'healBoost', text: `+${(healBoost.value.bonus * 100).toFixed(0)}% heal`, days: healBoostDaysLeft.value, tone: 'boon' });
+    if (expBoost.value) effects.push({ icon: 'expBoost', text: `+${(expBoost.value.bonus * 100).toFixed(0)}% EXP`, days: expBoostDaysLeft.value, tone: 'boon' });
     if (woundsEffect.value) effects.push({ icon: 'wounds', text: `Wounded · ${(woundsEffect.value.effectRate * 100).toFixed(0)}% heal`, days: woundsDaysLeft.value, tone: 'bane' });
     if (blindEffect.value) effects.push({ icon: 'blind', text: effectText('Blinded', 'blind'), days: blindDaysLeft.value, tone: 'bane' });
     if (severEffect.value) effects.push({ icon: 'sever', text: effectText('Severed', 'sever'), days: severDaysLeft.value, tone: 'bane' });

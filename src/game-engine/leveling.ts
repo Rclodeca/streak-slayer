@@ -5,7 +5,7 @@ import { hasItemEffect, itemBonusPercent } from './items';
 import { effectiveStat, itemStatMultiplier, statAtLevel } from './stats';
 import { levelUpHealBonusPct } from './talents';
 import { daysBetweenDayKeys } from './time';
-import type { Character, CritBoostStatusEffect, Habit, HealBoostStatusEffect } from './types';
+import type { Character, CritBoostStatusEffect, ExpBoostStatusEffect, Habit, HealBoostStatusEffect } from './types';
 
 export { effectiveStat, itemStatMultiplier, statAtLevel };
 
@@ -22,7 +22,8 @@ export function expToNextLevel(level: number): number {
 const MAX_LEVEL_UPS_PER_GRANT = 2000;
 
 /**
- * Grants EXP (scaled by an equipped expGain bonus) and resolves any
+ * Grants EXP (scaled by an equipped expGain bonus and, given `currentDayKey`,
+ * an active EXP boost) and resolves any
  * resulting level-ups. Each level gained also heals the character
  * TUNING.LEVEL_UP_HEAL_PCT% of max health (at the new level) — lifesteal is
  * deliberately NOT a factor here: it only heals off damage actually dealt to
@@ -34,9 +35,11 @@ const MAX_LEVEL_UPS_PER_GRANT = 2000;
 export function addExpAndResolveLevelUps(
   character: Character,
   expGained: number,
+  currentDayKey?: string,
 ): { character: Character; levelsGained: number } {
   let { level, exp } = character;
-  exp += expGained * (1 + itemBonusPercent(character, 'expGain') / 100);
+  const boost = currentDayKey ? (activeExpBoost(character, currentDayKey)?.bonus ?? 0) : 0;
+  exp += expGained * (1 + itemBonusPercent(character, 'expGain') / 100 + boost);
   let levelsGained = 0;
   while (exp >= expToNextLevel(level) && levelsGained < MAX_LEVEL_UPS_PER_GRANT) {
     exp -= expToNextLevel(level);
@@ -126,7 +129,23 @@ export function activeHealBoost(character: Character, currentDayKey: string): He
   return activeTimedBoost<HealBoostStatusEffect>(character, 'healBoost', currentDayKey);
 }
 
-function activeTimedBoost<T extends CritBoostStatusEffect | HealBoostStatusEffect>(
+/** The character's active EXP boost as of `currentDayKey`, or undefined once expired. */
+export function activeExpBoost(character: Character, currentDayKey: string): ExpBoostStatusEffect | undefined {
+  return activeTimedBoost<ExpBoostStatusEffect>(character, 'expBoost', currentDayKey);
+}
+
+/** Grants (or refreshes) the temporary EXP boost, replacing any existing one. */
+export function applyExpBoost(character: Character, dayKey: string): Character {
+  const boost: ExpBoostStatusEffect = {
+    type: 'expBoost',
+    appliedDayKey: dayKey,
+    durationDays: TUNING.EXP_BOOST_DAYS,
+    bonus: TUNING.EXP_BOOST_BONUS,
+  };
+  return { ...character, statusEffects: [...(character.statusEffects ?? []).filter((e) => e.type !== 'expBoost'), boost] };
+}
+
+function activeTimedBoost<T extends CritBoostStatusEffect | HealBoostStatusEffect | ExpBoostStatusEffect>(
   character: Character,
   type: T['type'],
   currentDayKey: string,

@@ -58,6 +58,7 @@ export const STAT_ICONS = {
   magicPen: { icon: Orbit, color: 'var(--icon-violet)' },
   critBoost: { icon: Target, color: 'var(--icon-crit)' },
   healBoost: { icon: Leaf, color: 'var(--dmg-healing)' },
+  expBoost: { icon: Sparkles, color: 'var(--icon-exp)' },
   wounds: { icon: Bandage, color: 'var(--dmg-physical)' },
   streak: { icon: Flame, color: 'var(--icon-streak)' },
   reflect: { icon: Undo2, color: 'var(--icon-steel)' },

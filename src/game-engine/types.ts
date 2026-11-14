@@ -221,8 +221,15 @@ export interface ChallengeEntry {
 
 // Discriminated on `type`. Intentionally a plain union rather than a
 // registry/plugin system — each effect has its own small lookup helper
-// (activeWoundsEffect in combat.ts, activeCritBoost/activeHealBoost in leveling.ts).
-export type StatusEffect = WoundsStatusEffect | CritBoostStatusEffect | HealBoostStatusEffect | BlindStatusEffect | SunderStatusEffect | SeverStatusEffect;
+// (activeWoundsEffect in combat.ts, activeCritBoost/activeHealBoost/activeExpBoost in leveling.ts).
+export type StatusEffect =
+  | WoundsStatusEffect
+  | CritBoostStatusEffect
+  | HealBoostStatusEffect
+  | ExpBoostStatusEffect
+  | BlindStatusEffect
+  | SunderStatusEffect
+  | SeverStatusEffect;
 
 /** The Blind boss skill: no rolled crits for `durationDays` days (forced crits still land) — see activeBlind. */
 export interface BlindStatusEffect {
@@ -259,6 +266,14 @@ export interface HealBoostStatusEffect {
   appliedDayKey: string; // dailyPeriodKey() when picked
   durationDays: number;
   bonus: number; // e.g. 0.2 = +20% healing
+}
+
+/** Temporary EXP bonus bought as the Scholar's Tonic; adds `bonus` to the EXP multiplier for `durationDays` days. */
+export interface ExpBoostStatusEffect {
+  type: 'expBoost';
+  appliedDayKey: string; // dailyPeriodKey() when bought
+  durationDays: number;
+  bonus: number; // e.g. 0.25 = +25% EXP
 }
 
 export interface WoundsStatusEffect {

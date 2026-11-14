@@ -530,6 +530,7 @@ export function resolveBossDefeatIfDead(
   character: Character,
   boss: Boss,
   rng: Rng,
+  currentDayKey?: string,
 ): {
   character: Character;
   boss: Boss;
@@ -549,7 +550,7 @@ export function resolveBossDefeatIfDead(
   }
   // Rolled before the drops, which read the leveled character.
   const expReward = bossExpReward(character.level, rng);
-  const { character: leveled, levelsGained } = addExpAndResolveLevelUps(character, expReward);
+  const { character: leveled, levelsGained } = addExpAndResolveLevelUps(character, expReward, currentDayKey);
   // Soul Lantern: each fallen boss restores health (capped at max).
   const maxHealth = effectiveStat(leveled, 'health');
   const lanternHealth = hasItemEffect(leveled, 'soul-lantern')

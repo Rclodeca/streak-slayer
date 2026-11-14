@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  activeExpBoost,
   addExpAndResolveLevelUps,
+  applyExpBoost,
   effectiveCritChance,
   effectiveStat,
   expToNextLevel,
@@ -380,5 +382,40 @@ describe('skillCompletionExp', () => {
     const daily = makeHabit({ id: 'd' });
     expect(skillCompletionExp(10, weeklies[0], [daily, ...weeklies], MONDAY)).toBeCloseTo(26);
     expect(skillCompletionExp(10, daily, [daily, ...weeklies], MONDAY)).toBeCloseTo(52);
+  });
+});
+
+describe('EXP boost', () => {
+  function makeCharacter(overrides: Partial<Character> = {}): Character {
+    return {
+      level: 20,
+      exp: 0,
+      starterStats: { physicalDamage: 10, magicDamage: 10, healing: 6, health: 50, trueDamage: 6 },
+      currentHealth: 50,
+      ownedItemIds: [],
+      equippedItemIds: [],
+      critChance: 0.01,
+      ...overrides,
+    };
+  }
+  const boosted = () => applyExpBoost(makeCharacter(), '2026-11-13');
+
+  it('an active EXP boost adds 25% EXP', () => {
+    expect(addExpAndResolveLevelUps(boosted(), 100, '2026-11-13').character.exp).toBeCloseTo(125, 10);
+  });
+
+  it('an expired EXP boost adds nothing', () => {
+    expect(activeExpBoost(boosted(), '2026-11-16')).toBeUndefined();
+    expect(addExpAndResolveLevelUps(boosted(), 100, '2026-11-16').character.exp).toBeCloseTo(100, 10);
+  });
+
+  it('no day key means no boost', () => {
+    expect(addExpAndResolveLevelUps(boosted(), 100).character.exp).toBeCloseTo(100, 10);
+  });
+
+  it('applyExpBoost replaces the old boost', () => {
+    const twice = applyExpBoost(boosted(), '2026-11-14');
+    expect(twice.statusEffects?.filter((e) => e.type === 'expBoost')).toHaveLength(1);
+    expect(activeExpBoost(twice, '2026-11-16')).toBeDefined();
   });
 });

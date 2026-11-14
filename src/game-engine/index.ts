@@ -52,6 +52,8 @@ export {
   clampHealthToMax,
   activeCritBoost,
   activeHealBoost,
+  activeExpBoost,
+  applyExpBoost,
   critChanceBeforeBlind,
   effectiveCritChance,
   effectiveStat,
