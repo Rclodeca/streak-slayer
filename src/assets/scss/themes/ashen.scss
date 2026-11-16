@@ -1471,24 +1471,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     opacity: 1;
   }
 
-  // An open skill glows its damage type's colour at the left, gone by mid-card,
-  // with its left edge tinted; a list of mixed types stays calm. Striking drains
-  // it to the grey card above (docs/mockups/skills-partial.html, P3). --dye is
-  // set on the row.
-  .skill-list .habit-item:not(.struck, .resting, .reroll-row) {
-    // The glow mixes into a darker stone than a plain card's, so it reads deep, not washed.
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--dye) 34%, var(--dye-base-left, var(--card-bg))) 0,
-      color-mix(in srgb, var(--dye) 14%, var(--dye-base, var(--card-bg))) 20%,
-      var(--dye-base-end, var(--card-bg)) 44%
-    );
-    box-shadow:
-      inset 2px 0 0 color-mix(in srgb, var(--dye) 55%, var(--card-hi)),
-      inset 0 2px 0 var(--card-hi),
-      inset -2px -2px 0 var(--card-lo);
-  }
-
   // A card with a streak opens its clip around the top-right corner, so the
   // streak tab can stick off it.
   .habit-item.has-streak {
@@ -1533,11 +1515,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       letter-spacing: 0;
     }
 
-    :is(.type-tag, .next-day, .streak) {
+    :is(.power-label, .next-day, .streak) {
       font-size-adjust: none;
     }
 
-    :is(.type-tag, .next-day) {
+    :is(.power-label, .next-day) {
       font-size: 11.25px;
     }
 
@@ -1568,9 +1550,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     opacity: 0.45;
   }
 
-  // The tag under the name: the type with its rank ("Physical III"), small
-  // spaced caps in the type's colour; the next due day sits beside it the same size.
-  .habit-item :is(.type-tag, .next-day) {
+  // The line under the name: "PWR" and the rank's bar, the next due day beside
+  // them in the same small spaced caps (docs/mockups/skills-partial.html, Q3).
+  .habit-item :is(.power-label, .next-day) {
     font-family: var(--sans);
     font-size: 0.625rem;
     font-weight: 700;
@@ -1580,17 +1562,37 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-variant-numeric: lining-nums tabular-nums;
   }
 
-  .habit-item .type-tag {
-    color: color-mix(in srgb, var(--dye) 80%, #fff);
+  .habit-item .power {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  .habit-item.bad .type-tag {
-    color: color-mix(in srgb, $ember 40%, var(--text));
+  .habit-item .power-label {
+    color: $brass;
   }
 
-  .habit-item:is(.struck, .resting) .type-tag {
-    color: var(--struck-ink);
-    opacity: 0.7;
+  // The bar: a sunk well, filled in brass to the rank.
+  .habit-item .power-bar {
+    display: block;
+    width: 72px;
+    height: 6px;
+    background: var(--field);
+    box-shadow:
+      inset 1px 1px 0 var(--sunk-hi),
+      inset -1px -1px 0 var(--sunk-lo);
+  }
+
+  .habit-item .power-bar i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--brass-solid), $brass);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .habit-item:is(.struck, .resting) .power {
+    opacity: 0.4;
+    filter: grayscale(1);
   }
 
   .habit-item .meta {

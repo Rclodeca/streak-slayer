@@ -333,6 +333,33 @@ svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; s
 .dogear .skill:not(.struck):not(.resting)::before { content: ''; position: absolute; left: 0; top: 0; width: 18px; height: 18px; background: var(--dye);
   clip-path: polygon(0 0, 18px 0, 18px 3px, 15px 3px, 15px 6px, 12px 6px, 12px 9px, 9px 9px, 9px 12px, 6px 12px, 6px 15px, 3px 15px, 3px 18px, 0 18px); }
 .dogear .skill.bad::before { background: #6a3540; }
+/* P7 rank line: the tag reads "Rank V" in brass on every card */
+.rankgold .skill:not(.struck):not(.resting) .tl { color: var(--brass); }
+/* Q: rank as a mark */
+/* Q7: the empty ticks as brass outlines, so all eight read */
+.segs8.empties i:not(.f) { background: rgb(210 187 133 / .1); box-shadow: inset 0 0 0 1px rgb(210 187 133 / .55); }
+.pw { display: inline-flex; align-items: center; gap: 6px; }
+.pwl { font: 700 11.25px/1 'Alegreya Sans'; letter-spacing: .14em; color: var(--brass); }
+.segs8 { display: inline-flex; gap: 2px; }
+.segs8 i { display: block; width: 8px; height: 5px; background: color-mix(in srgb, var(--brass) 30%, #2d2c50); } /* empties: a dim brass, easy to see */
+.segs8 i.f { background: var(--brass); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); }
+.dashes { display: inline-flex; gap: 3px; }
+.dashes i { display: block; width: 10px; height: 3px; background: #2c2d42; }
+.dashes i.f { background: var(--brass); }
+.pbar { display: block; width: 72px; height: 6px; background: #12121c; box-shadow: inset 1px 1px 0 #07070d, inset -1px -1px 0 #2a2a42; }
+.pbar i { display: block; height: 100%; background: linear-gradient(90deg, #8a733f, var(--brass)); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+.chev { display: inline-flex; gap: 1px; }
+.chev i { display: block; width: 10px; height: 8px; background: var(--brass); clip-path: polygon(0 60%, 50% 0, 100% 60%, 100% 100%, 50% 42%, 0 100%); }
+.tally { display: inline-flex; gap: 7px; }
+.tg { position: relative; display: inline-flex; gap: 2px; height: 11px; }
+.tg i { display: block; width: 2px; height: 11px; background: var(--brass); }
+.tg.five::after { content: ''; position: absolute; left: -3px; right: -3px; top: 4px; height: 2px; background: var(--brass); transform: rotate(-28deg); }
+.meter { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+.meter i { display: block; width: 4px; background: #2c2d42; }
+.meter i:nth-child(1) { height: 4px; } .meter i:nth-child(2) { height: 5px; } .meter i:nth-child(3) { height: 6px; } .meter i:nth-child(4) { height: 7px; }
+.meter i:nth-child(5) { height: 8px; } .meter i:nth-child(6) { height: 9px; } .meter i:nth-child(7) { height: 10px; } .meter i:nth-child(8) { height: 11px; }
+.meter i.f { background: var(--brass); }
+.skill:is(.struck, .resting) :is(.pw, .dashes, .chev, .tally, .meter) { opacity: .4; filter: grayscale(1); }
 </style>
 </head>
 <body>
@@ -452,10 +479,29 @@ function listB(opts) {
 const sTier = (n) => n >= 20 ? 3 : n >= 10 ? 2 : n >= 5 ? 1 : 0;
 const RN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 const OPT = { streak: 'card', rank: 'tag', tag: 'on' };
+let RANK_ONLY = false;
+let RANK_STYLE = '';
+const eight = (r, cls = '') => Array.from({ length: 8 }, (_, i) => `<i class="${i < r ? 'f' : ''} ${cls}"></i>`).join('');
+function rankMark(r) {
+  if (RANK_STYLE === 'pwrseg') return `<span class="pw"><span class="pwl">PWR</span><span class="segs8">${eight(r)}</span></span>`;
+  if (RANK_STYLE === 'pwrsegn') return `<span class="pw"><span class="pwl">PWR</span><span class="segs8 empties">${eight(r)}</span></span>`;
+  if (RANK_STYLE === 'dash') return `<span class="dashes">${eight(r)}</span>`;
+  if (RANK_STYLE === 'pwrbar') return `<span class="pw"><span class="pwl">PWR</span><span class="pbar"><i style="width:${(r / 8) * 100}%"></i></span></span>`;
+  if (RANK_STYLE === 'chev') return r ? `<span class="chev">${'<i></i>'.repeat(r)}</span>` : '';
+  if (RANK_STYLE === 'tally') {
+    if (!r) return '';
+    const groups = [];
+    for (let left = r; left > 0; left -= 5) groups.push(Math.min(5, left));
+    return `<span class="tally">${groups.map((n) => `<span class="tg ${n === 5 ? 'five' : ''}">${'<i></i>'.repeat(Math.min(n, 4))}</span>`).join('')}</span>`;
+  }
+  if (RANK_STYLE === 'meter') return `<span class="meter">${eight(r)}</span>`;
+  return '';
+}
 function rowV(k, bad) {
   // Rank can ride in the tag: "Heal III" or "Heal 3"; unranked skills show the type alone.
   const inTag = OPT.rank === 'tag' ? (k.r ? ` ${RN[k.r]}` : '') : OPT.rank === 'tagn' ? (k.r ? ` ${k.r}` : '') : '';
-  const tag = OPT.tag === 'on' || inTag ? `<span class="tl">${bad ? 'Resist' : TYPE_WORD[k.t]}${inTag}</span>` : '';
+  const tag = RANK_STYLE ? rankMark(k.r) : RANK_ONLY ? `<span class="tl">Rank ${RN[k.r]}</span>`
+    : OPT.tag === 'on' || inTag ? `<span class="tl">${bad ? 'Resist' : TYPE_WORD[k.t]}${inTag}</span>` : '';
   const rank = OPT.rank === 'on' && k.r ? `<span class="rkt">Rank ${RN[k.r]}</span>` : '';
   const flame = k.s >= 3 ? `<span class="fs t${sTier(k.s)}">${ic('flame')}${k.s}</span>` : '';
   const sUnder = OPT.streak === 'under' && k.s >= 3 ? streak(k) : '';
@@ -491,20 +537,42 @@ const PHONES = [
     why: ['A short wash of the type colour on the left only, gone by mid-card, with a tinted left edge.', 'The softest change from the full dye: still a dyed card, but much quieter.'] },
   { id: 'p4', n: 'P4', h: 'Tag plate', cls: 'c-plain tagplate',
     why: ['A slate card; the tag sits on a small dark plate edged in the type colour.', 'The quietest: colour only on the tag and the key.'] },
-  { id: 'p3m', n: 'P3', h: 'Left glow · 58px', cls: 'c-glow mid58',
+  { id: 'p3m', n: 'P3', h: 'Left glow · 58px (as built)', cls: 'c-glow mid58',
     why: ['P3 at 58px, with a 40px key: in between.'] },
+  { id: 'p3n', n: 'P8', h: 'Plain card, name only · 58px', cls: 'c-plain mid58', rank: 'off', tag: 'off',
+    why: ['No dye and no line under the name: a slate card with the name, the streak tab and the key.', 'The type shows only on the key\'s colour; rank lives in the skill popup and the rank-up moment.', 'A resting skill still says when it\'s next due.'] },
   { id: 'p3c', n: 'P3', h: 'Left glow · 52px (as before)', cls: 'c-glow compact',
     why: ['P3 as compact as the cards were before: 52px, the 37px key, 3px under the name.', 'About two more skills fit on a phone screen.'] },
   { id: 'p6', n: 'P6', h: 'Ribbon, dyed like P3', cls: 'c-plain rib-out ribfade',
     why: ['P1\'s ribbon, sticking out past the left edge with its fold, but dyed like P3: strong at the left and fading into the card.', 'The tag\'s letters are light, so they read on the strong end and the faded end alike.', 'The colour sits only around the tag, so a mixed list stays calm.'] },
   { id: 'p5', n: 'P5', h: 'Corner fold', cls: 'c-plain dogear',
     why: ['A slate card with a small type-coloured fold in its top-left corner, like a page corner turned down.', 'Small but easy to spot; the tag keeps its coloured words.'] },
+  { id: 'q1', n: 'Q1', h: 'PWR + segments', cls: 'c-plain mid58', rankStyle: 'pwrseg',
+    why: ['"PWR" in brass and eight segments, filled to the rank: power you can read at a glance.', 'Unranked skills show an empty track, a goal from day one.'] },
+  { id: 'q7', n: 'Q7', h: 'PWR + segments, empties shown', cls: 'c-plain mid58', rankStyle: 'pwrsegn',
+    why: ['Q1 with the empty ticks drawn too: each unearned one is a brass outline, so you see all eight and how many are filled.'] },
+  { id: 'q2', n: 'Q2', h: 'Gold dashes', cls: 'c-plain mid58', rankStyle: 'dash',
+    why: ['Eight short brass dashes, no label: the quietest mark.', 'Earned dashes are lit, the rest are dim.'] },
+  { id: 'q3', n: 'Q3', h: 'PWR + power bar', cls: 'c-plain mid58', rankStyle: 'pwrbar',
+    why: ['One bar that fills toward Rank VIII, like a stat bar in a game.', 'Smooth, but you can\'t count the exact rank.'] },
+  { id: 'q4', n: 'Q4', h: 'Chevrons', cls: 'c-plain mid58', rankStyle: 'chev',
+    why: ['A brass chevron per rank, like a soldier\'s stripes.', 'Unranked skills show nothing.'] },
+  { id: 'q5', n: 'Q5', h: 'Tally marks', cls: 'c-plain mid58', rankStyle: 'tally',
+    why: ['Brass notches, struck through in fives, like marks scratched on a blade.', 'Unranked skills show nothing.'] },
+  { id: 'q6', n: 'Q6', h: 'Power meter', cls: 'c-plain mid58', rankStyle: 'meter',
+    why: ['Eight bars climbing in height, like a signal meter: the higher the rank, the taller the lit bars.', 'Unranked skills show an empty meter.'] },
+  { id: 'p7', n: 'P7', h: 'Plain card, rank line · 58px', cls: 'c-plain mid58 rankgold', rankOnly: true,
+    why: ['P3 at 58px without the left glow: every card is plain slate.', 'The line under the name reads "Rank V" in brass instead of the type; the type shows only on the key.'] },
 ];
-const SHOWN = ['p3', 'p3m', 'p3c'];
+const SHOWN = ['q1', 'q7', 'q3'];
 PHONES.splice(0, PHONES.length, ...SHOWN.map((id) => PHONES.find((p) => p.id === id)));
 function paintAll() {
   PHONES.forEach((p) => {
     const el = document.getElementById(p.id);
+    RANK_ONLY = !!p.rankOnly;
+    RANK_STYLE = p.rankStyle || '';
+    OPT.rank = p.rank || 'tag';
+    OPT.tag = p.tag || 'on';
     el.innerHTML = `${stage}<div class="scroll">${listV()}</div>${tabs}`;
   });
 }

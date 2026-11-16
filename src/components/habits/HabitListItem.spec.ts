@@ -207,15 +207,17 @@ describe('HabitListItem', () => {
       vi.useRealTimers();
     });
 
-    it('names the type under the name, with the rank in it once ranked', () => {
-      const unranked = mountSkill({ rank: 0, damageType: 'physical' });
-      expect(unranked.find('.title .type-tag').text()).toBe('Physical');
-      expect(unranked.find('.rank-pips').exists()).toBe(false);
+    it('shows the rank under the name as a PWR bar filled toward the top rank, empty unranked', () => {
+      const unranked = mountSkill({ rank: 0 });
+      expect(unranked.find('.title .power-label').text()).toBe('PWR');
+      expect((unranked.find('.power-bar i').element as HTMLElement).style.width).toBe('0%');
+      expect(unranked.find('.power').attributes('aria-label')).toBe('Unranked');
       unranked.unmount();
       setActivePinia((pinia = createPinia()));
-      const ranked = mountSkill({ rank: 3, damageType: 'physical' });
-      expect(ranked.find('.title .type-tag').text()).toBe('Physical III');
-      expect(ranked.find('.type-tag').attributes('aria-label')).toBe('Physical, Rank III');
+      const ranked = mountSkill({ rank: 2 });
+      expect((ranked.find('.power-bar i').element as HTMLElement).style.width).toBe('25%');
+      expect(ranked.find('.power').attributes('aria-label')).toBe('Rank II');
+      expect(ranked.find('.rank-pips').exists()).toBe(false);
     });
 
     it('shows the streak as a tab on the card from 3, none below', () => {

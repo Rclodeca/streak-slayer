@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown, isDueOn, isFrozenOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
-import type { DamageType, Habit } from '../../game-engine';
+import type { Habit } from '../../game-engine';
+import { TUNING } from '../../game-engine/constants/tuning';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { useBossStore } from '../../store/bossStore';
@@ -50,22 +51,12 @@ const breakdown = computed(() =>
 const effectiveDamage = computed(() => breakdown.value.effectiveDamage);
 
 const damageTypeColor = computed(() => DAMAGE_TYPE_COLORS[props.habit.damageType]);
-// The card's dye: the type's colour, except true damage, whose bone-white is too
-// faint to read as a wash and dyes a stronger bone-gold where the theme has one.
-const dyeColor = computed(() => (props.habit.damageType === 'trueDamage' ? 'var(--dmg-true-dye, var(--dmg-true))' : damageTypeColor.value));
-
-// The tag under the name: the damage type with the rank in it ("Physical III");
-// a Resist skill reads "Resist".
-const TYPE_WORD: Record<DamageType, string> = { physical: 'Physical', magic: 'Magic', healing: 'Heal', trueDamage: 'True' };
-const typeTag = computed(() => {
-  const word = props.habit.isBad ? 'Resist' : TYPE_WORD[props.habit.damageType];
-  const rank = props.habit.rank ?? 0;
-  return rank ? `${word} ${rankNumeral(rank)}` : word;
-});
-const typeTagLabel = computed(() => {
-  const rank = props.habit.rank ?? 0;
-  return rank ? `${typeTag.value.split(' ')[0]}, Rank ${rankNumeral(rank)}` : typeTag.value;
-});
+// The rank under the name: "PWR" and a bar that fills toward the top rank
+// (docs/mockups/skills-partial.html, Q3). Unranked, the bar is empty.
+const MAX_RANK = TUNING.RANK_MILESTONES.daily.length;
+const rank = computed(() => props.habit.rank ?? 0);
+const powerPct = computed(() => `${(Math.min(rank.value, MAX_RANK) / MAX_RANK) * 100}%`);
+const powerLabel = computed(() => (rank.value ? `Rank ${rankNumeral(rank.value)}` : 'Unranked'));
 
 const showStreak = computed(() => props.habit.streakCount >= MIN_STREAK_SHOWN);
 
@@ -114,14 +105,14 @@ function onStrike() {
 </script>
 
 <template>
-  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, struck: isCompletedThisPeriod, flare: flareRank > 0, 'has-streak': showStreak }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor, '--dye': dyeColor }" @click="$emit('open')">
+  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, struck: isCompletedThisPeriod, flare: flareRank > 0, 'has-streak': showStreak }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
     <!-- The streak: a tab sticking off the card's top-right corner. -->
     <span v-if="showStreak" class="streak" :title="`${habit.streakCount} streak`"><StatIcon name="streak" :size="10" />{{ habit.streakCount }}</span>
     <span class="title">
       <span v-if="hasSigil" class="name">{{ nameHead }}<span class="name-end">{{ nameTail }}<SkillSigil :habit="habit" /></span></span>
       <span v-else class="name">{{ habit.name }}</span>
       <span class="tags">
-        <span class="type-tag" :aria-label="typeTagLabel">{{ typeTag }}</span>
+        <span class="power" role="img" :aria-label="powerLabel"><span class="power-label" aria-hidden="true">PWR</span><span class="power-bar"><i :style="{ width: powerPct }" /></span></span>
         <span v-if="isFrozen" class="next-day frozen"><StatIcon name="freeze" :size="10" />Frozen</span>
         <span v-else-if="isResting" class="next-day">{{ nextDayLabel }}</span>
       </span>
@@ -210,7 +201,7 @@ function onStrike() {
   font-variant-numeric: tabular-nums;
 }
 
-/* The type tag (with the rank in it) and, on a rest day, the next due day. */
+/* The rank's power bar and, on a rest day, the next due day. */
 .tags {
   display: flex;
   align-items: center;
