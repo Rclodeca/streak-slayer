@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Skills tab, streak, rank and damage placement</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700;800&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Round four of the Skills tab (after skills-checklist.html): B1 (check box on the left) with
+   the type words dropped, and four placements of streak, rank and damage. Rank comes from the
+   streak (Rank IV at 21 days), so the two are treated as one "progress" fact. The right edge is
+   the column the eye runs down, so only one thing owns it. The dye switch at the top applies to
+   every phone. Pixel-cut Moonlit tokens, real list order. Tap a box to strike; tap again to undo. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 30px; max-width: 820px; }
+.part { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .26em; text-transform: uppercase; color: #d2bb85; margin: 10px 0 18px; }
+.part + .partlede { text-align: center; margin: -10px auto 22px; max-width: 760px; font-size: 15px; }
+.grid { display: flex; flex-wrap: wrap; gap: 44px 26px; justify-content: center; align-items: flex-start; margin-bottom: 64px; }
+.col { width: 390px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.col h2 b { color: #d2bb85; margin-right: .5em; }
+.col ul.why { margin: 0 0 14px; padding-left: 18px; font-size: 14px; min-height: 80px; }
+.col ul.why li { margin: 2px 0; }
+.col ul.why .con { color: #8a8ba3; }
+
+.phone {
+  --bg: #11121b; --ink: #f4f4fa; --text: #d3d4e4; --dim: #8a8ba3; --touch: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19; --well: #12131c; --well-hi: #2c2c47; --well-lo: #080811;
+  --quiet: #26263d; --quiet-hi: #2f2f4f; --quiet-lo: #161624; --struck: #1c1c2a; --struck-hi: #26263d; --struck-lo: #12131c; --struck-ink: #5a5a68;
+  --struck-face: #2c2d41; --struck-lip: #1f1f2c; --panel-hi: #373857; --panel-lo: #171823;
+  --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --streak: #e8873c; --resist: #c8402f;
+  --check-done: #565779; --check-done-line: #7778a6;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 390px; height: 844px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.px { image-rendering: pixelated; max-width: none; display: block; }
+.t-phys { --c: var(--phys); --dye: var(--phys); } .t-magic { --c: var(--magic); --dye: var(--magic); }
+.t-heal { --c: var(--heal); --dye: var(--heal); } .t-true { --c: var(--true); --dye: #d9b66e; } /* true dyes in a stronger bone-gold */
+
+/* pinned stage */
+.home { flex: none; position: relative; z-index: 3; background: #11121b; border-bottom: 3px solid #0a0a12; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); padding-top: 14px; }
+.crop { position: relative; height: 150px; overflow: hidden; }
+.art { position: absolute; top: -46px; left: -21px; width: 432px; height: 232px; }
+.art > img { position: absolute; inset: 0; width: 432px; height: 232px; image-rendering: pixelated; max-width: none; }
+.plate { position: absolute; z-index: 1; background: rgba(17,18,27,.9); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo); color: var(--ink); }
+.hp { left: 12px; right: 56px; top: 12px; display: flex; align-items: center; gap: 8px; font: 700 13px/1 'Alegreya', serif; }
+.hp .bar { flex: 1; height: 8px; background: #2a0f0f; box-shadow: inset 2px 2px 0 #12060a; }
+.hp .bar i { display: block; height: 100%; width: 64%; background: #c33a2e; box-shadow: inset 0 2px 0 rgba(255,255,255,.22); }
+.menu { position: absolute; top: 20px; right: 0; z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; background: #2d2c50; color: #d9b96e; clip-path: polygon(3px 0, 100% 0, 100% 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px); font-size: 20px; }
+.scroll { position: relative; flex: 1; overflow-y: auto; padding: 12px 16px 22px; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
+.scroll::-webkit-scrollbar { display: none; }
+.tabbar { flex: none; height: 58px; background: #151621; border-top: 2px solid #0a0a12; display: flex; justify-content: space-around; align-items: center; font: 600 10px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: #686877; }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tabbar .i { font-size: 18px; }
+.tabbar .on { color: var(--touch); }
+
+/* section banner, as built */
+.sec { display: flex; flex-direction: column; gap: 7px; flex: none; --spine: #dfe0f0; }
+.sec + .sec { margin-top: 12px; }
+.sec.resist { --spine: var(--resist); }
+.hdr { position: relative; height: 50px; padding: 0 2px; display: flex; align-items: center; justify-content: space-between; flex: none; }
+.hdr .title { display: inline-flex; align-items: center; font: 600 14.4px/1 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; }
+.hdr .m { position: relative; z-index: 1; display: grid; place-items: center; flex: none; width: 36px; height: 36px; background: #b0b1cb; color: #11121b; clip-path: var(--px2);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.35); font-size: 18px; }
+.sec.resist .hdr .m { background: color-mix(in srgb, var(--spine) 62%, #000); color: #fff; }
+.hdr .c { margin-left: -6px; padding: 7px 24px 8px 15px; line-height: 1; white-space: nowrap; color: #f4f4fa; text-shadow: 0 2px 0 rgba(0,0,0,.5);
+  background: color-mix(in srgb, var(--spine) 30%, #1c1c30);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--spine) 50%, #2a2a44), inset 0 -3px 0 color-mix(in srgb, var(--spine) 18%, #0e0e19);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%); }
+.hdr .plus { transform: translate(7px, 1px); display: grid; place-items: center; width: 44px; height: 44px; color: var(--spine); font-size: 16px; }
+.hdr .plus::before { content: ''; grid-area: 1 / 1; width: 30px; height: 30px; background: color-mix(in srgb, var(--spine) 10%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--spine) 55%, transparent); clip-path: var(--px2); }
+.hdr .plus .i { grid-area: 1 / 1; stroke-width: 2.6; }
+/* group label with a live "left" count */
+.grp { display: flex; align-items: center; gap: 8px; margin: 4px 2px 0; flex: none; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.grp::after { content: ''; flex: 1; height: 2px; background: #22233a; order: 1; }
+.grp em { order: 2; font: 700 12.5px 'Alegreya Sans'; letter-spacing: .02em; text-transform: none; font-style: normal; color: var(--text); }
+.grp em.clear { color: var(--brass); }
+
+.g { display: flex; flex-direction: column; gap: 7px; flex: none; }
+.lines .listp.g { gap: 0; }
+
+/* ===== shared row parts ===== */
+.skill { position: relative; display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 6px 8px 6px 14px; flex: none; overflow: hidden;
+  background: var(--card); border-bottom: 3px solid var(--lip); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo);
+  transition: min-height .18s steps(3), padding .18s steps(3); }
+.skill.bad { background: var(--quiet); box-shadow: inset 2px 2px 0 var(--quiet-hi), inset -2px -2px 0 var(--quiet-lo); }
+.skill:is(.struck, .resting) { border-bottom-color: var(--struck-lip); background: var(--struck); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); }
+.mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.name { font: 700 17px/1.15 'Alegreya', serif; color: var(--ink); cursor: pointer; }
+.skill.bad .name { font-weight: 500; color: var(--text); }
+.skill:is(.struck, .resting) .name { color: var(--struck-ink); }
+.sigil { margin-left: .35em; font-size: 13px; vertical-align: -1px; color: var(--brass); }
+.under { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tl { font: 700 10px 'Alegreya Sans'; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--dye) 80%, #fff); }
+.skill.bad .tl { color: #b47a7a; }
+.pips { display: inline-flex; gap: 4px; }
+.pips i { width: 4px; height: 4px; background: var(--brass); display: block; }
+.pips i:nth-child(5) { margin-left: 4px; }
+.streak { display: inline-flex; align-items: center; gap: 3px; color: var(--streak); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.streak .i { font-size: 12px; }
+.skill:is(.struck, .resting) :is(.pips, .streak, .tl) { opacity: .45; color: var(--struck-ink); }
+.skill:is(.struck, .resting) .pips i { background: var(--struck-ink); }
+.next { font: 700 11px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--struck-ink); }
+.side { flex: none; display: flex; align-items: center; gap: 8px; }
+.reward { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 7px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: var(--c); font-size: 12px; font-weight: 700; }
+.reward .i { font-size: 12px; }
+
+/* strike key, as built */
+.strike { --l: 3px; flex: none; border: 0; padding: 0; cursor: pointer; background: none; position: relative; width: 76px; height: 44px; font: 700 14.5px/1 'Alegreya Sans'; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); transition: height .18s steps(3); }
+.strike::before, .strike::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.strike::before { top: var(--l); bottom: 0; background: color-mix(in srgb, var(--c) 45%, #000); }
+.strike::after { top: 0; bottom: var(--l); background: var(--c); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15); }
+.strike span { position: absolute; z-index: 1; left: 0; right: 0; top: 0; bottom: var(--l); display: flex; align-items: center; justify-content: center; gap: 4px; }
+.strike .i { font-size: 14px; }
+.strike.t-true { color: #1b1a14; text-shadow: none; }
+.strike:active::after, .strike.done::after, .strike:active span, .strike.done span { top: var(--l); bottom: 0; }
+.strike.done::before { background: var(--struck-lip); }
+.strike.done::after { background: var(--struck-face); box-shadow: none; }
+.strike.done { color: var(--struck-ink); text-shadow: none; }
+.strike.resist { --dmg: var(--resist); font-size: 13.5px; }
+.strike.resist:not(.done)::before { background: color-mix(in srgb, var(--dmg) 60%, #000); }
+.strike.resist:not(.done)::after { background: color-mix(in srgb, var(--dmg) 8%, #212138); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--dmg) 70%, #000); }
+.strike.resist:not(.done) { color: color-mix(in srgb, var(--dmg) 72%, #fff); text-shadow: none; }
+.strike.rest { cursor: default; color: var(--struck-ink); text-shadow: none; }
+.strike.rest::before, .strike.rest::after { background: transparent; box-shadow: none; }
+
+/* the loud moment: the damage flies up off the row */
+.fly { position: absolute; z-index: 5; pointer-events: none; font: 800 20px 'Alegreya', serif; color: var(--c); text-shadow: 0 2px 0 #000, 0 0 10px color-mix(in srgb, var(--c) 50%, transparent);
+  animation: fly .7s steps(7) forwards; }
+@keyframes fly { 0% { transform: translateY(0) scale(.9); opacity: 1; } 60% { opacity: 1; } 100% { transform: translateY(-46px) scale(1.15); opacity: 0; } }
+
+/* ===== A. dyed cards ===== */
+.dye .skill:not(.bad):not(.struck):not(.resting) {
+  background: linear-gradient(100deg, color-mix(in srgb, var(--dye) var(--d1), #211f3c) 0%, color-mix(in srgb, var(--dye) var(--d2), #262545) 60%, color-mix(in srgb, var(--dye) var(--d3), #262545) 100%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--dye) var(--dt), #4d4c7e), inset 2px 0 0 color-mix(in srgb, var(--dye) calc(var(--dt) - 15%), #4d4c7e), inset -2px -2px 0 color-mix(in srgb, var(--dye) 8%, #12121e);
+  border-bottom-color: color-mix(in srgb, var(--dye) 26%, #07070d); }
+.dye.soft { --d1: 11%; --d2: 5%; --d3: 2%; --dt: 30%; }
+.dye.med { --d1: 26%; --d2: 13%; --d3: 7%; --dt: 50%; }
+.dye .skill .mark { position: absolute; left: 160px; top: 50%; transform: translateY(-50%) rotate(-12deg); font-size: 70px; color: var(--dye); opacity: .07; pointer-events: none; }
+.dye.med .skill .mark { opacity: .1; }
+.dye .skill .mark .i { stroke-width: 1.6; }
+.dye .skill:is(.struck, .resting) .mark { display: none; }
+.dye .skill.bad { background: linear-gradient(100deg, #2b1c29, #22213a 60%); box-shadow: inset 0 2px 0 #46283a, inset -2px -2px 0 #141320; }
+/* struck rows shrink: one short line, the key flattens */
+.shrink .skill.struck { min-height: 42px; padding-top: 3px; padding-bottom: 3px; }
+.shrink .skill.struck .under { display: none; }
+.shrink .skill.struck .name { font-size: 15px; font-weight: 600; }
+.shrink .skill.struck .strike { height: 32px; }
+.shrink .skill.struck .strike .i { display: none; }
+
+/* A4 popup over the list */
+.dim { position: absolute; inset: 0; z-index: 8; background: rgba(5,5,10,.62); }
+.sheet { position: absolute; z-index: 9; left: 8px; right: 8px; bottom: 8px; padding: 14px 16px 16px; background: #1d1e2f; clip-path: var(--px3);
+  box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo); display: flex; flex-direction: column; gap: 12px; }
+.sheet .x { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--dim); font-size: 18px; }
+.sheet h3 { margin: 4px 0 0; text-align: center; font: 700 21px 'Alegreya', serif; color: var(--ink); }
+.sheet .meta { display: flex; justify-content: center; gap: 7px; align-items: center; font-size: 13.5px; color: var(--text); margin-top: -6px; }
+.sheet .meta .i { color: var(--c); }
+.rankrow { display: flex; gap: 14px; align-items: center; padding: 10px; background: #15161f; clip-path: var(--px3); box-shadow: inset 2px 2px 0 #0b0b12, inset -2px -2px 0 #2a2a42; }
+.rkbig { flex: none; width: 108px; height: 108px; padding: 6px; clip-path: var(--px3); background: #a88d59; box-shadow: inset 0 2px 0 rgba(255,255,255,.25), inset 0 -3px 0 rgba(0,0,0,.45); }
+.rkbig img { width: 96px; height: 96px; }  /* 32 art px at 3 CSS px */
+.rankinfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.rankinfo .rl { display: flex; justify-content: space-between; align-items: center; font: 700 14px 'Cinzel', serif; letter-spacing: .14em; color: var(--brass); }
+.rankinfo .rbar { height: 8px; background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -1px -1px 0 var(--well-hi); }
+.rankinfo .rbar i { display: block; height: 100%; width: 57%; background: var(--brass); box-shadow: inset 0 2px 0 rgba(255,255,255,.3); }
+.rankinfo .cap { display: flex; justify-content: space-between; align-items: center; font: 700 12.5px 'Alegreya Sans'; color: var(--dim); }
+.rankinfo .cap b { color: var(--brass); }
+.nextart { display: inline-flex; align-items: center; gap: 6px; }
+.nextart img { width: 32px; height: 32px; filter: brightness(.4) saturate(.2); box-shadow: 0 0 0 2px #4a4b60; }
+.days { display: flex; justify-content: space-between; }
+.days span { width: 40px; height: 40px; display: grid; place-items: center; font: 700 13px 'Alegreya Sans'; color: var(--ink); background: rgb(102 102 161 / .55); clip-path: var(--px2); }
+.days span.off { background: #1a1b28; color: #4a4a58; }
+.sum { display: flex; flex-direction: column; gap: 5px; font-size: 14px; }
+.sum div { display: flex; justify-content: space-between; color: var(--text); }
+.sum div span { color: var(--dim); }
+.sum .tot { margin-top: 4px; padding-top: 7px; border-top: 2px solid #2a2a42; font: 800 16px 'Alegreya Sans'; }
+.sum .tot b { color: var(--c); }
+.sheet .rm { align-self: center; min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: #8a6a6a; font: 700 13px 'Alegreya Sans'; letter-spacing: .04em; }
+
+/* ===== B. check box on the left ===== */
+.chk { --l: 3px; position: relative; flex: none; width: 44px; height: 44px; margin: -4px -2px -4px -8px; border: 0; padding: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.chk .box { position: relative; width: 28px; height: 28px; display: grid; place-items: center; background: var(--well); clip-path: var(--px2);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 75%, #000), inset 3px 3px 0 #06060c; transition: background .12s steps(2); }
+.chk .box svg { width: 18px; height: 18px; stroke-width: 3.4; color: #fff; opacity: 0; }
+.chk.done .box { background: var(--c); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(0,0,0,.25); }
+.chk.done .box svg { opacity: 1; }
+.chk.done.t-true .box svg { color: #1b1a14; }
+/* after the moment, a struck box cools to the theme's done check */
+.chk.done.cool .box { background: var(--check-done); box-shadow: inset 0 0 0 2px var(--check-done-line); }
+.chk.done.cool .box svg { color: #dfe0f0; }
+.chk.rest { cursor: default; }
+.chk.rest .box { background: transparent; box-shadow: inset 0 0 0 2px #2c2d41; }
+.chk.rest .box::after { content: ''; width: 10px; height: 2px; background: #3a3b50; }
+/* diamond check (the Ashen rule: diamonds only for checks) */
+.diam .chk .box { width: 24px; height: 24px; transform: rotate(45deg); clip-path: none; }
+.diam .chk .box svg { transform: rotate(-45deg); width: 16px; height: 16px; }
+.cbx .skill { padding-left: 12px; gap: 12px; }
+.cbx .skill .dv { flex: none; display: inline-flex; align-items: center; gap: 4px; font: 800 13.5px 'Alegreya Sans'; color: color-mix(in srgb, var(--c) 85%, #fff); font-variant-numeric: tabular-nums; }
+.cbx .skill .dv .i { font-size: 13px; }
+.cbx .skill:is(.struck, .resting) .dv { color: var(--struck-ink); }
+.cbx .skill .rcol { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 52px; }
+.cbx .skill.bad .lead { flex: none; width: 34px; display: grid; place-items: center; color: #6a4a55; font-size: 18px; margin-left: -4px; }
+/* B1 soft dye */
+.cbx.dye .skill.struck .name { color: var(--struck-ink); }
+/* B3 one panel, plain lines */
+.lines .listp { display: flex; flex-direction: column; flex: none; background: #1b1c2c; clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo); padding: 2px 0; }
+.lines .listp .skill { min-height: 54px; clip-path: none; background: none; box-shadow: none; border-bottom: 2px solid #26273b; padding: 4px 12px; }
+.lines .listp .skill:last-child { border-bottom: 0; }
+.lines .listp .skill:is(.struck, .resting) { background: rgba(8,8,16,.35); box-shadow: none; border-bottom-color: #26273b; }
+.lines .listp .skill::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; background: var(--c); }
+.lines .listp .skill:is(.struck, .resting)::before { background: #2c2d41; }
+.lines .listp .skill.bad::before { background: #6a3540; }
+.lines .name { font-size: 16.5px; }
+.lines .under { gap: 8px; }
+
+/* ===== C. refinements of B1 ===== */
+.cbx .skill .rv { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 8px; background: var(--well); clip-path: var(--px2);
+  box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: color-mix(in srgb, var(--c) 85%, #fff); font: 800 13.5px 'Alegreya Sans'; font-variant-numeric: tabular-nums; }
+.cbx .skill .rv .i { font-size: 13px; }
+.cbx .skill:is(.struck, .resting) .rv { color: var(--struck-ink); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 #1c1c2a; }
+
+/* C1: the type lives in the box. An open box holds a faint type glyph; striking swaps it for the check. */
+.c1 .chk .box { width: 32px; height: 32px; }
+.c1 .chk .tg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--c); opacity: .5; }
+.c1 .chk .tg svg { width: 16px; height: 16px; stroke-width: 2; opacity: 1; color: inherit; }
+.c1 .chk.done .tg { display: none; }
+.c1 .skill { gap: 11px; }
+
+/* C2: a lit tab. The colour gathers in a bevelled tab under the box, so the open skills
+   make one bright column on the left, the way a checklist's boxes do. */
+.c2 .skill { padding-left: 64px; }
+.c2 .skill:not(.bad):not(.struck):not(.resting) { background: linear-gradient(90deg, color-mix(in srgb, var(--dye) 16%, #262545) 0, #2a2949 46%); }
+.c2 .tab { position: absolute; left: 0; top: 0; bottom: 0; width: 54px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--dye) 52%, #1a1a2c); box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--dye) 70%, #fff3), inset -2px 0 0 color-mix(in srgb, var(--dye) 40%, #000), inset 0 -2px 0 rgba(0,0,0,.35); }
+.c2 .tab .chk { margin: 0; }
+.c2 .tab .chk .box { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 45%, #000), inset 3px 3px 0 #06060c; }
+.c2 .tab .chk.done .box { box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 0 0 0 2px rgba(0,0,0,.35); background: #fff; }
+.c2 .tab .chk.done .box svg { color: color-mix(in srgb, var(--c) 70%, #000); }
+.c2 .tab .chk.done.cool .box { background: var(--check-done); box-shadow: inset 0 0 0 2px var(--check-done-line); }
+.c2 .tab .chk.done.cool .box svg { color: #dfe0f0; }
+.c2 .skill:is(.struck, .resting) .tab { background: #23243a; box-shadow: inset 2px 2px 0 #2c2d45, inset -2px 0 0 #12131c; }
+.c2 .skill.bad .tab { background: #3a1f2c; box-shadow: inset 2px 2px 0 #4e2a3a, inset -2px 0 0 #150c12; color: #c08080; font-size: 18px; }
+.c2 .skill.bad { padding-left: 64px; }
+
+/* C3: the box is a key. It sits up on a lip like the strike key and presses down when
+   checked, so the tap still feels like a blow. Struck rows shrink; each group gets a bar. */
+.c3 .chk { width: 48px; height: 48px; margin: -6px -2px -6px -8px; }
+.c3 .chk .key { position: relative; width: 36px; height: 40px; }
+.c3 .chk .key::before { content: ''; position: absolute; left: 0; right: 0; top: 6px; bottom: 0; clip-path: var(--px2); background: color-mix(in srgb, var(--c) 45%, #000); }
+.c3 .chk .key .box { position: absolute; left: 0; right: 0; top: 0; width: auto; height: 34px; transition: top .08s steps(2);
+  background: linear-gradient(color-mix(in srgb, var(--c) 30%, #44446a), color-mix(in srgb, var(--c) 18%, #303052));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 85%, #000), inset 0 4px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.35); }
+.c3 .chk:active .key .box, .c3 .chk.done .key .box { top: 6px; }
+.c3 .chk.done .key .box { background: var(--c); box-shadow: inset 0 2px 0 rgba(255,255,255,.3); }
+.c3 .chk.done.cool .key .box { background: var(--check-done); box-shadow: inset 0 0 0 2px var(--check-done-line); }
+.c3 .chk.done.cool .key::before { background: #24253a; }
+.c3 .chk.rest .key::before { background: transparent; }
+.c3 .chk.rest .key .box { background: transparent; box-shadow: inset 0 0 0 2px #2c2d41; }
+.c3 .chk.rest .key .box::after { content: ''; width: 10px; height: 2px; background: #3a3b50; }
+.c3 .rline { flex: none; display: inline-flex; align-items: center; gap: 10px; }
+.c3 .skill.struck { min-height: 44px; padding-top: 2px; padding-bottom: 2px; }
+.c3 .skill.struck .under { display: none; }
+.c3 .skill.struck .name { font-size: 15px; font-weight: 600; }
+.c3 .skill.struck .chk { height: 40px; }
+.c3 .skill.struck .chk .key { transform: scale(.82); }
+.c3 .skill.struck .streak { display: none; }
+.segs { order: 1; flex: 1; display: flex; gap: 3px; height: 6px; margin-left: 2px; }
+.segs i { flex: 1; background: color-mix(in srgb, var(--c) 14%, #151622); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 35%, #0e0e19); }
+.segs i.f { background: color-mix(in srgb, var(--c) 70%, #565779); box-shadow: inset 0 2px 0 rgba(255,255,255,.25); }
+.grp.withsegs::after { display: none; }
+
+/* ===== D. placement ===== */
+.toggles { display: flex; gap: 10px; justify-content: center; margin: -12px 0 28px; }
+.toggles button { min-height: 44px; padding: 0 18px; border: 0; cursor: pointer; background: #2d2c50; color: #8a8ba3; clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  box-shadow: inset 2px 2px 0 #4d4c7e, inset -2px -2px 0 #191a28; font: 600 12px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; }
+.toggles button[aria-pressed=true] { background: #cdcedf; color: #20202e; box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -3px 0 #828398; }
+.phone:not(.dye) .skill .mark { display: none; }
+.cbx .skill { min-height: 60px; }
+.pd .under { gap: 10px; min-height: 0; }
+.pd .under:empty { display: none; }
+.pd .pips i { width: 5px; height: 5px; }
+.pd .pips { gap: 4px; }
+.pd .pips i:nth-child(5) { margin-left: 5px; }
+.pd .streak { font-size: 12.5px; }
+/* D1: damage alone on the right, a little larger */
+.d1 .dv { font-size: 15px; gap: 5px; }
+.d1 .dv .i { font-size: 14px; }
+/* D3: one line, aligned columns */
+.d3 .skill { min-height: 52px; }
+.d3 .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.d3 .cols { flex: none; display: flex; align-items: center; }
+.d3 .cols > span { display: inline-flex; justify-content: flex-end; align-items: center; }
+.d3 .cols .rn { width: 42px; font: 700 11.5px 'Cinzel', serif; letter-spacing: .06em; color: var(--brass); }
+.d3 .cols .sk { width: 50px; }
+.d3 .cols .dv { width: 62px; justify-content: flex-end; }
+.d3 .skill:is(.struck, .resting) .cols .rn { color: var(--struck-ink); opacity: .6; }
+.d3 .colhead { display: flex; justify-content: flex-end; margin: -4px 8px 0 0; font: 600 9.5px 'Cinzel', serif; letter-spacing: .08em; text-transform: uppercase; color: #55566a; flex: none; }
+.d3 .colhead span { display: inline-block; text-align: right; }
+.d3 .colhead .rn { width: 42px; } .d3 .colhead .sk { width: 50px; } .d3 .colhead .dv { width: 62px; }
+/* D4: the streak owns the right edge */
+.d4 .bigs { flex: none; min-width: 48px; display: inline-flex; align-items: center; justify-content: flex-end; gap: 3px; color: var(--streak); font: 800 19px/1 'Alegreya', serif; font-variant-numeric: tabular-nums; }
+.d4 .bigs .i { font-size: 16px; fill: currentColor; fill-opacity: .22; }
+.d4 .bigs.low { color: #4a4b60; }
+.d4 .skill:is(.struck, .resting) .bigs { color: color-mix(in srgb, var(--streak) 45%, #3a3b50); }
+.d4 .under .dv { font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Skills tab, where streak, rank and damage go</h1>
+  <p class="lede">B1 without the type words, in four placements. Rank comes from the streak, so the two are treated as one fact: progress. The right edge is the column your eye runs down, so only one thing owns it. Tap a box to strike; tap again to undo.</p>
+  <div class="toggles"><button data-dye="on" aria-pressed="true">Dye on</button><button data-dye="off" aria-pressed="false">Dye off</button></div>
+  <div class="grid" id="gridB"></div>
+</div>
+<script>
+const ICONS = {
+  sword: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  heal: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  settings: '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  store: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
+  crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  heartminus: '<path d="m14.876 18.99-1.368 1.323a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  skull: '<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+  tree: '<path d="M12 22v-7"/><path d="M12 15l-4-4"/><path d="M12 15l4-4"/><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/>',
+};
+const ic = (n, c = '') => `<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const T = { phys: 'sword', magic: 'magic', heal: 'heal', true: 'true' };
+const TYPE_WORD = { phys: 'Physical', magic: 'Magic', heal: 'Heal', true: 'True' };
+
+// name, type, rank (0-8), streak, damage, state (open | struck | rest)
+const DAILY = [
+  { id: 'water', n: 'Drink Water', t: 'heal', r: 4, s: 9, d: '640', st: 'struck' },
+  { id: 'lights', n: 'Lights Out by 11', t: 'heal', r: 1, s: 3, d: '520' },
+  { id: 'run', n: 'Morning Run', t: 'phys', r: 3, s: 12, d: '1.2K' },
+  { id: 'push', n: 'Push-ups', t: 'phys', r: 1, s: 0, d: '900' },
+  { id: 'read', n: 'Read 20 Pages', t: 'magic', r: 2, s: 5, d: '2.4K' },
+  { id: 'journal', n: 'Journal', t: 'magic', r: 2, s: 4, d: '1.6K', st: 'struck' },
+  { id: 'deep', n: 'Deep Work Block', t: 'true', r: 5, s: 31, d: '5.1K', sigil: true },
+  { id: 'gym', n: 'Gym Session', t: 'phys', r: 2, s: 3, d: '1.1K', st: 'rest', next: 'Thu' },
+];
+const WEEKLY = [
+  { id: 'meal', n: 'Meal Prep Sunday', t: 'heal', r: 1, s: 3, d: '900' },
+  { id: 'hike', n: 'Long Hike', t: 'phys', r: 2, s: 4, d: '2.0K' },
+];
+const BAD = [
+  { id: 'doom', n: 'Doomscrolling', t: 'magic', r: 2, s: 7, d: '3.0K' },
+  { id: 'snack', n: 'Late Night Snacks', t: 'phys', r: 1, s: 0, d: '900' },
+];
+
+const stage = `<div class="home"><div class="crop"><div class="art"><img src="../../public/sprites/stage/arena6b.png" alt=""></div>
+  <span class="plate hp">${ic('skull')}<span class="bar"><i></i></span>64%</span></div><span class="menu">${ic('settings')}</span></div>`;
+const tabs = `<div class="tabbar"><span class="on">${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span>${ic('store')}Shop</span><span>${ic('tree')}Talents</span><span>${ic('crown')}Hero</span></div>`;
+const hdr = (title, icon) => `<div class="hdr"><span class="title"><span class="m">${ic(icon)}</span><span class="c">${title}</span></span><span class="plus">${ic('plus')}</span></div>`;
+const pips = (r) => r ? `<span class="pips">${'<i></i>'.repeat(r)}</span>` : '';
+const sigil = (k) => k.sigil ? `<span class="sigil">${ic('star')}</span>` : '';
+const streak = (k) => k.s >= 3 ? `<span class="streak">${ic('flame')}${k.s}</span>` : '';
+const state = (k) => k.st === 'struck' ? 'struck' : k.st === 'rest' ? 'resting' : '';
+const left = (list) => list.filter((k) => !k.st).length;
+const grp = (label, list) => `<div class="grp" data-grp>${label}<em>${left(list)} left</em></div>`;
+
+function key(k, bad) {
+  if (bad) return `<button class="strike resist"><span>${ic('heartminus')}Give in</span></button>`;
+  if (k.st === 'rest') return `<button class="strike rest"><span>Rest</span></button>`;
+  return `<button class="strike t-${k.t} ${k.st === 'struck' ? 'done' : ''}" data-id="${k.id}" data-d="${k.d}"><span>${ic(T[k.t])}<b>${k.d}</b></span></button>`;
+}
+
+/* ---------- A. dyed cards ---------- */
+function rowA(k, bad) {
+  const meta = k.st === 'rest'
+    ? `<span class="tl">${TYPE_WORD[k.t]}</span>${pips(k.r)}<span class="next">${k.next}</span>`
+    : `<span class="tl">${bad ? 'Resist' : TYPE_WORD[k.t]}</span>${pips(k.r)}${streak(k)}`;
+  const side = bad ? `<span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>` : '';
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${state(k)}" data-row="${k.id}"><span class="mark">${ic(bad ? 'heartminus' : T[k.t])}</span><div class="mid"><div class="name" data-open="${k.id}">${k.n}${sigil(k)}</div><div class="under">${meta}</div></div>${side}${key(k, bad)}</div>`;
+}
+function listA() {
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      ${grp('Daily', DAILY)}<div class="g">${DAILY.map((k) => rowA(k)).join('')}</div>
+      ${grp('Weekly', WEEKLY)}<div class="g">${WEEKLY.map((k) => rowA(k)).join('')}</div></div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => rowA(k, true)).join('')}</div>`;
+}
+function popup() {
+  return `<div class="dim" data-close></div><div class="sheet t-phys"><span class="x" data-close>${ic('x')}</span>
+    <h3>Morning Run</h3>
+    <div class="meta">${ic('sword')}<span>Physical</span><span>·</span><span>Medium</span></div>
+    <div class="rankrow"><span class="rkbig"><img class="px" src="skills-fresh/rk_phys_2b.png" alt=""></span>
+      <div class="rankinfo"><div class="rl">Rank III${pips(3)}</div><div class="rbar"><i></i></div>
+        <div class="cap"><span>12 days</span><span class="nextart"><span><b>IV</b> at 21 days</span><img class="px" src="skills-fresh/rk_phys_3a.png" alt=""></span></div></div></div>
+    <div class="days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span class="off">S</span></div>
+    <div class="sum"><div><span>Base</span>640</div><div><span>Streak</span>×1.4</div><div><span>Rank III</span>×1.35</div><div class="tot"><span>Strikes for</span><b>1.2K</b></div></div>
+    <button class="rm">Remove habit</button></div>`;
+}
+
+/* ---------- B. check box on the left ---------- */
+function rowB(k, bad, opts) {
+  if (bad) {
+    return `<div class="skill t-${k.t} bad" data-row="${k.id}"><span class="lead">${ic('shield')}</span><div class="mid"><div class="name">${k.n}</div><div class="under">${pips(k.r)}${streak(k)}</div></div><span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>${key(k, true)}</div>`;
+  }
+  const box = k.st === 'rest'
+    ? `<button class="chk rest"><span class="box"></span></button>`
+    : `<button class="chk t-${k.t} ${k.st === 'struck' ? 'done cool' : ''}" data-id="${k.id}" data-d="${k.d}"><span class="box">${ic('check')}</span></button>`;
+  const meta = k.st === 'rest' ? `${pips(k.r)}<span class="next">Rests till ${k.next}</span>` : `${opts.tl ? `<span class="tl">${TYPE_WORD[k.t]}</span>` : ''}${pips(k.r)}`;
+  const right = k.st === 'rest' ? '' : `<span class="rcol"><span class="dv">${ic(T[k.t])}${k.d}</span>${streak(k)}</span>`;
+  return `<div class="skill t-${k.t} ${state(k)}" data-row="${k.id}">${box}${opts.dye ? `<span class="mark">${ic(T[k.t])}</span>` : ''}<div class="mid"><div class="name">${k.n}${sigil(k)}</div><div class="under">${meta}</div></div>${right}</div>`;
+}
+function listB(opts) {
+  const wrap = (rows) => opts.panel ? `<div class="listp g">${rows}</div>` : `<div class="g">${rows}</div>`;
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      ${grp('Daily', DAILY)}${wrap(DAILY.map((k) => rowB(k, false, opts)).join(''))}
+      ${grp('Weekly', WEEKLY)}${wrap(WEEKLY.map((k) => rowB(k, false, opts)).join(''))}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${opts.panel ? `<div class="listp">${BAD.map((k) => rowB(k, true, opts)).join('')}</div>` : BAD.map((k) => rowB(k, true, opts)).join('')}</div>`;
+}
+
+const RN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+function rowD(k, bad, v) {
+  const dv = `<span class="dv">${ic(T[k.t])}${k.d}</span>`;
+  const rest = k.st === 'rest';
+  if (bad) {
+    const prog = v === 'd3' ? '' : `${pips(k.r)}${streak(k)}`;
+    return `<div class="skill t-${k.t} bad" data-row="${k.id}"><span class="lead">${ic('shield')}</span><div class="mid"><div class="name">${k.n}</div>${prog ? `<div class="under">${prog}</div>` : ''}</div><span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>${key(k, true)}</div>`;
+  }
+  const box = rest
+    ? `<button class="chk rest"><span class="box"></span></button>`
+    : `<button class="chk t-${k.t} ${k.st === 'struck' ? 'done cool' : ''}" data-id="${k.id}" data-d="${k.d}"><span class="box">${ic('check')}</span></button>`;
+  let under = '', right = '';
+  if (v === 'd1') { under = rest ? `${pips(k.r)}<span class="next">Rests till ${k.next}</span>` : `${pips(k.r)}${streak(k)}`; right = rest ? '' : dv; }
+  if (v === 'd2') { under = rest ? `${pips(k.r)}<span class="next">Rests till ${k.next}</span>` : pips(k.r); right = rest ? '' : `<span class="rcol">${dv}${streak(k)}</span>`; }
+  if (v === 'd3') { under = rest ? `<span class="next">Rests till ${k.next}</span>` : ''; right = `<span class="cols"><span class="rn">${RN[k.r]}</span><span class="sk">${streak(k)}</span>${rest ? '<span class="dv"></span>' : dv}</span>`; }
+  if (v === 'd4') { under = rest ? `${pips(k.r)}<span class="next">Rests till ${k.next}</span>` : `${pips(k.r)}${dv}`; right = `<span class="bigs ${k.s < 3 ? 'low' : ''}">${ic('flame')}${k.s}</span>`; }
+  return `<div class="skill t-${k.t} ${state(k)}" data-row="${k.id}">${box}<span class="mark">${ic(T[k.t])}</span><div class="mid"><div class="name">${k.n}${sigil(k)}</div>${under ? `<div class="under">${under}</div>` : ''}</div>${right}</div>`;
+}
+function listD(v) {
+  const head = v === 'd3' ? '<div class="colhead"><span class="rn">Rank</span><span class="sk">Streak</span><span class="dv">Strike</span></div>' : '';
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      ${grp('Daily', DAILY)}${head}<div class="g">${DAILY.map((k) => rowD(k, false, v)).join('')}</div>
+      ${grp('Weekly', WEEKLY)}<div class="g">${WEEKLY.map((k) => rowD(k, false, v)).join('')}</div></div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => rowD(k, true, v)).join('')}</div>`;
+}
+
+const PHONES_B = [
+  { id: 'd1', n: 'D1', h: 'Progress under, damage right', cls: 'cbx pd d1', fn: () => listD('d1'),
+    why: ['Under the name: rank pips and streak together, the habit\'s progress in one place.', 'Right edge: the damage alone, one number per row, so the column reads straight down.', 'Each zone has one job: box acts, middle is the habit, right is the blow.'] },
+  { id: 'd2', n: 'D2', h: 'B1, type words dropped', cls: 'cbx pd d2', fn: () => listD('d2'),
+    why: ['B1 as you liked it, minus Physical, Heal, Magic.', 'Rank pips under the name; damage over streak on the right.', '<span class="con">Rank and streak sit apart though one comes from the other, and the right column holds two things.</span>'] },
+  { id: 'd3', n: 'D3', h: 'One line, columns', cls: 'cbx pd d3', fn: () => listD('d3'),
+    why: ['One line per row: name, then rank numeral, streak and damage in fixed columns, like a ledger.', 'The shortest rows, so the most skills on screen; every number lines up.', '<span class="con">Long names cut off with "…", and three numbers per row is the busiest right side.</span>'] },
+  { id: 'd4', n: 'D4', h: 'Streak owns the right', cls: 'cbx pd d4', fn: () => listD('d4'),
+    why: ['Habit first: a big flame streak on the right edge, like a habit tracker.', 'Rank pips and the damage, smaller, under the name.', 'Streaks under 3 show dim so the column never jumps.', '<span class="con">The damage, the game\'s payoff, becomes small print.</span>'] },
+];
+
+function build(gridId, list) {
+  document.getElementById(gridId).innerHTML = list.map((p) => `<div class="col"><h2><b>${p.n}</b>${p.h}</h2><ul class="why">${p.why.map((w) => `<li>${w}</li>`).join('')}</ul><div class="phone dye soft ${p.cls}" id="${p.id}"></div></div>`).join('');
+  list.forEach((p) => {
+    document.getElementById(p.id).innerHTML = `${stage}<div class="scroll">${p.fn()}</div>${tabs}`;
+  });
+}
+build('gridB', PHONES_B);
+document.querySelectorAll('.toggles button').forEach((t) => t.addEventListener('click', () => {
+  const on = t.dataset.dye === 'on';
+  document.querySelectorAll('.toggles button').forEach((x) => x.setAttribute('aria-pressed', String(x === t)));
+  document.querySelectorAll('#gridB .phone').forEach((p) => { p.classList.toggle('dye', on); p.classList.toggle('soft', on); });
+}));
+
+function recount(phone) {
+  phone.querySelectorAll('[data-grp]').forEach((g) => {
+    const list = g.nextElementSibling.classList.contains('colhead') ? g.nextElementSibling.nextElementSibling : g.nextElementSibling;
+    const rows = list.querySelectorAll('.skill');
+    const n = [...rows].filter((r) => !r.classList.contains('struck') && !r.classList.contains('resting')).length;
+    const em = g.querySelector('em');
+    em.textContent = n ? `${n} left` : 'All struck';
+    em.classList.toggle('clear', !n);
+    const bar = g.querySelector('.segs');
+    if (bar) bar.innerHTML = [...rows].filter((r) => !r.classList.contains('resting')).map((r) => `<i class="${[...r.classList].find((c) => c.startsWith('t-'))} ${r.classList.contains('struck') ? 'f' : ''}"></i>`).join('');
+  });
+}
+function fly(btn, phone) {
+  const scroll = phone.querySelector('.scroll');
+  const a = btn.getBoundingClientRect(), s = scroll.getBoundingClientRect();
+  const el = document.createElement('span');
+  el.className = `fly ${[...btn.classList].find((c) => c.startsWith('t-')) || ''}`;
+  el.textContent = btn.dataset.d;
+  el.style.left = `${a.left - s.left + a.width / 2 - 20}px`;
+  el.style.top = `${a.top - s.top + scroll.scrollTop - 8}px`;
+  scroll.appendChild(el);
+  setTimeout(() => el.remove(), 750);
+}
+document.addEventListener('click', (e) => {
+  const phone = e.target.closest('.phone');
+  if (!phone) return;
+  if (e.target.closest('[data-close]')) { phone.querySelector('.pop')?.remove(); return; }
+  const open = e.target.closest('[data-open]');
+  if (open && phone.id === 'a4' && !phone.querySelector('.pop')) {
+    phone.insertAdjacentHTML('beforeend', `<div class="pop">${popup()}</div>`);
+    return;
+  }
+  const b = e.target.closest('.strike[data-id], .chk[data-id]');
+  if (!b) return;
+  const row = b.closest('.skill');
+  const striking = !b.classList.contains('done');
+  b.classList.toggle('done', striking);
+  b.classList.remove('cool');
+  row.classList.toggle('struck', striking);
+  if (striking) {
+    fly(b, phone);
+    if (b.classList.contains('chk')) setTimeout(() => b.classList.add('cool'), 650);
+  }
+  recount(phone);
+});
+</script>
+</body>
+</html>

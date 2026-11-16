@@ -1450,7 +1450,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .habit-item {
     gap: 10px;
-    padding: 6px 8px 6px 12px;
+    padding: 6px 8px 6px 14px;
+  }
+
+  // 58px with the lip (docs/mockups/skills-partial.html, P3 at 58px). The
+  // reroll rows keep their own height.
+  .habit-item:not(.reroll-row) {
+    min-height: 58px;
   }
 
   // Resist skills are quieter cards.
@@ -1465,11 +1471,88 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     opacity: 1;
   }
 
+  // An open skill glows its damage type's colour at the left, gone by mid-card,
+  // with its left edge tinted; a list of mixed types stays calm. Striking drains
+  // it to the grey card above (docs/mockups/skills-partial.html, P3). --dye is
+  // set on the row.
+  .skill-list .habit-item:not(.struck, .resting, .reroll-row) {
+    // The glow mixes into a darker stone than a plain card's, so it reads deep, not washed.
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--dye) 34%, var(--dye-base-left, var(--card-bg))) 0,
+      color-mix(in srgb, var(--dye) 14%, var(--dye-base, var(--card-bg))) 20%,
+      var(--dye-base-end, var(--card-bg)) 44%
+    );
+    box-shadow:
+      inset 2px 0 0 color-mix(in srgb, var(--dye) 55%, var(--card-hi)),
+      inset 0 2px 0 var(--card-hi),
+      inset -2px -2px 0 var(--card-lo);
+  }
+
+  // A card with a streak opens its clip around the top-right corner, so the
+  // streak tab can stick off it.
+  .habit-item.has-streak {
+    clip-path: polygon(
+      0 3px, 3px 3px, 3px 0,
+      calc(100% - 72px) 0, calc(100% - 72px) -10px, calc(100% + 10px) -10px, calc(100% + 10px) 14px, 100% 14px,
+      100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%,
+      3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)
+    );
+  }
+
+  // The card's clip already holds the rank-up sweep, so the tab stays out.
+  .habit-item.flare {
+    overflow: visible;
+  }
+
   .habit-item .name {
     @include name-serif;
     font-size: 1.03rem;
     line-height: 1.2;
     color: var(--card-ink);
+  }
+
+  // A skill's name and the tag under it, as in docs/mockups/skills-a3.html. The
+  // name, the tag and the streak tab are set at their true sizes, without the
+  // root's font-size-adjust (which draws Alegreya about 15% larger) or its tracking.
+  :is(.skill-list, .resist-list) .habit-item:not(.reroll-row) {
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+    .title {
+      gap: 4px;
+    }
+
+    // Fixed px, at the size the root's 18px gives on a wide screen, so phones get
+    // the same larger card text and nothing shrinks at the 1024px step.
+    .name {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.15;
+      font-size-adjust: none;
+      letter-spacing: 0;
+    }
+
+    :is(.type-tag, .next-day, .streak) {
+      font-size-adjust: none;
+    }
+
+    :is(.type-tag, .next-day) {
+      font-size: 11.25px;
+    }
+
+    .streak {
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    &.bad .name {
+      font-weight: 500;
+    }
+
+    .tags {
+      gap: 9px;
+    }
   }
 
   .habit-item.bad .name {
@@ -1481,22 +1564,60 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--struck-ink);
   }
 
-  .habit-item:is(.struck, .resting) :is(.streak, .rank-pips, .sigil) {
+  .habit-item:is(.struck, .resting) .sigil {
     opacity: 0.45;
   }
 
-  .habit-item .rank-pips {
-    padding-left: 2px;
+  // The tag under the name: the type with its rank ("Physical III"), small
+  // spaced caps in the type's colour; the next due day sits beside it the same size.
+  .habit-item :is(.type-tag, .next-day) {
+    font-family: var(--sans);
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .habit-item .type-tag {
+    color: color-mix(in srgb, var(--dye) 80%, #fff);
+  }
+
+  .habit-item.bad .type-tag {
+    color: color-mix(in srgb, $ember 40%, var(--text));
+  }
+
+  .habit-item:is(.struck, .resting) .type-tag {
+    color: var(--struck-ink);
+    opacity: 0.7;
   }
 
   .habit-item .meta {
     gap: 7px;
   }
 
+  // The streak: a dark tab sticking off the card's top-right corner.
   .habit-item .streak {
-    min-width: 26px;
-    gap: 2px;
-    font-weight: 700;
+    height: 18px;
+    padding: 0 6px 0 5px;
+    background: var(--field);
+    @include pixel-corners(2px);
+    box-shadow: inset 0 0 0 1px rgb(232 135 60 / 0.6);
+    font-family: var(--sans);
+    font-size: 0.66rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #e8873c;
+  }
+
+  .habit-item .streak .stat-icon {
+    color: currentColor;
+  }
+
+  .habit-item:is(.struck, .resting) .streak {
+    color: var(--struck-ink);
+    box-shadow: inset 0 0 0 1px var(--struck-face);
   }
 
   // A Resist card's reward: the type and what holding out deals, in a well
@@ -1527,7 +1648,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item .next-day {
     padding: 0;
     border: 0;
-    @include plain-label($label-sm, 700);
     color: var(--struck-ink);
   }
 

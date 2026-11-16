@@ -207,16 +207,23 @@ describe('HabitListItem', () => {
       vi.useRealTimers();
     });
 
-    it('shows one pip per rank under the name, none unranked', () => {
-      const unranked = mountSkill({ rank: 0 });
+    it('names the type under the name, with the rank in it once ranked', () => {
+      const unranked = mountSkill({ rank: 0, damageType: 'physical' });
+      expect(unranked.find('.title .type-tag').text()).toBe('Physical');
       expect(unranked.find('.rank-pips').exists()).toBe(false);
-      expect(unranked.find('.pips').exists()).toBe(false);
       unranked.unmount();
       setActivePinia((pinia = createPinia()));
-      const ranked = mountSkill({ rank: 3 });
-      expect(ranked.findAll('.title .rank-pips i')).toHaveLength(3);
-      expect(ranked.find('.meta .rank-pips').exists()).toBe(false);
-      expect(ranked.find('.rank-pips').attributes('aria-label')).toBe('Rank III');
+      const ranked = mountSkill({ rank: 3, damageType: 'physical' });
+      expect(ranked.find('.title .type-tag').text()).toBe('Physical III');
+      expect(ranked.find('.type-tag').attributes('aria-label')).toBe('Physical, Rank III');
+    });
+
+    it('shows the streak as a tab on the card from 3, none below', () => {
+      expect(mountSkill({ streakCount: 2 }).find('.streak').exists()).toBe(false);
+      setActivePinia((pinia = createPinia()));
+      const streaking = mountSkill({ streakCount: 12 });
+      expect(streaking.find('.streak').text()).toBe('12');
+      expect(streaking.find('.habit-item').classes()).toContain('has-streak');
     });
 
     it('keeps the streak one size however long it runs', () => {

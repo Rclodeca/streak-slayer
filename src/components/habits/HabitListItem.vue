@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { dailyPeriodKey, dayOfWeekIndex, formatCompact, habitDamageBreakdown, isDueOn, isFrozenOn, nextDueDay, overdriveUsesRemaining, periodKeyFor } from '../../game-engine';
-import type { Habit } from '../../game-engine';
+import type { DamageType, Habit } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { useBossStore } from '../../store/bossStore';
@@ -11,8 +11,7 @@ import { useHabitStore } from '../../store/habitStore';
 import { DAMAGE_TYPE_COLORS } from './damageTypeColors';
 import StatIcon from '../ui/StatIcon.vue';
 import { DAMAGE_TYPE_ICON } from '../ui/statIcons';
-import { MIN_STREAK_SHOWN, rankNumeral, streakStyleFor } from './habitDisplay';
-import RankPips from './RankPips.vue';
+import { MIN_STREAK_SHOWN, rankNumeral } from './habitDisplay';
 import SkillSigil from './SkillSigil.vue';
 import StrikeButton from './StrikeButton.vue';
 import { WEEKDAY_SHORT } from './weekdays';
@@ -51,9 +50,24 @@ const breakdown = computed(() =>
 const effectiveDamage = computed(() => breakdown.value.effectiveDamage);
 
 const damageTypeColor = computed(() => DAMAGE_TYPE_COLORS[props.habit.damageType]);
+// The card's dye: the type's colour, except true damage, whose bone-white is too
+// faint to read as a wash and dyes a stronger bone-gold where the theme has one.
+const dyeColor = computed(() => (props.habit.damageType === 'trueDamage' ? 'var(--dmg-true-dye, var(--dmg-true))' : damageTypeColor.value));
+
+// The tag under the name: the damage type with the rank in it ("Physical III");
+// a Resist skill reads "Resist".
+const TYPE_WORD: Record<DamageType, string> = { physical: 'Physical', magic: 'Magic', healing: 'Heal', trueDamage: 'True' };
+const typeTag = computed(() => {
+  const word = props.habit.isBad ? 'Resist' : TYPE_WORD[props.habit.damageType];
+  const rank = props.habit.rank ?? 0;
+  return rank ? `${word} ${rankNumeral(rank)}` : word;
+});
+const typeTagLabel = computed(() => {
+  const rank = props.habit.rank ?? 0;
+  return rank ? `${typeTag.value.split(' ')[0]}, Rank ${rankNumeral(rank)}` : typeTag.value;
+});
 
 const showStreak = computed(() => props.habit.streakCount >= MIN_STREAK_SHOWN);
-const streakStyle = computed(() => streakStyleFor(props.habit.streakCount));
 
 // A rank-up flares the row once: a gold sweep and the new rank rising off
 // it. Mounting with a rank, or a streak-only change, plays nothing.
@@ -100,20 +114,21 @@ function onStrike() {
 </script>
 
 <template>
-  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, struck: isCompletedThisPeriod, flare: flareRank > 0 }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
+  <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, struck: isCompletedThisPeriod, flare: flareRank > 0, 'has-streak': showStreak }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor, '--dye': dyeColor }" @click="$emit('open')">
+    <!-- The streak: a tab sticking off the card's top-right corner. -->
+    <span v-if="showStreak" class="streak" :title="`${habit.streakCount} streak`"><StatIcon name="streak" :size="10" />{{ habit.streakCount }}</span>
     <span class="title">
       <span v-if="hasSigil" class="name">{{ nameHead }}<span class="name-end">{{ nameTail }}<SkillSigil :habit="habit" /></span></span>
       <span v-else class="name">{{ habit.name }}</span>
-      <RankPips :rank="habit.rank ?? 0" />
-    </span>
-    <span class="meta">
-      <span v-if="isFrozen" class="next-day frozen"><StatIcon name="freeze" :size="12" />Frozen</span>
-      <span v-else-if="isResting" class="next-day">{{ nextDayLabel }}</span>
-      <!-- A bad habit's reward, what holding out deals, sunk into the card so it reads as a number to wait for, not a key. -->
-      <span v-if="habit.isBad" class="reward-plate"><StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" :size="12" /><b>{{ formatCompact(effectiveDamage) }}</b></span>
-      <span class="streak" :style="streakStyle" :title="showStreak ? `${habit.streakCount} streak` : undefined">
-        <template v-if="showStreak"><StatIcon name="streak" :size="12" />{{ habit.streakCount }}</template>
+      <span class="tags">
+        <span class="type-tag" :aria-label="typeTagLabel">{{ typeTag }}</span>
+        <span v-if="isFrozen" class="next-day frozen"><StatIcon name="freeze" :size="10" />Frozen</span>
+        <span v-else-if="isResting" class="next-day">{{ nextDayLabel }}</span>
       </span>
+    </span>
+    <!-- A bad habit's reward, what holding out deals, sunk into the card so it reads as a number to wait for, not a key. -->
+    <span v-if="habit.isBad" class="meta">
+      <span class="reward-plate"><StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" :size="12" /><b>{{ formatCompact(effectiveDamage) }}</b></span>
     </span>
     <StrikeButton
       :damage-type="habit.damageType"
@@ -154,7 +169,7 @@ function onStrike() {
   opacity: 0.45;
 }
 
-/* The name with the rank pips under it. */
+/* The name with its tag under it. */
 .title {
   flex: 1;
   min-width: 0;
@@ -195,12 +210,22 @@ function onStrike() {
   font-variant-numeric: tabular-nums;
 }
 
+/* The type tag (with the rank in it) and, on a rest day, the next due day. */
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .streak {
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.25rem;
-  min-width: 3.5rem;
+  gap: 2px;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .next-day {

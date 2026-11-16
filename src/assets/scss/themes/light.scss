@@ -255,6 +255,11 @@ $light: ":root[data-theme='light']";
     inset -2px -2px 0 var(--card-lo);
 }
 
+// The type tag on a pale dyed card: the type's colour darkened, not lightened.
+#{$light} .skill-list .habit-item:not(.struck, .resting) .type-tag {
+  color: color-mix(in srgb, var(--dye) 80%, #000);
+}
+
 // ---------- Log: a white card, like the skills ----------
 #{$light} .activity-log:not(.bare) {
   background: var(--card);

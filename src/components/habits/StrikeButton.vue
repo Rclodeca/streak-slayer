@@ -44,8 +44,8 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
 </template>
 
 <style scoped>
-/* The button is 44px tall for the tap; the face and its lip, 37px, sit in
-   it. The negative margin keeps the card about 52px tall. */
+/* The button is 44px tall for the tap; the face and its lip, 40px, sit in it.
+   The negative margin keeps the card 58px tall. */
 .strike {
   --lip: 3px;
   --face: color-mix(in srgb, var(--c) 88%, #000);
@@ -60,7 +60,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   display: inline-flex;
   align-items: center;
   height: 44px;
-  margin: -3.5px 0;
+  margin: -2px 0;
   padding: 0;
   background: none;
   border: 0;
@@ -78,7 +78,7 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
   gap: 4px;
   box-sizing: border-box;
   width: 76px;
-  height: calc(34px + var(--lip));
+  height: 40px;
   padding: 0 6px var(--lip);
   color: var(--ink);
   text-shadow: var(--ink-shadow);

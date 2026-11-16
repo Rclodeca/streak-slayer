@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Skills tab, rank numeral and streak</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Experiment: the Skills tab with every skill card as tall as a Shop potion card.
+   Potion row on a 2x phone = 58px socket + 7px padding top and bottom + 3px lip = 75px (--card-h).
+   Pixel-cut Moonlit only, with the real tokens from themes/moonlit.scss so cards match the Shop's.
+   B: typed damage keys. C: the Shop's stone key, only the damage icon coloured. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col p { margin: 0 0 12px; min-height: 66px; font-size: 15px; }
+
+.phone {
+  --card-h: 75px;
+  --bg: #11121b; --ink: #f4f4fa; --text: #d3d4e4; --dim: #8a8ba3; --touch: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19; --well: #12131c; --well-hi: #2c2c47; --well-lo: #080811;
+  --quiet: #26263d; --quiet-hi: #2f2f4f; --quiet-lo: #161624; --struck: #1c1c2a; --struck-hi: #26263d; --struck-lo: #12131c; --struck-ink: #5a5a68;
+  --struck-face: #2c2d41; --struck-lip: #1f1f2c; --stone-face: #38385c; --stone-lip: #161622; --panel-hi: #373857; --panel-lo: #171823;
+  --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --streak: #e8873c; --exp: #d8b46a;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 390px; height: 840px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* pinned stage */
+.home { flex: none; position: relative; z-index: 3; background: #11121b; border-bottom: 3px solid #0a0a12; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); padding-top: 14px; }
+.crop { position: relative; height: 150px; overflow: hidden; }
+.art { position: absolute; top: -46px; left: -21px; width: 432px; height: 232px; }
+.art > img { position: absolute; inset: 0; width: 432px; height: 232px; image-rendering: pixelated; max-width: none; }
+.plate { position: absolute; z-index: 1; background: rgba(17,18,27,.9); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo); color: var(--ink); }
+.hp { left: 12px; right: 56px; top: 12px; display: flex; align-items: center; gap: 8px; font: 700 13px/1 'Alegreya', serif; }
+.hp .bar { flex: 1; height: 8px; background: #2a0f0f; box-shadow: inset 2px 2px 0 #12060a; }
+.hp .bar i { display: block; height: 100%; width: 64%; background: #c33a2e; box-shadow: inset 0 2px 0 rgba(255,255,255,.22); }
+.menu { position: absolute; top: 20px; right: 0; z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; background: #2d2c50; color: #d9b96e; clip-path: polygon(3px 0, 100% 0, 100% 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px); font-size: 20px; }
+
+.scroll { flex: 1; overflow-y: auto; padding: 14px 16px 18px; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
+.scroll::-webkit-scrollbar { display: none; }
+.tabbar { flex: none; height: 58px; background: #151621; border-top: 2px solid #0a0a12; display: flex; justify-content: space-around; align-items: center; font: 600 10px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: #686877; }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tabbar .i { font-size: 18px; }
+.tabbar .on { color: var(--touch); }
+
+.gh { display: flex; justify-content: flex-end; margin: 2px 2px -1px; font: 700 12px 'Alegreya Sans', sans-serif; color: #686877; }
+.group { display: flex; flex-direction: column; gap: 8px; flex: none; }
+
+/* banner */
+.banner { display: flex; align-items: center; height: 38px; flex: none; }
+.banner .medal { width: 38px; height: 38px; flex: none; z-index: 1; display: grid; place-items: center; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--brass); font-size: 20px; }
+.banner .cloth { margin-left: -4px; flex: 1; height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px 0 14px; background: #232337; color: var(--ink); font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); }
+.banner .cloth em { font: 700 12px 'Alegreya Sans'; letter-spacing: .06em; color: var(--dim); font-style: normal; text-transform: none; }
+.banner.resist .medal { color: #b0b1cb; } .banner.resist .cloth { background: #1b1b2b; }
+
+.t-phys { --c: var(--phys); } .t-magic { --c: var(--magic); } .t-heal { --c: var(--heal); } .t-true { --c: var(--true); }
+
+/* ===== the skill card: same height as a potion card ===== */
+.skill { display: flex; align-items: center; gap: 10px; height: var(--card-h); padding: 7px 8px 7px 14px; flex: none;
+  background: var(--card); border-bottom: 3px solid var(--lip); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.skill.bad { background: var(--quiet); box-shadow: inset 2px 2px 0 var(--quiet-hi), inset -2px -2px 0 var(--quiet-lo); }
+.skill.struck, .skill.resting { border-bottom-color: var(--struck-lip); background: var(--struck); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); }
+.mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.name { font: 700 17px/1.15 'Alegreya', serif; color: var(--ink); }
+.skill.bad .name { font-weight: 500; color: var(--text); }
+.skill:is(.struck, .resting) .name { color: var(--struck-ink); }
+.sigil { margin-left: .4em; font-size: 13px; vertical-align: -1px; } .sigil.star { color: var(--brass); } .sigil.ult { color: #e0783a; }
+.under { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pips { display: inline-flex; gap: 3px; }
+.pips i { width: 6px; height: 6px; background: #2a3042; display: block; }
+.pips i.f { background: var(--brass); }
+.streak { display: inline-flex; align-items: center; gap: 3px; color: var(--streak); }
+.streak .i { font-size: 12px; }
+.skill:is(.struck, .resting) :is(.pips, .streak) { opacity: .45; }
+.next { font: 700 11px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--struck-ink); }
+.reward { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 7px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: var(--c); font-size: 12px; }
+.reward .i { font-size: 12px; }
+
+/* strike key: face + lip, pressed when struck */
+.strike { flex: none; border: 0; padding: 0; cursor: pointer; background: none; position: relative; width: 76px; height: 44px; font: 700 14.5px/1 'Alegreya Sans'; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.strike::before, .strike::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.strike::before { top: 4px; bottom: 0; background: color-mix(in srgb, var(--c) 45%, #000); }
+.strike::after { top: 0; bottom: 4px; background: var(--c); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15); }
+.strike span { position: absolute; z-index: 1; left: 0; right: 0; top: 0; bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.strike .i { font-size: 14px; }
+.strike.t-true { color: #1b1a14; text-shadow: none; }
+.strike:active::after, .strike.done::after { top: 4px; bottom: 0; }
+.strike:active span, .strike.done span { top: 4px; bottom: 0; }
+.strike.done::before { background: var(--struck-lip); }
+.strike.done::after { background: var(--struck-face); box-shadow: none; }
+.strike.done { color: var(--struck-ink); text-shadow: none; }
+.strike.resist { --dmg: #c8402f; font-size: 13.5px; }
+.strike.resist span { gap: 3px; }
+.strike.resist:not(.done)::before { background: color-mix(in srgb, var(--dmg) 60%, #000); }
+.strike.resist:not(.done)::after { background: color-mix(in srgb, var(--dmg) 8%, #212138); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--dmg) 70%, #000); }
+.strike.resist:not(.done) { color: color-mix(in srgb, var(--dmg) 72%, #fff); text-shadow: none; }
+.strike.rest::before { background: transparent; } .strike.rest::after { background: transparent; box-shadow: none; } .strike.rest { color: var(--struck-ink); text-shadow: none; cursor: default; }
+.add { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; margin-top: 2px; background: transparent; color: var(--touch); clip-path: var(--px2); box-shadow: inset 0 0 0 2px var(--hi); font: 600 12px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; }
+.tag { flex: none; font: 700 10px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding: 2px 2px 0; }
+
+/* ---- ideas ---- */
+.col p { min-height: 88px; }
+.gh { justify-content: space-between; }
+.group-l { font: 700 12px 'Alegreya Sans', sans-serif; color: #686877; margin: 2px 2px -1px; display: flex; justify-content: flex-end; flex: none; }
+/* 1: Daily | Weekly switch */
+.seg { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.seg button { border: 0; min-height: 44px; background: transparent; color: var(--dim); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; clip-path: var(--px2); font: 600 12px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.seg button b { font: 700 14px 'Alegreya', serif; letter-spacing: 0; color: var(--text); }
+.seg button.on { background: var(--stone-face); color: var(--ink); box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+.seg button.on b { color: var(--brass); }
+/* 2: progress bar to the next rank */
+.rbar { display: inline-flex; align-items: center; gap: 7px; }
+.rbar .num { font: 700 11px 'Cinzel', serif; letter-spacing: .08em; color: var(--brass); min-width: 24px; }
+.rbar .bar { width: 86px; height: 6px; background: var(--well); box-shadow: inset 2px 2px 0 var(--well-lo), inset -1px -1px 0 var(--well-hi); }
+.rbar .bar i { display: block; height: 100%; background: var(--brass); box-shadow: inset 0 2px 0 rgba(255,255,255,.3); }
+.skill:is(.struck, .resting) .rbar { opacity: .45; }
+/* 3: damage-colour spine + type word */
+.v3 .skill { position: relative; padding-left: 20px; }
+.v3 .skill::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--c); }
+.v3 .skill.bad::before { background: #8d93a3; }
+.v3 .skill:is(.struck, .resting)::before { background: var(--struck-face); }
+.tl { font: 700 10px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--c); }
+.skill:is(.struck, .resting) .tl { color: var(--struck-ink); }
+.skill.bad .tl { color: var(--dim); }
+/* 4: streak plate on the left */
+.splate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 50px; height: 50px; margin-left: -4px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: var(--streak); }
+.splate .i { font-size: 15px; }
+.splate b { font: 700 15px/1 'Alegreya', serif; }
+.splate.none { color: #3c3d52; }
+.skill:is(.struck, .resting) .splate { color: var(--struck-ink); opacity: .6; }
+.v4 .skill { padding-left: 14px; }
+
+.norank .under { min-height: 16px; }
+.name .streak { margin-left: 10px; font-size: 12px; font-weight: 700; vertical-align: 1px; white-space: nowrap; }
+.cap { display: flex; align-items: center; justify-content: center; gap: 3px; height: 14px; margin-top: 3px; font: 700 12px/1 'Alegreya Sans'; color: var(--streak); font-variant-numeric: tabular-nums; }
+.cap .i { font-size: 12px; }
+.cap.next { color: var(--struck-ink); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+.keycol { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.keycol .strike { margin: 0; }
+.skill:is(.struck, .resting) .cap:not(.next) { opacity: .45; }
+.splate { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 50px; height: 50px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: var(--streak); }
+.splate .i { font-size: 15px; }
+.splate b { font: 700 15px/1 'Alegreya', serif; }
+.splate.none { color: #3c3d52; }
+.skill:is(.struck, .resting) .splate { color: var(--struck-ink); opacity: .6; }
+.v3 .skill.hasplate { padding-left: 14px; }
+.v3 .skill.hasplate::before { width: 6px; }
+.rn { font: 700 12px/1 'Cinzel', serif; letter-spacing: .08em; color: var(--brass); }
+.rn.plate { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.rn.word small { font: 700 10px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin-right: 5px; }
+.skill:is(.struck, .resting) .rn { opacity: .45; }
+.v3 .under { gap: 12px; }
+/* ---- toggles ---- */
+.toggles { display: flex; gap: 10px; justify-content: center; margin: 0 0 22px; }
+.toggles button { min-height: 44px; padding: 0 16px; border: 0; cursor: pointer; background: #2d2c50; color: #f4f4fa; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #4d4c7e, inset -2px -2px 0 #191a28; font: 600 12px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; }
+.toggles button b { margin-left: 8px; font: 700 13px 'Alegreya Sans'; letter-spacing: .04em; color: #d2bb85; }
+.toggles button[aria-pressed=false] b { color: #8a8ba3; }
+/* spine colour off: a neutral spine and type word */
+.phone.nospine .skill:not(.struck):not(.resting)::before { background: var(--hi); }
+.phone.nospine .skill:not(.struck):not(.resting) .tl { color: var(--dim); }
+/* button colour off: the Shop's stone key, only the damage icon coloured (Give in is unchanged) */
+.phone.stonekeys .strike:not(.resist):not(.done):not(.rest) { color: var(--ink); text-shadow: none; }
+.phone.stonekeys .strike:not(.resist):not(.done):not(.rest)::before { background: var(--stone-lip); }
+.phone.stonekeys .strike:not(.resist):not(.done):not(.rest)::after { background: var(--stone-face); box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+.phone.stonekeys .strike:not(.resist):not(.done):not(.rest) .i { color: var(--c); }
+
+/* ---- daily vs weekly ---- */
+.rule { flex: none; display: flex; align-items: center; gap: 10px; margin: 4px 2px 0; font: 600 10.5px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.rule::before, .rule::after { content: ''; flex: 1; height: 2px; background: #232337; box-shadow: 0 2px 0 #0a0a12; }
+.rule small { font: 600 12px 'Alegreya Sans'; letter-spacing: .02em; text-transform: none; color: #686877; }
+.wk { padding: 1px 6px 2px; background: var(--well); color: var(--brass); clip-path: var(--px2); font: 700 10px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.fold { flex: none; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 14px; border: 0; cursor: pointer; background: var(--quiet); color: var(--ink); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--quiet-hi), inset -2px -2px 0 var(--quiet-lo); font: 600 12px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; text-align: left; }
+.fold em { margin-left: auto; font: 700 12px 'Alegreya Sans'; letter-spacing: .04em; text-transform: none; font-style: normal; color: var(--dim); }
+.fold .i { font-size: 16px; color: var(--dim); }
+.fold b { font: 700 14px 'Alegreya', serif; letter-spacing: 0; color: var(--brass); }
+.sub { flex: none; display: flex; align-items: center; justify-content: space-between; height: 26px; margin-right: 30px; padding: 0 22px 0 12px; background: #232337; color: var(--ink); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); font: 600 11px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; }
+.sub em { font: 700 12px 'Alegreya Sans'; letter-spacing: .04em; text-transform: none; font-style: normal; color: var(--brass); }
+.sub.wkly { background: #2b2640; box-shadow: inset 0 2px 0 #4b4470; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Skills tab, rank numeral + streak</h1>
+  <p class="lede">The rank as a Roman numeral, with the streak right beside it, under the skill name. Three ways to dress the numeral. A skill with no rank yet shows only its streak. The switches apply to all three.</p>
+  <div class="toggles"><button id="tSpine" aria-pressed="true">Spine colour <b>On</b></button><button id="tKeys" aria-pressed="true">Button colour <b>On</b></button></div>
+  <div class="grid">
+    <div class="col"><h2>A · Plain numeral</h2><p>A brass engraved numeral, the streak next to it. Quietest of the three; the numerals are the same Cinzel as the banners.</p><div class="phone v3" id="P1"></div></div>
+    <div class="col"><h2>B · Numeral in a plate</h2><p>The numeral sits in a small sunk plate, like the Resist reward plate, so it reads as a badge and lines up when the numerals have different widths.</p><div class="phone v3" id="P2"></div></div>
+    <div class="col"><h2>C · "Rank III"</h2><p>The word spelled out before the numeral, then the streak. Clearest for a new player; a little wider.</p><div class="phone v3" id="P3"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {
+  sword: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  heal: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  gem: '<path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>',
+  settings: '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  store: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
+  crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  heartminus: '<path d="m14.876 18.99-1.368 1.323a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
+  up: '<path d="m18 15-6-6-6 6"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  skull: '<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+  tree: '<path d="M12 22v-7"/><path d="M12 15l-4-4"/><path d="M12 15l4-4"/><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/>',
+};
+const ic = (n, c = '') => `<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const T = { phys: 'sword', magic: 'magic', heal: 'heal', true: 'true' };
+
+const WEEKLY = [
+  { n: 'Call a Friend', t: 'heal', r: 1, s: 3, d: '900' },
+  { n: 'Long Hike', t: 'phys', r: 2, s: 4, d: '2.0K' },
+];
+// name, type, rank (0-8), streak, damage, state (open | struck | rest), sigil, rest label
+const GOOD = [
+  { n: 'Morning Run', t: 'phys', r: 3, s: 12, d: '1.2K' },
+  { n: 'Read 20 Pages', t: 'magic', r: 2, s: 5, d: '2.4K' },
+  { n: 'Meal Prep Sunday', t: 'heal', r: 1, s: 0, d: '860' },
+  { n: 'Deep Work Block', t: 'true', r: 5, s: 31, d: '5.1K', sigil: 'star' },
+  { n: 'Drink Water', t: 'phys', r: 4, s: 9, d: '1.4K', st: 'struck' },
+  { n: 'Gym Session', t: 'phys', r: 2, s: 3, d: '1.1K', st: 'rest', next: 'Thu' },
+];
+const BAD = [
+  { n: 'Doomscrolling', t: 'magic', r: 2, s: 7, d: '3.0K' },
+  { n: 'Late Night Snacks', t: 'phys', r: 1, s: 0, d: '900' },
+];
+const stage = `<div class="home"><div class="crop"><div class="art"><img src="../../public/sprites/stage/arena6b.png" alt=""></div>
+  <span class="plate hp">${ic('skull')}<span class="bar"><i></i></span>64%</span></div><span class="menu">${ic('settings')}</span></div>`;
+const tabs = `<div class="tabbar"><span class="on">${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span>${ic('store')}Shop</span><span>${ic('tree')}Talents</span><span>${ic('crown')}Hero</span></div>`;
+const add = (label) => `<button class="add">${ic('plus')} ${label}</button>`;
+
+
+const NUM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const TYPE = { phys: 'Physical', magic: 'Magic', heal: 'Healing', true: 'True' };
+const pips = (r) => `<span class="pips">${Array.from({ length: 8 }, (_, i) => `<i class="${i < r ? 'f' : ''}"></i>`).join('')}</span>`;
+const RN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+function card(k, bad, v) {
+  const st = k.st || '';
+  const sigil = k.sigil ? `<span class="sigil ${k.sigil}">${ic(k.sigil)}</span>` : '';
+  const has = k.s >= 2;
+  const rank = !k.r ? '' : v === 'A' ? `<span class="rn">${RN[k.r]}</span>` : v === 'B' ? `<span class="rn plate">${RN[k.r]}</span>` : `<span class="rn word"><small>Rank</small>${RN[k.r]}</span>`;
+  const streak = has ? `<span class="streak">${ic('flame')}${k.s}</span>` : '';
+  const tail = bad ? `<span class="reward">${ic(T[k.t])}<b>${k.d}</b></span>` : st === 'rest' ? `<span class="next">${k.next}</span>` : '';
+  const btn = bad
+    ? `<button class="strike resist t-${k.t} ${st === 'struck' ? 'done' : ''}"><span>${ic('heartminus')}Give in</span></button>`
+    : st === 'rest' ? `<button class="strike rest t-${k.t}"><span>Rest</span></button>`
+    : `<button class="strike t-${k.t} ${st === 'struck' ? 'done' : ''}"><span>${ic(T[k.t])}<b>${k.d}</b></span></button>`;
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${st}">
+    <div class="mid"><div class="name">${k.n}${sigil}</div><div class="under">${rank}${streak}${tail}</div></div>${btn}</div>`;
+}
+const banner = (title, icon, extra, cls = '') => `<div class="banner ${cls}"><span class="medal">${ic(icon)}</span><span class="cloth">${title}<em>${extra}</em></span></div>`;
+const resist = (v) => `${banner('Resist', 'skull', 'Habits to break', 'resist')}${BAD.map((k) => card(k, true, v)).join('')}`;
+const wrap = (id, inner) => { document.getElementById(id).innerHTML = `${stage}<div class="scroll">${inner}</div>${tabs}`; };
+const list = (a, v) => a.map((k) => card(k, false, v)).join('');
+const skillsBanner = () => banner('Skills', 'swords', 'Habits to keep');
+
+const WK = WEEKLY.map((k) => ({ ...k, wk: true }));
+const build = (id, v) => wrap(id, `${skillsBanner()}<div class="rule">Daily</div>${list(GOOD, v)}<div class="rule">Weekly</div>${list(WK, v)}${add('New skill')}${resist(v)}`);
+build('P1', 'A'); build('P2', 'B'); build('P3', 'C');
+
+const phones = ['P1', 'P2', 'P3'].map((id) => document.getElementById(id));
+function toggle(id, cls) {
+  const b = document.getElementById(id);
+  b.addEventListener('click', () => {
+    const on = b.getAttribute('aria-pressed') === 'true';
+    b.setAttribute('aria-pressed', String(!on));
+    b.querySelector('b').textContent = on ? 'Off' : 'On';
+    phones.forEach((ph) => ph.classList.toggle(cls, on));
+  });
+}
+toggle('tSpine', 'nospine');
+toggle('tKeys', 'stonekeys');
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.strike');
+  if (!b || b.classList.contains('rest')) return;
+  b.classList.toggle('done');
+  b.closest('.skill').classList.toggle('struck');
+});
+</script>
+</body>
+</html>

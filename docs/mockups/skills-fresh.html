@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Skills tab, five fresh directions</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700;800&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Five fresh looks for the Skills tab, plus today's for reference and the 1 + 3 pick.
+   Pixel-cut Moonlit only, real tokens from themes/moonlit.scss, real list order
+   (heal, physical, magic, true; resting skills last). Pixel art in skills-fresh/
+   is native 32x32 Pixellab (2026-11-15 runs, docs/pixellab-runs.md), drawn at a whole
+   number of CSS px per art pixel. Tap any key to strike it; tap again to take it back. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 820px; }
+.grid { display: flex; flex-wrap: wrap; gap: 44px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.col h2 b { color: #d2bb85; margin-right: .5em; }
+.col p { margin: 0 0 6px; font-size: 15px; }
+.col ul.why { margin: 0 0 14px; padding-left: 18px; font-size: 14px; min-height: 96px; }
+.col ul.why li { margin: 2px 0; }
+.col ul.why .con { color: #8a8ba3; }
+
+.phone {
+  --bg: #11121b; --ink: #f4f4fa; --text: #d3d4e4; --dim: #8a8ba3; --touch: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19; --well: #12131c; --well-hi: #2c2c47; --well-lo: #080811;
+  --quiet: #26263d; --quiet-hi: #2f2f4f; --quiet-lo: #161624; --struck: #1c1c2a; --struck-hi: #26263d; --struck-lo: #12131c; --struck-ink: #5a5a68;
+  --struck-face: #2c2d41; --struck-lip: #1f1f2c; --stone-face: #38385c; --stone-lip: #161622; --panel-hi: #373857; --panel-lo: #171823;
+  --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --streak: #e8873c; --exp: #d8b46a; --resist: #c8402f;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 390px; height: 844px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); color: var(--text); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.px { image-rendering: pixelated; max-width: none; display: block; }
+.t-phys { --c: var(--phys); } .t-magic { --c: var(--magic); } .t-heal { --c: var(--heal); } .t-true { --c: var(--true); }
+
+/* pinned stage, as on the phone today */
+.home { flex: none; position: relative; z-index: 3; background: #11121b; border-bottom: 3px solid #0a0a12; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); padding-top: 14px; }
+.crop { position: relative; height: 150px; overflow: hidden; }
+.art { position: absolute; top: -46px; left: -21px; width: 432px; height: 232px; }
+.art > img { position: absolute; inset: 0; width: 432px; height: 232px; image-rendering: pixelated; max-width: none; }
+.plate { position: absolute; z-index: 1; background: rgba(17,18,27,.9); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo); color: var(--ink); }
+.hp { left: 12px; right: 56px; top: 12px; display: flex; align-items: center; gap: 8px; font: 700 13px/1 'Alegreya', serif; }
+.hp .bar { flex: 1; height: 8px; background: #2a0f0f; box-shadow: inset 2px 2px 0 #12060a; }
+.hp .bar i { display: block; height: 100%; width: 64%; background: #c33a2e; box-shadow: inset 0 2px 0 rgba(255,255,255,.22); }
+.menu { position: absolute; top: 20px; right: 0; z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; background: #2d2c50; color: #d9b96e; clip-path: polygon(3px 0, 100% 0, 100% 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px); font-size: 20px; }
+.scroll { flex: 1; overflow-y: auto; padding: 12px 16px 22px; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
+.scroll::-webkit-scrollbar { display: none; }
+.tabbar { flex: none; height: 58px; background: #151621; border-top: 2px solid #0a0a12; display: flex; justify-content: space-around; align-items: center; font: 600 10px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: #686877; }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tabbar .i { font-size: 18px; }
+.tabbar .on { color: var(--touch); }
+
+/* section banner, as built (Banner cloth) */
+.sec { display: flex; flex-direction: column; gap: 7px; flex: none; --spine: #dfe0f0; }
+.sec + .sec { margin-top: 12px; }
+.sec.resist { --spine: var(--resist); }
+.hdr { position: relative; height: 50px; padding: 0 2px; display: flex; align-items: center; justify-content: space-between; flex: none; }
+.hdr .title { display: inline-flex; align-items: center; min-width: 0; font: 600 14.4px/1 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; }
+.hdr .m { position: relative; z-index: 1; display: grid; place-items: center; flex: none; width: 36px; height: 36px; background: #b0b1cb; color: #11121b; clip-path: var(--px2);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.35); font-size: 18px; }
+.sec.resist .hdr .m { background: color-mix(in srgb, var(--spine) 62%, #000); color: #fff; }
+.hdr .c { margin-left: -6px; padding: 7px 24px 8px 15px; line-height: 1; white-space: nowrap; color: #f4f4fa; text-shadow: 0 2px 0 rgba(0,0,0,.5);
+  background: color-mix(in srgb, var(--spine) 30%, #1c1c30);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--spine) 50%, #2a2a44), inset 0 -3px 0 color-mix(in srgb, var(--spine) 18%, #0e0e19);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%); }
+.hdr .plus { transform: translate(7px, 1px); display: grid; place-items: center; width: 44px; height: 44px; color: var(--spine); font-size: 16px; }
+.hdr .plus::before { content: ''; grid-area: 1 / 1; width: 30px; height: 30px; background: color-mix(in srgb, var(--spine) 10%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--spine) 55%, transparent); clip-path: var(--px2); }
+.hdr .plus .i { grid-area: 1 / 1; stroke-width: 2.6; }
+.gh2 { display: flex; justify-content: space-between; align-items: baseline; margin: -2px 2px 0; font: 600 12.5px 'Alegreya Sans', sans-serif; color: #686877; flex: none; }
+.gh2 b { font-weight: 700; font-size: 12px; }
+/* a clearer group label, used by the new looks: caps word, a rule, a count */
+.grp { display: flex; align-items: center; gap: 8px; margin: 4px 2px 0; flex: none; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.grp::after { content: ''; flex: 1; height: 2px; background: #22233a; order: 1; }
+.grp em { order: 2; font: 700 12px 'Alegreya Sans'; letter-spacing: .02em; text-transform: none; font-style: normal; color: #686877; }
+
+/* ===== shared parts ===== */
+.skill { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 8px 6px 12px; flex: none;
+  background: var(--card); border-bottom: 3px solid var(--lip); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.skill.bad { background: var(--quiet); box-shadow: inset 2px 2px 0 var(--quiet-hi), inset -2px -2px 0 var(--quiet-lo); }
+.skill:is(.struck, .resting) { border-bottom-color: var(--struck-lip); background: var(--struck); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); }
+.mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.name { font: 700 16.5px/1.15 'Alegreya', serif; color: var(--ink); }
+.skill.bad .name { font-weight: 500; color: var(--text); }
+.skill:is(.struck, .resting) .name { color: var(--struck-ink); }
+.sigil { margin-left: .35em; font-size: 13px; vertical-align: -1px; color: var(--brass); }
+.under { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; min-height: 4px; }
+.pips { display: inline-flex; gap: 4px; }
+.pips i { width: 4px; height: 4px; background: var(--brass); display: block; }
+.pips i:nth-child(5) { margin-left: 4px; }
+.streak { display: inline-flex; align-items: center; gap: 3px; color: var(--streak); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.streak .i { font-size: 12px; }
+.skill:is(.struck, .resting) :is(.pips, .streak) { opacity: .45; }
+.next { font: 700 11px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--struck-ink); }
+.side { flex: none; min-width: 26px; display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.reward { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 7px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); color: var(--c); font-size: 12px; font-weight: 700; }
+.reward .i { font-size: 12px; }
+
+/* strike key: face + lip, pressed when struck (as built) */
+.strike { --l: 3px; flex: none; border: 0; padding: 0; cursor: pointer; background: none; position: relative; width: 76px; height: 44px; font: 700 14.5px/1 'Alegreya Sans'; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.strike::before, .strike::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.strike::before { top: var(--l); bottom: 0; background: color-mix(in srgb, var(--c) 45%, #000); }
+.strike::after { top: 0; bottom: var(--l); background: var(--c); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), inset -2px 0 0 rgba(0,0,0,.15); }
+.strike span { position: absolute; z-index: 1; left: 0; right: 0; top: 0; bottom: var(--l); display: flex; align-items: center; justify-content: center; gap: 4px; }
+.strike .i { font-size: 14px; }
+.strike.t-true { color: #1b1a14; text-shadow: none; }
+.strike:active::after, .strike.done::after, .strike:active span, .strike.done span { top: var(--l); bottom: 0; }
+.strike.done::before { background: var(--struck-lip); }
+.strike.done::after { background: var(--struck-face); box-shadow: none; }
+.strike.done { color: var(--struck-ink); text-shadow: none; }
+.strike.resist { --dmg: var(--resist); font-size: 13.5px; }
+.strike.resist span { gap: 3px; }
+.strike.resist:not(.done)::before { background: color-mix(in srgb, var(--dmg) 60%, #000); }
+.strike.resist:not(.done)::after { background: color-mix(in srgb, var(--dmg) 8%, #212138); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--dmg) 70%, #000); }
+.strike.resist:not(.done) { color: color-mix(in srgb, var(--dmg) 72%, #fff); text-shadow: none; }
+.strike.rest { cursor: default; color: var(--struck-ink); text-shadow: none; }
+.strike.rest::before, .strike.rest::after { background: transparent; box-shadow: none; }
+.phone.today .strike { height: 37px; }
+
+/* ===== 1. Spellbook rows: a socket with the skill's own art ===== */
+.sock { flex: none; display: grid; place-items: center; width: 58px; height: 58px; clip-path: var(--px3);
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 22%, #12131c), #0e0e19 72%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 60%, #000), inset 4px 4px 0 #080811, inset -4px -4px 0 color-mix(in srgb, var(--c) 30%, #171823); }
+.sock img { width: 48px; height: 48px; }  /* 32 art px at 1.5 CSS px: 3 device px on a 2x phone */
+.sock .i { font-size: 26px; color: var(--c); }
+.v1 .skill, .v6 .skill { padding: 6px 8px 6px 6px; gap: 11px; }
+.v1 .name, .v6 .name { font-size: 17px; }
+.skill:is(.struck, .resting) .sock { background: #0e0e19; box-shadow: inset 0 0 0 2px #1f1f2c, inset 4px 4px 0 #080811, inset -4px -4px 0 #171823; }
+.skill:is(.struck, .resting) .sock img { filter: grayscale(1) brightness(.5); }
+.skill.bad .sock { --c: #8d6a72; }
+
+/* ===== 2. Hotbar: the art is the key ===== */
+.bar3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px; flex: none; }
+.slot { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.abk { --l: 4px; position: relative; width: 104px; height: 108px; border: 0; padding: 0; background: none; cursor: pointer; flex: none; }
+.abk .face { position: absolute; left: 0; right: 0; top: 0; bottom: var(--l); clip-path: var(--px3); overflow: hidden;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--c) 30%, #1a1a2c), #0e0e19 75%);
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--c) 78%, #000), inset 0 0 0 6px rgba(0,0,0,.45); }
+.abk::before { content: ''; position: absolute; left: 0; right: 0; top: var(--l); bottom: 0; clip-path: var(--px3); background: color-mix(in srgb, var(--c) 40%, #000); }
+.abk .face img { position: absolute; left: 4px; top: 4px; width: 96px; height: 96px; }  /* 32 art px at 3 CSS px */
+.abk .face img.obj { left: 20px; top: 10px; width: 64px; height: 64px; }               /* object art at 2 CSS px */
+.abk .dmg { position: absolute; left: 4px; right: 4px; bottom: 4px; height: 24px; display: flex; align-items: center; justify-content: center; gap: 4px;
+  background: linear-gradient(transparent, rgba(8,8,17,.92) 35%); color: color-mix(in srgb, var(--c) 70%, #fff); font: 800 14px 'Alegreya Sans'; font-variant-numeric: tabular-nums; text-shadow: 0 1px 0 #000; }
+.abk .dmg .i { font-size: 13px; }
+.abk .stk { position: absolute; top: 4px; right: 4px; display: inline-flex; align-items: center; gap: 2px; padding: 2px 5px 2px 4px; background: rgba(8,8,17,.85); clip-path: var(--px2); color: var(--streak); font: 800 12px 'Alegreya Sans'; }
+.abk .stk .i { font-size: 11px; }
+.abk .rk { position: absolute; top: 7px; left: 7px; display: flex; flex-direction: column; gap: 3px; }
+.abk .rk i { display: block; width: 4px; height: 4px; background: var(--brass); box-shadow: 1px 1px 0 #000; }
+.abk:active .face, .abk.done .face { top: var(--l); bottom: 0; }
+.abk.done .face img { filter: grayscale(1) brightness(.35); }
+.abk.done .face { background: #0e0e19; box-shadow: inset 0 0 0 4px #2c2d41, inset 0 0 0 6px rgba(0,0,0,.45); }
+.abk.done::before { background: #1f1f2c; }
+.abk.done .dmg { color: var(--struck-ink); background: none; }
+.abk.done .stk { color: var(--struck-ink); }
+.abk .chk { display: none; position: absolute; left: 50%; top: 42%; width: 26px; height: 26px; transform: translate(-50%, -50%) rotate(45deg); background: #565779; box-shadow: inset 0 0 0 2px #7778a6; }
+.abk .chk::after { content: ''; position: absolute; left: 8px; top: 4px; width: 6px; height: 12px; border: solid #dfe0f0; border-width: 0 3px 3px 0; }
+.abk.done .chk { display: block; }
+.abk.rest { cursor: default; }
+.abk.rest .face img { filter: grayscale(1) brightness(.4); }
+.abk.rest .face { box-shadow: inset 0 0 0 4px #26263d, inset 0 0 0 6px rgba(0,0,0,.45); background: #0e0e19; }
+.abk.rest::before { background: #161624; }
+.abk.rest .dmg { color: var(--struck-ink); background: none; letter-spacing: .1em; font-size: 12px; text-transform: uppercase; }
+.slot .sn { font: 700 13.5px/1.12 'Alegreya', serif; color: var(--ink); text-align: center; min-height: 2.24em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding: 0 2px; }
+.slot.struck .sn, .slot.resting .sn { color: var(--struck-ink); }
+.bar3.res .abk { --c: #a0414a; }
+.bar3.res .abk .face { background: radial-gradient(circle at 50% 42%, #2a1f30, #0e0e19 75%); box-shadow: inset 0 0 0 4px #4a2630, inset 0 0 0 6px rgba(0,0,0,.45); }
+.bar3.res .abk .dmg { color: color-mix(in srgb, var(--resist) 72%, #fff); }
+.bar3.res .slot .sn { font-weight: 500; color: var(--text); }
+.bar3.res .reward { position: absolute; top: 4px; left: 4px; height: 20px; padding: 0 5px; font-size: 11px; }
+
+/* ===== 3. Shrinking queue: today's turn, open skills, spent pile ===== */
+.turn { flex: none; padding: 10px 12px 11px; background: #191a29; clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo); display: flex; flex-direction: column; gap: 8px; }
+.turn .top { display: flex; align-items: baseline; justify-content: space-between; }
+.turn .tt { font: 600 12px 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
+.turn .left { font: 700 13px 'Alegreya Sans'; color: var(--dim); }
+.turn .left b { font: 800 22px/1 'Alegreya', serif; color: var(--ink); margin-right: 3px; }
+.segs { display: flex; gap: 3px; height: 10px; }
+.segs i { flex: 1; background: color-mix(in srgb, var(--c) 16%, #12131c); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, #0e0e19); }
+.segs i.f { background: var(--c); box-shadow: inset 0 2px 0 rgba(255,255,255,.3); }
+.turn .foot { display: flex; justify-content: space-between; font: 700 12.5px 'Alegreya Sans'; color: var(--dim); font-variant-numeric: tabular-nums; }
+.turn .foot b { color: var(--ink); font-weight: 800; }
+.turn .foot .hit b { color: var(--phys); }
+.turn.clear .left b { color: var(--brass); }
+.turn.clear .tt { color: var(--brass); }
+.pile { display: flex; flex-wrap: wrap; gap: 6px; flex: none; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 4px; background: var(--struck); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); color: var(--struck-ink); font: 700 13px 'Alegreya', serif; cursor: pointer; }
+.chip .dot { width: 24px; height: 24px; display: grid; place-items: center; }
+.chip .dot i { width: 8px; height: 8px; transform: rotate(45deg); background: #565779; display: block; }
+.chip img { width: 24px; height: 24px; filter: grayscale(1) brightness(.6); image-rendering: auto; }
+.chip b { font: 700 11px 'Alegreya Sans'; color: #4a4a58; letter-spacing: .06em; }
+.chip.rest { cursor: default; padding-left: 10px; }
+.empty-turn { flex: none; padding: 16px 8px; text-align: center; font: 600 14px 'Alegreya', serif; color: var(--dim); }
+.leaving { animation: leave .28s steps(4) forwards; }
+@keyframes leave { to { opacity: 0; transform: translateX(24px); } }
+
+/* ===== 4. Streak numeral: a flame plate leads the card ===== */
+.fplate { flex: none; width: 54px; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; margin-left: -6px;
+  background: radial-gradient(circle at 50% 38%, rgba(232,135,60,.2), var(--well) 70%); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); }
+.fplate img { width: 32px; height: 32px; }  /* 32 art px at 1 CSS px */
+.fplate .i { font-size: 22px; color: var(--streak); fill: currentColor; fill-opacity: .25; }
+.fplate b { font: 800 17px/1 'Alegreya', serif; color: var(--streak); font-variant-numeric: tabular-nums; }
+.fplate.t2 b { color: #f0a04f; } .fplate.t3 b { color: #ffc46b; } .fplate.t4 b { color: #cfe6ff; }
+.fplate.t4 { background: radial-gradient(circle at 50% 38%, rgba(150,200,255,.22), var(--well) 70%); }
+.fplate.none { background: var(--well); }
+.fplate.none b { color: #3c3d52; font-size: 15px; }
+.fplate.none .ember { width: 10px; height: 4px; background: #2c2d41; margin-bottom: 6px; }
+.v4 .skill { padding-left: 12px; gap: 11px; min-height: 64px; }
+.v4 .name { font-size: 17px; }
+/* struck: the card goes grey but the flame you just fed stays lit, rimmed in brass */
+.skill.struck .fplate:not(.none) { box-shadow: inset 0 0 0 2px var(--brass), inset 3px 3px 0 var(--well-lo); }
+.skill.resting .fplate img { filter: grayscale(1) brightness(.6); }
+.skill.resting .fplate b { color: var(--struck-ink); }
+.skill.bad .fplate { background: radial-gradient(circle at 50% 38%, rgba(200,64,47,.16), var(--well) 70%); }
+
+/* ===== 5. Dyed cards: the whole face takes its damage colour ===== */
+.v5 .skill:not(.bad):not(.struck):not(.resting) {
+  background: linear-gradient(100deg, color-mix(in srgb, var(--c) 30%, #211f3c) 0%, color-mix(in srgb, var(--c) 14%, #262545) 55%, color-mix(in srgb, var(--c) 8%, #262545) 100%);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c) 55%, #4d4c7e), inset 2px 0 0 color-mix(in srgb, var(--c) 35%, #4d4c7e), inset -2px -2px 0 color-mix(in srgb, var(--c) 10%, #12121e);
+  border-bottom-color: color-mix(in srgb, var(--c) 30%, #07070d); }
+.v5 .skill.t-true:not(.bad):not(.struck):not(.resting) {
+  background: linear-gradient(100deg, color-mix(in srgb, #c9a96a 30%, #211f3c), color-mix(in srgb, #c9a96a 10%, #262545)); }
+.v5 .skill { min-height: 64px; padding-left: 14px; overflow: hidden; }
+.v5 .skill .mark { position: absolute; left: 150px; top: 50%; transform: translateY(-50%) rotate(-12deg); font-size: 72px; color: var(--c); opacity: .09; pointer-events: none; }
+.v5 .skill .mark .i { stroke-width: 1.6; }
+.v5 .skill:is(.struck, .resting) .mark { display: none; }
+.v5 .tl { font: 700 10px 'Alegreya Sans'; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--c) 80%, #fff); }
+.v5 .skill:is(.struck, .resting) .tl { color: var(--struck-ink); opacity: .7; }
+.v5 .skill.bad { background: linear-gradient(100deg, #2e1d2a, #22213a 60%); box-shadow: inset 0 2px 0 #4a2a3a, inset -2px -2px 0 #141320; }
+.v5 .skill.bad .tl { color: #b47a7a; }
+.v5 .name { font-size: 17px; }
+
+/* ===== 6. The pick: 1 + 3, the streak on the socket (4) ===== */
+.v6 .sockwrap { position: relative; flex: none; }
+.v6 .sbadge { position: absolute; right: -6px; bottom: -3px; display: inline-flex; align-items: center; gap: 2px; padding: 2px 5px 2px 4px; background: #0e0e19; clip-path: var(--px2);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--streak) 55%, #000); color: var(--streak); font: 800 12.5px/1 'Alegreya Sans'; font-variant-numeric: tabular-nums; }
+.v6 .sbadge .i { font-size: 11px; }
+.v6 .sbadge.t3 { color: #ffc46b; box-shadow: inset 0 0 0 2px #b3843a; }
+.v6 .sbadge.t4 { color: #cfe6ff; box-shadow: inset 0 0 0 2px #6d8fb8; }
+.v6 .skill.struck .sbadge { box-shadow: inset 0 0 0 2px var(--brass); }
+.v6 .rankw { font: 700 10.5px 'Cinzel', serif; letter-spacing: .12em; color: var(--brass); }
+.v6 .skill:is(.struck, .resting) .rankw { opacity: .45; }
+
+/* ===== 7. Rank art: effect art by type and rank, in a metal frame drawn in code =====
+   Items: a loose object on a socket with a coloured rarity rim. Skills: a filled square
+   of effect art in a metal frame (iron Rank 0-II, brass III-V, bright brass VI-VIII). */
+.rk { flex: none; position: relative; display: block; width: 58px; height: 58px; padding: 5px; clip-path: var(--px3); background: #4a4b60;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 2px 0 0 rgba(255,255,255,.1), inset 0 -3px 0 rgba(0,0,0,.45), inset -2px 0 0 rgba(0,0,0,.3); }
+.rk img { width: 48px; height: 48px; }  /* 32 art px at 1.5 CSS px */
+.rk.f2 { background: #a88d59; }
+.rk.f3 { background: linear-gradient(135deg, #f6e2a6, #b39a66 35%, #f0d590 55%, #8f7a4e); }
+.rk.f3::after { content: ''; position: absolute; inset: 5px; box-shadow: inset 0 0 0 1px rgba(255,240,200,.5), inset 0 0 10px rgba(255,214,140,.35); }
+/* stand-ins: only physical has real art so far; the others are the same tiles recoloured */
+.rk.t-magic img { filter: hue-rotate(275deg) saturate(1.15); }
+.rk.t-heal img { filter: hue-rotate(120deg) saturate(.9); }
+.rk.t-true img { filter: grayscale(1) sepia(.4) brightness(1.4); }
+.skill.bad .rk img { filter: grayscale(.7) brightness(.75); }
+.skill:is(.struck, .resting) .rk { background: #2c2d41; }
+.skill:is(.struck, .resting) .rk::after { display: none; }
+.skill:is(.struck, .resting) .rk img { filter: grayscale(1) brightness(.45); }
+
+.cmp { max-width: 1240px; margin: 56px auto 0; padding: 22px 24px 26px; background: #11121b; border: 1px solid #000; border-radius: 18px; color: #d3d4e4; }
+.cmp h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .22em; text-transform: uppercase; color: #ece8de; margin: 0 0 6px; }
+.cmp > p { margin: 0 0 18px; font-size: 15px; max-width: 900px; }
+.cmp-row { display: flex; align-items: flex-start; gap: 18px; padding: 14px 0; border-top: 2px solid #1c1d2c; flex-wrap: wrap; }
+.cmp-row .lab { width: 180px; flex: none; font: 600 11px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: #8a8ba3; padding-top: 20px; }
+.cmp-row .lab em { display: block; margin-top: 4px; font: 500 13px 'Alegreya Sans'; letter-spacing: 0; text-transform: none; font-style: normal; color: #686877; }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 74px; font: 700 11px 'Alegreya Sans'; color: #8a8ba3; text-align: center; }
+.isock { width: 58px; height: 58px; display: grid; place-items: center; clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--rarity) var(--tier), #0a0a14) 0, #07070e 82%);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rarity) calc(var(--tier) + 30%), #000), inset 4px 4px 0 rgba(0,0,0,.5), inset -4px -4px 0 color-mix(in srgb, var(--rarity) var(--tier), #000); }
+.isock img { width: 48px; height: 48px; }
+.r-common { --rarity: #9d9382; --tier: 10%; } .r-rare { --rarity: #5f95e6; --tier: 38%; } .r-epic { --rarity: #b57be8; --tier: 52%; } .r-relic { --rarity: #f58a35; --tier: 60%; }
+.cmp .rk { --c: var(--phys); }
+.cmp .note { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
+.cmp .note li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Skills tab, five fresh directions</h1>
+  <p class="lede">Same skills on every phone, in the app's real order (heal, physical, magic, true; resting last). The art is new 32x32 Pixellab: habit objects, square ability icons, temptations and streak flames, drawn at whole CSS px per art pixel. Tap any key to strike it.</p>
+  <div class="grid" id="grid"></div>
+  <section class="cmp" id="cmp"></section>
+</div>
+<script>
+const ICONS = {
+  sword: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  magic: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  heal: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>',
+  true: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  settings: '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  store: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
+  crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  heartminus: '<path d="m14.876 18.99-1.368 1.323a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49"/><path d="M15 15h6"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  skull: '<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+  tree: '<path d="M12 22v-7"/><path d="M12 15l-4-4"/><path d="M12 15l4-4"/><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/>',
+};
+const ic = (n, c = '') => `<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const T = { phys: 'sword', magic: 'magic', heal: 'heal', true: 'true' };
+const TYPE_WORD = { phys: 'Physical', magic: 'Magic', heal: 'Heal', true: 'True' };
+
+// Picked tiles copied to skills-fresh/ (obj = habit object, ab = square ability icon,
+// bad = temptation, fl = streak flame). Missing art falls back to the type glyph.
+const ART = Object.fromEntries([
+  'boots', 'boots2', 'book', 'water', 'meal', 'candle', 'weights', 'weights2', 'quill', 'moon', 'mirror', 'sweets', 'fl1', 'fl2', 'fl3', 'fl4',
+  'ab_boots', 'ab_boots2', 'ab_book', 'ab_water', 'ab_meal', 'ab_candle', 'ab_weights', 'ab_weights2', 'ab_quill', 'ab_moon',
+].map((k) => [k, `${k}.png`]));
+const art = (key, cls = 'px') => ART[key] ? `<img class="${cls}" src="skills-fresh/${ART[key]}" alt="">` : '';
+
+// name, type, rank (0-8), streak, damage, state (open | struck | rest), icon key
+const DAILY = [
+  { id: 'water', n: 'Drink Water', t: 'heal', r: 4, s: 9, d: '640', dv: 640, st: 'struck', a: 'water' },
+  { id: 'lights', n: 'Lights Out by 11', t: 'heal', r: 1, s: 3, d: '520', dv: 520, a: 'moon' },
+  { id: 'run', n: 'Morning Run', t: 'phys', r: 3, s: 12, d: '1.2K', dv: 1200, a: 'boots' },
+  { id: 'push', n: 'Push-ups', t: 'phys', r: 1, s: 0, d: '900', dv: 900, a: 'weights' },
+  { id: 'read', n: 'Read 20 Pages', t: 'magic', r: 2, s: 5, d: '2.4K', dv: 2400, a: 'book' },
+  { id: 'journal', n: 'Journal', t: 'magic', r: 2, s: 4, d: '1.6K', dv: 1600, st: 'struck', a: 'quill' },
+  { id: 'deep', n: 'Deep Work Block', t: 'true', r: 5, s: 31, d: '5.1K', dv: 5100, sigil: true, a: 'candle' },
+  { id: 'gym', n: 'Gym Session', t: 'phys', r: 2, s: 3, d: '1.1K', dv: 1100, st: 'rest', next: 'Thu', a: 'weights2' },
+];
+const WEEKLY = [
+  { id: 'meal', n: 'Meal Prep Sunday', t: 'heal', r: 1, s: 3, d: '900', dv: 900, a: 'meal' },
+  { id: 'hike', n: 'Long Hike', t: 'phys', r: 2, s: 4, d: '2.0K', dv: 2000, a: 'boots2' },
+];
+const BAD = [
+  { id: 'doom', n: 'Doomscrolling', t: 'magic', r: 2, s: 7, d: '3.0K', a: 'mirror' },
+  { id: 'snack', n: 'Late Night Snacks', t: 'phys', r: 1, s: 0, d: '900', a: 'sweets' },
+];
+
+const stage = `<div class="home"><div class="crop"><div class="art"><img src="../../public/sprites/stage/arena6b.png" alt=""></div>
+  <span class="plate hp">${ic('skull')}<span class="bar"><i></i></span>64%</span></div><span class="menu">${ic('settings')}</span></div>`;
+const tabs = `<div class="tabbar"><span class="on">${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span>${ic('store')}Shop</span><span>${ic('tree')}Talents</span><span>${ic('crown')}Hero</span></div>`;
+const hdr = (title, icon) => `<div class="hdr"><span class="title"><span class="m">${ic(icon)}</span><span class="c">${title}</span></span><span class="plus">${ic('plus')}</span></div>`;
+const pips = (r) => r ? `<span class="pips">${'<i></i>'.repeat(r)}</span>` : '';
+const sigil = (k) => k.sigil ? `<span class="sigil">${ic('star')}</span>` : '';
+const streak = (k) => k.s >= 3 ? `<span class="streak">${ic('flame')}${k.s}</span>` : '';
+const state = (k) => k.st === 'struck' ? 'struck' : k.st === 'rest' ? 'resting' : '';
+function key(k, bad) {
+  if (bad) return `<button class="strike resist" data-id="${k.id}"><span>${ic('heartminus')}Give in</span></button>`;
+  if (k.st === 'rest') return `<button class="strike rest"><span>Rest</span></button>`;
+  return `<button class="strike t-${k.t} ${k.st === 'struck' ? 'done' : ''}" data-id="${k.id}"><span>${ic(T[k.t])}<b>${k.d}</b></span></button>`;
+}
+const rankWord = (r) => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][r];
+const flameTier = (s) => s >= 30 ? 4 : s >= 20 ? 3 : s >= 10 ? 2 : s >= 3 ? 1 : 0;
+
+/* ---------- today (reference) ---------- */
+function rowToday(k, bad) {
+  const side = bad ? `<span class="reward">${ic(T[k.t])}<b>${k.d}</b></span>${streak(k)}` : k.st === 'rest' ? `<span class="next">${k.next}</span>` : streak(k);
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${state(k)}"><div class="mid"><div class="name">${k.n}${sigil(k)}</div><div class="under">${pips(k.r)}</div></div><span class="side">${side}</span>${key(k, bad)}</div>`;
+}
+function today() {
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      <div class="gh2"><span>Habits to keep</span><b>Daily</b></div>${DAILY.map((k) => rowToday(k)).join('')}
+      <div class="gh2"><b style="margin-left:auto">Weekly</b></div>${WEEKLY.map((k) => rowToday(k)).join('')}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}<div class="gh2"><span>Habits to break</span></div>${BAD.map((k) => rowToday(k, true)).join('')}</div>`;
+}
+
+/* ---------- 1. spellbook rows ---------- */
+function sock(k, bad) {
+  return `<span class="sock">${art(k.a) || ic(bad ? 'heartminus' : T[k.t])}</span>`;
+}
+function row1(k, bad) {
+  const meta = k.st === 'rest' ? `${pips(k.r)}<span class="next">Rests till ${k.next}</span>` : `${pips(k.r)}${streak(k)}`;
+  const side = bad ? `<span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>` : '';
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${state(k)}">${sock(k, bad)}<div class="mid"><div class="name">${k.n}${sigil(k)}</div><div class="under">${meta}</div></div>${side}${key(k, bad)}</div>`;
+}
+function v1() {
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      <div class="grp">Daily<em>${DAILY.filter((k) => !k.st).length} left</em></div>${DAILY.map((k) => row1(k)).join('')}
+      <div class="grp">Weekly<em>${WEEKLY.filter((k) => !k.st).length} left</em></div>${WEEKLY.map((k) => row1(k)).join('')}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => row1(k, true)).join('')}</div>`;
+}
+
+/* ---------- 2. hotbar ---------- */
+function slot2(k, bad) {
+  const st = state(k);
+  const img = art('ab_' + k.a) || (art(k.a) ? art(k.a, 'px obj') : '');
+  const fallback = img ? '' : `<span style="position:absolute;inset:0;display:grid;place-items:center;font-size:40px;color:var(--c)">${ic(bad ? 'heartminus' : T[k.t])}</span>`;
+  const rk = k.r ? `<span class="rk">${'<i></i>'.repeat(Math.min(k.r, 4))}</span>` : '';
+  const stk = k.s >= 3 ? `<span class="stk">${ic('flame')}${k.s}</span>` : '';
+  const bottom = bad ? `<span class="dmg">${ic('heartminus')}Give in</span>`
+    : k.st === 'rest' ? `<span class="dmg">${k.next}</span>`
+    : `<span class="dmg">${ic(T[k.t])}${k.d}</span>`;
+  const reward = bad ? `<span class="reward">${ic(T[k.t])}<b>${k.d}</b></span>` : '';
+  const cls = k.st === 'rest' ? 'rest' : k.st === 'struck' ? 'done' : '';
+  return `<div class="slot t-${k.t} ${st}"><button class="abk ${cls}" data-id="${k.id}"><span class="face">${img}${fallback}${reward}${bad ? '' : rk}${stk}${bottom}<span class="chk"></span></span></button><span class="sn">${k.n}${sigil(k)}</span></div>`;
+}
+function v2() {
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      <div class="grp">Daily<em>${DAILY.filter((k) => !k.st).length} left</em></div><div class="bar3">${DAILY.map((k) => slot2(k)).join('')}</div>
+      <div class="grp">Weekly</div><div class="bar3">${WEEKLY.map((k) => slot2(k)).join('')}</div></div>
+    <div class="sec resist">${hdr('Resist', 'shield')}<div class="bar3 res">${BAD.map((k) => slot2(k, true)).join('')}</div></div>`;
+}
+
+/* ---------- 3. shrinking queue ---------- */
+const q3 = {};
+function v3(phoneId) {
+  const all = [...DAILY, ...WEEKLY];
+  const s = q3[phoneId] || (q3[phoneId] = Object.fromEntries(all.map((k) => [k.id, k.st || 'open'])));
+  const due = all.filter((k) => s[k.id] !== 'rest');
+  const open = due.filter((k) => s[k.id] === 'open');
+  const spent = due.filter((k) => s[k.id] === 'struck');
+  const waiting = open.reduce((n, k) => n + k.dv, 0);
+  const fmt = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n);
+  const segs = due.map((k) => `<i class="t-${k.t} ${s[k.id] === 'struck' ? 'f' : ''}"></i>`).join('');
+  const clear = open.length === 0;
+  const turn = `<div class="turn ${clear ? 'clear' : ''}"><div class="top"><span class="tt">${clear ? 'All struck' : 'Today'}</span><span class="left">${clear ? '' : `<b>${open.length}</b>left`}</span></div>
+    <div class="segs">${segs}</div>
+    <div class="foot"><span>${clear ? 'The boss waits for dawn' : `<b>${fmt(waiting)}</b> ready to strike`}</span></div></div>`;
+  const row = (k) => rowToday({ ...k, st: s[k.id] === 'struck' ? 'struck' : k.st === 'rest' ? 'rest' : '' });
+  const openDaily = open.filter((k) => DAILY.includes(k));
+  const openWeekly = open.filter((k) => WEEKLY.includes(k));
+  const chip = (k) => `<span class="chip t-${k.t}" data-undo="${k.id}"><span class="dot"><i></i></span>${k.n}</span>`;
+  const rest = DAILY.filter((k) => k.st === 'rest').map((k) => `<span class="chip rest">${k.n}<b>${k.next.toUpperCase()}</b></span>`).join('');
+  return `${turn}
+    <div class="sec">${hdr('Skills', 'sword')}
+      ${openDaily.length ? `<div class="grp">Daily</div>${openDaily.map(row).join('')}` : ''}
+      ${openWeekly.length ? `<div class="grp">This week</div>${openWeekly.map(row).join('')}` : ''}
+      ${clear ? '<div class="empty-turn">Every blow landed.</div>' : ''}
+      ${spent.length ? `<div class="grp">Spent<em>${spent.length}</em></div><div class="pile">${spent.map(chip).join('')}</div>` : ''}
+      ${rest ? `<div class="grp">Resting</div><div class="pile">${rest}</div>` : ''}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => rowToday(k, true)).join('')}</div>`;
+}
+
+/* ---------- 4. streak numeral ---------- */
+function fplate(k) {
+  const tier = flameTier(k.s);
+  if (!tier) return `<span class="fplate none"><span class="ember"></span><b>0</b></span>`;
+  const img = art('fl' + tier) || ic('flame');
+  return `<span class="fplate t${tier}">${img}<b>${k.s}</b></span>`;
+}
+function row4(k, bad) {
+  const meta = k.st === 'rest' ? `${pips(k.r)}<span class="next">Rests till ${k.next}</span>` : pips(k.r);
+  const side = bad ? `<span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>` : '';
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${state(k)}">${fplate(k)}<div class="mid"><div class="name">${k.n}${sigil(k)}</div><div class="under">${meta}</div></div>${side}${key(k, bad)}</div>`;
+}
+function v4() {
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      <div class="grp">Daily</div>${DAILY.map((k) => row4(k)).join('')}
+      <div class="grp">Weekly</div>${WEEKLY.map((k) => row4(k)).join('')}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => row4(k, true)).join('')}</div>`;
+}
+
+/* ---------- 5. dyed cards ---------- */
+function row5(k, bad) {
+  const meta = k.st === 'rest' ? `<span class="tl">${TYPE_WORD[k.t]}</span>${pips(k.r)}<span class="next">${k.next}</span>` : `<span class="tl">${bad ? 'Resist' : TYPE_WORD[k.t]}</span>${pips(k.r)}${streak(k)}`;
+  const side = bad ? `<span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>` : '';
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${state(k)}"><span class="mark">${ic(bad ? 'heartminus' : T[k.t])}</span><div class="mid"><div class="name">${k.n}${sigil(k)}</div><div class="under">${meta}</div></div>${side}${key(k, bad)}</div>`;
+}
+function v5() {
+  return `<div class="sec">${hdr('Skills', 'sword')}
+      <div class="grp">Daily</div>${DAILY.map((k) => row5(k)).join('')}
+      <div class="grp">Weekly</div>${WEEKLY.map((k) => row5(k)).join('')}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => row5(k, true)).join('')}</div>`;
+}
+
+/* ---------- 6. pick: spellbook rows in the shrinking queue, streak on the socket ---------- */
+// Rank art: step by rank (I slash, II-III cross, IV-V crescent, VI+ blast), one of two
+// variants per skill so two skills at one rank still differ, frame by rank.
+const rankStep = (r) => r >= 6 ? 4 : r >= 4 ? 3 : r >= 2 ? 2 : 1;
+const rankFrame = (r) => r >= 6 ? 3 : r >= 3 ? 2 : 1;
+const variant = (id) => [...id].reduce((n, c) => n + c.charCodeAt(0), 0) % 2 ? 'b' : 'a';
+const rankSrc = (k) => `skills-fresh/rk_phys_${rankStep(k.r)}${variant(k.id)}.png`;
+const rankIcon = (k) => `<span class="rk f${rankFrame(k.r)} t-${k.t}"><img class="px" src="${rankSrc(k)}" alt=""></span>`;
+
+function row6(k, bad, st, icon = sock) {
+  const kk = { ...k, st };
+  const tier = flameTier(k.s);
+  const badge = tier ? `<span class="sbadge t${tier}">${ic('flame')}${k.s}</span>` : '';
+  const meta = st === 'rest' ? `<span class="next">Rests till ${k.next}</span>` : k.r ? `<span class="rankw">Rank ${rankWord(k.r)}</span>` : '';
+  const side = bad ? `<span class="side"><span class="reward">${ic(T[k.t])}<b>${k.d}</b></span></span>` : '';
+  return `<div class="skill t-${k.t} ${bad ? 'bad' : ''} ${state(kk)}"><span class="sockwrap">${icon(k, bad)}${badge}</span><div class="mid"><div class="name">${k.n}${sigil(k)}</div><div class="under">${meta}</div></div>${side}${key(kk, bad)}</div>`;
+}
+function v6(phoneId, mode) {
+  const icon = mode === 'rank' ? rankIcon : sock;
+  const all = [...DAILY, ...WEEKLY];
+  const s = q3[phoneId] || (q3[phoneId] = Object.fromEntries(all.map((k) => [k.id, k.st || 'open'])));
+  const due = all.filter((k) => s[k.id] !== 'rest');
+  const open = due.filter((k) => s[k.id] === 'open');
+  const spent = due.filter((k) => s[k.id] === 'struck');
+  const waiting = open.reduce((n, k) => n + k.dv, 0);
+  const fmt = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n);
+  const clear = open.length === 0;
+  const turn = `<div class="turn ${clear ? 'clear' : ''}"><div class="top"><span class="tt">${clear ? 'All struck' : 'Today'}</span><span class="left">${clear ? '' : `<b>${open.length}</b>left`}</span></div>
+    <div class="segs">${due.map((k) => `<i class="t-${k.t} ${s[k.id] === 'struck' ? 'f' : ''}"></i>`).join('')}</div>
+    <div class="foot"><span>${clear ? 'The boss waits for dawn' : `<b>${fmt(waiting)}</b> ready to strike`}</span></div></div>`;
+  const openDaily = open.filter((k) => DAILY.includes(k));
+  const openWeekly = open.filter((k) => WEEKLY.includes(k));
+  const chip = (k) => `<span class="chip t-${k.t}" data-undo="${k.id}">${mode === 'rank' ? `<img class="px" src="${rankSrc(k)}" alt="">` : art(k.a) ? `<img class="px" src="skills-fresh/${ART[k.a]}" alt="">` : '<span class="dot"><i></i></span>'}${k.n}</span>`;
+  const rest = DAILY.filter((k) => k.st === 'rest').map((k) => row6(k, false, 'rest', icon)).join('');
+  return `${turn}
+    <div class="sec">${hdr('Skills', 'sword')}
+      ${openDaily.length ? `<div class="grp">Daily</div>${openDaily.map((k) => row6(k, false, '', icon)).join('')}` : ''}
+      ${openWeekly.length ? `<div class="grp">This week</div>${openWeekly.map((k) => row6(k, false, '', icon)).join('')}` : ''}
+      ${clear ? '<div class="empty-turn">Every blow landed.</div>' : ''}
+      ${spent.length ? `<div class="grp">Spent<em>${spent.length}</em></div><div class="pile">${spent.map(chip).join('')}</div>` : ''}
+      ${rest ? `<div class="grp">Resting</div>${rest}` : ''}</div>
+    <div class="sec resist">${hdr('Resist', 'shield')}${BAD.map((k) => row6(k, true, '', icon)).join('')}</div>`;
+}
+
+const PHONES = [
+  { id: 'today', n: '', h: 'Today', fn: today, cls: 'today',
+    why: ['As built: 52px slate cards, the streak a small number in the middle, type only on the key.'] },
+  { id: 'v1', n: '1', h: 'Spellbook rows', fn: v1, cls: 'v1',
+    why: ['Each skill gets its own pixel art in a socket tinted by its damage type, like a Shop potion row.', 'The rank and streak sit under the name, so the right side is only the key.', 'Struck art goes grey in a cold socket.', '<span class="con">Needs art per skill: a picker in the new-skill popup, or art picked from the name.</span>'] },
+  { id: 'v2', n: '2', h: 'Hotbar', fn: v2, cls: 'v2',
+    why: ['Daily skills are ability buttons, three to a row. The art is the key (104px, art at 3 CSS px per pixel).', 'Damage on the button, streak in the corner, rank pips down the left edge.', 'Struck: cooled to grey with the check diamond. Resting: dark, with its day.', '<span class="con">Names get only two short lines; a long list scrolls three by three.</span>'] },
+  { id: 'v3', n: '3', h: 'Shrinking queue', fn: v3, cls: 'v3',
+    why: ['A Today panel up top: how many are left, a bar of today\'s skills in their colours, damage waiting, what a miss costs.', 'Only open skills stay as cards. Strike one and it drops to a small Spent chip, so the list shrinks as the day goes.', 'Try it: strike all five. Tap a chip to bring it back.', '<span class="con">Rows move when you strike, so the order changes as you go.</span>'] },
+  { id: 'v4', n: '4', h: 'Streak numeral', fn: v4, cls: 'v4',
+    why: ['The streak leads every card: a pixel flame that grows with it (candle 3+, campfire 10+, brazier 20+, soul fire 30+) over a big number.', 'Nowhere else on the card shows the streak.', 'Struck: the card greys, but the flame you fed stays lit with a brass rim.', '<span class="con">A new skill shows an empty plate, which is a lot of nothing for new players.</span>'] },
+  { id: 'v5', n: '5', h: 'Dyed cards', fn: v5, cls: 'v5',
+    why: ['The whole card takes its damage colour, strongest at the left, with a faint type glyph behind the name.', 'A small type word under the name. Striking drains the colour to grey, a big change you can see.', 'The cheapest change: no art, same layout.', '<span class="con">A full list is very colourful; bone-gold true damage is the faintest.</span>'] },
+  { id: 'v6', n: '1+3', h: 'My pick', fn: v6, cls: 'v6',
+    why: ['Spellbook rows inside the shrinking queue, with the streak as a flame badge on the socket (a little of 4).', 'Rank as a word ("Rank III") under the name, since the socket already carries the colour.', 'Spent chips keep a small grey copy of their art.', 'Try it: strike everything.'] },
+  { id: 'v7', n: '1+3', h: 'With rank art', fn: (id) => v6(id, 'rank'), cls: 'v6 v7',
+    why: ['The pick again, with art that comes from type and rank, never from the name, so any skill a player types gets art.', 'Rank I slash, II-III crossed slashes, IV-V crescent strike, VI+ blast; two variants per step so neighbours differ.', 'The frame is drawn in code: iron to Rank II, brass from III, bright brass from VI.', '<span class="con">Only physical has real art. Heal, magic and true are the physical tiles recoloured as stand-ins.</span>'] },
+];
+
+const grid = document.getElementById('grid');
+grid.innerHTML = PHONES.map((p) => `<div class="col"><h2>${p.n ? `<b>${p.n}</b>` : ''}${p.h}</h2><ul class="why">${p.why.map((w) => `<li>${w}</li>`).join('')}</ul><div class="phone ${p.cls}" id="${p.id}"></div></div>`).join('');
+function paint(p) {
+  const el = document.getElementById(p.id);
+  const top = el.querySelector('.scroll')?.scrollTop || 0;
+  el.innerHTML = `${stage}<div class="scroll">${p.fn(p.id)}</div>${tabs}`;
+  el.querySelector('.scroll').scrollTop = top;
+}
+PHONES.forEach(paint);
+
+// Items vs skill art, side by side at the same size (48px art, 58px holder).
+const ITEMS = [['steel-sword', 'common'], ['serrated-ripper', 'rare'], ['godslayer-greatblade', 'epic'], ['scales-of-fate', 'relic']];
+const LADDER = [[1, 'I', 'a'], [2, 'II', 'a'], [3, 'III', 'b'], [4, 'IV', 'a'], [5, 'V', 'b'], [6, 'VI', 'a'], [8, 'VIII', 'b']];
+const rkCell = (r, word, v) => `<span class="cell"><span class="rk f${rankFrame(r)}"><img class="px" src="skills-fresh/rk_phys_${rankStep(r)}${v}.png" alt=""></span>Rank ${word}</span>`;
+document.getElementById('cmp').innerHTML = `<h2>Items vs skill art</h2>
+  <p>The two must never be mistaken for each other, so they differ in four ways at once, not just by where they appear.</p>
+  <div class="cmp-row"><span class="lab">Items<em>A thing you hold or wear, cut out, on a socket with a coloured rarity rim.</em></span>
+    ${ITEMS.map(([id, r]) => `<span class="cell"><span class="isock r-${r}"><img class="px" src="../../public/sprites/items/${id}.png" alt=""></span>${r[0].toUpperCase() + r.slice(1)}</span>`).join('')}</div>
+  <div class="cmp-row"><span class="lab">Physical skill<em>What the skill does, filling its square, in a metal frame that marks rank.</em></span>
+    ${LADDER.map(([r, w, v]) => rkCell(r, w, v)).join('')}</div>
+  <div class="cmp-row"><span class="lab">Side by side<em>Rare item, then Rank III and Rank VI skills, as they'd sit in a drop popup over the Skills tab.</em></span>
+    <span class="cell"><span class="isock r-rare"><img class="px" src="../../public/sprites/items/serrated-ripper.png" alt=""></span>Item</span>${rkCell(3, 'III', 'a')}${rkCell(6, 'VI', 'b')}
+    <ul class="note">
+      <li><b>Subject:</b> items are objects; skills are effects (slash, burst, glow), never weapons or gear.</li>
+      <li><b>Shape:</b> items are cut-outs with space around them; skills fill the square edge to edge.</li>
+      <li><b>Rim:</b> a coloured rim always means rarity; metal (iron, brass) always means rank.</li>
+      <li><b>Colour:</b> each type keeps its own colour family inside the art. Watch heal green next to uncommon green and physical red next to relic orange; the metal frame is what keeps them apart.</li>
+    </ul></div>`;
+
+document.addEventListener('click', (e) => {
+  const phone = e.target.closest('.phone');
+  if (!phone) return;
+  const p = PHONES.find((x) => x.id === phone.id);
+  const chip = e.target.closest('[data-undo]');
+  const b = e.target.closest('.strike, .abk');
+  if ((p.id === 'v3' || p.id === 'v6' || p.id === 'v7') && (chip || b)) {
+    const s = q3[p.id];
+    if (chip) { s[chip.dataset.undo] = 'open'; return paint(p); }
+    if (!b.dataset.id || b.classList.contains('resist') || b.classList.contains('rest')) return;
+    const card = b.closest('.skill');
+    card.classList.add('leaving');
+    setTimeout(() => { s[b.dataset.id] = 'struck'; paint(p); }, 280);
+    return;
+  }
+  if (!b || b.classList.contains('rest') || b.classList.contains('resist')) return;
+  b.classList.toggle('done');
+  b.closest('.skill, .slot')?.classList.toggle('struck');
+});
+</script>
+</body>
+</html>

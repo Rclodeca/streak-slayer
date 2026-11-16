@@ -30,6 +30,43 @@ Entry template:
 
 **Every background (fight-stage arenas, the Hero tab armory, future dungeons and shop backdrops) is 216 x 116 art px**, drawn at 2 CSS px per art pixel (432 x 232), held to the bottom of its box, sides cropped evenly on narrow phones. 116 rows is the phone fight stage's backdrop box at 390 wide (the painted scene's canvas height); the Hero tab's frame was raised to the same 232px. A notched iPhone's status-bar inset above it is a dark bar, not art. On the stage the hero's feet land on row 108 and the boss's on row 86; on the Hero tab the hero's feet are on row 101. Generate new backdrops at 216 x 116 directly. An older 216 x 108 tile is brought to size with the 8-row floor inpaint (`node scripts/pixellab-floor-pad.cjs <tile> <out-dir>`, then the `inpaint_image` call under "Run 6 extended to 216x116" below), which worked well; the 216x148 extension was horrible and must not be repeated. How-to: `docs/pixellab-scenes.md` section 1.
 
+## 2026-11-15: skill art for the Skills tab mocks (`docs/mockups/skills-fresh.html`)
+
+Four runs to support five fresh Skills tab looks (spellbook rows, hotbar, shrinking queue, streak numeral, dyed cards). The user allowed up to 5 runs (~50 generations) to use freely for these mocks; 4 were used, all submitted at once. All four: `create_image_pro`, **32x32**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 35e2d23b), all four style aspects, no reference images, no palette, no seed, **10 generations, 64 candidates** each (1,120 remaining before the runs). Loose "each one different" recipe from item run 5, with 8 named kinds (4 for flames). Picks were copied to `docs/mockups/skills-fresh/` under the names the mock uses. Galleries: `gallery.html` (6x) in each folder.
+
+**Run 1, `2026-11-15-skills-habits/`, job 742e2dd0-6c1c-4bad-9446-b05fb554a4fa** (habit objects, the skill's own art)
+- Transparent.
+- Description: `fantasy RPG icons for everyday good habits, glowing and unique, each one different, one item per tile, centred, filling the canvas: running boots; open spellbook; water flask; hearty meal bowl; meditation candle; iron dumbbell; quill and journal; sleeping crescent moon`
+- Result: excellent. 8 kinds x 8 variants in the order written (boots 01-08, books 09-16, flasks 17-24, bowls 25-32, candles 33-40, dumbbells 41-48, journal + quill 49-56, sleeping moons 57-64), clean hero-style outlines, filling the tile. Variants differ by element (winged, fire, ice, nature boots; rune, fire, starry books; fire and frost dumbbells). Flasks 18/22 look like the shop's EXP potion, so the canteen 24 was used for water.
+- Mock picks: boots 01 (Morning Run), boots2 07 (Long Hike), book 11, water 24, meal 26, candle 39 (Deep Work, true), weights 46 (Push-ups), weights2 42 (Gym Session), quill 52 (Journal), moon 59 (Lights Out).
+
+**Run 2, `2026-11-15-skills-abilities/`, job d7330572-ed44-4ba8-8765-f348c1bc9aa1** (square ability icons for the hotbar)
+- **Opaque** (`no_background: false`).
+- Description: `square RPG skill ability icons, each with a full dark painted background and a thin bevelled frame, glowing, each one different: sprinting boot with wind; open glowing book; splash of water; steaming bowl of food; lotus with a flame; lifted barbell; quill writing; crescent moon and stars`
+- Result: good. 8 kinds x 8, each a full 32x32 square with a 2-3 px frame (brown, gold, grey or purple) on a dark ground, like MMO spell icons. Water came out as waves and splashes, the barbell as a dumbbell. The frame colour varies by tile, so grey-framed ones were picked to sit inside the mock's type-coloured rim.
+- Mock picks: ab_boots 06, ab_boots2 03, ab_book 14, ab_water 24, ab_meal 31, ab_candle 39 (gold lotus flame), ab_weights 43, ab_weights2 47, ab_quill 54, ab_moon 62. Drawn at 3 CSS px per art pixel (96px) as the hotbar key.
+
+**Run 3, `2026-11-15-skills-temptations/`, job c81ffded-60ae-4e4c-a7b8-22701d0b2e25** (Resist art)
+- Transparent.
+- Description: `cursed fantasy RPG icons of bad habits and temptations, dark and glowing, each one different, one item per tile, centred, filling the canvas: glowing scrying mirror; pile of sweets and cakes; goblet of wine; smoking pipe; pair of bone dice; plush pillow; spilling gold coins; cracked hourglass`
+- Result: good. 8 x 8 in order (mirrors 01-08, cakes and sweets 09-16, goblets 17-24, pipes 25-32, dice 33-40, pillows 41-48, coin bags and hoards 49-56, hourglasses 57-64). The scrying mirror stands in well for a phone (doomscrolling). Darker and more muted than run 1, as asked.
+- Mock picks: mirror 01 (Doomscrolling), sweets 09 (Late Night Snacks).
+
+**Run 4, `2026-11-15-skills-flames/`, job b21aff24-72e1-4489-92fe-743625bd3b2b** (streak flames by tier)
+- Transparent.
+- Description: `fantasy RPG fire icons growing in power, each one different, one per tile, centred, filling the canvas: small candle flame; crackling campfire; roaring bonfire in an iron brazier; blue-white soul fire`
+- Result: usable, more uneven. Rows 1-2 are mostly tiny flames, torches and loose embers (01-04, 09, 10, 19 nearly empty); candles 05-08, 11-16; campfires 17-34; braziers and cauldrons 35-48; blue soul fire 49-64 (wisps, torches, lanterns, braziers). The brazier and blue fire tiles are strong.
+- Mock picks: fl1 06 (candle, streak 3+), fl2 22 (stone-ring campfire, 10+), fl3 37 (iron brazier, 20+), fl4 55 (blue brazier, 30+). Drawn at 1 CSS px per art pixel in the streak plate.
+- Why: new art for the mocks only. Nothing shipped; no game files changed.
+
+**Run 5, `2026-11-15-skills-physical-ranks/`, job cde3ff79-bea7-4c58-8d0d-6c93e1cb0dfa** (rank art test: physical only)
+- Why / changed from runs 1-4: players type any skill name, so per-skill art can't work. The user picked art by damage type that grows with rank, and asked how to keep it from looking like items. Answer: effects not objects, filled squares not cut-outs, one colour family per type, rank shown by a metal frame drawn in code (iron, brass, bright brass). This run tests the effect art for one type. Shown with the exact prompt and cost; the user said "do it".
+- Tool + settings: `create_image_pro`, **32x32, opaque** (`no_background: false`), style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 35e2d23b), no references, no palette, no seed
+- Description: `square RPG combat skill ability icons, a full dark painted background filling the tile, no frame, effects only with no weapons, items or hands, red and orange tones, each one different, growing in power in this order: a single sharp slash mark; crossed slashes with sparks; a blazing crescent strike with a shockwave; a colossal crimson impact explosion`
+- Cost + candidates: **10 generations, 64 candidates** (1,080 remaining before the run)
+- Result: worked as asked. 16 per step in the order written: single slashes 01-16, crossed slashes 17-32, crescent strikes 33-48, explosions 49-64 (64 nearly empty, very dark). All filled squares on a dark red-black ground, red, orange and cream only, no weapons, hands or frames, so nothing reads as an item. Softer than the hero style, with little dark outline (fine for effects). Power growth reads clearly from step to step.
+- Mock picks (two variants per step, chosen per skill by a name hash): step 1 (Rank 0-I) 07 / 05, step 2 (II-III) 24 / 20, step 3 (IV-V) 38 / 35, step 4 (VI-VIII) 54 / 58. Copied to `docs/mockups/skills-fresh/rk_phys_<step><a|b>.png`, drawn at 1.5 CSS px in a 58px frame. Heal, magic and true are hue-shifted copies in the mock only, as stand-ins.
+
 ## 2026-11-12: shop marketplace (shop tab backdrop, not yet shipped)
 
 **Run 1, `2026-11-12-shop-market/`, job 1c27ab49-a7d2-49ec-8d38-a50653122e18**
