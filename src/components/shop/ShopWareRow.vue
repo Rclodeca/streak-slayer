@@ -5,14 +5,17 @@ import type { StatIconName } from '../ui/statIcons';
 import ShopBuyButton from './ShopBuyButton.vue';
 import ShopItemLines from './ShopItemLines.vue';
 
-// One row on the Shop: a socket (the item's art, or an icon for a tonic or the
-// restock), its name and what it does, and the buy button. `warn` is a small
-// line under it, e.g. that a buy swaps out a worn item.
+// One row on the Shop: a socket (the item's art, a potion's bottle, or an icon for
+// the restock; a service's round seal sits bare, no socket), its name and what it
+// does, and the buy button. `warn` is a small line under it, e.g. that a buy swaps
+// out a worn item.
 defineProps<{
   kind: 'item' | 'tonic' | 'restock' | 'service';
   name: string;
   item?: ItemDef;
   icon?: StatIconName;
+  /** A sprite under public/sprites/ (a potion's bottle, a service's seal), drawn like an item's art. */
+  art?: string;
   text?: string;
   price: number;
   buyable: boolean;
@@ -30,7 +33,7 @@ const baseUrl = import.meta.env.BASE_URL;
 <template>
   <div class="shop-ware-row" :class="[kind, item && `rarity-${item.rarity}`]">
     <span class="shop-socket">
-      <img v-if="item" class="shop-art" :src="`${baseUrl}sprites/${item.icon}.png`" alt="" />
+      <img v-if="item || art" class="shop-art" :src="`${baseUrl}sprites/${item ? item.icon : art}.png`" alt="" />
       <StatIcon v-else-if="icon" :name="icon" :size="26" />
     </span>
     <div class="shop-mid">

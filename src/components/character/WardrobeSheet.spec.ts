@@ -34,9 +34,9 @@ describe('WardrobeSheet', () => {
   it("opens on the class being played, the default worn, each skin priced in gems", async () => {
     await open();
     const heroTiles = [...document.querySelectorAll('.wardrobe-hero .wardrobe-tile')].map((t) => t.textContent);
-    expect(heroTiles).toEqual([expect.stringContaining('Plain'), ...warrior.map((skin) => expect.stringContaining(skin.name))]);
-    expect(button('Plain').textContent).toBe('Worn');
-    expect(button('Plain').disabled).toBe(true);
+    expect(heroTiles).toEqual([expect.stringContaining('Starter'), ...warrior.map((skin) => expect.stringContaining(skin.name))]);
+    expect(button('Starter').textContent).toBe('Worn');
+    expect(button('Starter').disabled).toBe(true);
     expect(button(warrior[0].name).textContent).toContain(String(warrior[0].gems));
     expect(document.querySelector('.wardrobe-home')!.textContent).toContain('Armory');
     expect(document.querySelector('.wardrobe-arena')!.textContent).toContain(arena.name);
@@ -57,8 +57,8 @@ describe('WardrobeSheet', () => {
     expect(accountStore.account.gems).toBe(0);
     expect(heroArt(accountStore.account, 'warrior')).toBe(warrior[0].art);
     expect(button(warrior[0].name).textContent).toBe('Worn');
-    expect(button('Plain').textContent).toBe('Wear');
-    await tap(button('Plain'));
+    expect(button('Starter').textContent).toBe('Wear');
+    await tap(button('Starter'));
     expect(heroArt(accountStore.account, 'warrior')).toBe('player/warrior');
     expect(button(warrior[0].name).textContent).toBe('Wear');
   });

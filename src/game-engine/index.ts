@@ -11,8 +11,6 @@ export type {
   Character,
   DamageType,
   ShopStock,
-  VaultStock,
-  VaultWare,
   ShopWare,
   Difficulty,
   Habit,
@@ -28,6 +26,7 @@ export type {
   BlindStatusEffect,
   SeverStatusEffect,
   SunderStatusEffect,
+  ServiceTurn,
 } from './types';
 
 export {
@@ -177,21 +176,26 @@ export { addGems, createAccount, recordLevel, spendGems } from './account';
 export type { SkinDef, SkinKind, SkinSlot } from './skins';
 export { DEFAULT_SCENE_ART, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
-export { FREEZE, GOLD_POUCH, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, VAULT_STOCK_DAYS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { FREEZE, GOLD_POUCH, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
-export { TONIC_DEFS, buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
+export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';
-export { buyPouch, buyVaultWare, pouchState, stockVault, vaultWareState, vaultWindowKey } from './vault';
+export { buyPouch, pouchState } from './vault';
 export {
   SERVICE_DEFS,
+  SERVICE_TURN_DAYS,
   buyEnchant,
   buyOverdrive,
   buyReroll,
   buySlot,
   enchantTargets,
   overdriveTargets,
+  nextService,
   rerollTargets,
   serviceState,
+  serviceTurn,
+  syncServiceTurn,
+  turnDaysLeft,
 } from './services';
 export type { ServiceId } from './services';
 
@@ -241,7 +245,7 @@ export {
   slotUpgradesOf,
   recordRelicEarned,
   rollItemDrops,
-  rollsBossDrop,
+  itemDropCountOdds,
   rollScavengerDrop,
 } from './items';
 
@@ -265,7 +269,7 @@ export {
 export type { Rng } from './rng';
 export { createRng, pickRandom, pickWeighted, shuffle } from './rng';
 
-export { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weekDayKeys, weekStartOf, weeklyPeriodKey } from './time';
+export { addDaysToDayKey, dailyPeriodKey, windowStartKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weekDayKeys, weekStartOf, weeklyPeriodKey } from './time';
 
 export {
   activeBlind,

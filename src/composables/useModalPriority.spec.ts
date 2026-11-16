@@ -34,7 +34,7 @@ describe('useModalPriority', () => {
   describe('enchantRevealVisible', () => {
     function showReveal() {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 10, questsUnlocked: true, talentsUnlocked: true, gold: 100000, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'] });
+      characterStore.setCharacter({ ...characterStore.character, level: 10, questsUnlocked: true, talentsUnlocked: true, gold: 100000, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], serviceTurn: { id: 'enchant', startDayKey: '2026-11-01' } });
       useServices().buyEnchant('rusty-blade');
     }
 

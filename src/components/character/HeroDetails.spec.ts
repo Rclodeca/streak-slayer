@@ -72,9 +72,9 @@ describe('HeroDetails', () => {
     });
 
     it('unlocks sockets as the slot cap grows', () => {
-      equip(2, 1);
-      expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(2);
       equip(2, 2);
+      expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(2);
+      equip(2, 4);
       expect(mount(HeroDetails, { props: { page: true } }).findAll('.rack-slot.locked')).toHaveLength(0);
     });
 
@@ -123,7 +123,7 @@ describe('HeroDetails', () => {
       const armor = tile(mount(HeroDetails, { props: { page: true } }), 'Armor');
       expect(armor.find('s.tile-usual').text()).toBe('75');
       expect(armor.find('.tile-now').text()).toBe('38');
-      expect(armor.find('.tile-note').text()).toBe('Sundered');
+      expect(armor.find('.tile-note').text()).toBe('Sundered · 2.4% less damage');
     });
 
     it('leaves the tile alone when nothing is lowering it', () => {

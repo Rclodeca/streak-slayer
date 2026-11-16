@@ -1019,7 +1019,7 @@ describe('resolveBossDefeatIfDead', () => {
     expect(result.character.ownedItemIds).toEqual(result.itemsDropped.map((item) => item.id));
   });
 
-  it('a kill that misses its drop roll drops nothing but still pays gold and EXP', () => {
+  it('every kill drops at least one item, and pays gold and EXP', () => {
     const character = makeCharacter();
     const boss = makeBoss({ index: 5, health: 0 });
     const rng = () => 0.99;
@@ -1027,7 +1027,7 @@ describe('resolveBossDefeatIfDead', () => {
     const result = resolveBossDefeatIfDead(character, boss, rng);
 
     expect(result.defeated).toBe(true);
-    expect(result.itemsDropped).toEqual([]);
+    expect(result.itemsDropped.length).toBeGreaterThanOrEqual(1);
     expect(result.goldReward).toBe(bossGold(5));
     expect(result.expReward).toBeGreaterThan(0);
   });

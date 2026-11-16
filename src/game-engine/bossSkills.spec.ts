@@ -573,7 +573,7 @@ describe('bossSkillEffectText', () => {
     expect(bossSkillEffectText('reflect')).toBe('Reflects 5% of your damage');
     expect(bossSkillEffectText('blind')).toBe('No crits');
     expect(bossSkillEffectText('sever')).toBe('No lifesteal');
-    expect(bossSkillEffectText('sunder')).toBe('Armor & resist halved');
+    expect(bossSkillEffectText('sunder')).toBe('Armor and magic resist halved');
     expect(bossSkillEffectText('undying')).toBe("Can't fall below 10%");
   });
 

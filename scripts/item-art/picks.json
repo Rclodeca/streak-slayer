@@ -11,7 +11,8 @@
   "P": "assets/pixellab/2026-11-12-items-staffs-crowns-pool",
   "H": "assets/pixellab/2026-11-12-items-mage-hats-pool",
   "A": "assets/pixellab/2026-11-12-items-epic-armor-pool",
-  "F": "assets/pixellab/2026-11-12-items-armor-hats-pool"
+  "F": "assets/pixellab/2026-11-12-items-armor-hats-pool",
+  "Q": "assets/pixellab/2026-11-14-items-potions-pool"
  },
  "fixes": {
   "F6": {
@@ -21,6 +22,12 @@
    "dy": -1,
    "fixedFile": "assets/pixellab/2026-11-12-items-armor-hats-pool/fixed/tile-06.png"
   }
+ },
+ "potions": {
+  "draught": { "tile": "T6", "name": "Health Potion", "icon": "potions/health" },
+  "crit": { "tile": "Q37", "name": "Crit Potion", "icon": "potions/crit" },
+  "heal": { "tile": "Q17", "name": "Mending Potion", "icon": "potions/mending" },
+  "exp": { "tile": "T7", "name": "EXP Potion", "icon": "potions/exp" }
  },
  "items": {
   "rusty-blade": {
@@ -645,7 +652,7 @@
    "approvedByClick": false
   },
   "titans-lifeblood": {
-   "tile": "T33",
+   "tile": "E42",
    "name": "Titan's Lifeblood",
    "oldName": "Titan's Lifeblood",
    "renamed": false,

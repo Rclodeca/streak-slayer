@@ -149,23 +149,19 @@ export interface Character {
   // Today's shop stock (see shop.ts). A fresh character never has one, so a
   // death wipes it and the new run gets a new stock.
   shop?: ShopStock;
-  // Slot steps bought this run (0-2, two slots each; see maxEquipSlots), and
-  // the rerolls, Overdrives and enchants bought this run, which set their
-  // climbing prices (see services.ts). A fresh character has none, so a death
-  // resets them. A save from before the shop's slots reads the old
-  // `takenEventIds` instead (see slotUpgradesOf).
+  // Item slots bought this run (0-4, one slot each; see maxEquipSlots), and the
+  // service on offer this turn with the rerolls bought in it (see services.ts).
+  // A fresh character has neither, so a death resets them and the new run
+  // starts on Item slots. A save from before the shop's slots reads the old
+  // `takenEventIds` instead (see migrateLevelEvents).
   slotUpgrades?: number;
-  serviceBuys?: { reroll?: number; overdrive?: number; enchant?: number };
-  // The day the last Healing Draught was drunk (see tonicState in shop.ts).
-  // A fresh character has none, so a death resets the cooldown.
-  draughtDayKey?: string;
+  serviceTurn?: ServiceTurn;
   // The boss index this run last revived against for gems (see reviveState in
   // combat.ts): one revive per boss. A fresh character has none.
   revivedAtBoss?: number;
-  // The Vault's stock for its current 3-day window (see vault.ts), and the
-  // day the Gold Pouch was last bought. Gem buys for this run: a fresh
-  // character has neither, so a death redraws the stock and resets the pouch.
-  vault?: VaultStock;
+  // The day the Gold Pouch was last bought (see vault.ts). A fresh character
+  // has none, so a death resets it. (A save from before the daily stock took
+  // the gem gear may still carry an unused `vault`.)
   pouchDayKey?: string;
   // Side-quest challenges (see challenges.ts): every one taken, active and
   // done, so a finished one is never offered again. Kept through death
@@ -196,33 +192,25 @@ export type ChallengeId =
   | 'slay-two'
   | 'land-crits';
 
-/** One item for sale in the shop, at the price locked in when the stock was drawn. */
+/** One item for sale in the shop, at the price locked in when the stock was drawn: gold, or gems when `currency` says so. */
 export interface ShopWare {
   itemId: string;
   price: number;
+  currency?: 'gems';
   sold?: boolean;
 }
 
-/** A day's shop stock: the piece on velvet (an epic or relic some days, else the rare), the rows, and the restocks bought today. */
+/** A day's shop stock: the headline on velvet (the best of the draw), the rows (gem ones first), and the restocks bought today. */
 export interface ShopStock {
   dayKey: string;
   featured: ShopWare | null;
   wares: ShopWare[];
   restocks: number;
-}
-
-/** One item for sale in the Vault, at its gem price. */
-export interface VaultWare {
-  itemId: string;
-  gems: number;
-  sold?: boolean;
-}
-
-/** The Vault's stock for a 3-day window (`windowKey` is its first day): an epic or relic on velvet, and the rows. */
-export interface VaultStock {
-  windowKey: string;
-  featured: VaultWare | null;
-  wares: VaultWare[];
+  // The potions (TonicId) bought out of the POTION_STOCK_DAYS-day window that
+  // starts on `potionsKey` (see tonicState in shop.ts). Kept across the day's
+  // redraw, emptied by a restock. A save from before the potions' stock has none.
+  potionsKey?: string;
+  potionsSold?: string[];
 }
 
 /** A habit or quest added after a challenge was taken; it counts at the next day rollover if it still exists. */
@@ -295,7 +283,7 @@ export interface HealBoostStatusEffect {
   bonus: number; // e.g. 0.2 = +20% healing
 }
 
-/** Temporary EXP bonus bought as the Scholar's Tonic; adds `bonus` to the EXP multiplier for `durationDays` days. */
+/** Temporary EXP bonus bought as the EXP Potion; adds `bonus` to the EXP multiplier for `durationDays` days. */
 export interface ExpBoostStatusEffect {
   type: 'expBoost';
   appliedDayKey: string; // dailyPeriodKey() when bought
@@ -431,4 +419,11 @@ export interface Quest {
 export interface QuestWeek {
   weekKey: string; // weeklyPeriodKey() of the week `completed` counts
   completed: number;
+}
+
+/** The service on offer for 3 days from `startDayKey`, and the rerolls bought in this turn (they set a reroll's price). */
+export interface ServiceTurn {
+  id: 'reroll' | 'overdrive' | 'enchant' | 'slot';
+  startDayKey: string;
+  rerolls?: number;
 }

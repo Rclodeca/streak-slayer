@@ -32,7 +32,12 @@ describe('ShopServicePicker', () => {
     ]);
   });
 
-  const open = (service: 'reroll' | 'overdrive' | 'enchant') => mount(ShopServicePicker, { props: { modelValue: true, service }, attachTo: document.body });
+  // The picker opens for the service on turn, so it's put on the character first.
+  const open = (service: 'reroll' | 'overdrive' | 'enchant') => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, serviceTurn: { id: service, startDayKey: '2026-11-01' } });
+    return mount(ShopServicePicker, { props: { modelValue: true, service }, attachTo: document.body });
+  };
   const confirm = () => document.querySelector<HTMLButtonElement>('.ok')!;
   const rows = () => [...document.querySelectorAll<HTMLElement>('.pick-row, .reroll-row')];
 

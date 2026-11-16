@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { DEFAULT_SCENE_ART, HERO_CLASSES, skinState, skinsFor, wornSkin } from '../../game-engine';
-import type { HeroClass, SkinDef, SkinSlot } from '../../game-engine';
+import { HERO_CLASSES } from '../../game-engine';
+import type { HeroClass } from '../../game-engine';
 import { useSkins } from '../../composables/useSkins';
-import { useAccountStore } from '../../store/accountStore';
+import { useSkinTiles } from '../../composables/useSkinTiles';
+import type { SkinTile } from '../../composables/useSkinTiles';
 import ShopBuyButton from '../shop/ShopBuyButton.vue';
 import Modal from '../ui/Modal.vue';
-import { baseSpriteUrl } from '../ui/spriteUrl';
 
 // Where skins are bought and worn (docs/ideas/2026-11-13-shop-economy.md §3):
 // the hero's (by class, opening on the class being played), the home base's
 // and the arena's. Each slot lists its default first, then its skins: worn,
 // Wear, or a gem price. A buy is worn at once. Opened from the Hero tab's
-// home base and the Vault's Skins row. Art is drawn at whole CSS px per art
-// pixel: heroes 1 (their 64px base build), backdrops 1 (216 x 116).
+// home base. Art is drawn at whole CSS px per art pixel: heroes 1 (their
+// 64px base build), backdrops 1 (216 x 116).
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 
-const accountStore = useAccountStore();
 const skins = useSkins();
-const baseUrl = import.meta.env.BASE_URL;
+const { tilesFor, stateOf } = useSkinTiles();
 
 const CLASS_NAME: Record<HeroClass, string> = { warrior: 'Warrior', cleric: 'Mage', ranger: 'Ranger' };
 const shownClass = ref<HeroClass>(skins.heroClass.value);
@@ -30,33 +29,13 @@ watch(
   },
 );
 
-interface Tile {
-  key: string;
-  name: string;
-  src: string;
-  slot: SkinSlot;
-  skin: SkinDef | null;
-}
+const heroTiles = computed(() => tilesFor(shownClass.value));
+const homeTiles = computed(() => tilesFor('home'));
+const arenaTiles = computed(() => tilesFor('arena'));
 
-function tilesFor(slot: SkinSlot, defaultName: string, defaultArt: string, src: (art: string) => string): Tile[] {
-  return [
-    { key: `${slot}-default`, name: defaultName, src: src(defaultArt), slot, skin: null },
-    ...skinsFor(slot).map((skin) => ({ key: skin.id, name: skin.name, src: src(skin.art), slot, skin })),
-  ];
-}
-const sceneSrc = (art: string) => `${baseUrl}sprites/${art}.png`;
-const heroTiles = computed(() => tilesFor(shownClass.value, 'Plain', `player/${shownClass.value}`, baseSpriteUrl));
-const homeTiles = computed(() => tilesFor('home', 'Armory', DEFAULT_SCENE_ART.home, sceneSrc));
-const arenaTiles = computed(() => tilesFor('arena', 'Stone Hall', DEFAULT_SCENE_ART.arena, sceneSrc));
-
-/** A tile's button: Worn, Wear, or the gem price (greyed when short). */
-function stateOf(tile: Tile): 'worn' | 'owned' | 'buy' | 'short' {
-  if (tile.skin) return skinState(accountStore.account, tile.skin);
-  return wornSkin(accountStore.account, tile.slot) ? 'owned' : 'worn';
-}
 const LABELS = { worn: 'Worn', owned: 'Wear' } as const;
 
-function pick(tile: Tile) {
+function pick(tile: SkinTile) {
   const state = stateOf(tile);
   if (state === 'owned') skins.wear(tile.slot, tile.skin?.id ?? null);
   else if (state === 'buy' && tile.skin) skins.buy(tile.skin.id);
@@ -70,7 +49,7 @@ const groups = computed(() => [
 
 <template>
   <Modal :model-value="modelValue" title="Wardrobe" max-width="520px" @update:model-value="emit('update:modelValue', $event)">
-    <div class="wardrobe vault-wares">
+    <div class="wardrobe">
       <p class="picker-hint">New looks, bought with gems. Kept for good.</p>
 
       <section class="wardrobe-group wardrobe-hero">

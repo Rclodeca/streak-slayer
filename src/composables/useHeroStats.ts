@@ -162,7 +162,8 @@ export function useHeroStats() {
         icon,
         label,
         value: formatCompact(usual),
-        ...(sundered ? { now: formatCompact(current), reason: 'Sundered' } : { note: `${(damageReductionPct(usual) * 100).toFixed(1)}% less damage` }),
+        ...(sundered ? { now: formatCompact(current), reason: 'Sundered' } : {}),
+        note: `${(damageReductionPct(current) * 100).toFixed(1)}% less damage`,
       };
     };
     return [

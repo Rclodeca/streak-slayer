@@ -35,14 +35,14 @@ describe('useItemDropQueue', () => {
     while (current.value) dismiss();
   });
 
-  it('isFull reflects the 6-slot cap once a slot step is bought, not the base 4', () => {
+  it('isFull reflects the 6-slot cap once two slots are bought, not the base 4', () => {
     const characterStore = useCharacterStore();
     const owned = ['rusty-blade', 'steel-sword', 'apprentice-wand', 'arcane-staff', 'novices-charm'];
-    characterStore.character = { ...characterStore.character, ownedItemIds: owned, equippedItemIds: owned, slotUpgrades: 1 };
+    characterStore.character = { ...characterStore.character, ownedItemIds: owned, equippedItemIds: owned, slotUpgrades: 2 };
 
     const { isFull } = useItemDropQueue();
 
-    expect(isFull.value).toBe(false); // 5 equipped, cap is 6 with the event
+    expect(isFull.value).toBe(false); // 5 equipped, cap is 6 with two bought
   });
 
   it('auto-equips a drop immediately when a slot is open', () => {

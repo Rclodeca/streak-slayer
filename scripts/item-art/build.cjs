@@ -1,5 +1,5 @@
 // npm run item-art
-// Builds the item sprites from the Pixellab tiles picked in picks.json (paths under assets/pixellab/, git-ignored
+// Builds the item and potion sprites from the Pixellab tiles picked in picks.json (paths under assets/pixellab/, git-ignored
 // and local only). The tiles are native 32x32 pixel art, so nothing is resampled: each picked tile (or its fixed
 // copy, see picks.json "fixes") is written, centred, to public/sprites/<icon>.png, drawn in the game at 2 CSS px per
 // art pixel (64px, see main.scss). Then checks every file is 32x32 RGBA and lists the tiles whose art touches the
@@ -40,7 +40,8 @@ function centred(tile) {
   return { tile: { ...tile, px }, dx, dy }
 }
 
-const entries = Object.entries(picks.items)
+// The shop's potions (picks.json "potions", keyed by TonicId) are built the same way as the items.
+const entries = [...Object.entries(picks.items), ...Object.entries(picks.potions || {})]
 const problems = []
 const edgeTouching = []
 
@@ -85,7 +86,7 @@ for (const f of written) {
   }
 }
 
-console.log(`${written.length} of ${entries.length} item sprites written to public/sprites/items/`)
+console.log(`${written.length} of ${entries.length} sprites written to public/sprites/`)
 console.log(`${edgeTouching.length} tiles touch the tile edge:`)
 for (const line of edgeTouching) console.log(`  ${line}`)
 if (problems.length) {

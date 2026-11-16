@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Services art</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Services rows on the Shop tab: how should they look so nobody takes them for items? Pixel-cut Moonlit only.
+   Glyphs are hand-drawn 16x16 pixel stand-ins at 2 CSS px per art pixel. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; max-width: 100%; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 12px; min-height: 88px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #7d8190; --touch: #dbe2ee; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --common: #9d9382; --gold: #f0c64e; --gem: #6fd6ea; --broke: #b65a50; --heal: #4ac777; --phys: #e86154;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  background: var(--bg); border: 1px solid #000; border-radius: 26px; padding: 16px 12px 20px; color: var(--text);
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 12px;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; color: inherit; }
+.c-gold { color: var(--gold); } .c-gem { color: var(--gem); }
+
+.ctx { font: 700 10px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin: 0 2px -6px; }
+.banner { display: flex; align-items: center; height: 38px; flex: none; }
+.banner .medal { width: 38px; height: 38px; flex: none; z-index: 1; display: grid; place-items: center; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--brass); font-size: 20px; }
+.banner .cloth { margin-left: -4px; flex: 1; height: 28px; display: flex; align-items: center; padding: 0 22px 0 14px; background: #202a40; color: var(--ink); font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); }
+
+.panel { background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 7px; }
+.mid { flex: 1; min-width: 0; }
+.name { font: 700 16px/1.15 'Alegreya', serif; color: var(--ink); }
+.rar { font: 700 10px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: var(--common); }
+.eff { font-size: 12.5px; color: #cdbf9a; line-height: 1.25; }
+.warn { font: 700 10px 'Alegreya Sans'; letter-spacing: .06em; color: var(--dim); margin-top: 3px; }
+
+/* square socket (items, and services today) */
+.sock { --rar: #4a5570; width: 52px; height: 52px; flex: none; display: grid; place-items: center; overflow: hidden; background: color-mix(in srgb, var(--rar) 14%, var(--well)); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 color-mix(in srgb, var(--rar) 40%, var(--well-hi)); clip-path: var(--px2); }
+.sock.common { --rar: var(--common); }
+.sock img { width: 64px; height: 64px; image-rendering: pixelated; max-width: none; }
+.sock .i { font-size: 26px; }
+/* round seal: no socket, sits on the card */
+.seal { width: 52px; height: 52px; flex: none; display: block; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0,0,0,.55)); }
+.art { width: 32px; height: 32px; display: block; }
+
+.buy { border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; min-width: 76px; padding: 0 10px; background: #2a3348; color: var(--ink); clip-path: var(--px2);
+  box-shadow: inset 2px 2px 0 #4a5672, inset -2px -4px 0 #10141e; font: 700 15px/1 'Alegreya', serif; }
+.buy.gem { background: #1d3a4a; box-shadow: inset 2px 2px 0 #3c6a80, inset -2px -4px 0 #0a1820; }
+.buy .i { font-size: 13px; }
+.buy.no { background: #1a1d27; color: var(--dim); box-shadow: inset 2px 2px 0 #262b38, inset -2px -2px 0 #0b0d13; cursor: default; font: 700 13px 'Alegreya Sans'; letter-spacing: .04em; gap: 5px; }
+.row.locked { background: #151926; }
+.row.locked .name { color: #8a8f9c; }
+.row.locked .eff { color: #6f7380; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Shop — Services art</h1>
+  <p class="lede">Same six services in the real order, three ways to show them. Each phone starts with two rows from the Items side so you can see the contrast. Glyphs are quick hand-drawn stand-ins; real ones would get a proper pass.</p>
+  <div class="grid">
+    <div class="col"><h2>A · Today</h2><p>The line icons from the app, in the same square socket that items use. Clean and clearly "UI", but they sit in an item socket and don't feel like the game's art.</p><div class="phone" id="A"></div></div>
+    <div class="col"><h2>B · Seals (recommended)</h2><p>Pixel art, but on a round medallion with no socket and no rarity. Brass for gold buys, frost silver for gem buys. The round shape alone says "not an item," even on the backpack and coin bag. Locked: the seal goes to dull iron with a padlock on its rim, and the button shows the level it opens at.</p><div class="phone" id="B"></div></div>
+    <div class="col"><h2>C · Item-style art (the risk)</h2><p>The same pixel art in full colour, in the square socket. The backpack and coin bag now look like loot you'd wear, and there's no inventory to find them in.</p><div class="phone" id="C"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {
+  coins: '<path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"/><path d="M15 6h1v4"/><path d="m6.134 14.768.866-.5 2 3.464"/><circle cx="16" cy="8" r="6"/>',
+  gem: '<path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>',
+  'hand-coins': '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>',
+  dices: '<rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/>',
+  flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>',
+  hammer: '<path d="m15 12-9.373 9.373a1 1 0 0 1-3.001-3L12 9"/><path d="m18 15 4-4"/><path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172v-.344a2 2 0 0 0-.586-1.414l-1.657-1.657A6 6 0 0 0 12.516 3H9l1.243 1.243A6 6 0 0 1 12 8.485V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"/>',
+  backpack: '<path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 10h8"/><path d="M8 18h8"/><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
+  snowflake: '<path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5L10 9"/><path d="m20 10-1.5 2 1.5 2"/><path d="M22 12h-6.5L14 15"/><path d="m4 10 1.5 2L4 14"/><path d="m7 21 3-6-1.5-3"/><path d="m7 3 3 6h4"/>',
+};
+ICONS.lock = '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>';
+const ic = (n, cls = '', style = '') => `<svg class="i ${cls}" style="${style}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+
+// 16x16 glyphs: a = outline, b = mid, c = light
+const G = {
+  die: [
+    '................', '................',
+    '..aaaaaaaaaaaa..', '..acccccccccba..', '..acaaccccccba..', '..acaaccccccba..', '..acccccccccba..',
+    '..accccaacccba..', '..accccaacccba..', '..acccccccccba..', '..acccccccaaba..', '..acccccccaaba..',
+    '..abbbbbbbbbba..', '..aaaaaaaaaaaa..', '................', '................',
+  ],
+  flame: [
+    '................', '.......aa.......', '......acba......', '......acba......', '.....acbbba.....', '.....acbbba.....',
+    '....acbbbbba....', '...acbbccbbba...', '...acbcccbbba...', '..acbccccbbbba..', '..acbccccbbbba..', '..acbbccbbbbba..',
+    '...abbbbbbbba...', '....aabbbbaa....', '......aaaa......', '................',
+  ],
+  hammer: [
+    '................', '...aaaaaaaaaa...', '..acccccccccba..', '..acccccccccba..', '..abbbbbbbbbba..', '...aaaaaaaaaa...',
+    '......acba......', '...c..acba......', '..ccc.acba...c..', '...c..acba..ccc.', '......acba...c..', '......acba......',
+    '......acba......', '......acba......', '......aaaa......', '................',
+  ],
+  pack: [
+    '................', '......aaaa......', '.....a....a.....', '...aaaaaaaaaa...', '..accccccccbba..', '..accccccccbba..',
+    '..aaaaaaaaaaaa..', '..acccaaaacbba..', '..acccabbacbba..', '..acccaaaacbba..', '..accccccccbba..', '..accccccccbba..',
+    '..abbbbbbbbbba..', '..aaaaaaaaaaaa..', '................', '................',
+  ],
+  snow: (() => {
+    const g = Array.from({ length: 16 }, () => Array(16).fill('.'));
+    const set = (r, c, v = 'c') => { g[r][c] = v; };
+    for (let i = 1; i <= 13; i++) { set(i, 7); set(7, i); }
+    for (let d = 1; d <= 5; d++) { set(7 - d, 7 - d, 'b'); set(7 - d, 7 + d, 'b'); set(7 + d, 7 - d, 'b'); set(7 + d, 7 + d, 'b'); }
+    [[2, 6], [2, 8], [12, 6], [12, 8], [6, 2], [8, 2], [6, 12], [8, 12]].forEach(([r, c]) => set(r, c));
+    return g.map((r) => r.join(''));
+  })(),
+  bag: [
+    '................', '.....aa..aa.....', '.....acaaca.....', '......abba......', '......aaaa......', '.....acccba.....',
+    '....acccccba....', '...acccccccba...', '..acccbbbcccba..', '..accbcccbccba..', '..accbcccbccba..', '..acccbbbcccba..',
+    '..abccccccbbba..', '...abbbbbbbba...', '....aaaaaaaa....', '................',
+  ],
+  // 10x11 padlock, drawn on the seal's rim when locked
+  lock: [
+    '..aaaaaa..', '.abbbbbba.', '.ab....ba.', '.ab....ba.', 'aaaaaaaaaa', 'acccccccba',
+    'acccaaccba', 'acccaaccba', 'accccaccba', 'abbbbbbbba', 'aaaaaaaaaa',
+  ],
+};
+const IRON = { a: '#1a1c22', b: '#3c404a', c: '#5d626d', rim: '#0e0f13', hi: '#5a5f6b', lo: '#2c2f37', face: '#14161c', faceLo: '#0d0e12', shadow: '#07080a' };
+const LOCK = { a: '#0b0c10', b: '#9aa0ab', c: '#dde1e8' };
+
+const BRASS = { a: '#4a3618', b: '#b08d4e', c: '#efd9a0', rim: '#1e1710', hi: '#d4b673', lo: '#6b5228', face: '#151a27', faceLo: '#0c0f17', shadow: '#07090e' };
+const FROST = { a: '#1c3a46', b: '#6fb6c8', c: '#dcf5fb', rim: '#0b1a20', hi: '#9ad7e4', lo: '#2f6676', face: '#121b26', faceLo: '#0a1018', shadow: '#05080c' };
+const FULL = {
+  die: { a: '#2a1a14', b: '#b9ae98', c: '#f3ecdc' },
+  flame: { a: '#4a1408', b: '#e0562c', c: '#ffd36a' },
+  hammer: { a: '#1e1a18', b: '#8a8f9a', c: '#d9dee6' },
+  pack: { a: '#2a1a0e', b: '#7a4f2a', c: '#b8834a' },
+  snow: { a: '#1c3a46', b: '#7fd0e6', c: '#e4fbff' },
+  bag: { a: '#2a1a0e', b: '#8a6a3a', c: '#d2ad6c' },
+};
+
+const rect = (x, y, f) => `<rect x="${x}" y="${y}" width="1" height="1" fill="${f}"/>`;
+const glyphRects = (g, pal, ox, oy, shadow) => {
+  let out = '';
+  if (shadow) g.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== '.' && (g[r + 1]?.[c + 1] ?? '.') === '.') out += rect(ox + c + 1, oy + r + 1, shadow); }));
+  g.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== '.') out += rect(ox + c, oy + r, pal[ch]); }));
+  return out;
+};
+// a pixel medallion, 26 art px across, the glyph centred on its face
+const seal = (glyph, pal) => {
+  const N = 26, m = 12.5;
+  let out = '';
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const d = Math.hypot(x + 0.5 - 13, y + 0.5 - 13);
+    if (d > m) continue;
+    const lit = x + y < N - 1;
+    out += rect(x, y, d > 11.4 ? pal.rim : d > 9.9 ? (lit ? pal.hi : pal.lo) : d > 9 ? pal.rim : (x + y > N + 6 ? pal.faceLo : pal.face));
+  }
+  out += glyphRects(G[glyph], pal, 5, 5, pal.shadow);
+  if (pal === IRON) out += glyphRects(G.lock, LOCK, 16, 15, '#000');
+  return `<svg class="seal" viewBox="0 0 26 26" shape-rendering="crispEdges">${out}</svg>`;
+};
+const fullArt = (glyph) => `<svg class="art" viewBox="0 0 16 16" shape-rendering="crispEdges">${glyphRects(G[glyph], FULL[glyph], 0, 0, '#05060a')}</svg>`;
+
+const SERVICES = [
+  { name: 'Reroll', icon: 'dices', ic: '#a78bfa', glyph: 'die', cur: 'g', p: 150, eff: "Reroll one skill's damage type." },
+  { name: 'Overdrive', icon: 'flame', ic: '#ff8a3d', glyph: 'flame', cur: 'g', p: 400, eff: 'One skill can be used 2 extra times a period.', bought: 1 },
+  { name: 'Enchant', icon: 'hammer', ic: '#d6a24f', glyph: 'hammer', cur: 'g', p: 900, eff: "×2 one worn item's bonuses.", lv: 8 },
+  { name: 'Item slots', icon: 'backpack', ic: '#a8a092', glyph: 'pack', cur: 'g', p: 2400, eff: 'Inventory increase.', lv: 12 },
+  { name: 'Streak Freeze', icon: 'snowflake', ic: '#8d9bd1', glyph: 'snow', cur: 'm', p: 25, eff: "One skill rests on the days you pick. Its streak holds, but doesn't grow." },
+  { name: 'Gold Pouch', icon: 'coins', ic: '#f0c64e', glyph: 'bag', cur: 'm', p: 50, eff: '1,000 gold, now. Once a day.' },
+];
+const buy = (w) => `<button class="buy ${w.cur === 'm' ? 'gem' : ''}">${w.cur === 'g' ? ic('coins', 'c-gold') : ic('gem', 'c-gem')}${w.p.toLocaleString('en-US')}</button>`;
+const mid = (w) => `<div class="mid"><div class="name">${w.name}</div><div class="eff">${w.eff}</div>${w.bought ? `<div class="warn">Bought ${w.bought} · dearer each time</div>` : ''}</div>`;
+const CONTEXT = `<div class="ctx">Items side, for contrast</div><div class="rows">
+  <div class="panel row"><span class="sock common"><img src="../../public/sprites/items/steel-sword.png" alt=""></span><div class="mid"><div class="name">Steel Sword</div><div class="rar">Common</div></div>${buy({ cur: 'g', p: 180 })}</div>
+  <div class="panel row"><span class="sock"><img src="../../public/sprites/potions/health.png" alt=""></span><div class="mid"><div class="name">Healing Draught</div><div class="eff">Heal 30% of max HP.</div></div>${buy({ cur: 'g', p: 120 })}</div>
+</div>`;
+const head = `<div class="banner"><span class="medal">${ic('hand-coins')}</span><span class="cloth">Services</span></div>`;
+const LOOKS = {
+  A: (w) => `<span class="sock">${ic(w.icon, '', `color:${w.ic}`)}</span>`,
+  B: (w) => seal(w.glyph, w.lv ? IRON : w.cur === 'm' ? FROST : BRASS),
+  C: (w) => `<span class="sock">${fullArt(w.glyph)}</span>`,
+};
+for (const [id, look] of Object.entries(LOOKS)) {
+  document.getElementById(id).innerHTML = `${CONTEXT}${head}<div class="rows">${SERVICES.map((w) => id === 'B' && w.lv
+    ? `<div class="panel row locked">${look(w)}${mid(w)}<button class="buy no">${ic('lock')}Lv ${w.lv}</button></div>`
+    : `<div class="panel row">${look(w)}${mid(w)}${buy(w)}</div>`).join('')}</div>`;
+}
+</script>
+</body>
+</html>

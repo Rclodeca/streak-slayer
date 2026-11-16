@@ -2,7 +2,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRng, dailyPeriodKey } from '../game-engine';
+import { ITEM_CATALOG, createRng, dailyPeriodKey } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -11,6 +11,7 @@ import { useItemDropQueue } from './useItemDropQueue';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useRolloverWatch } from './useRolloverWatch';
 import { useShop } from './useShop';
+import { useToast } from './useToast';
 
 describe('useShop', () => {
   beforeEach(() => setActivePinia(createPinia()));
@@ -29,31 +30,62 @@ describe('useShop', () => {
     return { characterStore, shop };
   }
 
-  it('buying an item queues it as bought and logs it', () => {
-    const { shop } = stocked();
-    const ware = shop.stock.value!.wares[0];
+  it('buying an item offers it, and pays only when it is accepted', () => {
+    const { characterStore, shop } = stocked(1000);
+    const ware = shop.stock.value!.wares.find((w) => w.currency !== 'gems')!;
     expect(shop.buy(ware.itemId)).toBe(true);
     const queue = useItemDropQueue();
     expect(queue.current.value?.id).toBe(ware.itemId);
-    expect(queue.bought.value).toBe(true);
+    expect(queue.offer.value).toMatchObject({ price: ware.price, currency: 'gold' });
+    expect(characterStore.character.gold).toBe(1000);
+    queue.accept();
+    expect(characterStore.character.gold).toBe(1000 - ware.price);
+    expect(characterStore.character.equippedItemIds).toContain(ware.itemId);
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'shop-bought', gold: ware.price });
   });
 
-  it('a quick double tap buys once', () => {
+  it('turning an offer down costs nothing and leaves it in stock', () => {
+    const { characterStore, shop } = stocked(1000);
+    const ware = shop.stock.value!.wares.find((w) => w.currency !== 'gems')!;
+    shop.buy(ware.itemId);
+    useItemDropQueue().dismiss();
+    expect(characterStore.character.gold).toBe(1000);
+    expect(characterStore.character.ownedItemIds).not.toContain(ware.itemId);
+    expect(shop.stock.value!.wares.find((w) => w.itemId === ware.itemId)!.sold).toBeFalsy();
+  });
+
+  it('with every slot full, Replace pays and swaps the item in', () => {
     const { characterStore, shop } = stocked(100000);
-    const ware = shop.stock.value!.wares[0];
+    const gear = ITEM_CATALOG.filter((item) => item.type === 'equipment' && !shop.stock.value!.wares.some((w) => w.itemId === item.id)).slice(0, 4).map((item) => item.id);
+    characterStore.setCharacter({ ...characterStore.character, ownedItemIds: gear, equippedItemIds: gear });
+    const ware = shop.stock.value!.wares.find((w) => w.currency !== 'gems')!;
+    shop.buy(ware.itemId);
+    const queue = useItemDropQueue();
+    expect(characterStore.character.gold).toBe(100000);
+    queue.replace(gear[0]);
+    expect(characterStore.character.gold).toBe(100000 - ware.price);
+    expect(characterStore.character.equippedItemIds).toContain(ware.itemId);
+    expect(characterStore.character.equippedItemIds).not.toContain(gear[0]);
+  });
+
+  it('a quick double tap offers once', () => {
+    const { characterStore, shop } = stocked(100000);
+    const ware = shop.stock.value!.wares.find((w) => w.currency !== 'gems')!;
     expect(shop.buy(ware.itemId)).toBe(true);
     expect(shop.buy(ware.itemId)).toBe(false);
+    useItemDropQueue().accept();
     expect(characterStore.character.gold).toBe(100000 - ware.price);
     expect(useActivityLogStore().entries.filter((e) => e.kind === 'shop-bought')).toHaveLength(1);
   });
 
-  it('a tonic is used at once and logged', () => {
+  it('a potion is used at once, taken out of stock and logged', () => {
     const { characterStore, shop } = stocked();
     expect(shop.buyTonic('crit')).toBe(true);
     expect(characterStore.character.statusEffects?.some((e) => e.type === 'critBoost')).toBe(true);
-    expect(shop.tonic('crit').status).toBe('active');
-    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'shop-bought', name: 'Hawk Tonic' });
+    expect(shop.tonic('crit').status).toBe('out');
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'shop-bought', name: 'Crit Potion' });
+    expect(useToast().current.value).toMatchObject({ art: 'potions/crit', title: 'Crit Potion', text: '+20% crit · 3 days' });
+    useToast().dismiss();
   });
 
   it('restock charges its fee and logs it', () => {

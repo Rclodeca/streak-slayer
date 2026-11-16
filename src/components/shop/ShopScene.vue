@@ -10,9 +10,10 @@ import StatIcon from '../ui/StatIcon.vue';
 // The phone's Shop tab banner (docs/mockups/shop-tab-2.html, B's scene): the
 // shopkeeper's room, pinned at the top where the fight stage would be, with
 // the purse on a plate top-left and his line in an RPG text box across the
-// foot, his name in its corner. The Vault side cools the room to blue. The
-// shopkeeper is in the art, so nothing is drawn over him. The page's menu
-// rides in its corner through the default slot, as on the stage and HomeBase.
+// foot, his name in its corner; his line changes with the side on show. The
+// Vault side cools the room to blue. The shopkeeper is in the art, so nothing
+// is drawn over him. The page's menu rides in its corner through the default
+// slot, as on the stage and HomeBase.
 //
 // The art is the standard backdrop size, 216 x 116 art px, drawn at 2 CSS px
 // per art pixel (432 x 232) and centred like HomeBase's armory.
@@ -20,7 +21,7 @@ const baseUrl = import.meta.env.BASE_URL;
 const ART_W = 432;
 const ART_H = 232;
 
-const LINES = { shop: 'Back again? Still breathing, I see.', vault: 'Gems. Now we talk.' } as const;
+const LINES = { items: 'Back again? Still breathing, I see.', services: 'Something worth changing?', vault: 'New looks. Same you.' } as const;
 
 const characterStore = useCharacterStore();
 const accountStore = useAccountStore();

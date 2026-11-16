@@ -154,7 +154,7 @@ export function bossSkillEffectText(skill: BossSkillId, doomShare: number = S.DO
     case 'sever':
       return 'No lifesteal';
     case 'sunder':
-      return 'Armor & resist halved';
+      return 'Armor and magic resist halved';
     case 'doom':
       return doomShare === 50 ? 'Half your HP' : doomShare === 25 ? 'A quarter of your HP' : `${doomShare}% of your HP`;
     case 'undying':

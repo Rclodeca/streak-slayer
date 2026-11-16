@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Services rotation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The Services side with one service on a 3-day turn (Item slots → Overdrive → Reroll → Enchant), a peek at the
+   next one, and the Streak Freeze and Gold Pouch below. Pixel-cut Moonlit only; seals from public/sprites/services/. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 780px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; max-width: 100%; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 12px; min-height: 66px; font-size: 15px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #7d8190; --touch: #dbe2ee; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12;
+  --gold: #f0c64e; --gem: #6fd6ea; --magic: #c870d6; --true: #f1e9d6; --broke: #b65a50;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 100%; height: 844px; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden; color: var(--text);
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; color: inherit; }
+.c-gold { color: var(--gold); } .c-gem { color: var(--gem); } .c-magic { color: var(--magic); } .c-true { color: var(--true); }
+
+/* pinned shop scene + side switch */
+.home { flex: none; position: relative; background: #07080c; border-bottom: 3px solid #05060a; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); }
+.crop { height: 190px; overflow: hidden; position: relative; }
+.crop img { position: absolute; left: 50%; top: -20px; width: 432px; height: 232px; margin-left: -216px; image-rendering: pixelated; }
+.purse { position: absolute; left: 12px; top: 12px; display: flex; gap: 6px; }
+.plate { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(8,10,16,.82); clip-path: var(--px2); font: 700 13px 'Alegreya', serif; color: var(--ink); }
+.plate .i { font-size: 12px; }
+.switch { display: flex; gap: 4px; margin: 10px 12px; padding: 3px; background: #0a0c12; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #040508; }
+.switch span { flex: 1; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px; font: 600 11px 'Cinzel', serif; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); clip-path: var(--px2); }
+.switch span .i { font-size: 15px; }
+.switch .on { background: var(--card); color: var(--ink); box-shadow: inset 0 2px 0 var(--hi); }
+.switch .on .i { color: var(--gold); }
+
+.scroll { flex: 1; overflow: hidden; padding: 12px 12px 0; display: flex; flex-direction: column; gap: 10px; }
+.panel { background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.name { font: 700 16px/1.15 'Alegreya', serif; color: var(--ink); }
+.eff { font-size: 12.5px; color: #cdbf9a; line-height: 1.25; }
+.warn { font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+
+/* the turn's service: a big card like the relic of the day */
+.feat { padding: 0; overflow: hidden; }
+.feat .velvet { position: relative; height: 128px; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 60%, #3d3220 0%, #0b0e18 72%); }
+.feat .velvet.scene { background: #07080c; overflow: hidden; }
+.feat .velvet.scene::after { display: none; }
+.feat .velvet.scene img.scene { position: absolute; left: calc(50% - 216px); top: 0; width: 432px; height: 128px; animation: none; filter: none; }
+.feat .velvet img { width: 64px; height: 64px; image-rendering: pixelated; position: relative; animation: bob 2.4s ease-in-out infinite; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
+@keyframes bob { 50% { transform: translateY(-3px); } }
+.feat .velvet::after { content: ''; position: absolute; left: 50%; bottom: 20px; width: 56px; height: 7px; margin-left: -28px; background: radial-gradient(closest-side, rgba(0,0,0,.6), transparent); }
+.feat .ribbon { z-index: 1; position: absolute; left: 10px; top: 10px; padding: 4px 8px; background: #e9dcc0; color: #2a2014; clip-path: var(--px2); font: 700 11px 'Alegreya Sans'; letter-spacing: .08em; display: inline-flex; align-items: center; gap: 4px; }
+.feat .ribbon .i { font-size: 11px; }
+.feat .turn { position: absolute; right: 12px; top: 14px; display: flex; gap: 4px; }
+.feat .turn i { width: 6px; height: 6px; background: #3a4256; } .feat .turn i.on { background: var(--brass); }
+.feat .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 5px; border-top: 2px solid var(--brass); }
+.feat .body .name { font-size: 19px; }
+.feat .foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 3px; }
+
+/* before → after on the hero's own stuff */
+.on { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; font-size: 13px; color: var(--text); }
+.on b { color: var(--ink); font-weight: 700; }
+.on .from { color: var(--dim); }
+.on .to { font-weight: 800; }
+.on .arr { color: var(--brass); font-size: 12px; }
+.on .i { font-size: 12px; }
+
+/* the next one, a peek */
+.next { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #141826; border-top: 2px solid #0c0f15; font-size: 13px; color: var(--dim); }
+.next img { width: 32px; height: 32px; image-rendering: pixelated; opacity: .7; filter: grayscale(.4); }
+.next b { color: var(--text); font: 700 14px 'Alegreya', serif; }
+.next .when { margin-left: auto; font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; }
+
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 7px; }
+.row .mid { flex: 1; min-width: 0; }
+.seal { width: 48px; height: 48px; flex: none; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0,0,0,.55)); }
+
+.buy { border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; min-width: 76px; padding: 0 12px; background: #2a3348; color: var(--ink); clip-path: var(--px2);
+  box-shadow: inset 2px 2px 0 #4a5672, inset -2px -4px 0 #10141e; font: 700 15px/1 'Alegreya', serif; }
+.buy .i { font-size: 13px; }
+.buy.gem { background: #1d3a4a; box-shadow: inset 2px 2px 0 #3c6a80, inset -2px -4px 0 #0a1820; }
+.buy.no { background: #1a1d27; color: var(--dim); box-shadow: inset 2px 2px 0 #262b38, inset -2px -2px 0 #0b0d13; font: 700 13px 'Alegreya Sans'; }
+
+.tabbar { flex: none; display: flex; justify-content: space-around; padding: 8px 0 22px; border-top: 2px solid #141824; background: #07080c; font-size: 11px; color: var(--dim); }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tabbar .i { font-size: 20px; }
+.tabbar .lit { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Services — one on a 3-day turn</h1>
+  <p class="lede">Big card for the turn's service with its countdown and what it does, and a peek at the next one. The Streak Freeze and Gold Pouch sit below, always there. Three moments from one run; numbers are stand-ins.</p>
+  <div class="grid">
+    <div class="col"><h2>1 · A new hero</h2><p>With its scene (Item slots run 2). Every run opens on Item slots. Its price follows the slots you have. Next up is Overdrive.</p><div class="phone" id="P1"></div></div>
+    <div class="col"><h2>1b · Overdrive's turn</h2><p>With its scene (Overdrive run 2). Next comes Reroll.</p><div class="phone" id="P4"></div></div>
+    <div class="col"><h2>2 · Reroll's turn</h2><p>With its scene (Reroll run 5). Reroll gets dearer with each buy, but only this turn. The next turn starts fresh.</p><div class="phone" id="P2"></div></div>
+    <div class="col"><h2>3 · Enchant's turn, slots full</h2><p>Now with its scene (Pixellab run 8). Item slots is out of the rotation once you have 8, so after Enchant comes Overdrive.</p><div class="phone" id="P3"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {
+  coins: '<path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"/><path d="M15 6h1v4"/><path d="m6.134 14.768.866-.5 2 3.464"/><circle cx="16" cy="8" r="6"/>',
+  gem: '<path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>',
+  sword: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  sparkles: '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  wand: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  store: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
+  chevrons: '<path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+};
+const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const SEAL = (id) => `../../public/sprites/services/${id}.png`;
+const fmt = (n) => n.toLocaleString('en-US');
+const arr = ic('arrow', 'arr');
+const coin = (cur) => (cur === 'm' ? ic('gem', 'c-gem') : ic('coins', 'c-gold'));
+const buy = (p, cur = 'g', no) => `<button class="buy ${cur === 'm' ? 'gem' : ''} ${no ? 'no' : ''}">${no || `${coin(cur)}${fmt(p)}`}</button>`;
+
+const shell = (gold, gems, body) => `<div class="home"><div class="crop"><img src="../../public/sprites/home/shop.png" alt=""><span class="purse"><span class="plate">${ic('coins', 'c-gold')}${fmt(gold)}</span><span class="plate">${ic('gem', 'c-gem')}${gems}</span></span></div>
+<div class="switch"><span>${ic('sword')}Items</span><span class="on">${ic('sparkles')}Services</span><span>${ic('gem')}Vault</span></div></div>
+<div class="scroll">${body}</div>
+<div class="tabbar"><span>${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span class="lit">${ic('store')}Shop</span><span>${ic('chevrons')}Talents</span><span>${ic('shield')}Hero</span></div>`;
+
+const turn = (day) => `<span class="turn">${[1, 2, 3].map((d) => `<i class="${d <= day ? 'on' : ''}"></i>`).join('')}</span>`;
+const feat = ({ id, name, eff, on, warn, price, left, day, next, nextIn, scene }) => `<div class="panel feat">
+<div class="velvet ${scene ? 'scene' : ''}">${scene ? `<img class="scene" src="${scene}" alt="">` : `<img src="${SEAL(id)}" alt="">`}<span class="ribbon">${ic('clock')}${left}</span></div>
+<div class="body"><div class="name">${name}</div><div class="eff">${eff}</div>${warn ? `<div class="warn">${warn}</div>` : ''}
+<div class="foot"><span></span>${buy(price)}</div></div>
+<div class="next"><img src="${SEAL(next[0])}" alt="">Next <b>${next[1]}</b><span class="when">in ${nextIn}</span></div></div>`;
+
+const always = (gold) => `<div class="rows">
+<div class="panel row"><img class="seal" src="${SEAL('freeze')}" alt=""><div class="mid"><div class="name">Streak Freeze</div><div class="eff">One skill rests on the days you pick. Its streak holds, but doesn't grow.</div></div>${buy(25, 'm')}</div>
+<div class="panel row"><img class="seal" src="${SEAL('pouch')}" alt=""><div class="mid"><div class="name">Gold Pouch</div><div class="eff">${fmt(gold)} gold, now. Once a day.</div></div>${buy(50, 'm')}</div>
+</div>`;
+
+document.getElementById('P1').innerHTML = shell(620, 85, feat({
+  id: 'slot', name: 'Item slots', eff: 'Increase item slots by one.', left: '3d left', day: 1,
+  price: 600, scene: '../../assets/pixellab/2026-11-15-service-slot-2/tile-01.png', next: ['overdrive', 'Overdrive'], nextIn: '3d',
+}) + always(1000));
+
+document.getElementById('P2').innerHTML = shell(1540, 40, feat({
+  id: 'reroll', name: 'Reroll', eff: "Reroll one skill's damage type.", left: '1d left', day: 3,
+  price: 225, scene: '../../assets/pixellab/2026-11-15-service-reroll-5/tile-01.png', next: ['enchant', 'Enchant'], nextIn: '1d',
+}) + always(1000));
+
+document.getElementById('P4').innerHTML = shell(980, 85, feat({
+  id: 'overdrive', name: 'Overdrive', eff: 'One skill can be used 2 extra times a period.', left: '3d left', day: 1,
+  price: 400, scene: '../../assets/pixellab/2026-11-15-service-overdrive-2/tile-01.png', next: ['reroll', 'Reroll'], nextIn: '3d',
+}) + always(1000));
+
+document.getElementById('P3').innerHTML = shell(3210, 12, feat({
+  id: 'enchant', name: 'Enchant', eff: "Greatly increase one item's power.", left: '2d left', day: 2,
+  price: 1350, scene: '../../assets/pixellab/2026-11-14-service-enchant-8/tile-01.png', next: ['overdrive', 'Overdrive'], nextIn: '2d',
+}) + always(1500));
+</script>
+</body>
+</html>

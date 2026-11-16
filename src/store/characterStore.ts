@@ -41,9 +41,9 @@ export const useCharacterStore = defineStore('character', {
         : createCharacter(rng, 'warrior');
     },
 
-    /** Rolls one boss-kill's worth of item drops for `bossIndex`, adds them to owned items, and returns them. */
-    grantItemDrops(bossIndex: number, rng: Rng, maxCount?: number): ItemDef[] {
-      const dropped = rollItemDrops(this.character, bossIndex, rng, maxCount);
+    /** Rolls one boss-kill's worth of item drops, adds them to owned items, and returns them. */
+    grantItemDrops(rng: Rng, maxCount?: number): ItemDef[] {
+      const dropped = rollItemDrops(this.character, rng, maxCount);
       this.character = { ...this.character, ownedItemIds: [...this.character.ownedItemIds, ...dropped.map((item) => item.id)] };
       return dropped;
     },

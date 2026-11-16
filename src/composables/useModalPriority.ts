@@ -10,8 +10,8 @@
 // buttons (confirmed via manual testing — see the quests design spec's
 // review notes). This centralizes the precedence order so it's declared
 // once instead of re-derived pairwise per modal:
-// death > item drop > habit miss > quest miss > boss skill > quest complete > quest unlock > talent unlock > enchant reveal.
-// Boss skill, quest unlock, talent unlock and the enchant reveal also wait out a kill or level-up
+// death > item drop > habit miss > quest miss > boss skill > quest complete > quest unlock > talent unlock > enchant reveal / service done.
+// Boss skill, quest unlock, talent unlock, the enchant reveal and service done also wait out a kill or level-up
 // still playing on the panels (useCelebration), as does the item drop popup itself.
 
 import { computed } from 'vue';
@@ -32,7 +32,7 @@ export function useModalPriority() {
   const { hasPending: habitMissPending } = useMissedSkillsGate();
   const { hasPending: questMissPending } = useQuestMissGate();
   const characterStore = useCharacterStore();
-  const { revealed: enchantRevealed } = useServices();
+  const { revealed: enchantRevealed, done: serviceDone } = useServices();
   const { current: questCompleteCurrent } = useQuestCompleteQueue();
   const { celebrating } = useCelebration();
   const { current: bossSkillCurrent } = useBossSkillCard();
@@ -82,10 +82,9 @@ export function useModalPriority() {
       questCompleteCurrent.value === null,
   );
 
-  /** True while a shop-enchanted item is on show and nothing higher-priority is up. */
-  const enchantRevealVisible = computed(
+  /** Nothing above the shop's popups is up: no kill or level-up playing, no death, drop, miss, boss skill or unlock. */
+  const shopPopupClear = computed(
     () =>
-      enchantRevealed.value !== null &&
       !celebrating.value &&
       !isDead.value &&
       itemDropCurrent.value === null &&
@@ -97,6 +96,12 @@ export function useModalPriority() {
       !talentUnlockPending(characterStore.character),
   );
 
+  /** True while a shop-enchanted item is on show and nothing higher-priority is up. */
+  const enchantRevealVisible = computed(() => enchantRevealed.value !== null && shopPopupClear.value);
+
+  /** True while a reroll's popup is waiting and nothing higher-priority is up. */
+  const serviceDoneVisible = computed(() => serviceDone.value !== null && shopPopupClear.value);
+
   /** True while a quest-completion celebration is queued — it shows before any level-up pick its EXP triggered. */
   const questCompleteVisible = computed(
     () =>
@@ -107,5 +112,5 @@ export function useModalPriority() {
       bossSkillCurrent.value === null,
   );
 
-  return { bossSkillVisible, questMissVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, questCompleteVisible };
+  return { bossSkillVisible, questMissVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, serviceDoneVisible, questCompleteVisible };
 }

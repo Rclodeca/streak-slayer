@@ -54,15 +54,49 @@ describe('ItemDropPopup', () => {
     expect(scroller.scrollTop).toBe(0);
   });
 
-  it('a bought item says Bought! and names no boss', async () => {
+  const offerOf = (price: number) => {
+    let paid = 0;
+    return { offer: { price, currency: 'gold' as const, pay: () => (paid++, true) }, paid: () => paid };
+  };
+
+  it('a shop item with room asks to Purchase Item and pays only on Buy', async () => {
     const item = ITEM_CATALOG.find((i) => i.type === 'equipment')!;
     const characterStore = useCharacterStore();
     characterStore.character = { ...characterStore.character, ownedItemIds: [item.id], equippedItemIds: [] };
-    useItemDropQueue().enqueueDrops([item], undefined, true);
+    const { offer, paid } = offerOf(120);
+    useItemDropQueue().offerItem(item, offer);
     mount(ItemDropPopup, { attachTo: document.body, global: { plugins: [pinia] } });
     await flushPromises();
-    expect(document.body.textContent).toContain('Bought!');
-    expect(document.body.textContent).not.toContain('Item found!');
+    expect(document.body.textContent).toContain('Purchase Item');
     expect(document.querySelector('.dropped-by')).toBeNull();
+    expect(characterStore.character.equippedItemIds).not.toContain(item.id);
+    expect(paid()).toBe(0);
+    document.querySelector<HTMLButtonElement>('.offer-acts .shop-buy')!.click();
+    await flushPromises();
+    expect(paid()).toBe(1);
+    expect(characterStore.character.equippedItemIds).toContain(item.id);
+  });
+
+  it('a shop item with full slots pays on Replace, and Cancel pays nothing', async () => {
+    const wrapper = mountWithDrops(0);
+    const item = ITEM_CATALOG.filter((i) => i.type === 'equipment')[5];
+    // The shop's pay hands the item over; here it's owned up front.
+    const characterStore = useCharacterStore();
+    characterStore.character = { ...characterStore.character, ownedItemIds: [...characterStore.character.ownedItemIds, item.id] };
+    const first = offerOf(120);
+    useItemDropQueue().offerItem(item, first.offer);
+    await flushPromises();
+    expect(document.querySelector('.modal-footer .drop-button')!.textContent).toBe('Cancel');
+    document.querySelector<HTMLButtonElement>('.modal-footer .drop-button')!.click();
+    await flushPromises();
+    expect(first.paid()).toBe(0);
+    const second = offerOf(120);
+    useItemDropQueue().offerItem(item, second.offer);
+    await flushPromises();
+    document.querySelector<HTMLButtonElement>('.replace-button')!.click();
+    await flushPromises();
+    expect(second.paid()).toBe(1);
+    expect(useCharacterStore().character.equippedItemIds).toContain(item.id);
+    wrapper.unmount();
   });
 });

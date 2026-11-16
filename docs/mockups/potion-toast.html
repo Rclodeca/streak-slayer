@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Potion toast</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* A potion bought: a quiet note that goes on its own instead of a modal. Pixel-cut Moonlit only; potion art is the
+   real 32x32 at 2 CSS px. Tap a potion's buy button (or Replay) to see each one play. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; max-width: 100%; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0 0 10px; min-height: 88px; font-size: 15px; }
+.replay { margin: 0 0 10px; border: 1px dashed #4a5068; background: none; color: #b8b6b0; font: 600 12px 'Alegreya Sans'; padding: 6px 12px; cursor: pointer; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #7d8190; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12;
+  --gold: #f0c64e; --gem: #6fd6ea; --heal: #4ac777; --crit: #d6a24f; --exp: #d8b46a; --health: #c33a2e;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  width: 100%; height: 760px; position: relative; background: var(--bg); border: 1px solid #000; border-radius: 34px; overflow: hidden; color: var(--text);
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); display: flex; flex-direction: column;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; color: inherit; }
+.c-gold { color: var(--gold); }
+
+.home { flex: none; position: relative; background: #07080c; border-bottom: 3px solid #05060a; box-shadow: 0 10px 18px -8px rgba(0,0,0,.7); }
+.crop { height: 150px; overflow: hidden; position: relative; }
+.crop img { position: absolute; left: 50%; top: -40px; width: 432px; height: 232px; margin-left: -216px; image-rendering: pixelated; }
+.purse { position: absolute; left: 12px; top: 12px; display: flex; gap: 6px; }
+.plate { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(8,10,16,.82); clip-path: var(--px2); font: 700 13px 'Alegreya', serif; color: var(--ink); }
+.plate .i { font-size: 12px; }
+.hp { position: absolute; right: 12px; top: 12px; width: 120px; height: 10px; background: #1a0c0c; clip-path: var(--px2); }
+.hp i { position: absolute; left: 0; top: 0; bottom: 0; width: 46%; background: var(--health); transition: width .6s ease .2s; }
+.phone.healed .hp i { width: 76%; }
+.switch { display: flex; gap: 4px; margin: 10px 12px; padding: 3px; background: #0a0c12; clip-path: var(--px2); }
+.switch span { flex: 1; min-height: 40px; display: flex; align-items: center; justify-content: center; font: 600 11px 'Cinzel', serif; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); clip-path: var(--px2); }
+.switch .on { background: var(--card); color: var(--ink); box-shadow: inset 0 2px 0 var(--hi); }
+
+.scroll { flex: 1; overflow: hidden; padding: 4px 12px 0; display: flex; flex-direction: column; gap: 8px; }
+.banner { display: flex; align-items: center; height: 34px; }
+.banner .cloth { flex: 1; height: 26px; display: flex; align-items: center; padding: 0 14px; background: #202a40; color: var(--ink); font: 600 12px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); }
+.panel { background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 7px; position: relative; }
+.sock { width: 52px; height: 52px; flex: none; display: grid; place-items: center; background: #0e0f18; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #040508; }
+.sock img { width: 48px; height: 48px; image-rendering: pixelated; }
+.mid { flex: 1; min-width: 0; }
+.name { font: 700 16px/1.15 'Alegreya', serif; color: var(--ink); }
+.eff { font-size: 12.5px; color: #cdbf9a; }
+.buy { border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; min-width: 76px; padding: 0 10px; background: #2a3348; color: var(--ink); clip-path: var(--px2);
+  box-shadow: inset 2px 2px 0 #4a5672, inset -2px -4px 0 #10141e; font: 700 15px/1 'Alegreya', serif; }
+.buy .i { font-size: 13px; }
+.buy.spent { background: #1a1d27; color: var(--dim); box-shadow: inset 2px 2px 0 #262b38; font: 700 12px 'Alegreya Sans'; }
+
+.tabbar { flex: none; display: flex; justify-content: space-around; padding: 8px 0 22px; border-top: 2px solid #141824; background: #07080c; font-size: 11px; color: var(--dim); position: relative; z-index: 2; }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tabbar .i { font-size: 20px; }
+.tabbar .lit { color: var(--ink); }
+
+/* A: a toast just above the tab bar, a draining line shows its time */
+.toastA { position: absolute; left: 12px; right: 12px; bottom: 78px; z-index: 3; display: flex; align-items: center; gap: 10px; padding: 8px 12px 10px 8px;
+  background: #222a3e; clip-path: var(--px3); box-shadow: inset 2px 2px 0 #3b4560, inset -2px -2px 0 #0c0f15; opacity: 0; transform: translateY(16px); pointer-events: none; }
+.toastA img { width: 48px; height: 48px; image-rendering: pixelated; }
+.toastA .t { flex: 1; }
+.toastA .t b { display: block; font: 700 15px/1.15 'Alegreya', serif; color: var(--ink); }
+.toastA .t span { font-size: 13px; font-weight: 700; }
+.toastA .bar { position: absolute; left: 3px; right: 3px; bottom: 3px; height: 2px; background: var(--c); transform-origin: left; }
+.phone.play .toastA { animation: toastIn 2.8s ease forwards; }
+.phone.play .toastA .bar { animation: drain 2.8s linear forwards; }
+@keyframes toastIn { 0% { opacity: 0; transform: translateY(16px); } 8%, 86% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(8px); } }
+@keyframes drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* B: the effect floats up off the button and fades, like a hit number */
+.float { position: absolute; right: 10px; top: 0; z-index: 3; display: flex; align-items: center; gap: 6px; font: 800 15px 'Alegreya Sans'; color: var(--c); opacity: 0; pointer-events: none;
+  text-shadow: 0 2px 0 #000, 0 0 8px color-mix(in srgb, var(--c) 50%, transparent); white-space: nowrap; }
+.float img { width: 32px; height: 32px; image-rendering: pixelated; }
+.phone.play .float { animation: floatUp 1.8s ease-out forwards; }
+@keyframes floatUp { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-38px); } }
+
+/* C: a thin ribbon slides out from under the shop scene */
+.ribbonC { position: absolute; left: 0; right: 0; top: 153px; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px;
+  background: linear-gradient(#1d2436, #161c2b); border-bottom: 2px solid var(--c); font: 700 14px 'Alegreya', serif; color: var(--ink); opacity: 0; transform: translateY(-40px); pointer-events: none; }
+.ribbonC img { width: 32px; height: 32px; image-rendering: pixelated; }
+.ribbonC span { font: 700 13px 'Alegreya Sans'; color: var(--c); }
+.phone.play .ribbonC { animation: ribbonIn 2.6s ease forwards; }
+@keyframes ribbonIn { 0% { opacity: 0; transform: translateY(-40px); } 10%, 85% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-40px); } }
+
+/* D, E: the same toast for the services that do just what you asked */
+.feat { padding: 0; overflow: hidden; }
+.feat .velvet { position: relative; height: 128px; overflow: hidden; background: #07080c; }
+.feat .velvet img { position: absolute; left: calc(50% - 216px); top: 0; width: 432px; height: 128px; image-rendering: pixelated; }
+.feat .ribbon { position: absolute; z-index: 1; left: 10px; top: 10px; padding: 4px 8px; background: #e9dcc0; color: #2a2014; clip-path: var(--px2); font: 700 11px 'Alegreya Sans'; }
+.feat .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 5px; border-top: 2px solid var(--brass); }
+.feat .body .name { font-size: 19px; }
+.feat .chg { font-size: 12.5px; font-weight: 800; color: var(--ink); }
+.feat .foot { display: flex; justify-content: flex-end; margin-top: 3px; }
+.feat .next { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #141826; border-top: 2px solid #0c0f15; font-size: 13px; color: var(--dim); }
+.feat .next img { width: 32px; height: 32px; image-rendering: pixelated; opacity: .7; filter: grayscale(.4); }
+.feat .next b { color: var(--text); font: 700 14px 'Alegreya', serif; }
+.feat .next em { margin-left: auto; font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; font-style: normal; }
+.toastA img.seal { width: 48px; height: 48px; }
+.pick { position: absolute; inset: 0; z-index: 4; display: none; align-items: center; justify-content: center; background: rgba(4,5,8,.6); }
+.pick.open { display: flex; }
+.pick .box { width: 300px; padding: 14px; background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); display: flex; flex-direction: column; gap: 8px; }
+.pick .box h3 { margin: 0; font: 600 13px 'Cinzel', serif; letter-spacing: .14em; color: var(--ink); text-transform: uppercase; }
+.pick .box button { border: 0; cursor: pointer; text-align: left; padding: 10px 12px; background: #141826; color: var(--ink); font: 700 15px 'Alegreya', serif; clip-path: var(--px2); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Potion or service bought — no modal</h1>
+  <p class="lede">A small note that says what the potion did and goes by itself, so you can keep shopping. Tap any potion's price, or Replay. The Health Potion also fills the HP bar in the corner as it lands.</p>
+  <div class="grid">
+    <div class="col"><h2>A · Toast above the tabs (recommended)</h2><p>A short card slides up over the bottom of the list: the potion, its name, what it did. A line drains along its foot and it fades after about 3 seconds. Easy to read, out of the way of the rows.</p><button class="replay" data-for="A">Replay</button><div class="phone" id="A"></div></div>
+    <div class="col"><h2>B · Floating number</h2><p>The potion and its effect float up off the row's button and fade, like a hit number in a fight. The most game-like and the least in the way, but gone fast and easy to miss.</p><button class="replay" data-for="B">Replay</button><div class="phone" id="B"></div></div>
+    <div class="col"><h2>C · Ribbon under the scene</h2><p>A thin strip slides down from under the shopkeeper's scene, tinted by the potion. Reads like the shop answering you, but it covers the top of the list for a moment.</p><button class="replay" data-for="C">Replay</button><div class="phone" id="C"></div></div>
+    <div class="col"><h2>D · Item slots, same toast</h2><p>Buy a slot and the card stays put; the toast says "5 → 6 slots" and fades. Buy again right away and it just updates, no tap needed to clear anything.</p><button class="replay" data-for="D">Replay</button><div class="phone" id="D"></div></div>
+    <div class="col"><h2>E · Overdrive, same toast</h2><p>Pick the skill in the picker (here a stand-in list) and confirm: the picker closes and the toast names the skill. Reroll and Enchant keep their popups, since their result is the news.</p><button class="replay" data-for="E">Replay</button><div class="phone" id="E"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {
+  coins: '<path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"/><path d="M15 6h1v4"/><path d="m6.134 14.768.866-.5 2 3.464"/><circle cx="16" cy="8" r="6"/>',
+  gem: '<path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  store: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
+  chevrons: '<path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+};
+const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const ART = (f) => `../../public/sprites/potions/${f}.png`;
+// what each potion did, as the note says it
+const POTIONS = [
+  { id: 'draught', name: 'Health Potion', art: 'health', c: 'var(--heal)', p: 120, eff: 'Heal 30% of max HP.', did: '+30% HP' },
+  { id: 'crit', name: 'Crit Potion', art: 'crit', c: 'var(--crit)', p: 220, eff: '+10% crit chance for 2 days.', did: '+10% crit · 2 days' },
+  { id: 'heal', name: 'Mending Potion', art: 'mending', c: 'var(--heal)', p: 220, eff: '+15% healing for 2 days.', did: '+15% healing · 2 days' },
+  { id: 'exp', name: 'EXP Potion', art: 'exp', c: 'var(--exp)', p: 260, eff: '+25% EXP for 2 days.', did: '+25% EXP · 2 days' },
+];
+
+const shell = (body, over) => `<div class="home"><div class="crop"><img src="../../public/sprites/home/shop.png" alt=""><span class="purse"><span class="plate">${ic('coins', 'c-gold')}1,420</span></span><span class="hp"><i></i></span></div>
+<div class="switch"><span class="on">Items</span><span>Services</span><span>Looks</span></div></div>
+<div class="scroll"><div class="banner"><span class="cloth">Potions</span></div><div class="rows">${body}</div></div>
+${over}
+<div class="tabbar"><span>${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span class="lit">${ic('store')}Shop</span><span>${ic('chevrons')}Talents</span><span>${ic('shield')}Hero</span></div>`;
+
+const row = (p, extra = '') => `<div class="panel row" data-id="${p.id}"><span class="sock"><img src="${ART(p.art)}" alt=""></span><div class="mid"><div class="name">${p.name}</div><div class="eff">${p.eff}</div></div><button class="buy">${ic('coins', 'c-gold')}${p.p}</button>${extra}</div>`;
+
+const OVER = {
+  A: (p) => `<div class="toastA" style="--c:${p.c}"><img src="${ART(p.art)}" alt=""><div class="t"><b>${p.name}</b><span style="color:${p.c}">${p.did}</span></div><i class="bar"></i></div>`,
+  B: () => '',
+  C: (p) => `<div class="ribbonC" style="--c:${p.c}"><img src="${ART(p.art)}" alt="">${p.name}<span>${p.did}</span></div>`,
+};
+
+const current = { A: POTIONS[0], B: POTIONS[0], C: POTIONS[1] };
+function render(id) {
+  const p = current[id];
+  const rows = POTIONS.map((x) => row(x, id === 'B' && x.id === p.id ? `<span class="float" style="--c:${x.c}"><img src="${ART(x.art)}" alt="">${x.did}</span>` : '')).join('');
+  const el = document.getElementById(id);
+  el.innerHTML = shell(rows, OVER[id](p));
+  el.querySelectorAll('.row').forEach((r) => r.querySelector('.buy').addEventListener('click', () => {
+    current[id] = POTIONS.find((x) => x.id === r.dataset.id);
+    play(id);
+  }));
+}
+function play(id) {
+  render(id);
+  const el = document.getElementById(id);
+  el.classList.remove('play', 'healed');
+  void el.offsetWidth;
+  el.classList.add('play');
+  if (current[id].id === 'draught') el.classList.add('healed');
+}
+['A', 'B', 'C'].forEach((id) => { render(id); setTimeout(() => play(id), 600); });
+document.querySelectorAll('.replay').forEach((b) => b.addEventListener('click', () => { if (current[b.dataset.for]) play(b.dataset.for); }));
+
+// D, E: the Services side
+const SEAL = (id) => `../../public/sprites/services/${id}.png`;
+const SCENE = (id) => `../../public/sprites/services/${id}-scene.png`;
+const servShell = (body, over, extra = '') => `<div class="home"><div class="crop"><img src="../../public/sprites/home/shop.png" alt=""><span class="purse"><span class="plate">${ic('coins', 'c-gold')}3,210</span></span></div>
+<div class="switch"><span>Items</span><span class="on">Services</span><span>Looks</span></div></div>
+<div class="scroll">${body}</div>${over}${extra}
+<div class="tabbar"><span>${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span class="lit">${ic('store')}Shop</span><span>${ic('chevrons')}Talents</span><span>${ic('shield')}Hero</span></div>`;
+const card = (id, name, eff, chg, price, next) => `<div class="panel feat"><div class="velvet"><img src="${SCENE(id)}" alt=""><span class="ribbon">2d left</span></div>
+<div class="body"><div class="name">${name}</div><div class="eff">${eff}</div>${chg ? `<div class="chg">${chg}</div>` : ''}<div class="foot"><button class="buy">${ic('coins', 'c-gold')}${price.toLocaleString('en-US')}</button></div></div>
+<div class="next"><img src="${SEAL(next[0])}" alt="">Next <b>${next[1]}</b><em>in 2d</em></div></div>`;
+const toast = (id, title, did) => `<div class="toastA" style="--c:var(--brass)"><img class="seal" src="${SEAL(id)}" alt=""><div class="t"><b>${title}</b><span style="color:var(--brass)">${did}</span></div><i class="bar"></i></div>`;
+
+let slots = 5;
+function renderD() {
+  const el = document.getElementById('D');
+  el.innerHTML = servShell(card('slot', 'Item slots', 'Increase item slots by one.', `${slots} → ${slots + 1} slots`, 700 + 140 * (slots - 4), ['overdrive', 'Overdrive']), toast('slot', 'Item slots', `${slots - 1} → ${slots} slots`));
+  el.querySelector('.feat .buy').addEventListener('click', () => { if (slots < 8) { slots += 1; playD(); } });
+}
+function playD() { renderD(); const el = document.getElementById('D'); el.classList.remove('play'); void el.offsetWidth; el.classList.add('play'); }
+
+let picked = 'Read';
+function renderE(open) {
+  const el = document.getElementById('E');
+  const pick = `<div class="pick ${open ? 'open' : ''}"><div class="box"><h3>Overdrive</h3>${['Read', 'Run', 'Stretch'].map((n) => `<button data-n="${n}">${n}</button>`).join('')}</div></div>`;
+  el.innerHTML = servShell(card('overdrive', 'Overdrive', 'One skill can be used 2 extra times a period.', '', 400, ['reroll', 'Reroll']), toast('overdrive', 'Overdrive', `${picked} · 2 extra uses`), pick);
+  el.querySelector('.feat .buy').addEventListener('click', () => renderE(true));
+  el.querySelectorAll('.pick button').forEach((b) => b.addEventListener('click', () => { picked = b.dataset.n; playE(); }));
+}
+function playE() { renderE(false); const el = document.getElementById('E'); el.classList.remove('play'); void el.offsetWidth; el.classList.add('play'); }
+
+renderD(); renderE(false);
+setTimeout(() => { playD(); playE(); }, 600);
+document.querySelectorAll('.replay').forEach((b) => b.addEventListener('click', () => { if (b.dataset.for === 'D') playD(); if (b.dataset.for === 'E') playE(); }));
+</script>
+</body>
+</html>

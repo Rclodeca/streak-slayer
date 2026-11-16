@@ -1,23 +1,25 @@
 <script setup lang="ts">
-import { Gem, Store } from 'lucide-vue-next';
+import { HandCoins, Shirt, Sword } from 'lucide-vue-next';
 import { useTabStore } from '../../store/tabStore';
 import type { ShopSide } from '../../store/tabStore';
-import ShopWares from './ShopWares.vue';
-import VaultWares from './VaultWares.vue';
+import ShopItems from './ShopItems.vue';
+import ShopServices from './ShopServices.vue';
+import ShopVault from './ShopVault.vue';
 
-// Under the shopkeeper's scene (docs/mockups/shop-tab-2.html, A's UI): a plain
-// Shop | Vault switch, then that side's wares. The Shop sells for gold, the
-// Vault for gems.
+// Under the shopkeeper's scene (docs/mockups/shop-tab-3.html, A): a plain
+// Items | Services | Looks switch, then that side's wares. The sides split by
+// what's bought, not by coin: each price shows its own, gold or gems.
 const tabStore = useTabStore();
-const SIDES: { id: ShopSide; label: string; icon: typeof Store }[] = [
-  { id: 'shop', label: 'Shop', icon: Store },
-  { id: 'vault', label: 'Vault', icon: Gem },
+const SIDES: { id: ShopSide; label: string; icon: typeof Sword }[] = [
+  { id: 'items', label: 'Items', icon: Sword },
+  { id: 'services', label: 'Services', icon: HandCoins },
+  { id: 'vault', label: 'Looks', icon: Shirt },
 ];
 </script>
 
 <template>
   <div class="shop-counter">
-    <div class="shop-switch" role="tablist" aria-label="Shop or Vault">
+    <div class="shop-switch" role="tablist" aria-label="Items, Services or Looks">
       <button
         v-for="side in SIDES"
         :key="side.id"
@@ -28,11 +30,12 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Store }[] = [
         :aria-selected="tabStore.shopSide === side.id"
         @click="tabStore.selectShopSide(side.id)"
       >
-        <component :is="side.icon" :size="16" aria-hidden="true" />{{ side.label }}
+        <component :is="side.icon" :size="15" aria-hidden="true" />{{ side.label }}
       </button>
     </div>
-    <ShopWares v-if="tabStore.shopSide === 'shop'" />
-    <VaultWares v-else />
+    <ShopItems v-if="tabStore.shopSide === 'items'" />
+    <ShopServices v-else-if="tabStore.shopSide === 'services'" />
+    <ShopVault v-else />
   </div>
 </template>
 
@@ -46,7 +49,8 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Store }[] = [
 
 .shop-switch {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
   padding: 3px;
 }
 
@@ -54,9 +58,10 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Store }[] = [
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
   min-height: 44px;
-  padding: 0;
+  padding: 0 2px;
   border: 0;
   background: transparent;
   -webkit-tap-highlight-color: transparent;

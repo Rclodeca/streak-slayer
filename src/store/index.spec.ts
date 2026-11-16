@@ -161,7 +161,7 @@ describe('store persistence smoke test', () => {
     expect('expGain' in second.characterStore.character.starterStats).toBe(false);
   });
 
-  it('turns the events\' slots on an old save into slot steps and drops the pending picks', () => {
+  it('turns the events\' slots on an old save into bought slots and drops the pending picks', () => {
     const rng = createRng(1);
     const staleSave = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -173,7 +173,7 @@ describe('store persistence smoke test', () => {
 
     const { characterStore } = initializeStores();
 
-    expect(characterStore.character.slotUpgrades).toBe(1);
+    expect(characterStore.character.slotUpgrades).toBe(2);
     const raw = characterStore.character as unknown as Record<string, unknown>;
     expect(raw.takenEventIds).toBeUndefined();
     expect(raw.pendingEventPicks).toBeUndefined();

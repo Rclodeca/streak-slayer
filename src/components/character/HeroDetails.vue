@@ -132,7 +132,7 @@ const listedItems = computed(() => (props.page ? (selected.value ? [selected.val
             <template v-else>{{ stat.value }}</template>
             <span v-if="stat.gain" class="tile-gain">{{ stat.gain }}</span>
           </span>
-          <span v-if="stat.reason || stat.note" class="tile-note">{{ stat.reason ?? stat.note }}</span>
+          <span v-if="stat.reason || stat.note" class="tile-note">{{ [stat.reason, stat.note].filter(Boolean).join(' · ') }}</span>
         </div>
       </div>
     </section>

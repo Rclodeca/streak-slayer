@@ -4,14 +4,13 @@ import type { ItemDef } from '../../game-engine';
 import ShopBuyButton from './ShopBuyButton.vue';
 import ShopItemLines from './ShopItemLines.vue';
 
-// The day's piece on velvet (docs/mockups/shop-tab-2.html): an epic or relic on
-// the days the shop has one, else its rare. The art is drawn at 3 CSS px per
-// art pixel (96px), whole device pixels on 2x and 3x screens.
-// The Vault passes its own `ribbon`, `keep` line and gem `currency`.
-const props = defineProps<{ item: ItemDef; price: number; buyable: boolean; short?: boolean; label?: string; warn?: string; ribbon?: string; keep?: string; currency?: 'gold' | 'gems' }>();
+// The day's headline on velvet (docs/mockups/shop-tab-2.html): the best item
+// of the stock, in gold. The art is drawn at 3 CSS px per art pixel (96px),
+// whole device pixels on 2x and 3x screens.
+const props = defineProps<{ item: ItemDef; price: number; buyable: boolean; short?: boolean; label?: string; currency?: 'gold' | 'gems' }>();
 defineEmits<{ buy: [] }>();
 const baseUrl = import.meta.env.BASE_URL;
-const ribbonText = computed(() => props.ribbon ?? `${props.item.rarity.charAt(0).toUpperCase()}${props.item.rarity.slice(1)} of the day`);
+const ribbonText = computed(() => `${props.item.rarity.charAt(0).toUpperCase()}${props.item.rarity.slice(1)}`);
 </script>
 
 <template>
@@ -23,9 +22,7 @@ const ribbonText = computed(() => props.ribbon ?? `${props.item.rarity.charAt(0)
     <div class="featured-body">
       <strong class="shop-name">{{ item.name }}</strong>
       <ShopItemLines :item="item" />
-      <p v-if="warn" class="shop-warn">{{ warn }}</p>
       <div class="featured-foot">
-        <span class="featured-keep">{{ keep ?? 'Gone when you fall' }}</span>
         <ShopBuyButton :price="price" :buyable="buyable" :short="short" :label="label" :currency="currency" @buy="$emit('buy')" />
       </div>
     </div>
@@ -77,12 +74,9 @@ const ribbonText = computed(() => props.ribbon ?? `${props.item.rarity.charAt(0)
 .featured-foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
   margin-top: 4px;
 }
 
-.shop-warn {
-  margin: 0;
-}
 </style>

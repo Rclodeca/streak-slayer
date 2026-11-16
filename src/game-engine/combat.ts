@@ -10,7 +10,7 @@ import { characterGold } from './gold';
 import { crowdingFactor, rerollAllDamageTypes, resetLevelRewards, skillBaseDamage } from './habits';
 import { activeHealBoost, addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { bumpCritStreak, bumpSpellweave, critMultiplierFor, effectDamageMultiplier, effectUsedToday, hasItemEffect, isForcedCrit, stampEffectDay, starfallReady } from './itemEffects';
-import { itemBonusPercent, itemFlatBonus, rollItemDrops, rollsBossDrop, rollScavengerDrop } from './items';
+import { itemBonusPercent, itemFlatBonus, rollItemDrops, rollScavengerDrop } from './items';
 import type { ItemDef } from './items';
 import type { Rng } from './rng';
 import { bossKillHealPct, dodgeChancePct, healsCanCrit, HEAL_CRIT_MULTIPLIER, lastStandFactor, milestoneExpMultiplier, weeklyMightMultiplier } from './talents';
@@ -557,7 +557,7 @@ export function resolveBossDefeatIfDead(
   // Second Wind heals on top of the Lantern, still capped at max.
   const windHealth = Math.min(lanternHealth + maxHealth * (bossKillHealPct(leveled) / 100), maxHealth);
   const talentHealed = windHealth - lanternHealth;
-  const dropped = rollsBossDrop(boss.index, rng) ? rollItemDrops(leveled, boss.index, rng) : [];
+  const dropped = rollItemDrops(leveled, rng);
   // Scavenger: one more roll for one extra item, past the usual cap.
   const itemsDropped = [...dropped, ...rollScavengerDrop(leveled, dropped, rng)];
   const goldReward = bossGold(boss.index);

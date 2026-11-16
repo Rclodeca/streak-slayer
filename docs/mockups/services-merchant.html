@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Services offers</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Making services enticing: show the value on the player's own stuff, and offer the optional ones only some of the
+   time. Pixel-cut Moonlit only. Seals are the built ones in public/sprites/services/. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 22px; max-width: 780px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 26px; justify-content: center; align-items: flex-start; }
+.col { width: 390px; max-width: 100%; flex: none; display: flex; flex-direction: column; gap: 14px; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; }
+.col > p { margin: 0; min-height: 110px; font-size: 15px; }
+.cap { font: 700 10px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: #8a8f9c; margin: 0 4px -8px; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #7d8190; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --well: #0a0c12;
+  --gold: #f0c64e; --gem: #6fd6ea; --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --steel: #a8a092;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  background: var(--bg); border: 1px solid #000; border-radius: 26px; padding: 16px 12px 20px; color: var(--text);
+  box-shadow: 0 18px 44px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 12px;
+}
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; color: inherit; }
+.c-gold { color: var(--gold); } .c-gem { color: var(--gem); } .c-phys { color: var(--phys); } .c-magic { color: var(--magic); } .c-heal { color: var(--heal); } .c-true { color: var(--true); }
+
+.banner { display: flex; align-items: center; height: 38px; flex: none; }
+.banner .medal { width: 38px; height: 38px; flex: none; z-index: 1; display: grid; place-items: center; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--brass); font-size: 20px; }
+.banner .cloth { margin-left: -4px; flex: 1; height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px 0 14px; background: #202a40; color: var(--ink); font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%); box-shadow: inset 0 2px 0 var(--hi); }
+.banner .cloth em { font: 700 12px 'Alegreya Sans'; letter-spacing: .04em; color: var(--dim); font-style: normal; text-transform: none; display: inline-flex; align-items: center; gap: 4px; }
+.banner.wander .cloth { background: #2e2338; }
+.banner.wander .medal { color: #d9a8ff; }
+
+.panel { background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 7px; }
+.mid { flex: 1; min-width: 0; }
+.name { font: 700 16px/1.15 'Alegreya', serif; color: var(--ink); }
+.eff { font-size: 12.5px; color: #cdbf9a; line-height: 1.25; }
+.seal { width: 48px; height: 48px; flex: none; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0,0,0,.55)); }
+
+/* the value on your own stuff */
+.on { margin-top: 4px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; font-size: 12.5px; color: var(--text); }
+.on b { color: var(--ink); font-weight: 700; }
+.on .from { color: var(--dim); }
+.on .to { font-weight: 800; }
+.on .arr { color: var(--brass); font-size: 12px; }
+.on .i { font-size: 12px; }
+
+.buy { border: 0; cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 44px; min-width: 76px; padding: 4px 10px; background: #2a3348; color: var(--ink); clip-path: var(--px2);
+  box-shadow: inset 2px 2px 0 #4a5672, inset -2px -4px 0 #10141e; font: 700 15px/1 'Alegreya', serif; }
+.buy span { display: inline-flex; align-items: center; gap: 4px; }
+.buy .i { font-size: 13px; }
+.buy .was { font: 700 11px 'Alegreya Sans'; color: var(--dim); text-decoration: line-through; }
+.buy.gem { background: #1d3a4a; box-shadow: inset 2px 2px 0 #3c6a80, inset -2px -4px 0 #0a1820; }
+.buy.wander { background: #3a2c4a; box-shadow: inset 2px 2px 0 #634a7c, inset -2px -4px 0 #170f20; }
+
+/* B: the wanderer */
+.toast { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #241b2e; clip-path: var(--px3); box-shadow: inset 2px 2px 0 #4a3a5c, inset -2px -2px 0 #0e0a14; }
+.toast .i { font-size: 22px; color: #d9a8ff; }
+.toast .t { flex: 1; font: 700 15px/1.2 'Alegreya', serif; color: var(--ink); }
+.toast .t small { display: block; font: 500 12.5px 'Alegreya Sans'; color: var(--text); }
+.tabbar { display: flex; justify-content: space-around; padding: 8px 0 0; border-top: 2px solid #141824; font-size: 11px; color: var(--dim); }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; }
+.tabbar .i { font-size: 20px; }
+.tabbar .lit { color: var(--ink); }
+.tabbar .pip { position: absolute; top: -2px; right: 2px; width: 8px; height: 8px; background: #d9a8ff; box-shadow: 0 0 6px #d9a8ff; }
+.wcard { padding: 10px 10px 10px; display: flex; flex-direction: column; gap: 8px; background: #221a2c; box-shadow: inset 2px 2px 0 #463656, inset -2px -2px 0 #0e0a14; }
+.wcard .say { font: 600 14px/1.25 'Alegreya', serif; color: #e8dcf5; padding: 0 2px; }
+.wcard .row { background: #2a2136; }
+
+/* C: today's service */
+.today { padding: 0; overflow: hidden; }
+.today .velvet { height: 112px; display: grid; place-items: center; position: relative; background: radial-gradient(ellipse at 50% 60%, #3a2f1c 0%, #0b0e18 72%); }
+.today .velvet img { width: 64px; height: 64px; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)); }
+.today .ribbon { position: absolute; left: 10px; top: 10px; padding: 3px 8px; background: #e9dcc0; color: #2a2014; clip-path: var(--px2); font: 700 11px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; }
+.today .left { position: absolute; right: 10px; top: 10px; font: 700 11px 'Alegreya Sans'; color: var(--brass); display: inline-flex; gap: 4px; align-items: center; }
+.today .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+.today .foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 4px; }
+.week { display: flex; gap: 4px; align-items: center; font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.week i { width: 22px; height: 22px; display: grid; place-items: center; background: #11151f; clip-path: var(--px2); font-style: normal; color: #4a5068; font-size: 12px; }
+.week i img { width: 16px; height: 16px; image-rendering: pixelated; }
+.week i.now { box-shadow: inset 0 0 0 2px var(--brass); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Services — making them worth a look</h1>
+  <p class="lede">Item slots, Streak Freeze and Gold Pouch stay on the shelf in all three: people plan around them. <b>A</b> is the one change I'd make no matter what, and it's in B and C too. B and C are two ways to offer the fun services only some of the time. Numbers are stand-ins.</p>
+  <div class="grid">
+    <div class="col"><h2>A · On your stuff</h2><p>Every row shows what it would do to your own best target, before and after. A new player gets "Steel Sword +5% → +10%," not "×2 one worn item's bonuses." All six stay on the shelf every day.</p><div class="phone" id="A"></div></div>
+    <div class="col"><h2>B · The Wanderer (recommended)</h2><p>After a boss falls, a wanderer may come to the shop with two services, cheaper, for a day. The Shop tab gets a pip. It ties services to winning fights, and the visit is an event, not a list.</p>
+      <div class="cap">Just after a boss falls</div><div class="phone" id="B1"></div>
+      <div class="cap">The Services side while the Wanderer is in</div><div class="phone" id="B2"></div></div>
+    <div class="col"><h2>C · Service of the day</h2><p>One of the fun services is on the velvet each day, the way the featured relic is, and the strip shows the week's turn. Easy to read, but it needs a bigger pool than three to feel like a turn.</p><div class="phone" id="C"></div></div>
+  </div>
+</div>
+<script>
+const ICONS = {
+  coins: '<path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"/><path d="M15 6h1v4"/><path d="m6.134 14.768.866-.5 2 3.464"/><circle cx="16" cy="8" r="6"/>',
+  gem: '<path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>',
+  'hand-coins': '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>',
+  footprints: '<path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  sword: '<path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5"/>',
+  wand: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  heart: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  scroll: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  store: '<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
+  chevrons: '<path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+};
+const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const SEAL = (id) => `../../public/sprites/services/${id}.png`;
+const fmt = (n) => n.toLocaleString('en-US');
+
+// what each service would do to the hero's own best target
+const ON = {
+  reroll: `<b>Doomscroll</b> <span class="from">${ic('heart', 'c-heal')}Heal</span> ${ic('arrow', 'arr')} <span class="to c-true">${ic('zap')}?</span> <span class="from">a new type</span>`,
+  overdrive: `<b>Read</b> <span class="from">1 use</span> ${ic('arrow', 'arr')} <span class="to c-true">3 uses</span> <span class="from">a day</span>`,
+  enchant: `<b>Stormcaller Staff</b> <span class="from">${ic('wand', 'c-magic')}+30%</span> ${ic('arrow', 'arr')} <span class="to c-magic">+60%</span> <span class="from">Magic</span>`,
+  slot: `<span class="from">6 slots</span> ${ic('arrow', 'arr')} <span class="to c-true">8 slots</span>`,
+  freeze: `<span class="from">Pick a skill and the days it rests.</span>`,
+  pouch: `<span class="from">You have 1,540</span> ${ic('arrow', 'arr')} <span class="to c-gold">2,540</span>`,
+};
+const S = {
+  reroll: { name: 'Reroll', eff: "Reroll one skill's damage type.", cur: 'g', p: 150 },
+  overdrive: { name: 'Overdrive', eff: 'One skill can be used 2 extra times a period.', cur: 'g', p: 400 },
+  enchant: { name: 'Enchant', eff: "×2 one worn item's bonuses.", cur: 'g', p: 900 },
+  slot: { name: 'Item slots', eff: 'Two more item slots.', cur: 'g', p: 2400 },
+  freeze: { name: 'Streak Freeze', eff: "One skill rests on the days you pick. Its streak holds, but doesn't grow.", cur: 'm', p: 25 },
+  pouch: { name: 'Gold Pouch', eff: '1,000 gold, now. Once a day.', cur: 'm', p: 50 },
+};
+const coin = (cur) => (cur === 'g' ? ic('coins', 'c-gold') : ic('gem', 'c-gem'));
+const buy = (s, opts = {}) => `<button class="buy ${s.cur === 'm' ? 'gem' : ''} ${opts.cls || ''}">${opts.was ? `<span class="was">${fmt(opts.was)}</span>` : ''}<span>${coin(s.cur)}${fmt(opts.p ?? s.p)}</span></button>`;
+const row = (id, opts = {}) => {
+  const s = S[id];
+  return `<div class="panel row"><img class="seal" src="${SEAL(id)}" alt=""><div class="mid"><div class="name">${s.name}</div>${opts.noEff ? '' : `<div class="eff">${s.eff}</div>`}<div class="on">${ON[id]}</div></div>${buy(s, opts)}</div>`;
+};
+const banner = (t, icon, extra = '', cls = '') => `<div class="banner ${cls}"><span class="medal">${ic(icon)}</span><span class="cloth">${t}${extra ? `<em>${extra}</em>` : ''}</span></div>`;
+const tabbar = (pip) => `<div class="tabbar"><span>${ic('swords')}Skills</span><span>${ic('scroll')}Quests</span><span class="${pip ? 'lit' : ''}">${pip ? '<i class="pip"></i>' : ''}${ic('store')}Shop</span><span>${ic('chevrons')}Talents</span><span>${ic('shield')}Hero</span></div>`;
+
+document.getElementById('A').innerHTML = `${banner('Services', 'hand-coins')}<div class="rows">${['reroll', 'overdrive', 'enchant', 'slot', 'freeze', 'pouch'].map((id) => row(id)).join('')}</div>`;
+
+document.getElementById('B1').innerHTML = `<div class="toast">${ic('footprints')}<div class="t">A wanderer came to the shop.<small>Gone by tomorrow.</small></div></div>${tabbar(true)}`;
+document.getElementById('B2').innerHTML = `<div class="panel wcard">${banner('The Wanderer', 'footprints', `${ic('clock')}14h`, 'wander')}
+<div class="say">"Not from around here. Neither is this."</div>
+<div class="rows">${row('enchant', { was: 900, p: 650, cls: 'wander' })}${row('overdrive', { was: 400, p: 300, cls: 'wander' })}</div></div>
+${banner('Services', 'hand-coins')}<div class="rows">${['slot', 'freeze', 'pouch'].map((id) => row(id)).join('')}</div>`;
+
+const week = ['reroll', 'overdrive', 'enchant', null, null, null, null];
+document.getElementById('C').innerHTML = `${banner('Services', 'hand-coins')}
+<div class="panel today"><div class="velvet"><span class="ribbon">Today's service</span><span class="left">${ic('clock')}9h left</span><img src="${SEAL('overdrive')}" alt=""></div>
+<div class="body"><div class="name" style="font-size:19px">Overdrive</div><div class="eff">${S.overdrive.eff}</div><div class="on">${ON.overdrive}</div>
+<div class="foot"><div class="week">${week.map((id, i) => `<i class="${i === 1 ? 'now' : ''}">${id && i <= 1 ? `<img src="${SEAL(id)}" alt="">` : '?'}</i>`).join('')}</div>${buy(S.overdrive)}</div></div></div>
+<div class="rows">${['slot', 'freeze', 'pouch'].map((id) => row(id)).join('')}</div>`;
+</script>
+</body>
+</html>

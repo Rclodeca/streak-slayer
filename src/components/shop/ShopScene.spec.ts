@@ -21,12 +21,16 @@ describe('ShopScene', () => {
     expect(wrapper.classes()).not.toContain('vaulted');
   });
 
-  it('Vault cools the scene and changes his line', async () => {
+  it('Services changes his line, and the Vault cools the scene too', async () => {
     const wrapper = mount(ShopScene);
+    useTabStore().selectShopSide('services');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.classes()).not.toContain('vaulted');
+    expect(wrapper.find('.shop-say .line').text()).toBe('Something worth changing?');
     useTabStore().selectShopSide('vault');
     await wrapper.vm.$nextTick();
     expect(wrapper.classes()).toContain('vaulted');
-    expect(wrapper.find('.shop-say .line').text()).toBe('Gems. Now we talk.');
+    expect(wrapper.find('.shop-say .line').text()).toBe('New looks. Same you.');
   });
 
   it('the purse shows gold and gems', () => {

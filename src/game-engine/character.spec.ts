@@ -571,15 +571,15 @@ describe('migrateLevelEvents', () => {
   const withOld = (old: Record<string, unknown>): Character => ({ ...createCharacter(createRng(1)), ...old }) as Character;
   const has = (c: Character, key: string) => key in (c as unknown as Record<string, unknown>);
 
-  it('turns the item-slots events taken into slot steps and drops the event fields', () => {
+  it('turns the item-slots events taken (two slots each) into bought slots and drops the event fields', () => {
     const one = migrateLevelEvents(withOld({ takenEventIds: ['special', 'item-slots'], pendingEventPicks: 2, offeredEventIds: ['heal'], offeredChallengeId: 'resist', sideQuestPicksMissed: 3, trialsUnlocked: true }));
-    expect(one.slotUpgrades).toBe(1);
+    expect(one.slotUpgrades).toBe(2);
     for (const key of ['takenEventIds', 'pendingEventPicks', 'offeredEventIds', 'offeredChallengeId', 'sideQuestPicksMissed', 'trialsUnlocked']) expect(has(one, key)).toBe(false);
-    expect(migrateLevelEvents(withOld({ takenEventIds: ['item-slots', 'item-slots-2'] })).slotUpgrades).toBe(2);
+    expect(migrateLevelEvents(withOld({ takenEventIds: ['item-slots', 'item-slots-2'] })).slotUpgrades).toBe(4);
     expect(migrateLevelEvents(withOld({ takenEventIds: ['special'] })).slotUpgrades).toBe(0);
   });
 
-  it('keeps slot steps already bought in the Shop', () => {
+  it('keeps slots already bought in the Shop', () => {
     expect(migrateLevelEvents(withOld({ takenEventIds: ['item-slots'], slotUpgrades: 2 })).slotUpgrades).toBe(2);
   });
 

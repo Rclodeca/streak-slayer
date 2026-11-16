@@ -14,6 +14,7 @@
     "sprites": "node scripts/sprites/rebuild-sprites.cjs",
     "boss-art": "node scripts/boss-art/build.cjs",
     "hero-art": "node scripts/hero-art/build.cjs",
+    "service-art": "node scripts/service-art/build.cjs",
     "item-catalog-page": "vite-node scripts/item-catalog-page.ts -- docs/mockups/item-catalog.html"
   },
   "dependencies": {

@@ -6,11 +6,12 @@ import { useItemDropQueue } from '../../composables/useItemDropQueue';
 import { useCharacterStore } from '../../store/characterStore';
 import ItemHero from './ItemHero.vue';
 import ItemSparks from './ItemSparks.vue';
+import ShopBuyButton from '../shop/ShopBuyButton.vue';
 import Modal from './Modal.vue';
 import StatIcon from './StatIcon.vue';
 import { BOOST_STAT_ICON } from './statIcons';
 
-const { current, droppedBy, bought, dismiss, replace } = useItemDropQueue();
+const { current, droppedBy, offer, isFull, accept, dismiss, replace } = useItemDropQueue();
 // A kill's drops wait until the boss has fallen on screen.
 const { celebrating } = useCelebration();
 const characterStore = useCharacterStore();
@@ -31,14 +32,19 @@ const doubleFactor = (itemId: string) => itemDoubleFactor(characterStore.charact
 const isCurrentEquipped = computed(
   () => current.value !== null && characterStore.character.equippedItemIds.includes(current.value.id),
 );
+
+// A shop's item for sale (see useItemDropQueue): with a slot open it asks to
+// confirm; with every slot full it lists the slots to replace, and pays on
+// Replace. Closing it, or Cancel, costs nothing.
+const confirming = computed(() => offer.value !== null && !isFull.value);
 </script>
 
 <template>
   <Modal
     :model-value="current !== null && !celebrating"
-    :dismissible="isCurrentEquipped"
+    :dismissible="isCurrentEquipped || offer !== null"
     :scroll-key="current"
-    :title="bought ? 'Bought!' : 'Item found!'"
+    :title="offer ? 'Purchase Item' : 'Item found!'"
     max-width="460px"
     @update:model-value="dismiss"
   >
@@ -49,7 +55,15 @@ const isCurrentEquipped = computed(
         <ItemHero :item="current" />
       </div>
 
-      <template v-if="!isCurrentEquipped">
+      <div v-if="confirming && offer" class="offer-acts">
+        <button type="button" class="drop-button offer-cancel" @click="dismiss">Cancel</button>
+        <ShopBuyButton verb="Buy" :price="offer.price" :buyable="true" :currency="offer.currency" @buy="accept" />
+      </div>
+
+      <template v-else-if="!isCurrentEquipped">
+        <p v-if="offer" class="offer-price">
+          <StatIcon :name="offer.currency" :size="14" />{{ offer.price.toLocaleString('en-US') }}
+        </p>
         <p class="replace-label">Replace</p>
         <ul class="replace-list">
           <li
@@ -90,8 +104,8 @@ const isCurrentEquipped = computed(
     </template>
 
     <!-- Pinned below the list, so Drop is in reach without scrolling past every row. -->
-    <template v-if="current && !isCurrentEquipped" #footer>
-      <button type="button" class="drop-button" @click="dismiss">Drop {{ current.name }}</button>
+    <template v-if="current && !isCurrentEquipped && !confirming" #footer>
+      <button type="button" class="drop-button" @click="dismiss">{{ offer ? 'Cancel' : `Drop ${current.name}` }}</button>
     </template>
   </Modal>
 </template>
@@ -311,4 +325,27 @@ const isCurrentEquipped = computed(
   border: 1px solid var(--border);
   color: var(--text-h);
 }
+
+.offer-acts {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.offer-acts > * {
+  width: 100%;
+  min-height: 44px;
+}
+
+.offer-price {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0.75rem 0 0;
+  color: var(--text-h);
+  font-weight: 700;
+}
+
 </style>

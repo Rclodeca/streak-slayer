@@ -12,8 +12,13 @@
 // remaining slots before the forced-choice popup ever appears.
 //
 // A boss kill's drops carry the boss's name (`droppedBy`) so the popup can
-// say where they came from; event, quest and backfilled drops have none. A
-// shop purchase is marked `bought`, so the popup says so instead.
+// say where they came from; event, quest and backfilled drops have none.
+//
+// A shop's item comes as an `offer`: not yet paid for or owned, and never
+// auto-equipped. With a slot open the popup asks to confirm, and `accept()`
+// pays and equips it; with every slot full, `replace(oldItemId)` pays and
+// swaps it in. Turning it down (`dismiss()`) costs nothing and leaves it in
+// the shop.
 
 import { computed, ref } from 'vue';
 import { maxEquipSlots } from '../game-engine';
@@ -21,7 +26,14 @@ import type { ItemDef } from '../game-engine';
 import { useCharacterStore } from '../store/characterStore';
 import { useDeathScreen } from './useDeathScreen';
 
-const queue = ref<{ item: ItemDef; droppedBy?: string; bought?: boolean }[]>([]);
+/** A shop's item for sale. `pay` takes the price and hands the item over, false if it no longer can. */
+export interface ItemOffer {
+  price: number;
+  currency: 'gold' | 'gems';
+  pay: () => boolean;
+}
+
+const queue = ref<{ item: ItemDef; droppedBy?: string; offer?: ItemOffer }[]>([]);
 
 export function useItemDropQueue() {
   const characterStore = useCharacterStore();
@@ -32,35 +44,60 @@ export function useItemDropQueue() {
   // screen. The run is over, so `clear()` (called on restart) discards them.
   const current = computed<ItemDef | null>(() => (isDead.value ? null : queue.value[0]?.item ?? null));
   const droppedBy = computed<string | null>(() => (isDead.value ? null : queue.value[0]?.droppedBy ?? null));
-  const bought = computed(() => !isDead.value && queue.value[0]?.bought === true);
+  const offer = computed<ItemOffer | null>(() => (isDead.value ? null : queue.value[0]?.offer ?? null));
   const isFull = computed(() => characterStore.character.equippedItemIds.length >= maxEquipSlots(characterStore.character));
 
   function processFront() {
     const front = current.value;
-    if (front && !isFull.value) {
+    if (front && !offer.value && !isFull.value) {
       characterStore.equipItem(front.id);
     }
   }
 
-  function enqueueDrops(items: ItemDef[], droppedBy?: string, bought?: boolean) {
-    queue.value.push(...items.map((item) => ({ item, droppedBy, ...(bought && { bought }) })));
+  function next() {
+    queue.value.shift();
     processFront();
+  }
+
+  function enqueueDrops(items: ItemDef[], droppedBy?: string) {
+    queue.value.push(...items.map((item) => ({ item, droppedBy })));
+    processFront();
+  }
+
+  /** Offers a shop's item. False (nothing queued) if that item is already on offer. */
+  function offerItem(item: ItemDef, itemOffer: ItemOffer): boolean {
+    if (queue.value.some((entry) => entry.offer && entry.item.id === item.id)) return false;
+    queue.value.push({ item, offer: itemOffer });
+    processFront();
+    return true;
+  }
+
+  /** Pays for the offered item and equips it into an open slot. */
+  function accept() {
+    const front = current.value;
+    if (!front || !offer.value) return;
+    if (!isFull.value && offer.value.pay()) characterStore.equipItem(front.id);
+    next();
   }
 
   function dismiss() {
     const front = current.value;
     // An unequipped front item was declined (no slot, player chose to drop
-    // it): it's gone, and goes back into the drop pool.
-    if (front && !characterStore.character.equippedItemIds.includes(front.id)) {
+    // it): it's gone, and goes back into the drop pool. An offer was never
+    // owned, so there's nothing to give back.
+    if (front && !offer.value && !characterStore.character.equippedItemIds.includes(front.id)) {
       characterStore.discardItem(front.id);
     }
-    queue.value.shift();
-    processFront();
+    next();
   }
 
   function replace(oldItemId: string) {
     const front = current.value;
     if (!front) return;
+    if (offer.value && !offer.value.pay()) {
+      next();
+      return;
+    }
     characterStore.discardItem(oldItemId);
     characterStore.equipItem(front.id);
     queue.value.shift();
@@ -71,5 +108,5 @@ export function useItemDropQueue() {
     queue.value = [];
   }
 
-  return { current, droppedBy, bought, isFull, enqueueDrops, dismiss, replace, clear };
+  return { current, droppedBy, offer, isFull, enqueueDrops, offerItem, accept, dismiss, replace, clear };
 }

@@ -1,21 +1,17 @@
-// The Vault run against the stores (rules in game-engine/vault.ts and
-// freeze.ts): draws the window's stock and buys its items, the Gold Pouch and
-// a skill's streak freeze with the account's gems. A bought item goes through
-// the drop popup like the gold shop's, so it's equipped, swapped in or dropped
-// at once (there's no inventory).
+// The gem services run against the stores (rules in game-engine/vault.ts and
+// freeze.ts): the Gold Pouch and a skill's streak freeze, bought with the
+// account's gems. Each buy says what it did in a toast: the gold the pouch
+// paid, or which skill rests and when.
 
 import { computed } from 'vue';
-import { buyFreeze as buyFreezeRule, buyPouch as buyPouchRule, buyVaultWare, createRng, dailyPeriodKey, pouchState, stockVault } from '../game-engine';
-import type { VaultStock } from '../game-engine';
+import { addDaysToDayKey, buyFreeze as buyFreezeRule, buyPouch as buyPouchRule, dailyPeriodKey, formatDayKey, pouchState } from '../game-engine';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useDebugClockStore } from '../store/debugClockStore';
 import { useHabitStore } from '../store/habitStore';
-import { useItemDropQueue } from './useItemDropQueue';
-
-const rng = createRng();
+import { useToast } from './useToast';
 
 export function useVault() {
   const characterStore = useCharacterStore();
@@ -24,7 +20,7 @@ export function useVault() {
   const debugClockStore = useDebugClockStore();
   const activityLogStore = useActivityLogStore();
   const habitStore = useHabitStore();
-  const { enqueueDrops } = useItemDropQueue();
+  const toast = useToast();
 
   /** Today's key, read fresh. `dayTick` makes a computed reading it follow a real day turnover. */
   function today(): string {
@@ -32,24 +28,7 @@ export function useVault() {
     return dailyPeriodKey(debugClockStore.now());
   }
   const todayKey = computed(today);
-  const stock = computed<VaultStock | null>(() => characterStore.character.vault ?? null);
   const pouch = computed(() => pouchState(characterStore.character, accountStore.account.gems, bossStore.boss.index, todayKey.value));
-
-  /** Draws this window's stock if the character has none for it (first open, a new window, a new run). */
-  function ensureStock(): void {
-    const stocked = stockVault(characterStore.character, today(), rng);
-    if (stocked !== characterStore.character) characterStore.setCharacter(stocked);
-  }
-
-  /** Buys a Vault item and hands it to the drop popup. False (nothing spent) if it can't be bought. */
-  function buy(itemId: string): boolean {
-    const result = buyVaultWare(characterStore.character, accountStore.account.gems, itemId);
-    if (!result || !accountStore.spendGems(result.gemsSpent)) return false;
-    characterStore.setCharacter(result.character);
-    enqueueDrops([result.item], undefined, true);
-    activityLogStore.addEntry({ kind: 'vault-bought', name: result.item.name, gems: result.gemsSpent });
-    return true;
-  }
 
   /** Buys the Gold Pouch. False (nothing spent) unless its row reads `buy`. */
   function buyPouch(): boolean {
@@ -57,6 +36,7 @@ export function useVault() {
     if (!result || !accountStore.spendGems(result.gemsSpent)) return false;
     characterStore.setCharacter(result.character);
     activityLogStore.addEntry({ kind: 'vault-bought', name: 'Gold Pouch', gems: result.gemsSpent, gold: result.gold });
+    toast.show({ art: 'services/pouch', title: 'Gold Pouch', text: `+${result.gold.toLocaleString('en-US')} gold`, tone: 'var(--icon-gold)' });
     return true;
   }
 
@@ -67,8 +47,11 @@ export function useVault() {
     if (!habit || !result || !accountStore.spendGems(result.gemsSpent)) return false;
     habitStore.updateHabit(result.habit);
     activityLogStore.addEntry({ kind: 'freeze-bought', habitName: habit.name, fromDayKey, count, period: habit.period, gems: result.gemsSpent });
+    const lastKey = addDaysToDayKey(fromDayKey, (habit.period === 'weekly' ? 7 : 1) * count - 1);
+    const span = lastKey === fromDayKey ? formatDayKey(fromDayKey) : `${formatDayKey(fromDayKey)} – ${formatDayKey(lastKey)}`;
+    toast.show({ art: 'services/freeze', title: 'Streak Freeze', text: `${habit.name} · ${span}`, tone: 'var(--icon-arcane)' });
     return true;
   }
 
-  return { stock, todayKey, ensureStock, buy, pouch, buyPouch, buyFreeze };
+  return { todayKey, pouch, buyPouch, buyFreeze };
 }

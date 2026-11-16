@@ -67,6 +67,155 @@ Four runs to support five fresh Skills tab looks (spellbook rows, hotbar, shrink
 - Result: worked as asked. 16 per step in the order written: single slashes 01-16, crossed slashes 17-32, crescent strikes 33-48, explosions 49-64 (64 nearly empty, very dark). All filled squares on a dark red-black ground, red, orange and cream only, no weapons, hands or frames, so nothing reads as an item. Softer than the hero style, with little dark outline (fine for effects). Power growth reads clearly from step to step.
 - Mock picks (two variants per step, chosen per skill by a name hash): step 1 (Rank 0-I) 07 / 05, step 2 (II-III) 24 / 20, step 3 (IV-V) 38 / 35, step 4 (VI-VIII) 54 / 58. Copied to `docs/mockups/skills-fresh/rk_phys_<step><a|b>.png`, drawn at 1.5 CSS px in a 58px frame. Heal, magic and true are hue-shifted copies in the mock only, as stand-ins.
 
+## 2026-11-14: service scenes (the Services tab's rotating card)
+
+**Shipped picks (2026-11-15, "good enough, build it"):** Item slots = `2026-11-15-service-slot-2`, Overdrive = `2026-11-15-service-overdrive-2`, Reroll = `2026-11-15-service-reroll-5`, Enchant = `2026-11-14-service-enchant-8`, copied by hand to `public/sprites/services/<id>-scene.png` and drawn in `ShopServiceCard.vue`.
+
+The Services tab shows one service at a time on a 3-day turn (Item slots → Overdrive → Reroll → Enchant) in a big card (mock `docs/mockups/services-rotation.html`). Each rotating service gets its own scene across the card's top. Size: **216 x 64 art px** at 2 CSS px (432 x 128 CSS): the standard backdrop width, but only as tall as the card's 128px art area (not the 216 x 116 backdrop height, by the user's choice). Subject in the middle ~175 px, top left kept dim for the countdown ribbon. Plan: four corners of the shop's back room (gear wall, forge, fortune table, rune altar); Enchant first to see the idea.
+
+**Run 1 (Enchant), `2026-11-14-service-enchant/`, job a296026c-3860-4f05-b631-485960e4433a**
+- Tool + settings: `create_image_pro`, **216x64, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 37b3debe, all four aspects), no reference images, no palette, no seed.
+- Description: `fantasy RPG enchanter's back room, side view, a stone altar in the centre with a glowing rune circle carved into its top, a sword floating above the altar shining with pale opal white and soft violet light, a few magic sparkles, shelves of candles crystals and old books at the sides, wooden beams, stone wall, dim and shadowy at the top left, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,290 remaining before the run). Took 73s.
+- Why / changed: first service scene. The 3.4:1 canvas was a risk (not on the price list, might squash the subject); fallback was 216x116 cropped.
+- Result: the wide canvas worked. A stone altar in the middle with a lit violet rune band on top, a sword lying flat in the air above it in white-violet glow with sparkles, a lit stone-brick alcove behind framed by wooden posts and a beam, shelves of books, candles and jars left, crystals (green, violet), candles and bottles right, hanging ivy at the top. The top left is dark as asked. The sword's glow is a bit soft (blobby edge). Gallery: `gallery.html` (4x).
+- **Verdict:** the user liked the idea but found it "a bit busy and hard to make out", not clear. Asked for a simpler prompt (not a simpler scene), keeping the crystals, the wooden beams and the stone wall so it fits the shop.
+
+**Run 2 (Enchant, shorter prompt), `2026-11-14-service-enchant-2/`, job d8065ce9-1418-46db-980a-b849f5abc60f**
+- Tool + settings: same as run 1: `create_image_pro`, **216x64, not transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload 37b3debe, all four aspects), no reference images, no palette, no seed.
+- Description: `fantasy RPG enchanting room, side view, a glowing sword floating above a stone altar in the centre, glowing crystals on both sides, wooden beams, stone wall, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,280 remaining before the run). Took 74s.
+- What changed from run 1: about a third of the words. Kept room, altar, floating sword, side crystals, wooden beams, stone wall; dropped the rune circle, opal-violet light, sparkles, candles, books, shelves, "dim at the top left".
+- Result: much clearer. A crisp silver sword floating flat above a carved stone altar, big pale-blue crystal clusters either side of the altar, two lit wall lanterns, a tall stone-brick wall between wooden posts and a top beam, a shelf of potions and jars on the left, a hanging banner and a small crystal pedestal on the right, lit candles at both edges. Cool blue light overall (closer to the Moonlit UI than run 1's violet). The top left (where the countdown ribbon sits) has the potion shelf, a little busy but dark. Gallery: `gallery.html` (4x).
+- **Verdict:** the user asked to try again without the crystals.
+
+**Run 3 (Enchant, no crystals), `2026-11-14-service-enchant-3/`, job 5d2746cb-a0d4-4a75-a072-77958676a31f**
+- Tool + settings: same as run 2 (216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG enchanting room, side view, a glowing sword floating above a stone altar in the centre, wooden beams, stone wall, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,270 remaining before the run). Took 82s.
+- What changed from run 2: only "glowing crystals on both sides" dropped.
+- Result: the sword now stands upright, point up, above a dark carved altar, wrapped in a pale-blue magic swirl with a few sparks on the floor. Warmer, greener and brighter room than run 2: olive stone-brick walls with ivy, wooden posts and arches, a bubbling cauldron, a bookshelf, a scroll and potions on the left, a banner, a candle sconce and a treasure chest with crates on the right. The top left is a lit bookshelf and scroll, brighter than in runs 1-2. Gallery: `gallery.html` (4x).
+- **Verdict:** the user asked for the crystals back, "slightly more zoomed in".
+
+**Run 4 (Enchant, crystals back, closer), `2026-11-14-service-enchant-4/`, job f12f7e5f-f1ce-45c1-b8f8-841ca65b2ceb**
+- Tool + settings: same as runs 2-3 (216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG enchanting room, side view, closer view, a large glowing sword floating above a stone altar in the centre, glowing crystals on both sides, wooden beams, stone wall, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,260 remaining before the run). Took 75s.
+- What changed from run 2: "closer view" and "a large" sword added for the zoom.
+- Result: the sword is bigger (about a third of the width), lying flat with a white-blue glow, above a wide carved altar set in a dark stone arch with two hanging banners. Blue and violet crystals sit along the floor at both sides, potion shelves and a lectern with an open book left, shelves of bottles and books right. Dark blue-grey stone like run 2, so it sits with the UI. The zoom is modest: the room still reads wide, the altar and sword just fill more of it. The top left is dark wall and a shelf. Gallery: `gallery.html` (4x).
+- **Verdict:** "good but the main problem is the sword is not clear and hard to make out". "Glowing sword" draws the blade out of light, so its edges melt into the glow.
+
+**Run 5 (Enchant, solid outlined sword), `2026-11-14-service-enchant-5/`, job 2ee4e015-466b-4644-bf7f-eb2d7996b5ce**
+- Tool + settings: same as runs 2-4 (216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG enchanting room, side view, closer view, a large silver sword with a crisp dark outline floating above a glowing stone altar in the centre, the sword clearly visible against a plain dark wall, glowing crystals on both sides, wooden beams, stone wall, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,250 remaining before the run). Took 115s.
+- What changed from run 4: the sword is "silver ... with a crisp dark outline" instead of "glowing", the glow moved to the altar, "clearly visible against a plain dark wall" added.
+- Result: the clearest sword so far. A silver sword lying flat with a dark outline, readable hilt and guard, against a plain dark brick wall between wooden posts and a beam; a faint glow line on the altar top below it, rune panels on the altar's front. Blue, violet and pale-green crystal clusters hug both sides of the altar. Quiet edges: bookshelves with a few potions left and right, dark wood. Dark blue-grey overall, sits with the UI. The top left is dark shelving. Gallery: `gallery.html` (4x). Not yet judged by the user.
+- Fallback if a sword is still not clear enough: generate the room with the space above the altar empty and draw a real 32x32 sword sprite over it in code at 2 CSS px.
+- **Verdict:** after seeing runs 1-5 side by side (`assets/pixellab/2026-11-14-service-enchant-compare.html`), the user said run 1 was best and asked for its exact prompt again.
+
+**Run 6 (Enchant, run 1's prompt again), `2026-11-14-service-enchant-6/`, job c7ae86e0-ff2e-43e3-a28f-aceb506db7b7**
+- Tool + settings: same as run 1 (216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed, so a new roll).
+- Description (run 1's, unchanged): `fantasy RPG enchanter's back room, side view, a stone altar in the centre with a glowing rune circle carved into its top, a sword floating above the altar shining with pale opal white and soft violet light, a few magic sparkles, shelves of candles crystals and old books at the sides, wooden beams, stone wall, dim and shadowy at the top left, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,240 remaining before the run). Took 73s.
+- Result: a slim silver sword floating diagonally, point up-right, in a soft violet halo with sparkles, over a stone altar with a glowing violet rune circle on its top. Warm brown room like run 1: stone-brick alcove between wooden posts, hanging ivy and chains, shelves of candles, books, jars and violet crystals at both sides. Dark top left. The sword reads better than run 1's (thin and outlined, the halo sits behind it rather than over it) but is small and thin. Gallery: `gallery.html` (4x).
+
+**Hand fix (not a run), `2026-11-14-service-enchant-fixed/tile-01.png`, 2026-11-15:** the user fixed run 1 by hand in Pixilart (exported as `pixil-frame-0.png`, 216x64) and copied it here. It is the scene shown in the Enchant card of `docs/mockups/services-rotation.html`. No generations spent.
+
+**Run 7 (Enchant, altar and sword only), `2026-11-14-service-enchant-7/`, job 023ad5f4-9755-4a04-944a-a2f2c3bdfe45, 2026-11-15**
+- Tool + settings: same as runs 1-6 (216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG close-up of an enchanting altar filling the frame, side view, a stone altar with a glowing rune circle carved into its top, a sword floating just above it shining with pale opal white and soft violet light, a few magic sparkles, plain dark stone wall behind, no room, no shelves, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,230 remaining before the run). Took 26s.
+- Why / changed: the user asked for "just the enchantment table and sword", not the whole room. Run 1's altar, rune circle, opal-violet sword and sparkles kept; "close-up ... filling the frame", "plain dark stone wall", "no room, no shelves" added; candles, crystals, books, beams and the dim top left dropped.
+- Result: by far the clearest sword: big, flat, silver with a violet sheen, a dark outline, a clear hilt, guard and pommel, a few sparkles. Below it a wide stone altar top with a glowing violet rune circle, on a stone pedestal. Behind, only a plain dark brick wall, so the sides of the card are empty wall. Gallery: `gallery.html` (4x).
+- **Verdict:** "way better", but wanted bookshelves or something at the sides, not plain wall everywhere. An inpaint of run 7's sides (keeping the middle) was proposed; the user asked for a brand new generation instead.
+
+**Run 8 (Enchant, close-up with side bookshelves), `2026-11-14-service-enchant-8/`, job 9b3679ed-d538-4cf2-b334-8af66ac6cc98, 2026-11-15**
+- Tool + settings: same as runs 1-7 (216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG close-up of an enchanting altar in the centre, side view, a stone altar with a glowing rune circle carved into its top, a sword floating just above it shining with pale opal white and soft violet light, a few magic sparkles, dark stone wall behind, wooden bookshelves at the far left and right edges, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,220 remaining before the run). Took 21s.
+- What changed from run 7: "filling the frame", "plain", "no room, no shelves" dropped; "wooden bookshelves at the far left and right edges" added.
+- Result: the same clear look as run 7: a big flat silver-violet sword with a dark outline and sparkles over a stone altar, here with a **gold** rune circle (not violet). Dark brick wall behind, and a tall wooden bookshelf at each edge (about 40 art px wide) with books, scrolls, jars and a skull; a rolled scroll leans at the foot of each. On a 390px phone about 17 px of each shelf is cropped, so about 23 px shows. Gallery: `gallery.html` (4x). Not yet judged by the user.
+
+**Reroll run 1, `2026-11-15-service-reroll/`, job 09c67458-f1c0-4c0f-887f-167906542dc2, 2026-11-15**
+- Tool + settings: same as the Enchant runs (`create_image_pro`, 216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG close-up of a fortune teller's table in the centre, side view, a small wooden table with a dark violet cloth, two large white bone dice tumbling in the air just above it with a few magic sparkles, a lit candle on each side of the table, dark stone wall behind, wooden shelves at the far left and right edges, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,210 remaining before the run). Took 21s.
+- Why: first Reroll scene, on Enchant run 8's recipe (close-up of one centre object, dark stone wall, shelves at the edges, solid subject).
+- Result: two big cream bone dice tumbling in the air, very clear, with a few gold sparkles, above a small wooden table with a violet cloth hanging in a point; a lit candle on each end of the table. Warm dark-brown brick wall. The shelves came out only as thin slivers at the very edges (about 15 art px each), so on a 390px phone they are almost all cropped and the sides read as plain wall. Gallery: `gallery.html` (4x).
+- **Verdict:** "nice".
+
+**Item slots run 1, `2026-11-15-service-slot/`, job aa25a65f-cb04-4c21-9c8e-eeddf0ec33fa, 2026-11-15**
+- Tool + settings: same as the Enchant and Reroll runs (`create_image_pro`, 216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG close-up of a large open leather adventurer's backpack on a wooden table in the centre, side view, its pockets buckles and straps clearly visible, a lit lantern on the table beside it, dark stone wall behind, wooden shelves of pouches and belts at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,200 remaining before the run). Took 41s.
+- Why: first Item slots scene, same recipe. The backpack matches the slot seal's glyph. Shelves asked "at the left and right sides" rather than "far edges" so they sit far enough in to survive the phone crop (Reroll's were cropped away).
+- Result: a big open brown leather backpack in the middle, many pockets, buckles and straps, its flap open with gear poking out; its top touches the canvas's top edge. A lit brass lantern on the table to the right, a tin mug to the left. Dark brick wall, wooden posts, and shelves at both sides (about 40 art px each) with rolled bedrolls, belts, pouches, tools and chains, so they survive the crop. Warm brown, lantern-lit. Busier than Reroll, but the pack reads at once. Gallery: `gallery.html` (4x). Not yet judged by the user.
+
+**Overdrive run 1, `2026-11-15-service-overdrive/`, job 2effe65a-7709-4936-a9da-70b4ad002565, 2026-11-15**
+- Tool + settings: same as the other service runs (`create_image_pro`, 216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+- Description: `fantasy RPG close-up of a blazing stone forge in the centre, side view, a roaring orange and white-hot fire with bright sparks flying up, leather bellows beside it, an anvil in front, dark stone wall behind, wooden shelves of tools at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,190 remaining before the run). Took 35s.
+- Why: last of the four service scenes, the forge from the brainstorm (Overdrive = push harder).
+- Result: a bright orange-white fire roaring in a round stone forge a little left of centre, with sparks flying up the wall, tongs resting on its rim, an anvil just right of centre in front. Dark brick wall; racks of hammers, tongs and tools at the left and shelves with pots at the right, both dark. The fire is the brightest, clearest thing of all four scenes; the anvil is dark and easy to miss, and the bellows are not clearly there. Darker overall than the others. Gallery: `gallery.html` (4x). Not yet judged by the user.
+
+User on Reroll run 1 and Item slots run 1: "Reroll I'd like to see the table top, and the backpack looks too busy". Both run again at once (same settings as above: `create_image_pro`, 216x64, not transparent, style `assets/pixellab/2026-11-11-heroes/sheet.png`, upload 37b3debe, all four aspects, no references, no palette, no seed).
+
+**Reroll run 2, `2026-11-15-service-reroll-2/`, job e702cfcb-f2f5-4fc4-93ba-68f985e453d6**
+- Description: `fantasy RPG close-up of a fortune teller's table in the centre, side view from slightly above so the table top is visible, a small wooden table with a dark violet cloth on top, two large white bone dice tumbling in the air just above the table top with a few magic sparkles, a lit candle on each side of the table, dark stone wall behind, wooden shelves at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,180 remaining before the two runs). Took 47s.
+- What changed from run 1: "side view from slightly above so the table top is visible", the cloth "on top", the dice "just above the table top"; shelves "at the left and right sides" instead of "far edges".
+- Result: the table top shows now: a violet cloth spread over it with a book, a small pouch and a few scattered coins, the two cream dice tumbling just above with gold and blue sparkles, tall dripping candles at both ends. Shelves of books, scrolls, bottles and potions on both sides, wide enough (about 40 art px) to survive the phone crop. Warmer and richer than run 1. Gallery: `gallery.html` (4x). Not yet judged by the user.
+
+**Item slots run 2, `2026-11-15-service-slot-2/`, job 49867ba5-ff32-4d86-b645-5b6daf856d83**
+- Description: `fantasy RPG close-up of a simple leather backpack on a wooden table in the centre, side view, a plain clean shape with one flap and two straps, few details, a lit lantern on the table beside it, dark stone wall behind, wooden shelves at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt). Took 47s.
+- What changed from run 1: "large open adventurer's" backpack with "pockets buckles and straps clearly visible" became a "simple" backpack, "a plain clean shape with one flap and two straps, few details"; the mug and the "pouches and belts" on the shelves dropped.
+- Result: a clean brown leather backpack with one flap and two buckled straps, standing on a wide wooden table top, a lit lantern beside it on the right. Big plain brick wall behind. Very readable. The shelves (bottles, scrolls) came out thin at the edges again (about 20-30 art px), so they are mostly cropped on a phone. Gallery: `gallery.html` (4x).
+- **Verdict:** "new item slots art is good" (keep), "the reroll one is too busy now".
+
+**Reroll run 3, `2026-11-15-service-reroll-3/`, job f3d347e4-f1aa-458a-80d8-ea9450280929**
+- Tool + settings: same as runs 1-2.
+- Description: `fantasy RPG close-up of a fortune teller's table in the centre, side view from slightly above so the table top is visible, a small wooden table with a plain dark violet cloth on top and nothing else on it, two large white bone dice tumbling in the air just above the table top with a few magic sparkles, a lit candle on each side of the table, dark stone wall behind, simple wooden shelves at the left and right sides, few details, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,160 remaining before the run). Took 46s.
+- What changed from run 2: "plain" cloth "and nothing else on it", "simple" shelves, "few details".
+- Result: much calmer. The table top shows as a plain violet cloth over a wooden table, nothing on it; two cream dice tumble just above with a few pale sparkles; a short candle on each end of the table with a warm glow on the wall. Dark violet-grey brick wall. Simple shelves with a few bottles and books at the very edges (about 25 art px), mostly cropped on a phone. The dice are a little smaller than in runs 1-2. Gallery: `gallery.html` (4x).
+- **Verdict:** "too plain now".
+
+**Reroll run 4, `2026-11-15-service-reroll-4/`, job 26ff0d39-0fc0-4195-b1b0-c588648a13a4**
+- Tool + settings: same as runs 1-3.
+- Description: `fantasy RPG close-up of a fortune teller's table in the centre, side view from slightly above so the table top is visible, a small wooden table with a dark violet cloth on top, a small crystal ball and a few tarot cards on the cloth, two large white bone dice tumbling in the air just above the table top with a few magic sparkles, a lit candle on each side of the table, dark stone wall behind, wooden shelves with a few books and bottles at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,150 remaining before the run). Took 24s.
+- What changed from run 3: between runs 2 and 3: two named things on the cloth (a small crystal ball, a few tarot cards) instead of "nothing else", shelves "with a few books and bottles" instead of "simple ... few details".
+- Result: a glowing violet crystal ball on a stand in the middle of the table, tarot cards laid out either side of it on the violet cloth, tall candles at both ends, a wisp of magic smoke curling up. The dice came out **small**, high up in the smoke, so the crystal ball, not the dice, is the subject now. Bookshelves (books, bottles, scrolls) about 40 art px wide at both sides, so they survive the phone crop. Gallery: `gallery.html` (4x). Not yet judged by the user.
+
+**Overdrive run 2, `2026-11-15-service-overdrive-2/`, job a310bffc-4531-4d10-9856-4c081d345f82**
+- Tool + settings: same as Overdrive run 1.
+- Description: `fantasy RPG close-up of a stone forge in the centre, side view, a bright orange and white-hot fire with a few sparks, an anvil beside it, dark stone wall behind, simple wooden shelves at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt). Took 36s.
+- Why / changed from run 1: the user found run 1 "a tad busy". "Blazing", "roaring", "bright sparks flying up", the bellows and the shelves "of tools" dropped; "a few sparks", "simple" shelves.
+- Result: a big arched stone forge mouth in the middle with a bright fire and a few sparks, centred this time; an anvil and hanging tongs just right of it, dark. Simple shelves and benches with a few tools at both sides. Calmer than run 1, but still very dark overall: only the fire is lit, so the sides are near-black. Gallery: `gallery.html` (4x).
+- **Verdict:** "overdrive is good now" (keep). Reroll run 4: redo.
+
+**Reroll run 5, `2026-11-15-service-reroll-5/`, job 073c8be6-09fd-4f36-89f7-97fa2b0de590**
+- Tool + settings: same as runs 1-4.
+- Description: `fantasy RPG close-up of a fortune teller's table in the centre, side view from slightly above so the table top is visible, a small wooden table with a dark violet cloth on top and a few tarot cards on the cloth, two large white bone dice tumbling in the air just above the middle of the table, big and clear, with a few magic sparkles, a lit candle on each side of the table, dark stone wall behind, wooden shelves with a few books and bottles at the left and right sides, no characters`
+- Cost + candidates: **10 generations, 1 candidate** (receipt; 1,130 remaining before the run). Took 41s.
+- What changed from run 4: the crystal ball dropped (it took over as the subject); the dice "just above the middle of the table, big and clear".
+- Result: the dice are the subject again: two big cream dice tumbling above the middle of the table with gold sparkles. Below them the table top shows a violet cloth with five tarot cards laid out, a candle in a holder at each end. Bookshelves with books, scrolls and bottles at both sides, wide enough to survive the phone crop. Between run 2 (busy) and run 3 (plain). Gallery: `gallery.html` (4x). Not yet judged by the user.
+
+## 2026-11-14: potion art (shop potions: Health, Mending, EXP, Crit)
+
+Picks so far from the 2026-11-12 trinkets pool: Health = T6 (red round flask), EXP = T7 (blue round flask). Titan's Lifeblood moved off the red flask to E42 (golden orb) on 2026-11-14 so the flask reads as a potion only. Mending wanted a wider, more triangular red flask and Crit a yellow potion; none in the pools, so this run.
+
+**Run 1, `2026-11-14-items-potions-pool/`, job da5779d5-f1cd-473c-b0bc-4ccdf9845105**
+- Tool + settings: `create_image_pro`, **32x32, transparent**, style = `assets/pixellab/2026-11-11-heroes/sheet.png` (upload ff866da0), no reference images, no palette, no seed
+- Description: `fantasy RPG potion bottles, glowing and unique, each one different, one item per tile, centred, filling the canvas: a variety of potions in different colors and flask shapes`
+- Cost + candidates: **10 generations, 64 candidates** (1,300 remaining before the run)
+- Why / changed from the proposal: first draft named the two kinds (wide triangular red flask, round yellow bottle); the user preferred open variety, so no kinds are named (same lesson as item run 5 and the boss variety run).
+- Result: 64 clean 32x32 potions, complete outlines, in the T6/T7 family (glass bottle, cork or stopper, one colour of liquid). Good spread: round flasks (red 01/33, green 02/34, purple 05, yellow 07/37), square bottles (03, 04, 36, 43, 54), **triangular flasks** (green 10/26, blue 11/58, purple 12/28, dark blue 19, orange-yellow 45), hearts (red 09, blue and purple 18, green 42, yellow and purple 40), tagged and roped bottles, amphoras (yellow 61/62, dark 63), skull bottles (13, 30), hourglasses (14, 47, not potions), caged orbs (16, 39, 56, 64). **No red triangular flask**; yellow: 07, 37, 52 (small), 45 (triangular), 61. Gallery: `gallery.html` (3x); numbered contact sheet checked by eye.
+- **Picks (2026-11-14):** Health = trinkets-pool T6, EXP = trinkets-pool T7, Crit = run tile 37 (big round yellow flask; 06, an orange flask with a tag, was picked first and swapped), Mending = run tile 17 (red flask wrapped in rope). The user wanted a wider, more triangular red flask for Mending, which the run did not make; 17 was picked instead of a recolour. Built to `public/sprites/potions/` by `npm run item-art` (picks.json `potions`, folder letter Q for this run) and shown on the shop rows.
+
 ## 2026-11-12: shop marketplace (shop tab backdrop, not yet shipped)
 
 **Run 1, `2026-11-12-shop-market/`, job 1c27ab49-a7d2-49ec-8d38-a50653122e18**

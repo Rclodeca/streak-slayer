@@ -4013,8 +4013,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: inset 2px 2px 0 var(--sunk-hi);
   }
 
-  // The Shop | Vault switch (docs/mockups/shop-tab-2.html, A): two engraved
-  // keys in a sunk well; the side on show is lifted, the Vault's a cold blue.
+  // The Items | Services | Vault switch (docs/mockups/shop-tab-3.html, A):
+  // three engraved keys in a sunk well; the side on show is lifted, the
+  // Vault's a cold blue.
   .shop-switch {
     @include sunk-well;
     @include pixel-corners(2px);
@@ -4022,9 +4023,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .shop-switch .shop-side {
     font-family: var(--heading);
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--spent-text);
     @include pixel-corners(2px);
@@ -4037,7 +4038,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: inset 0 2px 0 var(--card-hi);
   }
 
-  .shop-switch .side-shop.selected svg {
+  .shop-switch :is(.side-items, .side-services).selected svg {
     color: var(--icon-gold);
   }
 
@@ -4050,9 +4051,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // The Shop's wares (docs/mockups/shop-tab-2.html, A): lifted cards like
-  // the gear rows, each item in a socket lit by its rarity; tonics and the
-  // restock in a plain socket. The buy button is stone, its price in gold
-  // (greyed red when too dear); a spent one (Sold, 2d left) reads dim.
+  // the gear rows, each item in a socket lit by its rarity; potions and
+  // services in a plain socket. The buy button is stone, its price in gold
+  // (greyed red when too dear); a spent one (Out of stock, 2d left) reads dim.
   :is(.shop-ware-row, .shop-featured).rarity-common {
     --rarity: var(--rarity-common);
     --tier: 10%;
@@ -4096,6 +4097,19 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include tier-socket;
   }
 
+  // A service's seal (docs/mockups/services-art.html, B) sits bare on the card,
+  // round where items are square, so it never reads as something to wear.
+  .shop-ware-row.service .shop-socket {
+    background: none;
+    box-shadow: none;
+    clip-path: none;
+  }
+
+  .shop-ware-row.service .shop-art {
+    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.55));
+  }
+
+
   :is(.shop-ware-row, .shop-featured) .shop-name {
     @include name-serif(700);
     font-size: 1rem;
@@ -4122,7 +4136,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--damage-color);
   }
 
-  :is(.shop-ware-row, .shop-featured) :is(.shop-warn, .featured-keep) {
+  .shop-ware-row .shop-warn {
     @include plain-label(0.7rem, 700);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -4198,14 +4212,134 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     border-top: 2px solid var(--rarity);
   }
 
+  // The service on its turn (docs/mockups/services-rotation.html): its scene
+  // in place of the velvet, a parchment ribbon for the days left, a brass
+  // seam, and a dim strip under it for the next one.
+  .shop-featured.service-turn {
+    --rarity: var(--brass-solid);
+  }
+
+  .shop-featured.service-turn .velvet {
+    background: #07080c;
+  }
+
+  .shop-featured.service-turn .velvet::after {
+    content: none;
+  }
+
+  .shop-featured.service-turn .ribbon {
+    padding: 4px 8px;
+    letter-spacing: 0.08em;
+    text-transform: none;
+    color: #2a2014;
+    background: #e9dcc0;
+  }
+
+  // The foot-of-screen note (docs/mockups/potion-toast.html, A): a lifted
+  // card a shade above the others, the name in serif, what it did in its tone.
+  .game-toast {
+    background: color-mix(in srgb, var(--card) 85%, #3b4560);
+    @include pixel-corners(3px);
+    @include bevel(var(--card-hi), var(--card-lo));
+  }
+
+  // The card is clipped to its pixel corners, so its shadow sits on the dock.
+  .game-toast-dock {
+    filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.6));
+  }
+
+  .game-toast-title {
+    @include name-serif(700);
+    font-size: 0.95rem;
+    line-height: 1.15;
+    color: var(--card-ink);
+  }
+
+  .game-toast-text {
+    @include true-sans(0.8rem);
+    font-weight: 700;
+    color: var(--tone);
+  }
+
+  // What a buy changes ("7 → 8 slots"): bold, in the card's ink.
+  .shop-featured.service-turn .service-change {
+    font-weight: 800;
+    color: var(--card-ink);
+  }
+
+  .service-turn .service-next {
+    @include true-sans(0.8rem);
+    color: var(--spent-text);
+    background: color-mix(in srgb, var(--card) 70%, #000);
+    border-top: 2px solid var(--card-lo);
+  }
+
+  .service-turn .service-next b {
+    @include name-serif(700);
+    color: var(--text);
+  }
+
+  .service-turn .service-next-seal {
+    opacity: 0.7;
+    filter: grayscale(0.4);
+  }
+
+  .service-turn .service-next-when {
+    @include plain-label(0.65rem, 700);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   .shop-note {
     @include true-sans(0.8rem);
     color: var(--spent-text);
   }
 
-  // The Vault's gem prices, in the gems' cold blue rather than the card ink.
-  .vault-wares .shop-buy:not(.short) .price {
+  // The restock: a short stone key centred at the foot of Items, under the
+  // note (docs/mockups/restock.html, A).
+  .shop-restock-key {
+    @include stone-button;
+    font-family: var(--heading);
+    font-size: 11px;
+    font-size-adjust: none;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--card-ink);
+  }
+
+  .shop-restock-key .price {
+    @include name-serif(700);
+    font-size: 14px;
+    font-size-adjust: none;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--card-ink);
+  }
+
+  .shop-restock-key.short .price {
+    color: #b65a50;
+  }
+
+  .shop-restock-key:disabled {
+    cursor: default;
+    background: $well;
+    border-bottom-color: transparent;
+    box-shadow: inset 2px 2px 0 var(--sunk-hi);
+  }
+
+  // Gem prices, in the gems' cold blue rather than the card ink, on a key
+  // tinted the same so a gem buy never passes for a gold one.
+  .shop-buy.gems:not(.short) .price {
     color: var(--icon-arcane);
+  }
+
+  .shop-buy.gems:not(:disabled) {
+    background: color-mix(in srgb, var(--stone-face) 74%, #1a4a66);
+  }
+
+  .shop-buy .verb {
+    letter-spacing: 0.14em;
   }
 
   // The streak freeze picker: two steppers, stone keys either side of the value.
@@ -4249,6 +4383,111 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-size: 0.95rem;
     line-height: 1.15;
     color: var(--card-ink);
+  }
+
+  // The Vault's looks (docs/mockups/vault-tab-2.html): lifted cards, the art in
+  // a socket, one keyword under the name. The one worn is ringed in the gems'
+  // blue and reads Current; an owned one reads Owned on a sunk plate.
+  .skin-card {
+    font: inherit;
+    color: var(--text);
+    @include lifted-card;
+    @include inset-focus;
+  }
+
+  .skin-card .skin-art {
+    @include socket(var(--card-hi));
+  }
+
+  .skin-card.current {
+    box-shadow:
+      inset 0 0 0 2px var(--icon-arcane),
+      inset 4px 4px 0 var(--card-lo);
+  }
+
+  :is(.skin-card, .skin-popup) .shop-name {
+    @include name-serif(700);
+    font-size: 0.9rem;
+    line-height: 1.15;
+    color: var(--card-ink);
+  }
+
+  .skin-word {
+    @include plain-label(0.625rem, 700);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    @include pixel-corners(2px);
+  }
+
+  .skin-word.current {
+    color: var(--icon-arcane);
+    background: color-mix(in srgb, var(--icon-arcane) 20%, #0c1218);
+  }
+
+  .skin-word.owned {
+    color: var(--card-ink);
+    background: $well;
+    box-shadow: inset 2px 2px 0 var(--sunk-hi);
+  }
+
+  .skin-card .price {
+    @include name-serif(700);
+    font-size: 15px;
+    font-size-adjust: none;
+    line-height: 1;
+    color: var(--icon-arcane);
+  }
+
+  .skin-card .price.short {
+    color: #b65a50;
+  }
+
+  // Browse more: a stone key with the other heroes' faces and their names.
+  .skin-more {
+    @include stone-button;
+    font-family: var(--heading);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--card-ink);
+  }
+
+  .skin-more em {
+    @include true-sans(0.75rem, 700);
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--spent-text);
+  }
+
+  .skin-hint {
+    text-align: left;
+  }
+
+  // The popup: the look on cold velvet, then its name, a line and the keys.
+  .skin-popup .skin-stage {
+    background: radial-gradient(ellipse at 50% 68%, color-mix(in srgb, var(--icon-arcane) 18%, #1c2440) 0%, #0a0d16 72%);
+    border-bottom: 2px solid var(--icon-arcane);
+    @include pixel-corners(2px);
+  }
+
+  .skin-popup .shop-name {
+    font-size: 1.3rem;
+  }
+
+  .skin-popup .skin-line {
+    @include true-sans(0.85rem);
+    color: var(--text);
+  }
+
+  .skin-popup .shop-warn {
+    @include true-sans(0.8rem);
+    color: #b65a50;
+  }
+
+  .skin-popup .skin-close {
+    @include stone-button;
+    color: var(--spent-text);
   }
 
   .home-art:focus-visible {

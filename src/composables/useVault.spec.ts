@@ -2,13 +2,14 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { GOLD_POUCH, addDaysToDayKey, createRng, dailyPeriodKey, pouchGold } from '../game-engine';
+import { GOLD_POUCH, addDaysToDayKey, createRng, dailyPeriodKey, formatDayKey, pouchGold } from '../game-engine';
 import { useHabitStore } from '../store/habitStore';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useItemDropQueue } from './useItemDropQueue';
+import { useToast } from './useToast';
 import { useVault } from './useVault';
 
 describe('useVault', () => {
@@ -18,6 +19,7 @@ describe('useVault', () => {
   afterEach(() => {
     const { current, dismiss } = useItemDropQueue();
     while (current.value) dismiss();
+    useToast().dismiss();
   });
 
   function stocked(gems: number) {
@@ -25,38 +27,8 @@ describe('useVault', () => {
     characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 0 });
     useAccountStore().addGems(gems);
     const vault = useVault();
-    vault.ensureStock();
     return { characterStore, vault };
   }
-
-  it('buy spends gems from the account and opens the drop popup', () => {
-    const { characterStore, vault } = stocked(50);
-    const ware = vault.stock.value!.wares[0];
-    expect(vault.buy(ware.itemId)).toBe(true);
-    expect(useAccountStore().account.gems).toBe(50 - ware.gems);
-    expect(characterStore.character.ownedItemIds).toContain(ware.itemId);
-    const queue = useItemDropQueue();
-    expect(queue.current.value?.id).toBe(ware.itemId);
-    expect(queue.bought.value).toBe(true);
-    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'vault-bought', gems: ware.gems });
-  });
-
-  it('a double tap buys once', () => {
-    const { vault } = stocked(50);
-    const ware = vault.stock.value!.wares[0];
-    expect(vault.buy(ware.itemId)).toBe(true);
-    expect(vault.buy(ware.itemId)).toBe(false);
-    expect(useAccountStore().account.gems).toBe(50 - ware.gems);
-  });
-
-  it('short on gems: false, gems and character unchanged', () => {
-    const { characterStore, vault } = stocked(1);
-    const before = characterStore.character;
-    expect(vault.buy(vault.stock.value!.wares[0].itemId)).toBe(false);
-    expect(useAccountStore().account.gems).toBe(1);
-    expect(characterStore.character).toBe(before);
-    expect(useActivityLogStore().entries).toHaveLength(0);
-  });
 
   it('the pouch turns gems into gold once a day', () => {
     const { characterStore, vault } = stocked(20);
@@ -68,6 +40,7 @@ describe('useVault', () => {
     expect(useAccountStore().account.gems).toBe(20 - GOLD_POUCH.gems);
     expect(vault.pouch.value.status).toBe('cooldown');
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'vault-bought', name: 'Gold Pouch', gems: GOLD_POUCH.gems, gold });
+    expect(useToast().current.value).toMatchObject({ art: 'services/pouch', title: 'Gold Pouch', text: `+${gold.toLocaleString('en-US')} gold` });
   });
 
   it('buyFreeze freezes one skill for gems and logs it', () => {
@@ -84,6 +57,11 @@ describe('useVault', () => {
     expect(habitStore.habits.find((h) => h.id === run.id)!.frozenDayKeys).toBeUndefined();
     expect(useAccountStore().account.gems).toBe(6);
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'freeze-bought', habitName: 'Read', fromDayKey: tomorrow, count: 2, period: 'daily', gems: 4 });
+    expect(useToast().current.value).toMatchObject({
+      art: 'services/freeze',
+      title: 'Streak Freeze',
+      text: `Read · ${formatDayKey(tomorrow)} – ${formatDayKey(addDaysToDayKey(tomorrow, 1))}`,
+    });
   });
 
   it('buyFreeze on a skill deleted meanwhile, or short on gems, spends nothing', () => {

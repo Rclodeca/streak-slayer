@@ -173,24 +173,22 @@ export const TUNING = {
   // Unconditional per-level heal (see addExpAndResolveLevelUps) — applied once
   // per level gained in a grant. Sage's Codex and the Renewal talents add to it.
   LEVEL_UP_HEAL_PCT: 10,
-  // The Crit tonic adds CRIT_BOOST_BONUS to crit chance (crit chance
+  // The Crit Potion adds CRIT_BOOST_BONUS to crit chance (crit chance
   // tops out at 100%) for CRIT_BOOST_DAYS days, counting the day it's picked.
   CRIT_BOOST_BONUS: 0.2,
   CRIT_BOOST_DAYS: 3,
-  // The Verdant tonic multiplies healing by (1 + HEAL_BOOST_BONUS) for
+  // The Mending Potion multiplies healing by (1 + HEAL_BOOST_BONUS) for
   // HEAL_BOOST_DAYS days, counting the day it's picked. Stacks multiplicatively
   // with Wounds (see healingMultiplier in combat.ts).
   HEAL_BOOST_BONUS: 0.2,
   HEAL_BOOST_DAYS: 3,
-  // The EXP boost (the shop's Scholar's Tonic) adds EXP_BOOST_BONUS to the EXP
+  // The EXP boost (the shop's EXP Potion) adds EXP_BOOST_BONUS to the EXP
   // multiplier, beside any expGain items, for EXP_BOOST_DAYS days, counting
   // the day it's bought.
   EXP_BOOST_BONUS: 0.25,
   EXP_BOOST_DAYS: 3,
-  // The shop's Healing Draught restores DRAUGHT_HEAL_PCT% of max health, then
-  // can't be bought again for DRAUGHT_COOLDOWN_DAYS days, counting the day it's drunk.
+  // The shop's Health Potion restores DRAUGHT_HEAL_PCT% of max health.
   DRAUGHT_HEAL_PCT: 25,
-  DRAUGHT_COOLDOWN_DAYS: 3,
   // The Shop's Enchant multiplies every bonus of one equipped item by
   // DOUBLED_ITEM_MULTIPLIER until that item is discarded. The climbing price,
   // not a cap, limits how many.
@@ -340,18 +338,29 @@ export const TUNING = {
     SUNDER_FACTOR: 0.5,
     UNDYING_FLOOR_PCT: 10,
   },
-  ITEM_DROP_EVERY_N_BOSSES: 3, // bosses 1-3 drop 1 item, 4+ drop 2, on 2 kills in 3; boss 1 always
-  ITEM_DROP_MAX_COUNT: 2,
-  ITEM_DROP_CHANCE: 2 / 3, // a boss kill's chance to drop anything; rarer since items can be bought
+  // How many items a boss kill drops (always at least one): percent odds of
+  // 1, 2 or 3 at a player level, blended linearly between rows; every level
+  // past the last row uses it. Mostly 2 by level 10, 3 never past 10%.
+  ITEM_DROP_COUNT_ODDS_BY_LEVEL: [
+    [1, { 1: 50, 2: 40, 3: 10 }],
+    [10, { 1: 20, 2: 70, 3: 10 }],
+  ] as [number, { 1: number; 2: number; 3: number }][],
+  ITEM_DROP_MAX_COUNT: 3,
   // Each rarity's percent share of item drops at a player level, blended
   // linearly between rows; every level past the last row uses it. Commons
   // fade out and stop at 30, epics never get as common as early commons.
   DROP_RARITY_SHARES_BY_LEVEL: [
-    [1, { common: 75, uncommon: 22, rare: 3, epic: 0 }],
-    [5, { common: 55, uncommon: 33, rare: 11, epic: 1 }],
-    [10, { common: 30, uncommon: 40, rare: 27, epic: 3 }],
-    [20, { common: 10, uncommon: 40, rare: 41, epic: 9 }],
-    [30, { common: 0, uncommon: 35, rare: 51, epic: 14 }],
+    [1, { common: 75, uncommon: 23, rare: 2, epic: 0 }],
+    [5, { common: 55, uncommon: 35.5, rare: 9, epic: 0.5 }],
+    [10, { common: 30, uncommon: 43, rare: 25, epic: 2 }],
+    [20, { common: 10, uncommon: 44, rare: 39, epic: 7 }],
+    [30, { common: 0, uncommon: 40, rare: 49, epic: 11 }],
+  ] as [number, { common: number; uncommon: number; rare: number; epic: number }][],
+  // The shop rolls its items on the drop table, kinder early: these rows
+  // stand in below level 10, where the drop table's own rows take over.
+  SHOP_EARLY_RARITY_SHARES: [
+    [1, { common: 62, uncommon: 30, rare: 7, epic: 1 }],
+    [5, { common: 48, uncommon: 36, rare: 14, epic: 2 }],
   ] as [number, { common: number; uncommon: number; rare: number; epic: number }][],
   // Physical/magic starting-stat split: createCharacter picks one of these
   // [physical share, magic share] pairs uniformly at random from the ones that

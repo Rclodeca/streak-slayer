@@ -31,30 +31,44 @@ export function tonicPrice(bossIndex: number): number {
   return roundPrice(bossGold(bossIndex));
 }
 
-/** The gold services' base price (as boss kills' worth of gold) and how much it climbs for each one already bought this run. */
+/** The gold services' base price (as boss kills' worth of gold) and how much it climbs for each one held: skills with Overdrive, enchanted worn items, rerolls bought this turn. */
 export const SERVICE_PRICES = {
   reroll: { base: 2, climb: 1.5 },
   overdrive: { base: 5, climb: 1.5 },
   enchant: { base: 10, climb: 2 },
 } as const;
 
-/** The price of a reroll, Overdrive or enchant while boss `bossIndex` is up, with `bought` already bought this run. Live, not locked. */
+/** The price of a reroll, Overdrive or enchant while boss `bossIndex` is up, with `bought` held (see SERVICE_PRICES). Live, not locked. */
 export function servicePrice(id: keyof typeof SERVICE_PRICES, bought: number, bossIndex: number): number {
   const { base, climb } = SERVICE_PRICES[id];
   return roundPrice(base * bossGold(bossIndex) * climb ** bought);
 }
 
-/** Boss kills' worth of gold for the slot steps: 4 to 6 slots, then 6 to 8. */
-export const SLOT_PRICE_FACTORS = [15, 30] as const;
+/** Boss kills' worth of gold for each slot bought: the 5th, 6th, 7th and 8th. */
+export const SLOT_PRICE_FACTORS = [8, 10, 12, 15] as const;
 
-/** The price of the next slot step with `upgrades` bought this run, or null once every step is bought. */
+/** The price of the next slot with `upgrades` bought this run, or null once all 8 are open. */
 export function slotPrice(upgrades: number, bossIndex: number): number | null {
   const factor = SLOT_PRICE_FACTORS[upgrades];
   return factor === undefined ? null : roundPrice(factor * bossGold(bossIndex));
 }
 
-/** Each day's stock: up to `basics` common/uncommon items and a rare, and on `featuredChance` of days an epic or relic (a relic `relicShare` of those times). */
-export const SHOP_STOCK = { basics: 3, featuredChance: 1 / 3, relicShare: 1 / 3 };
+/**
+ * Each day's stock: `size` items, each rolled like a boss drop on the shop's
+ * rarity table (see shopRarityShares in shop.ts), an epic turning relic
+ * `relicShare` of the time. The best is the headline, never below
+ * `headlineFloor` at a level; other items of its rarity cost gems, at most
+ * `gemCap` of them.
+ */
+export const SHOP_STOCK = {
+  size: 7,
+  relicShare: 0.1,
+  gemCap: 2,
+  headlineFloor: [
+    [1, 'uncommon'],
+    [10, 'rare'],
+  ] as [number, 'uncommon' | 'rare'][],
+};
 
 /** Cost of the `n`th talent rank bought overall (1-based). Gold is the bulk; gems are the key that kicks in from rank 4. */
 export function TALENT_COST(n: number): { gold: number; gems: number } {
@@ -87,11 +101,11 @@ export const FREE_GEM_SOURCES = {
   dungeonFirstClears: 0,
 };
 
-/** What a Vault item costs in gems, by rarity. Flat, not by boss: gems don't grow with the run. */
-export const VAULT_PRICES = { rare: 5, epic: 10, relic: 15 } as const;
+/** What a gem-priced shop item costs, by rarity. Flat, not by boss: gems don't grow with the run. */
+export const GEM_WARE_PRICES = { rare: 5, epic: 10, relic: 15 } as const;
 
-/** The Vault draws a new stock every this many days (and after a death). */
-export const VAULT_STOCK_DAYS = 3;
+/** The shop's potions come back every this many days (and with a restock, and after a death): one of each. */
+export const POTION_STOCK_DAYS = 3;
 
 /** The Gold Pouch: `gems` for `bossKills` boss kills' worth of gold, once a day. A poor rate on purpose. */
 export const GOLD_POUCH = { gems: 5, bossKills: 3 };

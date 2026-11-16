@@ -15,7 +15,7 @@ import {
   maxEquipSlots,
   recordRelicEarned,
   rollItemDrops,
-  rollsBossDrop,
+  itemDropCountOdds,
   unownedDroppableItems,
 } from './items';
 import type { BoostableStat, DropRarity, ItemDef } from './items';
@@ -153,16 +153,16 @@ function expectShares(shares: Record<DropRarity, number>, percents: number[]) {
 
 describe('dropRarityShares', () => {
   it('matches the table at each row', () => {
-    expectShares(dropRarityShares(1), [75, 22, 3, 0]);
-    expectShares(dropRarityShares(5), [55, 33, 11, 1]);
-    expectShares(dropRarityShares(10), [30, 40, 27, 3]);
-    expectShares(dropRarityShares(20), [10, 40, 41, 9]);
-    expectShares(dropRarityShares(30), [0, 35, 51, 14]);
+    expectShares(dropRarityShares(1), [75, 23, 2, 0]);
+    expectShares(dropRarityShares(5), [55, 35.5, 9, 0.5]);
+    expectShares(dropRarityShares(10), [30, 43, 25, 2]);
+    expectShares(dropRarityShares(20), [10, 44, 39, 7]);
+    expectShares(dropRarityShares(30), [0, 40, 49, 11]);
   });
 
   it('blends linearly between rows', () => {
-    expectShares(dropRarityShares(15), [20, 40, 34, 6]);
-    expectShares(dropRarityShares(25), [5, 37.5, 46, 11.5]);
+    expectShares(dropRarityShares(15), [20, 43.5, 32, 4.5]);
+    expectShares(dropRarityShares(25), [5, 42, 44, 9]);
   });
 
   it('uses the level-30 row for every level past it', () => {
@@ -179,9 +179,9 @@ describe('dropRarityShares', () => {
   });
 
   it("doubles the rare and epic shares for Magpie's Diamond, then scales back to 100%", () => {
-    expectShares(dropRarityShares(1, true), [7500 / 103, 2200 / 103, 600 / 103, 0]);
-    expectShares(dropRarityShares(10, true), [3000 / 130, 4000 / 130, 5400 / 130, 600 / 130]);
-    expectShares(dropRarityShares(30, true), [0, 3500 / 165, 10200 / 165, 2800 / 165]);
+    expectShares(dropRarityShares(1, true), [7500 / 102, 2300 / 102, 400 / 102, 0]);
+    expectShares(dropRarityShares(10, true), [3000 / 127, 4300 / 127, 5000 / 127, 400 / 127]);
+    expectShares(dropRarityShares(30, true), [0, 4000 / 160, 9800 / 160, 2200 / 160]);
   });
 });
 
@@ -245,41 +245,33 @@ describe('describeItemBonus', () => {
   });
 });
 
-describe('rollItemDrops', () => {
-  it('drops exactly 1 item for boss index 1 when the pool is full', () => {
-    expect(rollItemDrops(makeCharacter(), 1, createRng(1))).toHaveLength(1);
-  });
-
-  it('drops more items for later boss indices, following the step curve', () => {
-    const character = makeCharacter();
-    expect(rollItemDrops(character, 1, createRng(1))).toHaveLength(1);
-    expect(rollItemDrops(character, TUNING.ITEM_DROP_EVERY_N_BOSSES + 1, createRng(1))).toHaveLength(2);
-    expect(rollItemDrops(character, TUNING.ITEM_DROP_EVERY_N_BOSSES * 2 + 1, createRng(1))).toHaveLength(2);
-  });
-
-  it('caps at two', () => {
-    expect(rollItemDrops(makeCharacter(), 12, createRng(1))).toHaveLength(2);
+describe('itemDropCountOdds', () => {
+  it('is 50/40/10 at level 1 and 20/70/10 from level 10, blended between', () => {
+    expect(itemDropCountOdds(1)).toEqual({ 1: 50, 2: 40, 3: 10 });
+    expect(itemDropCountOdds(5.5)).toEqual({ 1: 35, 2: 55, 3: 10 });
+    expect(itemDropCountOdds(10)).toEqual({ 1: 20, 2: 70, 3: 10 });
+    expect(itemDropCountOdds(40)).toEqual({ 1: 20, 2: 70, 3: 10 });
   });
 });
 
-describe('rollsBossDrop', () => {
-  it('always drops for boss 1', () => {
-    expect(rollsBossDrop(1, () => 0.99)).toBe(true);
+describe('rollItemDrops', () => {
+  it('always drops at least one item', () => {
+    for (let seed = 0; seed < 50; seed++) expect(rollItemDrops(makeCharacter({ level: 1 }), createRng(seed)).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('drops on two kills in three after that', () => {
-    expect(rollsBossDrop(5, () => 0.99)).toBe(false);
-    expect(rollsBossDrop(5, () => 0.1)).toBe(true);
+  it('rolls 1 to 3 items on the odds for the level', () => {
+    expect(rollItemDrops(makeCharacter({ level: 1 }), () => 0)).toHaveLength(1);
+    expect(rollItemDrops(makeCharacter({ level: 1 }), () => 0.6)).toHaveLength(2);
+    expect(rollItemDrops(makeCharacter({ level: 1 }), () => 0.95)).toHaveLength(3);
+    expect(rollItemDrops(makeCharacter({ level: 10 }), () => 0.5)).toHaveLength(2);
   });
 
-  it('draws one roll even for boss 1, so the sequence stays stable', () => {
-    let draws = 0;
-    rollsBossDrop(1, () => (draws++, 0.5));
-    expect(draws).toBe(1);
+  it('a cap of one drops one', () => {
+    expect(rollItemDrops(makeCharacter({ level: 1 }), () => 0.95, 1)).toHaveLength(1);
   });
 
-  it('caps drop count at ITEM_DROP_MAX_COUNT even for very high boss indices', () => {
-    const result = rollItemDrops(makeCharacter(), 1000, createRng(1));
+  it('caps drop count at ITEM_DROP_MAX_COUNT', () => {
+    const result = rollItemDrops(makeCharacter(), createRng(1));
     expect(result.length).toBeLessThanOrEqual(TUNING.ITEM_DROP_MAX_COUNT);
   });
 
@@ -287,7 +279,7 @@ describe('rollsBossDrop', () => {
     const droppable = ITEM_CATALOG.filter((item) => item.rarity !== 'relic');
     const owned = droppable.slice(0, droppable.length - 2).map((item) => item.id); // 2 remain unowned
     const character = makeCharacter({ level: 10, ownedItemIds: owned });
-    const result = rollItemDrops(character, 50, createRng(1)); // curve wants 3, only 2 remain
+    const result = rollItemDrops(character, () => 0.99); // rolls 3, only 2 remain
     expect(result).toHaveLength(2);
     for (const item of result) {
       expect(owned).not.toContain(item.id);
@@ -296,11 +288,11 @@ describe('rollsBossDrop', () => {
 
   it('returns [] once every catalog item is owned', () => {
     const character = makeCharacter({ ownedItemIds: ITEM_CATALOG.map((item) => item.id) });
-    expect(rollItemDrops(character, 50, createRng(1))).toEqual([]);
+    expect(rollItemDrops(character, createRng(1))).toEqual([]);
   });
 
   it('never returns duplicate items within a single roll', () => {
-    const result = rollItemDrops(makeCharacter(), 50, createRng(7));
+    const result = rollItemDrops(makeCharacter(), createRng(7));
     const ids = result.map((item) => item.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -309,7 +301,7 @@ describe('rollsBossDrop', () => {
     let commonCount = 0;
     let rareCount = 0;
     for (let seed = 0; seed < 300; seed++) {
-      const [item] = rollItemDrops(makeCharacter(), 1, createRng(seed));
+      const [item] = rollItemDrops(makeCharacter(), createRng(seed));
       if (item.rarity === 'common') commonCount += 1;
       else rareCount += 1;
     }
@@ -320,7 +312,7 @@ describe('rollsBossDrop', () => {
     const counts: Record<string, number> = { common: 0, uncommon: 0, rare: 0, epic: 0 };
     const rolls = 4000;
     for (let seed = 0; seed < rolls; seed++) {
-      const [item] = rollItemDrops(makeCharacter({ level: 10 }), 1, createRng(seed));
+      const [item] = rollItemDrops(makeCharacter({ level: 10 }), createRng(seed));
       counts[item.rarity] += 1;
     }
     const shares = dropRarityShares(10);
@@ -329,23 +321,23 @@ describe('rollsBossDrop', () => {
 
   it('never drops an epic at level 1, or a common from level 30', () => {
     for (let seed = 0; seed < 300; seed++) {
-      expect(rollItemDrops(makeCharacter({ level: 1 }), 50, createRng(seed)).some((item) => item.rarity === 'epic')).toBe(false);
-      expect(rollItemDrops(makeCharacter({ level: 30 }), 50, createRng(seed)).some((item) => item.rarity === 'common')).toBe(false);
+      expect(rollItemDrops(makeCharacter({ level: 1 }), createRng(seed)).some((item) => item.rarity === 'epic')).toBe(false);
+      expect(rollItemDrops(makeCharacter({ level: 30 }), createRng(seed)).some((item) => item.rarity === 'common')).toBe(false);
     }
   });
 
   it('has no level gates: a former gated or level-30 item can drop at level 5', () => {
     for (const id of ['chaos-conduit', 'starfall-staff', 'colossus-plate']) {
       const character = makeCharacter({ level: 5, ownedItemIds: ITEM_CATALOG.filter((i) => i.id !== id).map((i) => i.id) });
-      expect(rollItemDrops(character, 50, createRng(1)).map((item) => item.id), id).toEqual([id]);
+      expect(rollItemDrops(character, createRng(1)).map((item) => item.id), id).toEqual([id]);
     }
   });
 
   it('gives a fully owned rarity\'s share to the others', () => {
     const owned = ITEM_CATALOG.filter((i) => i.rarity === 'common' || i.rarity === 'uncommon').map((i) => i.id);
     for (let seed = 0; seed < 50; seed++) {
-      const result = rollItemDrops(makeCharacter({ level: 10, ownedItemIds: owned }), 50, createRng(seed));
-      expect(result).toHaveLength(TUNING.ITEM_DROP_MAX_COUNT);
+      const result = rollItemDrops(makeCharacter({ level: 10, ownedItemIds: owned }), createRng(seed));
+      expect(result.length).toBeGreaterThanOrEqual(1);
       expect(result.every((item) => item.rarity === 'rare' || item.rarity === 'epic')).toBe(true);
     }
   });
@@ -355,7 +347,7 @@ describe('rollsBossDrop', () => {
     const onlyCommons = makeCharacter({ level: 30, ownedItemIds: allBut('common') });
     const onlyEpics = makeCharacter({ level: 1, ownedItemIds: allBut('epic') });
     for (const character of [onlyCommons, onlyEpics]) {
-      expect(rollItemDrops(character, 50, createRng(1))).toEqual([]);
+      expect(rollItemDrops(character, createRng(1))).toEqual([]);
       expect(unownedDroppableItems(character)).toEqual([]);
     }
   });
@@ -363,7 +355,7 @@ describe('rollsBossDrop', () => {
   it('never drops a relic, at any level', () => {
     const character = makeCharacter({ level: 40 });
     for (let seed = 0; seed < 200; seed++) {
-      expect(rollItemDrops(character, 50, createRng(seed)).some((item) => item.rarity === 'relic')).toBe(false);
+      expect(rollItemDrops(character, createRng(seed)).some((item) => item.rarity === 'relic')).toBe(false);
     }
   });
 });
@@ -374,9 +366,9 @@ describe('maxEquipSlots', () => {
     expect(maxEquipSlots({ slotUpgrades: 0 })).toBe(4);
   });
 
-  it('adds two slots for each slot step bought, up to MAX_EQUIP_SLOTS', () => {
-    expect(maxEquipSlots({ slotUpgrades: 1 })).toBe(6);
-    expect(maxEquipSlots({ slotUpgrades: 2 })).toBe(8);
+  it('adds one slot for each slot bought, up to MAX_EQUIP_SLOTS', () => {
+    expect(maxEquipSlots({ slotUpgrades: 1 })).toBe(5);
+    expect(maxEquipSlots({ slotUpgrades: 4 })).toBe(8);
     expect(maxEquipSlots({ slotUpgrades: 5 })).toBe(8);
     expect(MAX_EQUIP_SLOTS).toBe(8);
   });
@@ -403,7 +395,7 @@ describe('relics', () => {
     const rareOrEpicShare = (equipped: string[]) => {
       let hits = 0;
       for (let seed = 0; seed < 3000; seed++) {
-        const [item] = rollItemDrops(makeCharacter({ level: 10, equippedItemIds: equipped, ownedItemIds: equipped }), 1, createRng(seed));
+        const [item] = rollItemDrops(makeCharacter({ level: 10, equippedItemIds: equipped, ownedItemIds: equipped }), createRng(seed));
         if (item.rarity === 'epic' || item.rarity === 'rare') hits += 1;
       }
       return hits / 3000;

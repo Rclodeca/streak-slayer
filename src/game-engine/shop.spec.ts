@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { restockFee, tonicPrice, warePrice } from './constants/economy';
+import { GEM_WARE_PRICES, restockFee, tonicPrice, warePrice } from './constants/economy';
 import { resolvePlayerDeathIfDead } from './combat';
 import { activeExpBoost, effectiveStat } from './leveling';
 import { ITEM_CATALOG, dropRarityShares } from './items';
 import { createRng } from './rng';
-import { buyTonic, buyWare, restockShop, stockShop, tonicState, wareState } from './shop';
+import { buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
 import type { Character, ShopWare } from './types';
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
@@ -24,10 +24,15 @@ function makeCharacter(overrides: Partial<Character> = {}): Character {
 const DAY = '2026-11-13';
 const rarityOf = (ware: ShopWare) => ITEM_CATALOG.find((item) => item.id === ware.itemId)!.rarity;
 const allWares = (c: Character) => [...(c.shop?.featured ? [c.shop.featured] : []), ...(c.shop?.wares ?? [])];
-/** Always rolls the special and picks the first of everything. */
-const lowRng = () => 0;
-/** Never rolls the special. */
-const highRng = () => 0.99;
+
+const RANK = { common: 0, uncommon: 1, rare: 2, epic: 3, relic: 4 } as const;
+/** Rolls an epic, turns it relic, then picks the last item: a relic headline. */
+const relicRng = () => {
+  let i = 0;
+  const values = [0.99, 0.05];
+  return () => values[i++ % 2];
+};
+const stocks = (level: number, count = 40) => Array.from({ length: count }, (_, seed) => stockShop(makeCharacter({ level }), 3, DAY, createRng(seed + 1)).shop!);
 
 describe('stockShop', () => {
   it('stockShop draws once a day', () => {
@@ -39,30 +44,49 @@ describe('stockShop', () => {
     expect(next.shop?.restocks).toBe(0);
   });
 
-  it('a level 1 stock holds only what drops at level 1', () => {
-    const shares = dropRarityShares(1);
-    for (let seed = 1; seed <= 20; seed++) {
-      const stocked = stockShop(makeCharacter({ level: 1 }), 1, DAY, createRng(seed));
-      for (const ware of allWares(stocked)) {
-        const rarity = rarityOf(ware);
-        expect(rarity).not.toBe('relic');
-        expect(shares[rarity as keyof typeof shares]).toBeGreaterThan(0);
-      }
-      expect(['epic', 'relic']).not.toContain(stocked.shop?.featured && rarityOf(stocked.shop.featured));
+  it('holds seven items, the best of them the headline, in gold', () => {
+    for (const shop of stocks(10)) {
+      expect(shop.wares).toHaveLength(6);
+      expect(shop.featured!.currency).toBeUndefined();
+      for (const ware of shop.wares) expect(RANK[rarityOf(ware)]).toBeLessThanOrEqual(RANK[rarityOf(shop.featured!)]);
     }
   });
 
-  it('a featured epic or relic leaves the rare in the rows', () => {
-    const stocked = stockShop(makeCharacter(), 3, DAY, lowRng);
-    expect(['epic', 'relic']).toContain(rarityOf(stocked.shop!.featured!));
-    expect(stocked.shop!.wares.filter((w) => rarityOf(w) === 'rare')).toHaveLength(1);
+  it('the headline is at least uncommon below level 10, and at least rare from level 10', () => {
+    for (const shop of stocks(1)) expect(RANK[rarityOf(shop.featured!)]).toBeGreaterThanOrEqual(RANK.uncommon);
+    for (const shop of stocks(10)) expect(RANK[rarityOf(shop.featured!)]).toBeGreaterThanOrEqual(RANK.rare);
+    expect(headlineFloor(9)).toBe('uncommon');
+    expect(headlineFloor(10)).toBe('rare');
   });
 
-  it('without the special, the rare takes the velvet and the rows are basics', () => {
-    const stocked = stockShop(makeCharacter(), 3, DAY, highRng);
-    expect(rarityOf(stocked.shop!.featured!)).toBe('rare');
-    expect(stocked.shop!.wares).toHaveLength(3);
-    for (const ware of stocked.shop!.wares) expect(['common', 'uncommon']).toContain(rarityOf(ware));
+  it("others of a rare-or-better headline's rarity cost gems, at most two, ahead of the gold rows", () => {
+    let gemDays = 0;
+    for (const shop of stocks(30)) {
+      const headline = rarityOf(shop.featured!);
+      const gems = shop.wares.filter((w) => w.currency === 'gems');
+      expect(gems.length).toBeLessThanOrEqual(2);
+      expect(shop.wares.slice(0, gems.length)).toEqual(gems);
+      for (const ware of gems) {
+        expect(rarityOf(ware)).toBe(headline);
+        expect(ware.price).toBe(GEM_WARE_PRICES[headline as keyof typeof GEM_WARE_PRICES]);
+      }
+      for (const ware of shop.wares.filter((w) => w.currency !== 'gems')) expect(rarityOf(ware)).not.toBe(headline);
+      if (gems.length > 0) gemDays++;
+    }
+    expect(gemDays).toBeGreaterThan(0);
+  });
+
+  it('an uncommon headline sells nothing for gems', () => {
+    const plain = stocks(1).filter((shop) => rarityOf(shop.featured!) === 'uncommon');
+    expect(plain.length).toBeGreaterThan(0);
+    for (const shop of plain) expect(shop.wares.some((w) => w.currency === 'gems')).toBe(false);
+  });
+
+  it('the shop table is kinder than the drop table early, and the same from level 10', () => {
+    expect(shopRarityShares(1).rare).toBeGreaterThan(dropRarityShares(1).rare);
+    expect(shopRarityShares(1).epic).toBeGreaterThan(0);
+    expect(shopRarityShares(10)).toEqual(dropRarityShares(10));
+    expect(shopRarityShares(25)).toEqual(dropRarityShares(25));
   });
 
   it('stock never offers an owned item', () => {
@@ -73,59 +97,77 @@ describe('stockShop', () => {
     }
   });
 
-  it('prices lock at draw time', () => {
+  it('offers no relic already earned this run', () => {
+    const earned = ITEM_CATALOG.filter((item) => item.rarity === 'relic').map((item) => item.id);
+    const stocked = stockShop(makeCharacter({ earnedRelicIds: earned }), 3, DAY, relicRng());
+    expect(allWares(stocked).some((ware) => rarityOf(ware) === 'relic')).toBe(false);
+  });
+
+  it('gold prices lock at draw time', () => {
     const stocked = stockShop(makeCharacter(), 3, DAY, createRng(4));
-    for (const ware of allWares(stocked)) expect(ware.price).toBe(warePrice(rarityOf(ware), 3));
+    for (const ware of allWares(stocked).filter((w) => w.currency !== 'gems')) expect(ware.price).toBe(warePrice(rarityOf(ware), 3));
   });
 });
 
 describe('buyWare', () => {
   const stocked = (gold: number) => stockShop(makeCharacter({ gold }), 3, DAY, createRng(7));
+  const gemStock = () => stocks(30).find((shop) => shop.wares[0]?.currency === 'gems')!;
 
   it('buyWare takes the gold and hands over the item', () => {
-    const c = stocked(1000);
+    const c = stocked(100000);
     const featured = c.shop!.featured!;
-    const result = buyWare(c, featured.itemId)!;
+    const result = buyWare(c, featured.itemId, 0)!;
     expect(result.item.id).toBe(featured.itemId);
-    expect(result.character.gold).toBe(1000 - featured.price);
+    expect(result.gemsSpent).toBe(0);
+    expect(result.character.gold).toBe(100000 - featured.price);
     expect(result.character.ownedItemIds).toContain(featured.itemId);
     expect(result.character.shop!.featured!.sold).toBe(true);
-    expect(wareState(result.character, result.character.shop!.featured!)).toBe('sold');
+    expect(wareState(result.character, result.character.shop!.featured!, 0)).toBe('sold');
+  });
+
+  it('a gem ware takes no gold and reports its gems', () => {
+    const c = { ...makeCharacter({ level: 30, gold: 50 }), shop: gemStock() };
+    const ware = c.shop.wares[0];
+    expect(wareState(c, ware, ware.price - 1)).toBe('short');
+    expect(buyWare(c, ware.itemId, ware.price - 1)).toBeNull();
+    const result = buyWare(c, ware.itemId, ware.price)!;
+    expect(result.gemsSpent).toBe(ware.price);
+    expect(result.character.gold).toBe(50);
   });
 
   it('buyWare twice buys once', () => {
-    const c = stocked(1000);
-    const id = c.shop!.wares[0].itemId;
-    const once = buyWare(c, id)!.character;
-    expect(buyWare(once, id)).toBeNull();
-    expect(once.gold).toBe(1000 - c.shop!.wares[0].price);
+    const c = stocked(100000);
+    const ware = c.shop!.wares.find((w) => w.currency !== 'gems')!;
+    const once = buyWare(c, ware.itemId, 0)!.character;
+    expect(buyWare(once, ware.itemId, 0)).toBeNull();
+    expect(once.gold).toBe(100000 - ware.price);
   });
 
   it('short on gold buys nothing', () => {
     const c = stocked(0);
-    expect(wareState(c, c.shop!.wares[0])).toBe('short');
-    expect(buyWare(c, c.shop!.wares[0].itemId)).toBeNull();
+    expect(wareState(c, c.shop!.featured!, 0)).toBe('short');
+    expect(buyWare(c, c.shop!.wares[0].itemId, 0)).toBeNull();
   });
 
   it('a stocked item that dropped meanwhile reads owned', () => {
-    const c = stocked(1000);
+    const c = stocked(100000);
     const ware = c.shop!.wares[0];
     const dropped = { ...c, ownedItemIds: [ware.itemId] };
-    expect(wareState(dropped, ware)).toBe('owned');
-    expect(buyWare(dropped, ware.itemId)).toBeNull();
+    expect(wareState(dropped, ware, 0)).toBe('owned');
+    expect(buyWare(dropped, ware.itemId, 0)).toBeNull();
   });
 
   it('an item not in stock is not for sale', () => {
-    const c = stocked(1000);
+    const c = stocked(100000);
     const elsewhere = ITEM_CATALOG.find((item) => !allWares(c).some((w) => w.itemId === item.id))!;
-    expect(buyWare(c, elsewhere.id)).toBeNull();
+    expect(buyWare(c, elsewhere.id, 0)).toBeNull();
   });
 
   it('buying a relic records it earned', () => {
-    const c = stockShop(makeCharacter({ gold: 100000 }), 3, DAY, lowRng);
+    const c = stockShop(makeCharacter({ gold: 100000 }), 3, DAY, relicRng());
     const relic = c.shop!.featured!;
     expect(rarityOf(relic)).toBe('relic');
-    expect(buyWare(c, relic.itemId)!.character.earnedRelicIds).toContain(relic.itemId);
+    expect(buyWare(c, relic.itemId, 0)!.character.earnedRelicIds).toContain(relic.itemId);
   });
 });
 
@@ -153,53 +195,71 @@ describe('restockShop', () => {
   });
 });
 
-describe('tonics', () => {
+describe('potions', () => {
+  // DAY's 3-day window runs 2026-11-12 to 2026-11-14.
   const hurt = (gold = 1000) => {
-    const c = makeCharacter({ gold });
+    const c = stockShop(makeCharacter({ gold }), 4, DAY, createRng(3));
     return { ...c, currentHealth: effectiveStat(c, 'health') / 2 };
   };
 
-  it('the draught heals 25% and then rests 3 days', () => {
+  it('the Health Potion heals 25%, then is out of stock until the window turns', () => {
     const c = hurt();
     const max = effectiveStat(c, 'health');
     const drunk = buyTonic(c, 'draught', 4, DAY)!;
     expect(drunk.character.currentHealth).toBeCloseTo(c.currentHealth + max * 0.25, 6);
     expect(drunk.healed).toBeCloseTo(max * 0.25, 6);
     expect(drunk.character.gold).toBe(1000 - tonicPrice(4));
-    expect(tonicState(drunk.character, 'draught', 4, '2026-11-15')).toMatchObject({ status: 'cooldown', daysLeft: 1 });
-    expect(tonicState(drunk.character, 'draught', 4, '2026-11-16').status).toBe('buy');
+    expect(tonicState(drunk.character, 'draught', 4, DAY).status).toBe('out');
+    expect(buyTonic(drunk.character, 'draught', 4, DAY)).toBeNull();
+    expect(tonicState(drunk.character, 'draught', 4, '2026-11-14').status).toBe('out');
+    expect(tonicState(drunk.character, 'draught', 4, '2026-11-15').status).toBe('buy');
   });
 
-  it('no draught at full health', () => {
-    const base = makeCharacter({ gold: 1000 });
+  it("the day's redraw keeps the potions bought, a restock puts them back", () => {
+    const drunk = buyTonic(hurt(10000), 'draught', 4, DAY)!.character;
+    const nextDay = stockShop(drunk, 4, '2026-11-14', createRng(5));
+    expect(tonicState(nextDay, 'draught', 4, '2026-11-14').status).toBe('out');
+    const restocked = restockShop(nextDay, 4, createRng(6))!.character;
+    expect(tonicState(restocked, 'draught', 4, '2026-11-14').status).toBe('buy');
+  });
+
+  it('no Health Potion at full health', () => {
+    const base = stockShop(makeCharacter({ gold: 1000 }), 4, DAY, createRng(3));
     const c = { ...base, currentHealth: effectiveStat(base, 'health') };
     expect(tonicState(c, 'draught', 4, DAY).status).toBe('full');
     expect(buyTonic(c, 'draught', 4, DAY)).toBeNull();
   });
 
-  it('one of each boost at a time', () => {
-    const c = buyTonic(hurt(), 'crit', 4, DAY)!.character;
-    expect(tonicState(c, 'crit', 4, DAY)).toMatchObject({ status: 'active', daysLeft: 3 });
-    expect(buyTonic(c, 'crit', 4, DAY)).toBeNull();
-    expect(tonicState(c, 'heal', 4, DAY).status).toBe('buy');
+  it('a boost still running holds its potion back after a restock', () => {
+    const c = buyTonic(hurt(10000), 'crit', 4, DAY)!.character;
+    expect(tonicState(c, 'crit', 4, DAY).status).toBe('out');
+    const restocked = restockShop(c, 4, createRng(6))!.character;
+    expect(tonicState(restocked, 'crit', 4, DAY)).toMatchObject({ status: 'active', daysLeft: 3 });
+    expect(buyTonic(restocked, 'crit', 4, DAY)).toBeNull();
+    expect(tonicState(restocked, 'heal', 4, DAY).status).toBe('buy');
   });
 
-  it('the EXP tonic grants the EXP boost', () => {
+  it('the EXP Potion grants the EXP boost', () => {
     const c = buyTonic(hurt(), 'exp', 4, DAY)!.character;
     expect(activeExpBoost(c, DAY)).toBeDefined();
   });
 
-  it('short on gold buys no tonic', () => {
+  it('short on gold buys no potion', () => {
     const c = hurt(0);
     expect(tonicState(c, 'heal', 4, DAY).status).toBe('short');
     expect(buyTonic(c, 'heal', 4, DAY)).toBeNull();
   });
 
-  it('a death clears the draught cooldown', () => {
-    const dead = makeCharacter({ currentHealth: 0, draughtDayKey: DAY });
-    const boss = { index: 1, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
-    expect(resolvePlayerDeathIfDead(dead, { ...boss }, [], createRng(1)).character.draughtDayKey).toBeUndefined();
+  it('no stock, no potion', () => {
+    expect(buyTonic(makeCharacter({ gold: 1000 }), 'exp', 4, DAY)).toBeNull();
   });
+
+  it('a death clears the potions bought', () => {
+    const drunk = buyTonic(hurt(), 'exp', 4, DAY)!.character;
+    const boss = { index: 1, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
+    expect(resolvePlayerDeathIfDead({ ...drunk, currentHealth: 0 }, { ...boss }, [], createRng(1)).character.shop).toBeUndefined();
+  });
+});
 
 describe('a fallen hero', () => {
   // A reload can leave the death screen down with the hero at 0 HP.
@@ -209,8 +269,7 @@ describe('a fallen hero', () => {
     const c = fallen();
     expect(buyTonic(c, 'draught', 3, DAY)).toBeNull();
     expect(buyTonic(c, 'crit', 3, DAY)).toBeNull();
-    expect(buyWare(c, c.shop!.wares[0].itemId)).toBeNull();
+    expect(buyWare(c, c.shop!.wares[0].itemId, 0)).toBeNull();
     expect(restockShop(c, 3, createRng(1))).toBeNull();
   });
-});
 });

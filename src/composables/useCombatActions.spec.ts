@@ -626,7 +626,7 @@ describe('useCombatActions', () => {
 
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
     questStore.addQuest('Clean garage', 'medium', '2099-01-01');
-    characterStore.character = { ...characterStore.character, currentHealth: 1, slotUpgrades: 2, serviceBuys: { reroll: 3 }, gold: 500 };
+    characterStore.character = { ...characterStore.character, currentHealth: 1, slotUpgrades: 2, serviceTurn: { id: 'reroll', startDayKey: '2026-11-01', rerolls: 3 }, gold: 500 };
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
     checkMissedHabit(habit.id);
 
@@ -635,7 +635,7 @@ describe('useCombatActions', () => {
     expect(questStore.quests).toHaveLength(1);
     expect(questStore.quests[0].description).toBe('Clean garage');
     expect(characterStore.character.slotUpgrades).toBeUndefined();
-    expect(characterStore.character.serviceBuys).toBeUndefined();
+    expect(characterStore.character.serviceTurn).toBeUndefined();
     expect(characterStore.character.gold).toBeUndefined();
   });
 

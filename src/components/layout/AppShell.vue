@@ -4,6 +4,9 @@ import { ArrowLeft, Gift } from 'lucide-vue-next';
 import AppMenu from './AppMenu.vue';
 import TabBar from './TabBar.vue';
 import NewHeroScreen from './NewHeroScreen.vue';
+import AddGemsButton from '../debug/AddGemsButton.vue';
+import AddGoldButton from '../debug/AddGoldButton.vue';
+import DropItemButton from '../debug/DropItemButton.vue';
 import PopupPreview from '../debug/PopupPreview.vue';
 import FightStage from '../fight/FightStage.vue';
 import SkipDayButton from '../debug/SkipDayButton.vue';
@@ -29,6 +32,8 @@ import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
 import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
 import EnchantReveal from '../shop/EnchantReveal.vue';
+import ServiceDonePopup from '../shop/ServiceDonePopup.vue';
+import GameToast from '../ui/GameToast.vue';
 import ReviveNotice from '../ui/ReviveNotice.vue';
 import BossSkillPopup from '../boss/BossSkillPopup.vue';
 import { useCelebration } from '../../composables/useCelebration';
@@ -121,6 +126,8 @@ watch(
     <ItemDropPopup />
     <MissedSkillsPopup />
     <EnchantReveal />
+    <ServiceDonePopup />
+    <GameToast />
     <QuestMissPopup />
     <BossSkillPopup />
     <QuestCompletePopup />
@@ -132,6 +139,9 @@ watch(
     <template v-else>
       <button v-if="isDev" type="button" class="dev-toggle" :aria-pressed="devTools.on" @click="devTools.toggle()">Dev</button>
       <SkipDayButton v-if="isDev && devTools.on" />
+      <AddGoldButton v-if="isDev && devTools.on" />
+      <AddGemsButton v-if="isDev && devTools.on" />
+      <DropItemButton v-if="isDev && devTools.on" />
       <PopupPreview v-if="isDev && devTools.on" />
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
         <component :is="topBar">

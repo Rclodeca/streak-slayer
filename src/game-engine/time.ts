@@ -128,6 +128,15 @@ export function addDaysToDayKey(dayKey: string, days: number): string {
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
+/** Windows are counted from this day, so every player's windows line up. */
+const WINDOW_EPOCH = '2026-01-01';
+
+/** The first day of `dayKey`'s `days`-day window (the Vault's stock, the shop's potions). */
+export function windowStartKey(dayKey: string, days: number): string {
+  const since = daysBetweenDayKeys(WINDOW_EPOCH, dayKey);
+  return addDaysToDayKey(WINDOW_EPOCH, Math.floor(since / days) * days);
+}
+
 /** The Monday that starts `dayKey`'s week (`YYYY-MM-DD`), read off the key itself. */
 export function weekStartOf(dayKey: string): string {
   const [year, month, day] = dayKey.split('-').map(Number);

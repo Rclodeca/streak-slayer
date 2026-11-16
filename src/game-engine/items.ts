@@ -77,7 +77,23 @@ export interface ItemDef {
   effectText?: string; // short plain line saying what the effect does, e.g. "+30% damage to bosses above 75% HP."
 }
 
-const DROP_RARITIES: DropRarity[] = ['common', 'uncommon', 'rare', 'epic'];
+export const DROP_RARITIES: DropRarity[] = ['common', 'uncommon', 'rare', 'epic'];
+
+/** A by-level table's values at `level`, blended linearly between its rows; levels past either end take that end's row. */
+export function blendByLevel<K extends PropertyKey>(rows: readonly (readonly [number, Record<K, number>])[], level: number): Record<K, number> {
+  const at = Math.min(Math.max(level, rows[0][0]), rows[rows.length - 1][0]);
+  const upper = Math.max(1, rows.findIndex(([rowLevel]) => rowLevel >= at));
+  const [[fromLevel, from], [toLevel, to]] = [rows[upper - 1], rows[upper]];
+  const t = (at - fromLevel) / (toLevel - fromLevel);
+  const keys = Object.keys(from) as K[];
+  return Object.fromEntries(keys.map((key) => [key, from[key] + (to[key] - from[key]) * t])) as Record<K, number>;
+}
+
+/** Percent shares, as fractions summing to 1. */
+export function normalizeShares(percent: Record<DropRarity, number>): Record<DropRarity, number> {
+  const total = DROP_RARITIES.reduce((sum, rarity) => sum + percent[rarity], 0);
+  return { common: percent.common / total, uncommon: percent.uncommon / total, rare: percent.rare / total, epic: percent.epic / total };
+}
 
 /**
  * Each rarity's share of drops at `level`, as fractions summing to 1:
@@ -86,15 +102,9 @@ const DROP_RARITIES: DropRarity[] = ['common', 'uncommon', 'rare', 'epic'];
  * MAGPIE_RARE_EPIC_MULTIPLIER before everything is scaled back to 1.
  */
 export function dropRarityShares(level: number, magpie = false): Record<DropRarity, number> {
-  const rows = TUNING.DROP_RARITY_SHARES_BY_LEVEL;
-  const at = Math.min(Math.max(level, rows[0][0]), rows[rows.length - 1][0]);
-  const upper = Math.max(1, rows.findIndex(([rowLevel]) => rowLevel >= at));
-  const [[fromLevel, from], [toLevel, to]] = [rows[upper - 1], rows[upper]];
-  const t = (at - fromLevel) / (toLevel - fromLevel);
-  const boost = (rarity: DropRarity) => (magpie && (rarity === 'rare' || rarity === 'epic') ? TUNING.ITEM_EFFECTS.MAGPIE_RARE_EPIC_MULTIPLIER : 1);
-  const percent = (rarity: DropRarity) => (from[rarity] + (to[rarity] - from[rarity]) * t) * boost(rarity);
-  const total = DROP_RARITIES.reduce((sum, rarity) => sum + percent(rarity), 0);
-  return { common: percent('common') / total, uncommon: percent('uncommon') / total, rare: percent('rare') / total, epic: percent('epic') / total };
+  const percent = blendByLevel(TUNING.DROP_RARITY_SHARES_BY_LEVEL, level);
+  const boost = magpie ? TUNING.ITEM_EFFECTS.MAGPIE_RARE_EPIC_MULTIPLIER : 1;
+  return normalizeShares({ ...percent, rare: percent.rare * boost, epic: percent.epic * boost });
 }
 
 /**
@@ -282,32 +292,23 @@ export function recordRelicEarned(character: Character, itemId: string): Charact
   return { ...character, earnedRelicIds: [...earned, itemId] };
 }
 
-/**
- * Whether a boss kill drops anything: boss 1 always does (each run's first
- * find), the rest on ITEM_DROP_CHANCE. Always draws one roll, so the rng
- * sequence after it doesn't depend on the boss.
- */
-export function rollsBossDrop(bossIndex: number, rng: Rng): boolean {
-  const roll = rng();
-  return bossIndex === 1 || roll < TUNING.ITEM_DROP_CHANCE;
+/** The percent odds of a boss kill dropping 1, 2 or 3 items at `level`, blended between ITEM_DROP_COUNT_ODDS_BY_LEVEL's rows. */
+export function itemDropCountOdds(level: number): { 1: number; 2: number; 3: number } {
+  return blendByLevel(TUNING.ITEM_DROP_COUNT_ODDS_BY_LEVEL, level);
 }
 
 /**
- * Rolls this character's item drop for defeating the boss at `bossIndex`
- * (`maxCount` further caps how many items drop, e.g. 1 for a single-item reward).
- * Desired count follows a step curve (more items from later bosses, capped
- * at ITEM_DROP_MAX_COUNT), further capped by how many catalog items this
- * character doesn't already own — returns [] once every item is owned.
- * Rarity odds follow the character's level (see dropRarityShares).
+ * Rolls this character's item drop for a boss kill: 1 to 3 items on the odds
+ * for its level (see itemDropCountOdds), capped by `maxCount` (e.g. 1 for a
+ * single-item reward) and by how many catalog items it doesn't already own —
+ * [] once every item is owned. Always draws the count roll, so the rng
+ * sequence after it doesn't depend on the cap. Rarity odds follow the
+ * character's level too (see dropRarityShares).
  */
-export function rollItemDrops(character: Character, bossIndex: number, rng: Rng, maxCount: number = TUNING.ITEM_DROP_MAX_COUNT): ItemDef[] {
+export function rollItemDrops(character: Character, rng: Rng, maxCount: number = TUNING.ITEM_DROP_MAX_COUNT): ItemDef[] {
   const unowned = unownedDroppableItems(character);
-  const desiredCount = Math.min(
-    1 + Math.floor((bossIndex - 1) / TUNING.ITEM_DROP_EVERY_N_BOSSES),
-    TUNING.ITEM_DROP_MAX_COUNT,
-    maxCount,
-  );
-  const count = Math.min(desiredCount, unowned.length);
+  const rolled = Number(pickWeighted<'1' | '2' | '3'>(itemDropCountOdds(character.level), rng));
+  const count = Math.min(rolled, maxCount, unowned.length);
   return pickDrops(unowned, count, dropRarityShares(character.level, hasItemEffect(character, 'magpie')), rng);
 }
 
@@ -327,12 +328,12 @@ export function rollScavengerDrop(character: Character, dropped: ItemDef[], rng:
 /** The most equip slots a character can ever have (the item grid always shows this many, locked or not). */
 export const MAX_EQUIP_SLOTS = 8;
 
-/** Slot steps (two slots each) the character has bought in the Shop this run. */
+/** Item slots the character has bought in the Shop this run, one slot each. */
 export function slotUpgradesOf(character: Pick<Character, 'slotUpgrades'>): number {
   return character.slotUpgrades ?? 0;
 }
 
-/** 4 equip slots, and 2 more for each slot step bought (up to MAX_EQUIP_SLOTS). */
+/** 4 equip slots, and 1 more for each slot bought (up to MAX_EQUIP_SLOTS). */
 export function maxEquipSlots(character: Pick<Character, 'slotUpgrades'>): number {
-  return Math.min(MAX_EQUIP_SLOTS, 4 + 2 * slotUpgradesOf(character));
+  return Math.min(MAX_EQUIP_SLOTS, 4 + slotUpgradesOf(character));
 }

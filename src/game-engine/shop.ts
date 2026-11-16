@@ -1,16 +1,18 @@
-// The gold shop (docs/ideas/2026-11-13-shop-economy.md §4): a stock drawn once
-// a day, bought with gold and used at once, and restocked for a climbing fee.
+// The shop (docs/ideas/2026-11-13-shop-economy.md §4): a stock drawn once a
+// day, rolled like boss drops (its headline in gold, others of its rarity in
+// gems), one of each potion every POTION_STOCK_DAYS days, all used at once,
+// and restocked (potions too) for a climbing gold fee.
 // The stock lives on Character.shop, so a death wipes it. Everything here is
 // pure; composables/useShop.ts runs it against the stores.
 
-import { SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
+import { GEM_WARE_PRICES, POTION_STOCK_DAYS, SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { characterGold } from './gold';
-import { ITEM_CATALOG, dropRarityShares, recordRelicEarned } from './items';
+import { DROP_RARITIES, ITEM_CATALOG, availableRelics, blendByLevel, normalizeShares, recordRelicEarned } from './items';
 import type { DropRarity, ItemDef, ItemRarity } from './items';
 import { activeCritBoost, activeExpBoost, activeHealBoost, applyCritBoostEffect, applyExpBoost, applyHealBoostEffect, effectiveStat } from './leveling';
-import { pickRandom, type Rng } from './rng';
-import { daysBetweenDayKeys } from './time';
+import { pickRandom, pickWeighted, type Rng } from './rng';
+import { daysBetweenDayKeys, windowStartKey } from './time';
 import type { Character, ShopStock, ShopWare } from './types';
 
 /** Whether the hero still stands: a fallen hero buys nothing, even with the death screen waiting behind a popup. */
@@ -18,60 +20,93 @@ export function standing(character: Character): boolean {
   return Math.round(character.currentHealth) > 0;
 }
 
+const RANK: Record<ItemRarity, number> = { common: 0, uncommon: 1, rare: 2, epic: 3, relic: 4 };
+const TIER_BELOW: Partial<Record<ItemRarity, ItemRarity>> = { uncommon: 'common', rare: 'uncommon', epic: 'rare', relic: 'epic' };
+
+/** The shop's rarity shares at `level`, as fractions summing to 1: the drop table, kinder below level 10 (SHOP_EARLY_RARITY_SHARES). */
+export function shopRarityShares(level: number): Record<DropRarity, number> {
+  const early = TUNING.SHOP_EARLY_RARITY_SHARES;
+  const late = TUNING.DROP_RARITY_SHARES_BY_LEVEL.filter(([rowLevel]) => rowLevel > early[early.length - 1][0]);
+  return normalizeShares(blendByLevel([...early, ...late], level));
+}
+
+/** The lowest rarity the headline can be at `level` (SHOP_STOCK.headlineFloor). */
+export function headlineFloor(level: number): ItemRarity {
+  return SHOP_STOCK.headlineFloor.filter(([rowLevel]) => rowLevel <= level).at(-1)?.[1] ?? 'common';
+}
+
 /**
- * The items a stock can draw from, by rarity: only ones the character doesn't
- * own, and only rarities that drop at its level (relics go with epics). The
- * gold shop and the Vault share it.
+ * One item for the stock from `pool` (what's left to draw): a rarity, at least
+ * `floor`, on `shares` among those with something left, then any item of it.
+ * An epic turns relic SHOP_STOCK.relicShare of the time while a relic is
+ * left (always, once no epic is). Null when nothing is left at `floor` or up.
  */
-export function stockPool(character: Character): (...rarities: ItemRarity[]) => ItemDef[] {
-  const shares = dropRarityShares(character.level);
-  const pool = ITEM_CATALOG.filter((item) => !character.ownedItemIds.includes(item.id));
-  const allowed = (item: ItemDef) => (item.rarity === 'relic' ? shares.epic > 0 : shares[item.rarity as DropRarity] > 0);
-  return (...rarities) => pool.filter((item) => rarities.includes(item.rarity) && allowed(item));
-}
-
-/** Up to `count` distinct random items from `pool`. */
-export function pickSome(pool: ItemDef[], count: number, rng: Rng): ItemDef[] {
-  const left = [...pool];
-  const picked: ItemDef[] = [];
-  while (picked.length < count && left.length > 0) {
-    const item = pickRandom(left, rng);
-    picked.push(item);
-    left.splice(left.indexOf(item), 1);
-  }
-  return picked;
+function drawOne(pool: ItemDef[], shares: Record<DropRarity, number>, floor: ItemRarity, rng: Rng): ItemDef | null {
+  const of = (rarity: ItemRarity) => pool.filter((item) => item.rarity === rarity);
+  const left = DROP_RARITIES.filter((rarity) => RANK[rarity] >= RANK[floor] && shares[rarity] > 0 && of(rarity).length + (rarity === 'epic' ? of('relic').length : 0) > 0);
+  if (left.length === 0) return null;
+  let rarity: ItemRarity = pickWeighted<DropRarity>(Object.fromEntries(left.map((r) => [r, shares[r]])), rng);
+  if (rarity === 'epic' && of('relic').length > 0 && (of('epic').length === 0 || rng() < SHOP_STOCK.relicShare)) rarity = 'relic';
+  return pickRandom(of(rarity), rng);
 }
 
 /**
- * A fresh stock: up to SHOP_STOCK.basics commons and uncommons, one rare, and
- * on some days an epic or relic, from stockPool. The special takes the
- * velvet and the rare drops into the rows; otherwise the rare is featured.
+ * A fresh stock: SHOP_STOCK.size items, each rolled like a boss drop on
+ * shopRarityShares, from what the character doesn't own (and, for relics,
+ * hasn't earned or been promised by a challenge). The best is the headline,
+ * in gold; below the level's headlineFloor it's redrawn from the floor up.
+ * When the headline is rare or better, the other items of its rarity cost
+ * gems and lead the rows, at most SHOP_STOCK.gemCap of them; any more are
+ * redrawn a tier lower. The rest are gold, best first.
  */
 function drawStock(character: Character, bossIndex: number, dayKey: string, restocks: number, rng: Rng): ShopStock {
-  const shares = dropRarityShares(character.level);
-  const of = stockPool(character);
+  const shares = shopRarityShares(character.level);
+  const pool = [...ITEM_CATALOG.filter((item) => item.rarity !== 'relic' && !character.ownedItemIds.includes(item.id)), ...availableRelics(character)];
+  const take = (item: ItemDef | null | undefined) => {
+    if (item) pool.splice(pool.indexOf(item), 1);
+    return item ?? null;
+  };
 
-  const basics = pickSome(of('common', 'uncommon'), SHOP_STOCK.basics, rng);
-  const rare = pickSome(of('rare'), 1, rng)[0] ?? null;
-  let special: ItemDef | null = null;
-  if (shares.epic > 0 && rng() < SHOP_STOCK.featuredChance) {
-    const relics = of('relic');
-    special = pickSome(relics.length > 0 && rng() < SHOP_STOCK.relicShare ? relics : of('epic'), 1, rng)[0] ?? null;
+  const drawn: ItemDef[] = [];
+  for (let i = 0; i < SHOP_STOCK.size; i++) {
+    const item = take(drawOne(pool, shares, 'common', rng));
+    if (item) drawn.push(item);
   }
+  const byRank = (a: ItemDef, b: ItemDef) => RANK[b.rarity] - RANK[a.rarity];
+  drawn.sort(byRank);
+  const floor = headlineFloor(character.level);
+  if (drawn.length > 0 && RANK[drawn[0].rarity] < RANK[floor]) drawn[0] = take(drawOne(pool, shares, floor, rng)) ?? drawn[0];
 
-  const ware = (item: ItemDef): ShopWare => ({ itemId: item.id, price: warePrice(item.rarity, bossIndex) });
-  const featured = special ?? rare;
-  const rows = special && rare ? [...basics, rare] : basics;
-  return { dayKey, featured: featured ? ware(featured) : null, wares: rows.map(ware), restocks };
+  const [headline, ...rest] = drawn;
+  if (!headline) return { dayKey, featured: null, wares: [], restocks };
+  const gemRarity = RANK[headline.rarity] >= RANK.rare ? headline.rarity : null;
+  const same = rest.filter((item) => item.rarity === gemRarity);
+  const gems = same.slice(0, SHOP_STOCK.gemCap);
+  const lower = same.slice(SHOP_STOCK.gemCap).flatMap((item) => {
+    const tier = TIER_BELOW[item.rarity];
+    return take(tier && pickSome(pool.filter((candidate) => candidate.rarity === tier), rng)) ?? [];
+  });
+  const gold = [...rest.filter((item) => item.rarity !== gemRarity), ...lower].sort(byRank);
+
+  const goldWare = (item: ItemDef): ShopWare => ({ itemId: item.id, price: warePrice(item.rarity, bossIndex) });
+  const gemWare = (item: ItemDef): ShopWare => ({ itemId: item.id, price: GEM_WARE_PRICES[item.rarity as keyof typeof GEM_WARE_PRICES], currency: 'gems' });
+  return { dayKey, featured: goldWare(headline), wares: [...gems.map(gemWare), ...gold.map(goldWare)], restocks };
 }
 
-/** Today's stock: the same character when it already has one for `dayKey`, else a new draw. */
+/** A random item from `items`, or undefined when there's none. */
+function pickSome(items: ItemDef[], rng: Rng): ItemDef | undefined {
+  return items.length > 0 ? pickRandom(items, rng) : undefined;
+}
+
+/** Today's stock: the same character when it already has one for `dayKey`, else a new draw. The potions bought keep their window. */
 export function stockShop(character: Character, bossIndex: number, dayKey: string, rng: Rng): Character {
-  if (character.shop?.dayKey === dayKey) return character;
-  return { ...character, shop: drawStock(character, bossIndex, dayKey, 0, rng) };
+  const shop = character.shop;
+  if (shop?.dayKey === dayKey) return character;
+  const potions = shop?.potionsKey ? { potionsKey: shop.potionsKey, potionsSold: shop.potionsSold ?? [] } : {};
+  return { ...character, shop: { ...drawStock(character, bossIndex, dayKey, 0, rng), ...potions } };
 }
 
-/** Pays restockFee and redraws today's stock. Null with no stock or too little gold. */
+/** Pays restockFee, redraws today's stock and puts every potion back. Null with no stock or too little gold. */
 export function restockShop(character: Character, bossIndex: number, rng: Rng): { character: Character; fee: number } | null {
   const shop = character.shop;
   if (!shop || !standing(character)) return null;
@@ -82,63 +117,75 @@ export function restockShop(character: Character, bossIndex: number, rng: Rng): 
   return { character: { ...paid, shop: drawStock(paid, bossIndex, shop.dayKey, shop.restocks + 1, rng) }, fee };
 }
 
-/** What a stocked ware's row shows: buyable, too dear, bought, or already owned another way. */
-export function wareState(character: Character, ware: ShopWare): 'buy' | 'short' | 'sold' | 'owned' {
+/** What a stocked ware's row shows: buyable, too dear (in gold, or in the account's `gems` for a gem ware), bought, or already owned another way. */
+export function wareState(character: Character, ware: ShopWare, gems: number): 'buy' | 'short' | 'sold' | 'owned' {
   if (ware.sold) return 'sold';
   if (character.ownedItemIds.includes(ware.itemId)) return 'owned';
-  return characterGold(character) >= ware.price ? 'buy' : 'short';
+  const purse = ware.currency === 'gems' ? gems : characterGold(character);
+  return purse >= ware.price ? 'buy' : 'short';
 }
 
 /**
- * Buys a stocked item: takes its price, marks it sold and adds it to the owned
- * items (a relic is recorded earned). Null if it isn't in stock or can't be
- * bought (see wareState).
+ * Buys a stocked item: takes its gold price (a gem ware's the caller spends,
+ * as `gemsSpent`), marks it sold and adds it to the owned items (a relic is
+ * recorded earned). Null if it isn't in stock or can't be bought (see wareState).
  */
-export function buyWare(character: Character, itemId: string): { character: Character; item: ItemDef } | null {
+export function buyWare(character: Character, itemId: string, gems: number): { character: Character; item: ItemDef; gemsSpent: number } | null {
   const shop = character.shop;
   const ware = shop && [shop.featured, ...shop.wares].find((w) => w?.itemId === itemId);
   const item = ITEM_CATALOG.find((candidate) => candidate.id === itemId);
-  if (!shop || !ware || !item || !standing(character) || wareState(character, ware) !== 'buy') return null;
+  if (!shop || !ware || !item || !standing(character) || wareState(character, ware, gems) !== 'buy') return null;
   const sell = (w: ShopWare | null) => (w?.itemId === itemId ? { ...w, sold: true } : w);
+  const inGems = ware.currency === 'gems';
   const bought: Character = {
     ...character,
-    gold: characterGold(character) - ware.price,
+    gold: characterGold(character) - (inGems ? 0 : ware.price),
     ownedItemIds: [...character.ownedItemIds, itemId],
     shop: { ...shop, featured: sell(shop.featured), wares: shop.wares.map((w) => sell(w)!) },
   };
-  return { character: recordRelicEarned(bought, itemId), item };
+  return { character: recordRelicEarned(bought, itemId), item, gemsSpent: inGems ? ware.price : 0 };
 }
 
 export type TonicId = 'draught' | 'crit' | 'heal' | 'exp';
 
 const pct = (bonus: number) => Math.round(bonus * 100);
 
-/** The tonics, always on the shelf. `icon` is a statIcons key. */
-export const TONIC_DEFS: readonly { id: TonicId; name: string; effect: string; icon: string }[] = [
-  { id: 'draught', name: 'Healing Draught', effect: `Heal ${TUNING.DRAUGHT_HEAL_PCT}% of max HP.`, icon: 'healing' },
-  { id: 'crit', name: 'Hawk Tonic', effect: `+${pct(TUNING.CRIT_BOOST_BONUS)}% crit chance for ${TUNING.CRIT_BOOST_DAYS} days.`, icon: 'critBoost' },
-  { id: 'heal', name: 'Verdant Tonic', effect: `+${pct(TUNING.HEAL_BOOST_BONUS)}% healing for ${TUNING.HEAL_BOOST_DAYS} days.`, icon: 'healBoost' },
-  { id: 'exp', name: "Scholar's Tonic", effect: `+${pct(TUNING.EXP_BOOST_BONUS)}% EXP for ${TUNING.EXP_BOOST_DAYS} days.`, icon: 'expBoost' },
+/** The potions, one of each in stock per POTION_STOCK_DAYS-day window. `art` is the sprite under public/sprites/. */
+export const TONIC_DEFS: readonly { id: TonicId; name: string; effect: string; art: string }[] = [
+  { id: 'draught', name: 'Health Potion', effect: `Heal ${TUNING.DRAUGHT_HEAL_PCT}% of max HP.`, art: 'potions/health' },
+  { id: 'crit', name: 'Crit Potion', effect: `+${pct(TUNING.CRIT_BOOST_BONUS)}% crit chance for ${TUNING.CRIT_BOOST_DAYS} days.`, art: 'potions/crit' },
+  { id: 'heal', name: 'Mending Potion', effect: `+${pct(TUNING.HEAL_BOOST_BONUS)}% healing for ${TUNING.HEAL_BOOST_DAYS} days.`, art: 'potions/mending' },
+  { id: 'exp', name: 'EXP Potion', effect: `+${pct(TUNING.EXP_BOOST_BONUS)}% EXP for ${TUNING.EXP_BOOST_DAYS} days.`, art: 'potions/exp' },
 ];
 
 const BOOSTS = { crit: activeCritBoost, heal: activeHealBoost, exp: activeExpBoost } as const;
 
+/** The first day of `dayKey`'s potion window. */
+export function potionWindowKey(dayKey: string): string {
+  return windowStartKey(dayKey, POTION_STOCK_DAYS);
+}
+
+/** The potions bought out of `dayKey`'s window: none once the window has turned. */
+function potionsSold(shop: ShopStock | undefined, dayKey: string): string[] {
+  return shop?.potionsKey === potionWindowKey(dayKey) ? (shop.potionsSold ?? []) : [];
+}
+
 /**
- * What a tonic's row shows on `dayKey`: buyable, too dear, its boost still
- * running (`active`), the draught resting (`cooldown`), or the hero at full
- * health (`full`, draught only). `daysLeft` counts the running boost or the rest.
+ * What a potion's row shows on `dayKey`: buyable, too dear, bought out of this
+ * window (`out`, until the window turns or a restock), its boost still running
+ * (`active`), or the hero at full health (`full`, Health Potion only).
+ * `daysLeft` counts the running boost.
  */
 export function tonicState(
   character: Character,
   id: TonicId,
   bossIndex: number,
   dayKey: string,
-): { price: number; status: 'buy' | 'short' | 'active' | 'cooldown' | 'full'; daysLeft: number } {
+): { price: number; status: 'buy' | 'short' | 'out' | 'active' | 'full'; daysLeft: number } {
   const price = tonicPrice(bossIndex);
   const afford = characterGold(character) >= price ? 'buy' : 'short';
+  if (potionsSold(character.shop, dayKey).includes(id)) return { price, status: 'out', daysLeft: 0 };
   if (id === 'draught') {
-    const rested = character.draughtDayKey === undefined ? Infinity : daysBetweenDayKeys(character.draughtDayKey, dayKey);
-    if (rested < TUNING.DRAUGHT_COOLDOWN_DAYS) return { price, status: 'cooldown', daysLeft: TUNING.DRAUGHT_COOLDOWN_DAYS - rested };
     if (character.currentHealth >= effectiveStat(character, 'health')) return { price, status: 'full', daysLeft: 0 };
     return { price, status: afford, daysLeft: 0 };
   }
@@ -147,15 +194,21 @@ export function tonicState(
   return { price, status: afford, daysLeft: 0 };
 }
 
-/** Buys and uses a tonic at once. Null unless its row reads `buy`. `healed` is what the draught restored. */
+/**
+ * Buys and uses a potion at once, taking it out of the window's stock. Null
+ * with no shop stock, or unless its row reads `buy`. `healed` is what the
+ * Health Potion restored.
+ */
 export function buyTonic(character: Character, id: TonicId, bossIndex: number, dayKey: string): { character: Character; healed?: number } | null {
+  const shop = character.shop;
   const { price, status } = tonicState(character, id, bossIndex, dayKey);
-  if (status !== 'buy' || !standing(character)) return null;
-  const paid = { ...character, gold: characterGold(character) - price };
+  if (!shop || status !== 'buy' || !standing(character)) return null;
+  const sold: ShopStock = { ...shop, potionsKey: potionWindowKey(dayKey), potionsSold: [...potionsSold(shop, dayKey), id] };
+  const paid = { ...character, gold: characterGold(character) - price, shop: sold };
   if (id === 'draught') {
     const max = effectiveStat(paid, 'health');
     const currentHealth = Math.min(paid.currentHealth + max * (TUNING.DRAUGHT_HEAL_PCT / 100), max);
-    return { character: { ...paid, currentHealth, draughtDayKey: dayKey }, healed: currentHealth - paid.currentHealth };
+    return { character: { ...paid, currentHealth }, healed: currentHealth - paid.currentHealth };
   }
   if (id === 'crit') return { character: applyCritBoostEffect(paid, dayKey) };
   if (id === 'heal') return { character: applyHealBoostEffect(paid, dayKey) };
