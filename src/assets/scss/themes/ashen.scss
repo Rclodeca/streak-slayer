@@ -4577,10 +4577,19 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       z-index: 2;
       // Clear of the menu, which floats over this corner (MenuCorner), and level
       // with it: the box's 6px top and a 44px row put the banner on the menu's centre.
+      // The strip runs out through the box's top and side padding (AppShell's
+      // talents-view) to the screen's edges, so no gap shows above it.
       min-height: 44px;
-      padding: 0 52px 0 2px;
+      margin: calc(-6px - env(safe-area-inset-top, 0px)) -0.75rem 0;
+      padding: calc(6px + env(safe-area-inset-top, 0px)) calc(52px + 0.75rem) 0 calc(2px + 0.75rem);
       background: var(--bg);
       box-shadow: 0 12px 12px -6px var(--bg);
+    }
+
+    // Above the banner's fade, which would otherwise fall over the line.
+    .talent-kept {
+      position: relative;
+      z-index: 3;
     }
 
     .talent-foot {

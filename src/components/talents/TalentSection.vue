@@ -36,7 +36,7 @@ const treeOpen = ref(false);
         <SectionTitle title="Talents"><component :is="TALENTS_TAB_ICON" :size="18" class="section-icon" /></SectionTitle>
         <CurrencyChips v-if="!isPhone" :gold="gold" :gems="accountStore.account.gems" show-zero />
       </div>
-      <p class="talent-kept">Kept through death.</p>
+      <p class="talent-kept">Permanent upgrades.</p>
       <TalentTree v-if="isPhone" />
       <template v-else>
         <button type="button" class="open-tree primary-button" @click="treeOpen = true">Open tree</button>

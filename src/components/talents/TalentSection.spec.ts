@@ -52,7 +52,7 @@ describe('TalentSection', () => {
     const wrapper = mountSection();
     expect(wrapper.find('.section-title').text()).toContain('Talents');
     expect(wrapper.find('.talent-header .currency').exists()).toBe(false);
-    expect(wrapper.text()).toContain('Kept through death.');
+    expect(wrapper.text()).toContain('Permanent upgrades.');
     expect(wrapper.text()).not.toMatch(/points?/i);
   });
 
