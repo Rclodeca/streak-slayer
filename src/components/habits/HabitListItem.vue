@@ -52,10 +52,12 @@ const effectiveDamage = computed(() => breakdown.value.effectiveDamage);
 
 const damageTypeColor = computed(() => DAMAGE_TYPE_COLORS[props.habit.damageType]);
 // The rank under the name: "PWR" and a bar that fills toward the top rank
-// (docs/mockups/skills-partial.html, Q3). Unranked, the bar is empty.
+// (docs/mockups/skills-pwr-heat.html, B). Unranked starts at a small sliver,
+// never empty; the top rank fills the bar.
 const MAX_RANK = TUNING.RANK_MILESTONES.daily.length;
+const POWER_FLOOR = 0.08;
 const rank = computed(() => props.habit.rank ?? 0);
-const powerPct = computed(() => `${(Math.min(rank.value, MAX_RANK) / MAX_RANK) * 100}%`);
+const powerPct = computed(() => `${(POWER_FLOOR + (1 - POWER_FLOOR) * (Math.min(rank.value, MAX_RANK) / MAX_RANK)) * 100}%`);
 const powerLabel = computed(() => (rank.value ? `Rank ${rankNumeral(rank.value)}` : 'Unranked'));
 
 const showStreak = computed(() => props.habit.streakCount >= MIN_STREAK_SHOWN);

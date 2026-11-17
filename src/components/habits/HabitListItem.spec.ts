@@ -207,15 +207,15 @@ describe('HabitListItem', () => {
       vi.useRealTimers();
     });
 
-    it('shows the rank under the name as a PWR bar filled toward the top rank, empty unranked', () => {
+    it('shows the rank under the name as a PWR bar filled toward the top rank, a sliver unranked', () => {
       const unranked = mountSkill({ rank: 0 });
       expect(unranked.find('.title .power-label').text()).toBe('PWR');
-      expect((unranked.find('.power-bar i').element as HTMLElement).style.width).toBe('0%');
+      expect((unranked.find('.power-bar i').element as HTMLElement).style.width).toBe('8%');
       expect(unranked.find('.power').attributes('aria-label')).toBe('Unranked');
       unranked.unmount();
       setActivePinia((pinia = createPinia()));
       const ranked = mountSkill({ rank: 2 });
-      expect((ranked.find('.power-bar i').element as HTMLElement).style.width).toBe('25%');
+      expect((ranked.find('.power-bar i').element as HTMLElement).style.width).toBe('31%');
       expect(ranked.find('.power').attributes('aria-label')).toBe('Rank II');
       expect(ranked.find('.rank-pips').exists()).toBe(false);
     });

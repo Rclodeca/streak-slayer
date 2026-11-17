@@ -1572,7 +1572,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
   }
 
-  // The bar: a sunk well, filled in brass to the rank.
+  // The bar: a sunk well, filled to the rank. The fill is a window onto one
+  // brass-to-red heat scale painted across the whole bar, so the longer it
+  // gets, the hotter its tip (docs/mockups/skills-pwr-heat.html, B).
   .habit-item .power-bar {
     display: block;
     width: 72px;
@@ -1586,7 +1588,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item .power-bar i {
     display: block;
     height: 100%;
-    background: linear-gradient(90deg, var(--brass-solid), $brass);
+    background-image: linear-gradient(90deg, #b39a66 0, #d2bb85 10%, #e9a448 28%, #ec7a35 48%, #e5472c 76%, #ff4a26 100%);
+    background-size: 72px 100%;
+    background-repeat: no-repeat;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 

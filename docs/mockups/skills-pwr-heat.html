@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — PWR bar heat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700;800&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The PWR bar, two changes: an unranked skill starts with a small sliver (never an empty bar), and
+   the bar's right tip gets hotter, brass to amber to orange to red-orange, as the rank climbs.
+   Each column is one look at ranks 0 (unranked) to VIII; the strike key keeps the skill's type colour.
+   Fill: unranked 8%, then 8% + 11.5% per rank, so Rank VIII is the full bar.
+   Pixel-cut Moonlit tokens, the card as built (58px, 72x6 bar). */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 30px; max-width: 760px; }
+.grid { display: flex; flex-wrap: wrap; gap: 40px 28px; justify-content: center; align-items: flex-start; }
+.col { width: 300px; flex: none; }
+.col h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.col h2 b { color: #d2bb85; margin-right: .5em; }
+.col ul.why { margin: 0 0 14px; padding-left: 18px; font-size: 14px; min-height: 84px; }
+.col ul.why li { margin: 2px 0; }
+.stack { display: flex; flex-direction: column; gap: 7px; background: #11121b; padding: 12px; border-radius: 16px; }
+
+.phone-ui {
+  --card: #2d2c50; --hi: #4d4c7e; --lo: #191a28; --lip: #0e0e19; --ink: #f4f4fa; --brass: #d2bb85; --brass-solid: #b39a66;
+  --field: #12131c; --sunk-hi: #2c2c47; --sunk-lo: #080811; --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --streak: #e8873c;
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+.skill { position: relative; display: flex; align-items: center; gap: 10px; height: 58px; padding: 5px 8px 5px 14px; background: var(--card); border-bottom: 3px solid var(--lip); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); }
+.mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.name { font: 700 17px/1.15 'Alegreya', serif; color: var(--ink); }
+.under { display: flex; align-items: center; }
+.rk { position: absolute; right: 70px; top: 7px; font: 700 10px 'Alegreya Sans'; letter-spacing: .14em; color: #6e6f8a; text-transform: uppercase; }
+.key { --c: var(--phys); flex: none; width: 52px; height: 36px; background: var(--c); clip-path: var(--px2); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.3); }
+.key.m { --c: var(--magic); } .key.h { --c: var(--heal); }
+
+.power { display: inline-flex; align-items: center; gap: 6px; }
+.power-label { font: 700 10px/1 'Alegreya Sans'; letter-spacing: .14em; text-transform: uppercase; color: var(--brass); }
+.bar { position: relative; display: block; width: 72px; height: 6px; background: var(--field); box-shadow: inset 1px 1px 0 var(--sunk-hi), inset -1px -1px 0 var(--sunk-lo); }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; display: block; box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+
+/* A: tip warms. Brass for most of the fill, the last stretch ramps to the rank's heat. */
+.A .bar i { background: linear-gradient(90deg, var(--brass-solid) 0, var(--brass) 50%, var(--tip) 100%); }
+
+/* B: heat gauge. One brass-to-red scale painted across the whole bar; the fill is a window onto it,
+   so the tip is hotter simply because it reaches further along. */
+.B .bar i { background-image: linear-gradient(90deg, #b39a66 0, #d2bb85 10%, #e9a448 28%, #ec7a35 48%, #e5472c 76%, #ff4a26 100%); background-size: 72px 100%; background-repeat: no-repeat; }
+
+/* C: tip glow. Like A, plus a bright 3px tip cap whose colour and glow grow with rank. */
+.C .bar i { background: linear-gradient(90deg, var(--brass-solid) 0, var(--brass) 60%, var(--tip) 100%); }
+.C .bar i::after { content: ''; position: absolute; right: 0; top: -1px; bottom: -1px; width: 3px; background: var(--tip); box-shadow: 0 0 var(--glow) var(--tip), inset 0 1px 0 rgba(255,255,255,.4); }
+
+/* D: banded heat. Hard 9px steps, each in its place on the heat scale: no smooth blending, so it
+   stays pixel art. The right-most band is always the hottest one lit. */
+.D .bar i { background: var(--bands); }
+
+/* E: ember tip. Plain brass bar; at Rank III+ the last 6px turn to the heat, and from Rank VI a
+   spark flickers above the tip. */
+.E .bar i { background: linear-gradient(90deg, var(--brass-solid), var(--brass)); }
+.E .bar i::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: var(--cap); background: var(--tip); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); }
+.E .bar i::before { content: ''; position: absolute; right: 1px; top: -4px; width: 2px; height: 2px; background: var(--tip); opacity: 0; box-shadow: -3px -2px 0 -0px var(--tip); }
+.E .hot .bar i::before { opacity: 1; animation: spark .9s steps(2) infinite; }
+@keyframes spark { 0% { transform: translateY(0); } 50% { transform: translateY(-2px); opacity: .6; } 100% { transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>PWR BAR · START + HEAT</h1>
+  <p class="lede">Unranked skills show a small sliver (8%) instead of an empty bar. As the rank climbs the bar's right tip heats from brass to amber to orange to red-orange. Five looks, each shown at every rank from unranked to VIII.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const NUM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const NAMES = ['Morning Run', 'Read Pages', 'Cold Shower', 'Meditate', 'Stretch', 'Practice Guitar', 'Deep Work', 'Lift Weights', 'Write Daily'];
+const KEYS = ['', 'm', 'h'];
+// Heat scale, by rank: brass, amber, orange, red-orange, hot red.
+const STOPS = [[0, '#d2bb85'], [2, '#e2b25a'], [4, '#ec8f3a'], [6, '#e65a2a'], [8, '#ff3d1f']];
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+function heat(r) {
+  for (let i = 1; i < STOPS.length; i++) {
+    if (r <= STOPS[i][0]) {
+      const [r0, c0] = STOPS[i - 1], [r1, c1] = STOPS[i];
+      const t = (r - r0) / (r1 - r0), a = hex(c0), b = hex(c1);
+      return '#' + a.map((v, k) => Math.round(v + (b[k] - v) * t).toString(16).padStart(2, '0')).join('');
+    }
+  }
+  return STOPS[STOPS.length - 1][1];
+}
+const pct = (r) => (r === 0 ? 8 : 8 + r * 11.5);
+// Banded fill: 8 bands of 9px; the lit ones take the colours of the heat scale up to this rank.
+function bands(r) {
+  const w = (pct(r) / 100) * 72, parts = [];
+  const n = Math.max(1, Math.ceil(w / 9));
+  for (let b = 0; b < n; b++) {
+    const c = heat(((b + 1) / n) * r);
+    parts.push(`${c} ${b * 9}px ${Math.min((b + 1) * 9, w)}px`);
+  }
+  return `linear-gradient(90deg, ${parts.map((p) => p.replace(/^(#\w+) (\S+) (\S+)$/, '$1 $2, $1 $3')).join(', ')})`;
+}
+const LOOKS = [
+  { k: 'A', h: 'Tip warms', why: ['Brass body; the last stretch ramps into the rank\'s heat colour.', 'Rank VIII ends in a hot red tip; a low rank barely warms.', 'Simplest change from what\'s built.'] },
+  { k: 'B', h: 'Heat gauge', why: ['One brass-to-red scale painted along the whole bar; the fill is a window onto it.', 'No per-rank colour to set: a longer bar simply reaches hotter colour.', 'The most natural "more power, more heat" read.'] },
+  { k: 'C', h: 'Tip glow', why: ['A warms, plus a bright cap at the tip that glows wider with each rank.', 'The tip looks lit like a coal; the glow is the loudest cue of the five.'] },
+  { k: 'D', h: 'Banded heat', why: ['Hard 9px bands, each in its place on the heat scale; no smooth blend.', 'Keeps the pixel-art look and lets you count progress as bands.'] },
+  { k: 'E', h: 'Ember tip', why: ['Plain brass bar with a small hot cap on the last 6px, from Rank III.', 'From Rank VI a spark flickers off the tip (two steps, cheap on Android).'] },
+];
+function row(look, r, i) {
+  const tip = heat(r);
+  const style = `--tip:${tip};--glow:${r * 1.2}px;--cap:${r >= 3 ? 6 : 0}px;` + (look.k === 'D' ? `--bands:${bands(r)};` : '');
+  const bar = `<span class="bar"><i style="width:${pct(r)}%;"></i></span>`;
+  return `<div class="skill ${r >= 6 ? 'hot' : ''}" style="${style}"><div class="mid"><div class="name">${NAMES[r]}</div><div class="under"><span class="power"><span class="power-label">PWR</span>${bar}</span></div></div><span class="rk">${r ? 'Rank ' + NUM[r] : 'Unranked'}</span><span class="key ${KEYS[r % 3]}"></span></div>`;
+}
+document.getElementById('grid').innerHTML = LOOKS.map((l) => `<div class="col"><h2><b>${l.k}</b>${l.h}</h2><ul class="why">${l.why.map((w) => `<li>${w}</li>`).join('')}</ul><div class="stack phone-ui ${l.k}">${[0, 1, 2, 3, 4, 5, 6, 7, 8].map((r, i) => row(l, r, i)).join('')}</div></div>`).join('');
+</script>
+</body>
+</html>
