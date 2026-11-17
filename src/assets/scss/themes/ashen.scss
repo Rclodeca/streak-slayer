@@ -4334,10 +4334,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: inset 2px 2px 0 var(--sunk-hi);
   }
 
-  // Gem prices, in the gems' cold blue rather than the card ink, on a key
-  // tinted the same so a gem buy never passes for a gold one.
+  // Gem prices, in the gems' own cyan rather than the card ink, on a key
+  // tinted cold so a gem buy never passes for a gold one.
   .shop-buy.gems:not(.short) .price {
-    color: var(--icon-arcane);
+    color: var(--icon-gem);
   }
 
   .shop-buy.gems:not(:disabled) {
@@ -4441,7 +4441,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-size: 15px;
     font-size-adjust: none;
     line-height: 1;
-    color: var(--icon-arcane);
+    color: var(--icon-gem);
   }
 
   .skin-card .price.short {

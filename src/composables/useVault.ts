@@ -36,7 +36,7 @@ export function useVault() {
     if (!result || !accountStore.spendGems(result.gemsSpent)) return false;
     characterStore.setCharacter(result.character);
     activityLogStore.addEntry({ kind: 'vault-bought', name: 'Gold Pouch', gems: result.gemsSpent, gold: result.gold });
-    toast.show({ art: 'services/pouch', title: 'Gold Pouch', text: `+${result.gold.toLocaleString('en-US')} gold`, tone: 'var(--icon-gold)' });
+    toast.show({ art: 'services/pouch', title: 'Gold Pouch', text: `+${result.gold.toLocaleString('en-US')} gold`, tone: 'var(--icon-coin)' });
     return true;
   }
 

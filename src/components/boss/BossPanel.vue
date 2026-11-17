@@ -24,7 +24,7 @@ import { usePress } from '../../composables/usePress';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
-import { bossSprite } from './bossSprites';
+import { bossArenaDrop, bossSprite } from './bossSprites';
 import HealthBar from '../ui/HealthBar.vue';
 import Modal from '../ui/Modal.vue';
 import StatIcon from '../ui/StatIcon.vue';
@@ -129,7 +129,7 @@ const skillTiles = computed<StatTile[]>(() => [
        each piece sits straight on the stage. -->
   <div class="boss-panel" :class="{ pressed }">
     <div class="boss-plat" aria-hidden="true" />
-    <div class="boss-figure" :class="{ dying: phase === 'dying', arriving: phase === 'arriving' }">
+    <div class="boss-figure" :class="{ dying: phase === 'dying', arriving: phase === 'arriving' }" :style="{ '--boss-drop': `${bossArenaDrop(sprite)}px` }">
       <img class="sprite" :srcset="spriteSrcset(sprite)" alt="Boss" />
       <template v-if="phase === 'dying'">
         <span class="death-flash" aria-hidden="true" />

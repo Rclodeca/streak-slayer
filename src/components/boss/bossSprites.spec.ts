@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BOSS_ART_COUNT, bossFamily, PERSONALITY_NAME } from '../../game-engine';
 import type { BossFamily, Personality } from '../../game-engine';
-import { bossSprite } from './bossSprites';
+import { bossArenaDrop, bossSprite } from './bossSprites';
 
 const sprites = fileURLToPath(new URL('../../../public/sprites', import.meta.url));
 
@@ -28,6 +28,23 @@ describe('bossSprite', () => {
         expect(existsSync(`${sprites}/bosses/${family}/${n}@3x.png`)).toBe(true);
       }
       expect(existsSync(`${sprites}/bosses/${family}/${BOSS_ART_COUNT[family] + 1}.png`)).toBe(false);
+    }
+  });
+});
+
+describe('bossArenaDrop', () => {
+  it('drops only the tall bosses, by whole art pixels, and names only real images', () => {
+    expect(bossArenaDrop('bosses/warlord/1')).toBe(8);
+    expect(bossArenaDrop('bosses/arcane/2')).toBe(4);
+    expect(bossArenaDrop('bosses/dragon/1')).toBe(0);
+    for (const family of Object.keys(BOSS_ART_COUNT) as BossFamily[]) {
+      for (let n = 1; n <= 12; n++) {
+        const drop = bossArenaDrop(`bosses/${family}/${n}`);
+        if (drop) {
+          expect(n).toBeLessThanOrEqual(BOSS_ART_COUNT[family]);
+          expect(drop % 2).toBe(0);
+        }
+      }
     }
   });
 });

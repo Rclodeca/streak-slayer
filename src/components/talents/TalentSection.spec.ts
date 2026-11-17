@@ -47,21 +47,13 @@ describe('TalentSection', () => {
     expect(wrapper.find('.cell').exists()).toBe(false);
   });
 
-  it('shows the gold and gems in the banner, and that talents are kept', () => {
+  it('shows that talents are kept, leaving the gold and gems to the purse beside the menu', () => {
     heroAt(9, { might: 2 }, 250, 3);
     const wrapper = mountSection();
     expect(wrapper.find('.section-title').text()).toContain('Talents');
-    expect(wrapper.find('.talent-header .currency .gold .count').text()).toBe('250');
-    expect(wrapper.find('.talent-header .currency .gems .count').text()).toBe('3');
+    expect(wrapper.find('.talent-header .currency').exists()).toBe(false);
     expect(wrapper.text()).toContain('Kept through death.');
     expect(wrapper.text()).not.toMatch(/points?/i);
-  });
-
-  it('greys an empty purse', () => {
-    heroAt(5, { might: 3 }, 0, 0);
-    const wrapper = mountSection();
-    expect(wrapper.find('.talent-header .gold .count').classes()).toContain('zero');
-    expect(wrapper.find('.talent-header .gems .count').classes()).toContain('zero');
   });
 
   it('shows the Damage shoot from its top node down, a node each with its name', () => {
@@ -247,6 +239,13 @@ describe('TalentSection on desktop', () => {
     expect(wrapper.find('.open-tree').exists()).toBe(true);
     expect(wrapper.find('.cell').exists()).toBe(false);
     expect(q('.talent-tree-view')).toBeNull();
+  });
+
+  it('greys an empty purse', () => {
+    heroAt(5, { might: 3 }, 0, 0);
+    const wrapper = mountSection();
+    expect(wrapper.find('.talent-header .gold .count').classes()).toContain('zero');
+    expect(wrapper.find('.talent-header .gems .count').classes()).toContain('zero');
   });
 
   it('opens the tree in a modal on the button, with the gold and the plinths', async () => {

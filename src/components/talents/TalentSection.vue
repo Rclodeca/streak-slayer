@@ -12,9 +12,10 @@ import TalentTree from './TalentTree.vue';
 import { TALENTS_TAB_ICON } from './talentDisplay';
 
 // The Talents tab (docs/mockups/pixel-talents.html, Plinths). On a phone it is the
-// banner (with the gold and gems, and a word that talents are kept) pinned over the tree (TalentTree) with its plinths
-// pinned under it, only the tree scrolling between. On a wider screen the tab is
-// the banner and a button, and the tree opens in a modal. Sealed until
+// banner (with a word that talents are kept) pinned over the tree (TalentTree) with its plinths
+// pinned under it, only the tree scrolling between; the gold and gems are in the purse
+// beside the menu (StagePurse). On a wider screen the tab is the banner, with the gold
+// and gems, and a button, and the tree opens in a modal. Sealed until
 // TALENTS_UNLOCK_LEVEL.
 const characterStore = useCharacterStore();
 const isPhone = usePhoneLayout();
@@ -33,7 +34,7 @@ const treeOpen = ref(false);
     <template v-else>
       <div class="talent-header">
         <SectionTitle title="Talents"><component :is="TALENTS_TAB_ICON" :size="18" class="section-icon" /></SectionTitle>
-        <CurrencyChips :gold="gold" :gems="accountStore.account.gems" show-zero />
+        <CurrencyChips v-if="!isPhone" :gold="gold" :gems="accountStore.account.gems" show-zero />
       </div>
       <p class="talent-kept">Kept through death.</p>
       <TalentTree v-if="isPhone" />

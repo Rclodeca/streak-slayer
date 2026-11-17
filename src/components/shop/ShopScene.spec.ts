@@ -3,8 +3,6 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useAccountStore } from '../../store/accountStore';
-import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
 import ShopScene from './ShopScene.vue';
 
@@ -31,15 +29,6 @@ describe('ShopScene', () => {
     await wrapper.vm.$nextTick();
     expect(wrapper.classes()).toContain('vaulted');
     expect(wrapper.find('.shop-say .line').text()).toBe('New looks. Same you.');
-  });
-
-  it('the purse shows gold and gems', () => {
-    const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, gold: 340 });
-    useAccountStore().initFromSave({ gems: 7, highestLevel: 1 }, 1);
-    const text = mount(ShopScene).find('.shop-purse').text().replace(/\s+/g, ' ');
-    expect(text).toContain('340');
-    expect(text).toContain('7');
   });
 
   it('carries the menu in its corner', () => {

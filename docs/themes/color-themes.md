@@ -313,6 +313,8 @@ Not chosen: A "Brighter" (same hues, +0.04 L, chroma x1.3) and C "Vivid" (+0.06 
   --icon-streak: #8d8475;
   --icon-exp: #d8b46a;
   --icon-gold: #c8a96e;
+  --icon-coin: #f0c64e;
+  --icon-gem: #6fd6ea;
   --icon-gift: #c8a96e;
   --hp-color: #a82a20;
   // Rosier than physical red, so the thread never reads as a hit.
@@ -496,6 +498,8 @@ White cards on a soft grey page, gunmetal Resist, navy for touch. The base token
   --icon-streak: #8a6f4a;
   --icon-exp: #b07d12;
   --icon-gold: #a87400;
+  --icon-coin: #a87400;
+  --icon-gem: #13879c;
   --icon-gift: #a87400;
   --hp-color: #a82a20;
   --fx-lifesteal: #d9566a;

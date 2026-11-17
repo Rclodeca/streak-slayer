@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { characterGold } from '../../game-engine';
 import { useCenteredArt } from '../../composables/useCenteredArt';
-import { useAccountStore } from '../../store/accountStore';
-import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
-import StatIcon from '../ui/StatIcon.vue';
 
 // The phone's Shop tab banner (docs/mockups/shop-tab-2.html, B's scene): the
 // shopkeeper's room, pinned at the top where the fight stage would be, with
-// the purse on a plate top-left and his line in an RPG text box across the
-// foot, his name in its corner; his line changes with the side on show. The
-// Vault side cools the room to blue. The shopkeeper is in the art, so nothing
-// is drawn over him. The page's menu rides in its corner through the default
-// slot, as on the stage and HomeBase.
+// his line in an RPG text box across the foot, his name in its corner; his line
+// changes with the side on show. The Vault side cools the room to blue. The
+// shopkeeper is in the art, so nothing is drawn over him. The page's menu, and
+// the purse beside it (StagePurse), ride in its corner through the default slot,
+// as on the stage and HomeBase.
 //
 // The art is the standard backdrop size, 216 x 116 art px, drawn at 2 CSS px
 // per art pixel (432 x 232) and centred like HomeBase's armory.
@@ -23,11 +19,7 @@ const ART_H = 232;
 
 const LINES = { items: 'Back again? Still breathing, I see.', services: 'Something worth changing?', vault: 'New looks. Same you.' } as const;
 
-const characterStore = useCharacterStore();
-const accountStore = useAccountStore();
 const tabStore = useTabStore();
-const gold = computed(() => characterGold(characterStore.character).toLocaleString('en-US'));
-const gems = computed(() => accountStore.account.gems.toLocaleString('en-US'));
 const vaulted = computed(() => tabStore.shopSide === 'vault');
 
 const frame = ref<HTMLElement | null>(null);
@@ -41,10 +33,6 @@ const offset = useCenteredArt(frame, ART_W);
         <img class="shop-room" :src="`${baseUrl}sprites/home/shop.png`" alt="" />
         <span class="shop-tint" aria-hidden="true" />
       </div>
-      <span class="shop-purse">
-        <span class="plate" :aria-label="`${gold} gold`"><StatIcon name="gold" />{{ gold }}</span>
-        <span class="plate" :aria-label="`${gems} gems`"><StatIcon name="gems" />{{ gems }}</span>
-      </span>
       <div class="shop-say" aria-live="polite">
         <span class="who">Shopkeeper</span>
         <p :key="tabStore.shopSide" class="line">{{ LINES[tabStore.shopSide] }}</p>
@@ -106,37 +94,7 @@ const offset = useCenteredArt(frame, ART_W);
   opacity: 1;
 }
 
-/* Dark plates and the text box, the same in every theme (the room is always night). */
-.plate {
-  padding: 5px 10px;
-  background: rgba(7, 8, 12, 0.88);
-  box-shadow:
-    inset 2px 2px 0 #333c52,
-    inset -2px -2px 0 #0c0f15;
-  clip-path: var(--px2, none);
-  color: #f0f3f7;
-}
-
-/* The purse: a plate each for the gold and the gems, the mock's bold serif numbers. */
-.shop-purse {
-  position: absolute;
-  z-index: 1;
-  left: 12px;
-  top: 12px;
-  display: flex;
-  gap: 6px;
-}
-
-.shop-purse .plate {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-}
-
+/* The text box is dark in every theme (the room is always night). */
 .shop-say {
   position: absolute;
   z-index: 2;

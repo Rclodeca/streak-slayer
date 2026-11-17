@@ -15,6 +15,7 @@ import HomeBase from '../character/HomeBase.vue';
 import ShopScene from '../shop/ShopScene.vue';
 import ShopSection from '../shop/ShopSection.vue';
 import MenuCorner from './MenuCorner.vue';
+import StagePurse from './StagePurse.vue';
 import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
 import QuestSection from '../quests/QuestSection.vue';
@@ -93,15 +94,16 @@ const topBar = computed(() => {
   if (isPhone.value && tabStore.tab === 'talents') return MenuCorner;
   return FightStage;
 });
-// The Trials button under the menu, where there's room: not on the Focus strip; the menu
-// lists Trials instead. Talents, the Hero and Shop tabs have no stage, so always have room.
-// Trials has no bottom tab of its own: this button and the menu are the way in.
-const trialsButton = computed(
+// The Trials button under the menu and the purse beside it, where there's room: not on
+// the Focus strip; the menu lists Trials instead, and the purse only shows its gains.
+// Talents, the Hero and Shop tabs have no stage, so always have room. Trials has no
+// bottom tab of its own: this button and the menu are the way in.
+const cornerRoom = computed(
   () =>
     isPhone.value &&
     (tabStore.tab === 'hero' || tabStore.tab === 'talents' || tabStore.tab === 'shop' || !stageFocused.value),
 );
-const trialsInMenu = computed(() => isPhone.value && !trialsButton.value);
+const trialsInMenu = computed(() => isPhone.value && !cornerRoom.value);
 const scrollBody = ref<HTMLElement | null>(null);
 watch(
   () => tabStore.tab,
@@ -145,8 +147,9 @@ watch(
       <PopupPreview v-if="isDev && devTools.on" />
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
         <component :is="topBar">
+          <StagePurse v-if="isPhone" :plate="cornerRoom" />
           <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="tabStore.select('trials')" />
-          <button v-if="trialsButton" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
+          <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
             <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
             <Gift :size="22" />
             <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>

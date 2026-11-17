@@ -209,10 +209,12 @@ onBeforeUnmount(() => {
 }
 
 /* With no plinth to stand on, the boss stands a little lower on the arena's
-   floor, 8px (4 art rows) below where the plinth held it (BossPanel.vue). */
+   floor, 12px (6 art rows) below where the plinth held it (BossPanel.vue): the
+   last 4px so the purse beside the menu (StagePurse) covers less of a tall
+   boss's head. The tallest stand lower still (--boss-drop, bossArenaDrop). */
 @media (max-width: 820px) {
   .fight-stage:has(.arena-img) .boss-figure {
-    bottom: calc(164px - 116 * var(--u));
+    bottom: calc(160px - 116 * var(--u) - var(--boss-drop, 0px));
   }
 
   /* The hero stands 6px right of the plinth's middle (CharacterPanel.vue);

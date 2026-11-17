@@ -37,6 +37,8 @@
   --icon-streak: #a8aebb;
   --icon-exp: #60a5fa;
   --icon-gold: #fbbf24;
+  --icon-coin: #f0c64e;
+  --icon-gem: #6fd6ea;
   --icon-gift: #f5c451;
   --hp-color: #e5484d;
   /* Hits on the fight stage (fight/hitFx.ts): lifesteal's thread, a reflect's

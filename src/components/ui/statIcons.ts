@@ -68,10 +68,10 @@ export const STAT_ICONS = {
   dodge: { icon: Wind, color: 'var(--icon-steel)' },
   skull: { icon: Skull, color: 'var(--dmg-physical)' },
   exp: { icon: Sparkles, color: 'var(--icon-exp)' },
-  gold: { icon: Coins, color: 'var(--icon-gold)' },
+  gold: { icon: Coins, color: 'var(--icon-coin)' },
   restock: { icon: RefreshCw, color: 'var(--icon-gold)' },
   // Not Ult's violet, which shares the Gem glyph.
-  gems: { icon: Gem, color: 'var(--icon-arcane)' },
+  gems: { icon: Gem, color: 'var(--icon-gem)' },
   freeze: { icon: Snowflake, color: 'var(--icon-arcane)' },
   skins: { icon: Shirt, color: 'var(--icon-arcane)' },
   levelUp: { icon: ChevronsUp, color: 'var(--icon-exp)' },

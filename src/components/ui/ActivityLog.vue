@@ -307,12 +307,12 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
 }
 
 .log-gold {
-  color: var(--icon-gold);
+  color: var(--icon-coin);
   font-weight: 700;
 }
 
 .log-gems {
-  color: var(--icon-arcane);
+  color: var(--icon-gem);
   font-weight: 700;
 }
 </style>
