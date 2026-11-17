@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createAccount, recordLevel, spendGems } from './account';
+import { claimPurse, createAccount, purseDue, recordLevel, spendGems } from './account';
+import { purseGold } from './constants/economy';
 
 describe('recordLevel', () => {
   it('pays the milestones up to the level reached', () => {
@@ -29,5 +30,21 @@ describe('spendGems', () => {
 
   it('can spend down to exactly 0', () => {
     expect(spendGems({ gems: 3, highestLevel: 5 }, 3)).toEqual({ gems: 0, highestLevel: 5 });
+  });
+});
+
+describe('the daily purse', () => {
+  it('is claimed once a day', () => {
+    const claimed = claimPurse(createAccount(), '2026-11-17')!;
+    expect(claimed.purseDayKey).toBe('2026-11-17');
+    expect(purseDue(claimed, '2026-11-17')).toBe(false);
+    expect(claimPurse(claimed, '2026-11-17')).toBeNull();
+    expect(purseDue(claimed, '2026-11-18')).toBe(true);
+  });
+
+  it('pays half a boss kill of gold, rounded to 5', () => {
+    expect(purseGold(1)).toBe(25);
+    expect(purseGold(6)).toBe(50);
+    expect(purseGold(10)).toBe(70);
   });
 });

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
+import { useModalPriority } from '../../composables/useModalPriority';
 import Modal from './Modal.vue';
 
-const { misses, rewards, hasPending, isOverridden, toggleOverride, acknowledge } = useMissedSkillsGate();
+const { misses, rewards, isOverridden, toggleOverride, acknowledge } = useMissedSkillsGate();
+// The day's purse shows first (DailyPursePopup).
+const { habitMissVisible } = useModalPriority();
 
 // An override flips the detected outcome, so a card's tone/label follows the
 // effective outcome rather than the section it sits in.
@@ -19,7 +22,7 @@ const anyBlow = computed(
 </script>
 
 <template>
-  <Modal :model-value="hasPending" :dismissible="false" title="Daily update" max-width="480px">
+  <Modal :model-value="habitMissVisible" :dismissible="false" title="Daily update" max-width="480px">
     <section v-if="misses.length" class="group">
       <h4 class="group-label">Left undone</h4>
       <ul class="list">

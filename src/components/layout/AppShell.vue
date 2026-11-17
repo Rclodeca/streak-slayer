@@ -29,6 +29,7 @@ import DeathScreen from '../ui/DeathScreen.vue';
 import Modal from '../ui/Modal.vue';
 import HoodedScene from '../ui/HoodedScene.vue';
 import ItemDropPopup from '../ui/ItemDropPopup.vue';
+import DailyPursePopup from '../ui/DailyPursePopup.vue';
 import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
 import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
@@ -128,6 +129,7 @@ watch(
     <DeathScreen />
     <HoodedScene />
     <ItemDropPopup />
+    <DailyPursePopup />
     <MissedSkillsPopup />
     <EnchantReveal />
     <ServiceDonePopup />

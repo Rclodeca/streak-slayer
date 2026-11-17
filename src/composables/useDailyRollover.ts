@@ -31,6 +31,7 @@ import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
 import { useQuestStore } from '../store/questStore';
 import { useCombatActions } from './useCombatActions';
+import { useDailyPurse } from './useDailyPurse';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useQuestMissGate } from './useQuestMissGate';
 
@@ -101,6 +102,9 @@ export function useDailyRollover(now: Date = new Date()): void {
   }
 
   const todayKey = dailyPeriodKey(now);
+  // The day's purse, if it's still to claim: its popup shows before the recap.
+  useDailyPurse().notice(todayKey);
+
   // Ember Heart's once-a-day heal (a no-op without it, or if it already ran today).
   const characterStore = useCharacterStore();
   const regen = applyDailyRegen(characterStore.character, todayKey);

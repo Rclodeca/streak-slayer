@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Daily login gold</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Daily login gold, three options, Pixel-cut on Midnight. Each is shown with habits to recap and with none. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #b8b6c4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1180px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 30px; max-width: 680px; }
+button { font: inherit; }
+svg { flex: none; }
+
+.opt { margin: 0 0 46px; }
+.opt h2 { text-align: center; margin: 0 0 4px; font: 600 13px 'Cinzel', serif; letter-spacing: .26em; color: #ece8de; text-transform: uppercase; }
+.opt .note { text-align: center; margin: 0 auto 16px; max-width: 660px; font-size: 14px; color: #8f8ca8; }
+.row { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; align-items: flex-start; }
+.col { width: 350px; max-width: 100%; }
+.col-head { text-align: center; margin: 0 0 8px; font: 700 12px 'Cinzel', serif; letter-spacing: .16em; color: #8f8ca8; text-transform: uppercase; }
+
+.screen {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --frame: #232337; --panel-hi: #373857; --panel-lo: #171823;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19; --sunk-hi: #0f1018; --sunk-lo: #2c2c47;
+  --code-bg: #202030; --line-faint: rgba(150, 141, 126, .16); --moon: #dfe0f0; --moon-solid: #b0b1cb;
+  --brass: #d2bb85; --brass-solid: #b39a66; --dim: #8384a0; --coin: #f0c64e; --gem: #6fd6ea;
+  --button-fill: #cdcedf; --button-line: rgba(255,255,255,.4); --button-text: #20202e; --button-lip: #828398;
+  --dmg: #e86154; --heal: #4ac777;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  position: relative; min-height: 600px; padding: 22px 16px; display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(0deg, #161624 0 58px, #11121b 58px 70px); border-radius: 26px; border: 1px solid #000; overflow: hidden;
+}
+.screen::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+
+.modal { position: relative; width: 100%; background: var(--frame); clip-path: var(--px3); box-shadow: inset 3px 3px 0 var(--panel-hi), inset -3px -3px 0 var(--panel-lo); padding: 16px 16px 18px; color: var(--text); }
+.m-title { margin: 0 0 12px; font: 600 15px 'Cinzel', serif; letter-spacing: .24em; color: var(--text-h); text-transform: uppercase; }
+.cap { font: 700 11px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--text-h); }
+.well { background: var(--code-bg); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.onward-wrap { padding-bottom: 3px; margin-top: 16px; }
+.onward { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; border: 0; cursor: pointer; background: var(--button-fill); color: var(--button-text); clip-path: var(--px2);
+  box-shadow: inset 0 2px 0 var(--button-line), inset 0 -4px 0 var(--button-lip); font: 700 16px 'Alegreya Sans'; letter-spacing: .02em; }
+.onward svg { width: 18px; height: 18px; color: #a07a12; }
+.onward.blow { background: #d98a80; box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -4px 0 #8f4b43; }
+.coin { color: var(--coin); }
+.gold-num { font: 800 15px 'Alegreya Sans'; color: var(--coin); font-variant-numeric: tabular-nums; }
+
+/* the recap rows, Pixel-cut take on MissedSkillsPopup */
+.grp { margin: 0 0 8px; color: var(--dim); }
+.rc { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 9px 10px 9px 12px; background: var(--card); clip-path: var(--px2); box-shadow: inset 3px 0 0 var(--tone), inset -2px -2px 0 var(--card-lo); --tone: var(--dmg); }
+.rc + .rc { margin-top: 6px; }
+.rc.boon { --tone: var(--heal); }
+.rc .nm { color: var(--text-h); font: 600 15px 'Alegreya', serif; }
+.rc .pd { display: block; font-size: 12px; color: var(--dim); }
+.rc .side { text-align: right; }
+.rc .out { display: block; font-size: 13px; font-weight: 800; color: var(--tone); }
+.rc .pill { display: inline-block; margin-top: 3px; padding: 2px 8px; font-size: 12px; color: var(--text-h); background: var(--card-lo); clip-path: var(--px2); }
+.recap-block + .recap-block { margin-top: 14px; }
+
+/* ---------- A · Merchant's purse (own popup) ---------- */
+.a .modal { padding-top: 0; }
+.a-strip { position: relative; height: 116px; margin: 0 -16px 14px; background: #0e0e19 url('../../public/sprites/home/shop.png') center 60% / 432px auto no-repeat; image-rendering: pixelated; border-bottom: 3px solid var(--card-lip); }
+.a-strip::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(17,18,27,.45), rgba(17,18,27,.1) 60%, rgba(17,18,27,.6)); }
+.a-title { position: absolute; z-index: 1; top: 16px; left: 16px; margin: 0; }
+.a-sum { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 0 12px; }
+.a-sum svg { width: 30px; height: 30px; }
+.a-sum b { font: 700 38px/1 'Cinzel', serif; color: var(--coin); text-shadow: 0 2px 0 #000; }
+.a-line { margin: 8px 0 0; text-align: center; font-size: 14px; color: var(--dim); }
+.a-svc { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; margin-top: 12px; padding: 8px 10px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.a-svc img { width: 40px; height: 40px; image-rendering: pixelated; }
+.a-svc p { margin: 0; }
+.a-svc .nm { font: 700 15px 'Alegreya', serif; color: var(--text-h); }
+.a-svc .ln { font-size: 13px; }
+.a-svc .go { display: grid; place-items: center; width: 44px; height: 44px; color: var(--moon); }
+.a-svc .go svg { width: 20px; height: 20px; }
+.a-new { font: 700 9px 'Cinzel', serif; letter-spacing: .2em; color: var(--brass); text-transform: uppercase; }
+
+/* ---------- B · Inside the recap ---------- */
+.b-dawn { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; margin-bottom: 14px; background: linear-gradient(90deg, rgba(240,198,78,.12), transparent 70%), var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.b-dawn .sock { display: grid; place-items: center; width: 44px; height: 44px; background: var(--card-lo); clip-path: var(--px2); box-shadow: inset 2px 2px 0 #0b0b13, inset -2px -2px 0 var(--card-hi); }
+.b-dawn .sock svg { width: 22px; height: 22px; }
+.b-dawn p { margin: 0; }
+.b-dawn .nm { font: 700 16px 'Alegreya', serif; color: var(--text-h); }
+.b-dawn .ln { font-size: 13px; color: var(--dim); }
+.b-dawn b { font: 700 24px 'Cinzel', serif; color: var(--coin); }
+.b-quiet { padding: 16px 12px; text-align: center; font-size: 14px; color: var(--dim); }
+.b-quiet strong { display: block; font: 600 16px 'Alegreya', serif; color: var(--text-h); margin-bottom: 2px; }
+.b-foot { display: flex; justify-content: center; gap: 6px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--dim); }
+.b-foot svg { width: 14px; height: 14px; }
+
+/* ---------- C · Week of coins ---------- */
+.c-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 8px 6px; }
+.c-day { position: relative; text-align: center; padding: 6px 0 5px; }
+.c-day small { display: block; font: 700 9px 'Cinzel', serif; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; }
+.c-day .ic { display: grid; place-items: center; height: 26px; color: #4a4a6a; }
+.c-day .ic svg { width: 18px; height: 18px; }
+.c-day .amt { display: block; font: 800 12px 'Alegreya Sans'; color: var(--dim); font-variant-numeric: tabular-nums; }
+.c-day.got .ic { color: var(--coin); opacity: .45; }
+.c-day.got .amt { text-decoration: line-through; opacity: .6; }
+.c-day.today { background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.c-day.today small { color: var(--brass); }
+.c-day.today .ic { color: var(--coin); }
+.c-day.today .ic svg { width: 22px; height: 22px; }
+.c-day.today .amt { color: var(--coin); font-size: 13px; }
+.c-day.big .ic { color: #6a6a8c; }
+.c-day.big .ic svg { width: 22px; height: 22px; }
+.c-day.big .amt { color: var(--gem); }
+.c-day.missed .ic { color: #3a3a52; }
+.c-day.missed .amt { opacity: .35; }
+.c-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 8px; }
+.c-head span { font-size: 13px; color: var(--dim); }
+.c-today { margin: 12px 0 0; text-align: center; font-size: 15px; }
+.c-recap { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-faint); }
+
+.legend { max-width: 700px; margin: 10px auto 0; padding: 0 0 0 18px; font-size: 14px; color: #8f8ca8; }
+.legend li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>DAILY LOGIN GOLD</h1>
+  <p class="lede">Three options. Each is shown on a day with habits to recap and on a day with nothing to recap. The gold is a placeholder: half a boss kill's gold at the current boss (here boss 6, 45 gold).</p>
+
+  <section class="opt a">
+    <h2>A · Merchant's purse</h2>
+    <p class="note">Its own popup, after the Daily update. The shop scene on top, one big gold number, Claim. On a day a new service comes up, the service rides along as a card that opens Shop → Services. With nothing to recap, the Daily update is skipped and only this shows.</p>
+    <div class="row" data-opt="a"></div>
+  </section>
+
+  <section class="opt b">
+    <h2>B · Inside the Daily update</h2>
+    <p class="note">One popup. The gold sits on a lifted card at the top of the Daily update, the recap below it. The button pays both: "Claim" on a good day, "Take the blow" when the boss strikes. With nothing to recap, a quiet line takes the list's place, so the popup still shows every day.</p>
+    <div class="row" data-opt="b"></div>
+  </section>
+
+  <section class="opt c">
+    <h2>C · Week of coins</h2>
+    <p class="note">Seven coin days, Monday to Sunday, Sunday pays gems. Today is lit. A missed day just stays dark: nothing resets, the week starts fresh each Monday. Shown inside the Daily update here, but it works as its own popup too (A's place).</p>
+    <div class="row" data-opt="c"></div>
+  </section>
+
+  <ul class="legend">
+    <li>Gold is paid on the button, so it lands in the stage purse as the popup closes.</li>
+    <li>Once a day, the first open of the day, the same moment the Daily update is decided. The day boundary is the habit day, not midnight.</li>
+    <li>C's Sunday gems (2 here) would come out of the free gem budget in economy.ts.</li>
+  </ul>
+</div>
+
+<script>
+const ICONS = {
+  coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+  gem: '<path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/>',
+  sunrise: '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  chev: '<path d="m9 18 6-6-6-6"/>',
+};
+const ic = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
+const GOLD = 45;
+const SERVICE = { name: 'Overdrive', img: '../../public/sprites/services/overdrive.png', line: 'One skill strikes twice as hard.' };
+
+// The day's recap, the same rows MissedSkillsPopup shows today.
+const MISSES = [
+  { name: 'Morning run', period: 'daily', blow: true },
+  { name: 'Read 20 pages', period: 'daily', blow: true },
+];
+const RESISTED = [{ name: 'No doomscrolling', period: 'daily', blow: false }];
+
+function recap() {
+  const row = (r, pill) => `<div class="rc ${r.blow ? '' : 'boon'}"><div><span class="nm">${r.name}</span><span class="pd">${r.period}</span></div><div class="side"><span class="out">${r.blow ? 'Boss strikes you' : 'You strike'}</span><span class="pill">${pill}</span></div></div>`;
+  return `<div class="recap-block"><div class="grp cap" style="color:var(--dim)">Left undone</div>${MISSES.map((m) => row(m, 'I did this')).join('')}</div>
+    <div class="recap-block"><div class="grp cap" style="color:var(--dim)">Resisted</div>${RESISTED.map((m) => row(m, 'I gave in')).join('')}</div>`;
+}
+const claim = (blow, label) => `<div class="onward-wrap"><button class="onward ${blow ? 'blow' : ''}">${label}${blow ? '' : ''}</button></div>`;
+
+const COLS = {
+  a: [
+    { head: 'After the Daily update', svc: false },
+    { head: 'New service today', svc: true },
+  ],
+  b: [{ head: 'Habits to recap', recap: true }, { head: 'Nothing to recap', recap: false }],
+  c: [{ head: 'Habits to recap', recap: true }, { head: 'Nothing to recap', recap: false }],
+};
+
+const RENDER = {
+  a(c) {
+    return `<div class="modal">
+      <div class="a-strip"><h3 class="m-title a-title">A new day</h3></div>
+      <div class="well a-sum"><span class="coin">${ic('coins')}</span><b>+${GOLD}</b></div>
+      <p class="a-line">The merchant leaves a purse at your door.</p>
+      ${c.svc ? `<div class="a-svc"><img src="${SERVICE.img}" alt="" /><div><span class="a-new">New service</span><p class="nm">${SERVICE.name}</p><p class="ln">${SERVICE.line}</p></div><span class="go">${ic('chev')}</span></div>` : ''}
+      ${claim(false, `<span class="coin">${ic('coins')}</span>Claim`)}
+    </div>`;
+  },
+  b(c) {
+    return `<div class="modal">
+      <h3 class="m-title">Daily update</h3>
+      <div class="b-dawn"><span class="sock coin">${ic('coins')}</span><div><p class="nm">A new day</p><p class="ln">Gold for showing up.</p></div><b>+${GOLD}</b></div>
+      ${c.recap ? recap() : `<div class="well b-quiet"><strong>Nothing left behind.</strong>The boss waits.</div>`}
+      ${claim(c.recap, c.recap ? 'Take the blow' : `<span class="coin">${ic('coins')}</span>Claim`)}
+    </div>`;
+  },
+  c(c) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const state = ['got', 'got', 'missed', 'got', 'today', '', 'big'];
+    const week = days.map((d, i) => {
+      const s = state[i];
+      const gem = i === 6;
+      return `<div class="c-day ${s}"><small>${d}</small><span class="ic">${ic(gem ? 'gem' : 'coins')}</span><span class="amt">${gem ? '2' : GOLD}</span></div>`;
+    }).join('');
+    return `<div class="modal">
+      <h3 class="m-title">${c.recap ? 'Daily update' : 'A new day'}</h3>
+      <div class="c-head"><span class="cap" style="color:var(--brass)">This week</span><span>Sunday pays gems</span></div>
+      <div class="well c-week">${week}</div>
+      <p class="c-today">Today <span class="gold-num">+${GOLD}</span> gold</p>
+      ${c.recap ? `<div class="c-recap">${recap()}</div>` : ''}
+      ${claim(c.recap, c.recap ? 'Take the blow' : `<span class="coin">${ic('coins')}</span>Claim`)}
+    </div>`;
+  },
+};
+
+for (const row of document.querySelectorAll('.row')) {
+  const opt = row.dataset.opt;
+  row.innerHTML = COLS[opt].map((c) => `<div class="col"><div class="col-head">${c.head}</div><div class="screen">${RENDER[opt](c)}</div></div>`).join('');
+}
+</script>
+</body>
+</html>

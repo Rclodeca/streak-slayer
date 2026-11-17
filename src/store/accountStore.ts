@@ -2,7 +2,7 @@
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buySkin, createAccount, MAX_PRESTIGE, recordLevel, spendGems, wearSkin } from '../game-engine';
+import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, recordLevel, spendGems, wearSkin } from '../game-engine';
 import type { Account, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
@@ -41,6 +41,14 @@ export const useAccountStore = defineStore('account', {
       if (!result) return null;
       this.account = result.account;
       return result.skin;
+    },
+
+    /** Marks the daily purse claimed on `dayKey`; false (nothing marked) if it already was. */
+    claimPurse(dayKey: string): boolean {
+      const claimed = claimPurse(this.account, dayKey);
+      if (!claimed) return false;
+      this.account = claimed;
+      return true;
     },
 
     /** Sets the prestige rank (for now only the testing button; prestiging itself comes later). */

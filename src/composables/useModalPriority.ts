@@ -10,7 +10,7 @@
 // buttons (confirmed via manual testing — see the quests design spec's
 // review notes). This centralizes the precedence order so it's declared
 // once instead of re-derived pairwise per modal:
-// death > item drop > habit miss > quest miss > boss skill > quest complete > level up > quest unlock > talent unlock > enchant reveal / service done.
+// death > item drop > daily purse > habit miss > quest miss > boss skill > quest complete > level up > quest unlock > talent unlock > enchant reveal / service done.
 // Boss skill, level up, quest unlock, talent unlock, the enchant reveal and service done also wait out a kill or level-up
 // still playing on the panels (useCelebration), as does the item drop popup itself.
 
@@ -25,6 +25,7 @@ import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useQuestMissGate } from './useQuestMissGate';
 import { useCharacterStore } from '../store/characterStore';
+import { useDailyPurse } from './useDailyPurse';
 import { useServices } from './useServices';
 
 export function useModalPriority() {
@@ -38,13 +39,29 @@ export function useModalPriority() {
   const { celebrating } = useCelebration();
   const { current: bossSkillCurrent } = useBossSkillCard();
   const { current: levelUpCurrent } = useLevelUp();
+  const { due: purseDue } = useDailyPurse();
+
+  /**
+   * True when the day's purse is still to claim, ahead of the Daily update. It
+   * waits out a death (the new run gets the gold), so a hero who fell yesterday
+   * sees the recap and the death screen first.
+   */
+  const purseVisible = computed(
+    () => purseDue.value && !isDead.value && !celebrating.value && itemDropCurrent.value === null,
+  );
+
+  /** True when the Daily update has outcomes to show and the purse isn't up. */
+  const habitMissVisible = computed(() => habitMissPending.value && !purseVisible.value);
+
+  /** The purse or the Daily update is still ahead: everything below them waits. */
+  const dailyAhead = computed(() => habitMissPending.value || purseVisible.value);
 
   /**
    * True when a quest miss is pending and no habit miss is. It shows even after
    * a death: the death screen waits for it (DeathScreen), so every hit queued
    * that day lands before a gem revive is offered.
    */
-  const questMissVisible = computed(() => questMissPending.value && !habitMissPending.value);
+  const questMissVisible = computed(() => questMissPending.value && !dailyAhead.value);
 
   /** True when a fired boss skill's card is queued and nothing higher-priority (death, item drop, habit miss, quest miss, a celebration) is. */
   const bossSkillVisible = computed(
@@ -53,7 +70,7 @@ export function useModalPriority() {
       !celebrating.value &&
       !isDead.value &&
       itemDropCurrent.value === null &&
-      !habitMissPending.value &&
+      !dailyAhead.value &&
       !questMissPending.value,
   );
 
@@ -64,7 +81,7 @@ export function useModalPriority() {
       !celebrating.value &&
       !isDead.value &&
       itemDropCurrent.value === null &&
-      !habitMissPending.value &&
+      !dailyAhead.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null &&
       questCompleteCurrent.value === null,
@@ -81,7 +98,7 @@ export function useModalPriority() {
       !celebrating.value &&
       !isDead.value &&
       itemDropCurrent.value === null &&
-      !habitMissPending.value &&
+      !dailyAhead.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null &&
       questCompleteCurrent.value === null,
@@ -96,7 +113,7 @@ export function useModalPriority() {
       !celebrating.value &&
       !isDead.value &&
       itemDropCurrent.value === null &&
-      !habitMissPending.value &&
+      !dailyAhead.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null &&
       questCompleteCurrent.value === null,
@@ -109,7 +126,7 @@ export function useModalPriority() {
       levelUpCurrent.value === null &&
       !isDead.value &&
       itemDropCurrent.value === null &&
-      !habitMissPending.value &&
+      !dailyAhead.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null &&
       questCompleteCurrent.value === null &&
@@ -128,10 +145,10 @@ export function useModalPriority() {
     () =>
       questCompleteCurrent.value !== null &&
       !isDead.value &&
-      !habitMissPending.value &&
+      !dailyAhead.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null,
   );
 
-  return { bossSkillVisible, questMissVisible, levelUpVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, serviceDoneVisible, questCompleteVisible };
+  return { purseVisible, habitMissVisible, bossSkillVisible, questMissVisible, levelUpVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, serviceDoneVisible, questCompleteVisible };
 }

@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { BOSS_ART_COUNT, bossArt, bossFamily, createHabit, createQuest, createRng } from '../../game-engine';
+import { BOSS_ART_COUNT, bossArt, bossFamily, createHabit, createQuest, createRng, dailyPeriodKey } from '../../game-engine';
 import type { BossFamily, Personality } from '../../game-engine';
 import { useBossSkillCard } from '../../composables/useBossSkillCard';
 import { useCelebration } from '../../composables/useCelebration';
+import { useDailyPurse } from '../../composables/useDailyPurse';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useLevelUp } from '../../composables/useLevelUp';
 import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
+import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugBackdropStore } from '../../store/debugBackdropStore';
+import { useDebugClockStore } from '../../store/debugClockStore';
 import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
 
 const { enqueue } = useQuestCompleteQueue();
@@ -21,6 +24,8 @@ const { triggerDeath } = useDeathScreen();
 const { celebrateBossKill, celebrateLevelUp } = useCelebration();
 const { showBossSkill } = useBossSkillCard();
 const levelUp = useLevelUp();
+const dailyPurse = useDailyPurse();
+const accountStore = useAccountStore();
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const trialsBadge = useDebugTrialsBadgeStore();
@@ -114,12 +119,20 @@ function previewDaily() {
   missedSkills.queueMiss(createHabit('Read a chapter', 'weekly', 'hard', false, rng), 'preview');
   missedSkills.queueReward(createHabit('Skip dessert', 'daily', 'easy', true, rng), 'preview');
 }
+
+// Today's purse again, even if it was claimed: Claim pays it for real.
+function previewPurse() {
+  accountStore.$patch({ account: { ...accountStore.account, purseDayKey: undefined } });
+  dailyPurse.notice(dailyPeriodKey(useDebugClockStore().now()));
+}
 </script>
 
 <template>
   <div class="preview">
     <button type="button" @click="previewComplete">Preview quest complete (testing)</button>
     <button type="button" @click="previewDaily">Preview daily update (testing)</button>
+    <button type="button" @click="previewPurse">Preview daily purse (testing)</button>
+    <button type="button" @click="previewPurse(); previewDaily()">Preview purse + daily update (testing)</button>
     <button type="button" @click="previewMiss">Preview quest failed (testing)</button>
     <button type="button" @click="triggerDeath">Preview death screen (testing)</button>
     <button type="button" @click="previewKill">Preview boss kill (testing)</button>
