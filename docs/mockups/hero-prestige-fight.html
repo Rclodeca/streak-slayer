@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Prestige on the stage</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Prestige on the fight stage. Screens are the real app at 390 wide (2x), patched and captured
+   (docs/mockups/prestige/fight-*.png). The roman numeral outline plate from hero-prestige-4.html,
+   in the rarity colours: Ascendant III epic purple, Mythic V relic orange. Bosses differ shot to shot (random). */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.4 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 20px 60px; max-width: 1300px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 28px; max-width: 800px; }
+section { margin: 0 0 40px; }
+h2 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; text-transform: uppercase; margin: 0 0 3px; }
+section > p { text-align: center; max-width: 780px; margin: 0 auto 12px; font-size: 15px; }
+.row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+figure { margin: 0; }
+figure img { display: block; width: 390px; height: auto; border: 1px solid #000; box-shadow: 0 14px 34px rgba(0,0,0,.5); }
+figcaption { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-top: 6px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Prestige on the fight stage</h1>
+  <p class="lede">The stage is where players look every day, so it gets a small version of the Hero tab's mark. The roman numeral outline plate sits between the name and the level. Shown at Ascendant III and Mythic V.</p>
+  <div id="opts"></div>
+</div>
+<script>
+const OPTIONS = [
+  { key: 'now', name: 'Today', text: 'A new hero, no prestige.', tiers: [['now', 'No prestige']] },
+  { key: 'A', name: 'A · Numeral plate (recommended)', text: 'Name, numeral, level. The smallest change; the colour is only on the plate.' },
+  { key: 'B', name: 'B · Numeral + coloured name', text: 'The name takes the tier colour too. Louder, and it fights the HP bar\'s red a little at Mythic.' },
+  { key: 'C', name: 'C · Numeral + floor glow', text: 'A soft tier-coloured glow under the hero\'s feet. Feels earned, but it sits on top of every arena and costs a little on low-end phones.' },
+  { key: 'D', name: 'D · Numeral + title', text: 'The title in small caps above the name, like the Hero tab. Most complete, but busier, and it crowds the boss\'s feet.' },
+];
+document.getElementById('opts').innerHTML = OPTIONS.map((o) => `
+  <section>
+    <h2>${o.name}</h2>
+    <p>${o.text}</p>
+    <div class="row">${(o.tiers || [['III', 'Ascendant III'], ['V', 'Mythic V']]).map(([n, cap]) => `
+      <figure><img src="prestige/fight-${o.key === 'now' ? 'now' : `${o.key}-${n}`}.png" alt="${o.name}, ${cap}"><figcaption>${cap}</figcaption></figure>`).join('')}
+    </div>
+  </section>`).join('');
+</script>
+</body>
+</html>

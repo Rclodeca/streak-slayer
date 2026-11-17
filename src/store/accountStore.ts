@@ -1,8 +1,8 @@
-// Thin Pinia wrapper around the account slice (gems, highest level, skins), which
+// Thin Pinia wrapper around the account slice (gems, highest level, skins, prestige), which
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buySkin, createAccount, recordLevel, spendGems, wearSkin } from '../game-engine';
+import { addGems, buySkin, createAccount, MAX_PRESTIGE, recordLevel, spendGems, wearSkin } from '../game-engine';
 import type { Account, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
@@ -41,6 +41,11 @@ export const useAccountStore = defineStore('account', {
       if (!result) return null;
       this.account = result.account;
       return result.skin;
+    },
+
+    /** Sets the prestige rank (for now only the testing button; prestiging itself comes later). */
+    setPrestige(rank: number) {
+      this.account = { ...this.account, prestige: Math.max(0, Math.min(MAX_PRESTIGE, rank)) };
     },
 
     /** Wears an owned skin in `slot`, or the default with null; false if it isn't owned or doesn't fit the slot. */

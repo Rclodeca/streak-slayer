@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Prestige plates</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Prestige round 3: shapes for the P plate on the stacked name plate (round 2, option B).
+   Each shape at P1 Veteran, P3 Ascendant, P5 Mythic, on the top of the armory. Then a colour-order check
+   against the item rarity colours. Pixel-cut Moonlit. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1300px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 780px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); gap: 30px 30px; }
+.opt h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 2px; text-transform: uppercase; }
+.opt p { margin: 0 0 10px; font-size: 14px; min-height: 38px; }
+.row { display: flex; gap: 10px; }
+section.big { margin-top: 50px; }
+section.big h2 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; text-transform: uppercase; margin: 0 0 3px; }
+section.big > p { text-align: center; max-width: 780px; margin: 0 auto 14px; font-size: 15px; }
+.brow { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+.chips { display: flex; gap: 8px; justify-content: center; margin: 0 0 8px; font: 700 12px 'Alegreya Sans'; }
+.chips span { padding: 3px 8px; background: #0a0c12; }
+
+.head {
+  --ink: #f0f3f7; --text: #a9adb6; --exp: #d9a93c; --streak: #e0894a; --hi: #333c52; --lo: #0c0f15;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  position: relative; width: 194px; height: 64px; overflow: hidden; background: #07080c; outline: 1px solid #000;
+}
+.head.full { width: 390px; height: 232px; }
+.head .room { position: absolute; left: -21px; top: 0; width: 432px; height: 232px; max-width: none; image-rendering: pixelated; }
+.head .hero { position: absolute; left: 131px; bottom: 30px; width: 128px; height: 128px; image-rendering: pixelated; }
+.head .menu { position: absolute; right: 8px; top: 8px; width: 36px; height: 36px; background: rgba(7,8,12,.88); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); display: flex; align-items: center; justify-content: center; color: #dbe2ee; }
+.head .menu svg { width: 18px; height: 18px; }
+.plate { position: absolute; z-index: 2; background: rgba(7,8,12,.88); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--ink); }
+.stat { bottom: 10px; display: flex; align-items: center; gap: 6px; line-height: 1; }
+.stat svg { width: 14px; height: 14px; flex: none; }
+.stat small { font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.stat b { font: 700 17px 'Alegreya', serif; }
+.stat.level { left: 12px; } .stat.streak { right: 12px; }
+.ic-exp { color: var(--exp); } .ic-streak { color: var(--streak); }
+
+/* tiers: c main, l light edge, d dark edge */
+.t1 { --c: #e8643a; --l: #ffa27a; --d: #7a2a12; }
+.t3 { --c: #4f8fe8; --l: #9cc4ff; --d: #1d3d72; }
+.t5 { --c: #a66cf0; --l: #d4b2ff; --d: #4a2580; }
+/* rarity-matched order (blue, purple, orange) */
+.r1 { --c: #5f95e6; --l: #a6c8ff; --d: #1f3c70; }
+.r3 { --c: #b57be8; --l: #dcbcff; --d: #4f2a7e; }
+.r5 { --c: #f58a35; --l: #ffc08a; --d: #7a3a0e; }
+
+.nameplate { left: 12px; top: 12px; display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 10px; min-height: 40px; }
+.who { font: 600 13px/1.15 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+.who .ttl { display: block; font: 700 10px/1.2 'Alegreya Sans'; letter-spacing: .16em; margin-bottom: 1px; color: var(--c); }
+
+/* --- plate shapes --- */
+.pb { flex: none; display: flex; align-items: center; justify-content: center; color: #fff; font: 700 16px/1 'Cinzel', serif; text-shadow: 1px 1px 0 var(--d); }
+/* 1 tab */
+.s-tab { height: 30px; min-width: 34px; padding: 0 6px; background: var(--c); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--l), inset -2px -2px 0 var(--d); }
+/* 2 shield */
+.s-shield { width: 28px; height: 32px; background: var(--c); font-size: 14px; padding-bottom: 5px;
+  clip-path: polygon(2px 0, calc(100% - 2px) 0, 100% 2px, 100% 60%, 50% 100%, 0 60%, 0 2px); box-shadow: inset 2px 2px 0 var(--l), inset -2px -2px 0 var(--d); }
+/* 3 roman, no P */
+.s-roman { height: 30px; min-width: 34px; padding: 0 7px; font-size: 14px; letter-spacing: .04em; background: var(--c); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--l), inset -2px -2px 0 var(--d); }
+/* 4 ring medallion (pixel octagon) */
+.s-ring { width: 32px; height: 32px; background: var(--c); font-size: 15px;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, calc(100% - 8px) 2px, calc(100% - 4px) 2px, calc(100% - 4px) 4px, calc(100% - 2px) 4px, calc(100% - 2px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 2px) calc(100% - 8px), calc(100% - 2px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 2px), calc(100% - 8px) calc(100% - 2px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 2px), 4px calc(100% - 2px), 4px calc(100% - 4px), 2px calc(100% - 4px), 2px calc(100% - 8px), 0 calc(100% - 8px), 0 8px, 2px 8px, 2px 4px, 4px 4px, 4px 2px, 8px 2px);
+  box-shadow: inset 3px 3px 0 var(--l), inset -3px -3px 0 var(--d); }
+/* 5 pennant (like the section banners' cloth) */
+.s-pennant { width: 26px; height: 36px; background: var(--c); font-size: 14px; padding-bottom: 8px; margin: -2px 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%); box-shadow: inset 2px 2px 0 var(--l), inset -2px 0 0 var(--d); }
+/* 6 chevrons: one stripe per prestige, no number */
+.s-chev { flex-direction: column; gap: 2px; width: 26px; padding: 2px 0; }
+.s-chev i { display: block; width: 20px; height: 5px; background: var(--c); box-shadow: inset 0 1px 0 var(--l), inset 0 -1px 0 var(--d);
+  clip-path: polygon(0 0, 50% 60%, 100% 0, 100% 40%, 50% 100%, 0 40%); }
+/* 7 P with pip row: big P, pips beneath */
+.s-pips { flex-direction: column; gap: 3px; height: 34px; min-width: 32px; padding: 3px 5px 4px; background: var(--c); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--l), inset -2px -2px 0 var(--d); font-size: 14px; }
+.s-pips span { display: flex; gap: 2px; }
+.s-pips i { width: 3px; height: 4px; background: #fff; }
+.s-pips i.off { background: var(--d); }
+/* 8 outline only: dark plate, coloured frame and number */
+.s-outline { height: 30px; min-width: 34px; padding: 0 6px; color: var(--c); text-shadow: none; background: #0a0c12; clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--c), inset -2px -2px 0 var(--d); }
+/* 9 no badge: the whole name plate's frame takes the tier colour, P# small after the title */
+.np-frame { --hi: var(--l); --lo: var(--d); }
+.np-frame .ttl em { font-style: normal; color: #fff; opacity: .9; margin-left: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>P plate shapes</h1>
+  <p class="lede">The stacked name plate from round 2 (B), with nine shapes for the plate. Each shown at P1 Veteran, P3 Ascendant, P5 Mythic, cropped to the top of the armory.</p>
+  <div class="grid" id="opts"></div>
+
+  <section class="big">
+    <h2>Colour order</h2>
+    <p>Item rarities already use blue (rare), purple (epic) and orange (relic, the top). With red-orange first, a Mythic hero reads like a lower rank than a Veteran. Second row: the same titles in rarity order.</p>
+    <div class="chips"><span style="color:#5f95e6">Rare</span><span style="color:#b57be8">Epic</span><span style="color:#f58a35">Relic</span></div>
+    <div class="brow" id="order1"></div>
+    <div class="brow" id="order2"></div>
+  </section>
+</div>
+<script>
+const ROOM = '../../public/sprites/home/armory.png';
+const HERO = '../../public/sprites/player/warrior.png';
+const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>';
+const FLAME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+const MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V'];
+const TITLES = { 1: 'Veteran', 3: 'Ascendant', 5: 'Mythic' };
+
+const SHAPES = [
+  { name: '1 · Tab', text: 'The round 2 plate: a bevelled colour tab with P#.', b: (p) => `<span class="pb s-tab">P${p}</span>` },
+  { name: '2 · Shield', text: 'A small crest with the number. Reads as a rank, not a button.', b: (p) => `<span class="pb s-shield">${p}</span>` },
+  { name: '3 · Roman numeral', text: 'No P, just I to V on the tab. Feels the most RPG.', b: (p) => `<span class="pb s-roman">${ROMAN[p]}</span>` },
+  { name: '4 · Medallion', text: 'A round pixel coin with the number, thicker rim.', b: (p) => `<span class="pb s-ring">${p}</span>` },
+  { name: '5 · Pennant', text: 'A hanging flag like the section banners\' cloth.', b: (p) => `<span class="pb s-pennant">${p}</span>` },
+  { name: '6 · Chevrons', text: 'One stripe per prestige, no number. Five stack neatly.', b: (p) => `<span class="pb s-chev">${'<i></i>'.repeat(p)}</span>` },
+  { name: '7 · P + pips', text: 'A big P, with five pips beneath that fill as you prestige.', b: (p) => `<span class="pb s-pips">P<span>${[1, 2, 3, 4, 5].map((n) => `<i class="${n > p ? 'off' : ''}"></i>`).join('')}</span></span>` },
+  { name: '8 · Outline', text: 'Dark plate, coloured frame and number. Quieter; the title carries the colour.', b: (p) => `<span class="pb s-outline">P${p}</span>` },
+  { name: '9 · No badge, framed plate', text: 'The whole name plate\'s frame takes the colour, P# small after the title.', b: null },
+];
+
+const nameplate = (shape, p, cls) => {
+  if (!shape.b) return `<div class="plate nameplate np-frame ${cls}"><span class="who"><span class="ttl">${TITLES[p]}<em>P${p}</em></span>Kael</span></div>`;
+  return `<div class="plate nameplate ${cls}"><span class="who"><span class="ttl">${TITLES[p]}</span>Kael</span>${shape.b(p)}</div>`;
+};
+
+const crop = (inner, full) => `
+  <div class="head ${full ? 'full' : ''}">
+    <img class="room" src="${ROOM}" alt="" />
+    ${full ? `<img class="hero" src="${HERO}" alt="" /><span class="menu">${MENU}</span>
+      <span class="plate stat level"><span class="ic-exp">${UP}</span><small>Level</small><b>12</b></span>
+      <span class="plate stat streak"><span class="ic-streak">${FLAME}</span><small>Best streak</small><b>71</b></span>` : ''}
+    ${inner}
+  </div>`;
+
+document.getElementById('opts').innerHTML = SHAPES.map((s) => `
+  <div class="opt">
+    <h2>${s.name}</h2>
+    <p>${s.text}</p>
+    <div class="row">${[1, 3, 5].map((p) => crop(nameplate(s, p, `t${p}`))).join('')}</div>
+  </div>`).join('');
+
+const tab = SHAPES[2];
+document.getElementById('order1').innerHTML = [1, 3, 5].map((p) => crop(nameplate(tab, p, `t${p}`), true)).join('');
+document.getElementById('order2').innerHTML = [1, 3, 5].map((p) => crop(nameplate(tab, p, `r${p}`), true)).join('');
+</script>
+</body>
+</html>

@@ -3,9 +3,11 @@ import { computed, ref } from 'vue';
 import type { Habit } from '../../game-engine';
 import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useHeroStats } from '../../composables/useHeroStats';
+import { usePrestige } from '../../composables/usePrestige';
 import { useSkins } from '../../composables/useSkins';
 import { useHabitStore } from '../../store/habitStore';
 import { baseSpriteUrl } from '../ui/spriteUrl';
+import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { HERO_STAGE_CANVAS } from './heroArt';
 import WardrobeSheet from './WardrobeSheet.vue';
@@ -13,7 +15,9 @@ import WardrobeSheet from './WardrobeSheet.vue';
 // The phone's Hero tab banner (docs/mockups/hero-armory.html, option B): the
 // armory, pinned at the top of the screen where the fight stage's Focus strip
 // would be, the hero stood on its clear floor, their name on a plate on the wall
-// and their level and best streak on two plates at its foot. The page's menu rides
+// and their level and best streak on two plates at its foot. After a prestige the
+// name plate also carries its title above the name and its numeral beside it
+// (docs/mockups/hero-prestige-4.html). The page's menu rides
 // in its corner through the default slot, as it does on the stage.
 //
 // The art is native pixel art at the standard backdrop size, 216 x 116, the fight
@@ -28,6 +32,7 @@ const ART_W = 432;
 const ART_H = 232;
 
 const { heroName, displayLevel } = useHeroStats();
+const { mark } = usePrestige();
 const habitStore = useHabitStore();
 // The worn home base and hero skins (the debug menu can swap the room for testing).
 const skins = useSkins();
@@ -57,7 +62,13 @@ const offset = useCenteredArt(frame, ART_W);
         <img class="home-room" :src="roomUrl" alt="" />
         <img class="home-hero" :src="baseSpriteUrl(skins.heroArt.value)" alt="" />
       </button>
-      <h2 class="home-name plate">{{ heroName }}</h2>
+      <h2 class="home-name plate" :class="mark && ['titled', mark.rarity]">
+        <span class="home-who">
+          <span v-if="mark" class="home-title">{{ mark.title }}</span>
+          <span class="home-hero-name">{{ heroName }}</span>
+        </span>
+        <PrestigeNumeral v-if="mark" :mark="mark" />
+      </h2>
       <span class="home-stat plate level"><StatIcon name="levelUp" /><small>Level</small><b class="home-value">{{ displayLevel }}</b></span>
       <span class="home-stat plate streak" :aria-label="streakLabel">
         <StatIcon name="streak" /><small>Best streak</small><b class="home-value">{{ streak }}</b>
@@ -147,12 +158,46 @@ const offset = useCenteredArt(frame, ART_W);
 .home-name {
   left: 12px;
   top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--heading);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #f0f3f7;
+}
+
+/* With a prestige: the title in small caps over the name, the numeral to the right
+   of both, in the rank's rarity colour (Moonlit's, as the scene is always night). */
+.home-name.titled {
+  min-height: 40px;
+  padding: 5px 8px 5px 10px;
+}
+
+.home-who {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.home-title {
+  margin-bottom: 1px;
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  color: #5f95e6;
+}
+
+.home-name.epic .home-title {
+  color: #b57be8;
+}
+
+.home-name.relic .home-title {
+  color: #f58a35;
 }
 
 .home-stat {

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Hero tab prestige</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* How prestige could show on the Hero tab's armory header (HomeBase.vue). Pixel-cut Moonlit.
+   Each option shows the same header three times: a new hero (prestige 0), prestige 3, prestige 8.
+   Level stays the big number everywhere; only how prestige is marked changes. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1260px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 760px; }
+section.opt { margin: 0 0 44px; }
+section.opt h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; text-align: center; }
+section.opt > p { margin: 0 auto 14px; max-width: 760px; text-align: center; font-size: 15px; }
+.row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+figure { margin: 0; }
+figcaption { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-top: 6px; text-transform: uppercase; }
+
+.head {
+  --ink: #f0f3f7; --text: #a9adb6; --brass: #d2bb85; --exp: #d9a93c; --streak: #e0894a;
+  --hi: #333c52; --lo: #0c0f15;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  position: relative; width: 390px; height: 232px; overflow: hidden; background: #07080c; outline: 1px solid #000;
+}
+.head .room { position: absolute; left: -21px; top: 0; width: 432px; height: 232px; max-width: none; image-rendering: pixelated; }
+.head .hero { position: absolute; left: 131px; bottom: 30px; width: 128px; height: 128px; image-rendering: pixelated; }
+.head .menu { position: absolute; right: 8px; top: 8px; width: 36px; height: 36px; background: rgba(7,8,12,.88); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); display: flex; align-items: center; justify-content: center; color: #dbe2ee; }
+.head .menu svg { width: 18px; height: 18px; }
+
+.plate { position: absolute; z-index: 2; background: rgba(7,8,12,.88); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--ink); }
+.name { left: 12px; top: 12px; font: 600 13px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; }
+.stat { bottom: 10px; display: flex; align-items: center; gap: 6px; line-height: 1; }
+.stat svg { width: 14px; height: 14px; flex: none; }
+.stat small { font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.stat b { font: 700 17px 'Alegreya', serif; }
+.stat.level { left: 12px; }
+.stat.streak { right: 12px; }
+.ic-exp { color: var(--exp); }
+.ic-streak { color: var(--streak); }
+
+/* A: brass pips under the level number */
+.pips { display: flex; gap: 3px; margin-left: 2px; }
+.pips i { width: 5px; height: 9px; background: var(--brass); box-shadow: inset -1px -1px 0 #8a7449; }
+.pips i.dim { background: #2a3044; box-shadow: none; }
+
+/* B: title above the name */
+.name.titled { padding-top: 4px; }
+.name .title { display: block; font: 700 10px 'Alegreya Sans'; letter-spacing: .14em; color: var(--brass); margin-bottom: 1px; }
+
+/* C: crest with a roman numeral, its own plate beside Level */
+.crest { position: absolute; z-index: 2; bottom: 10px; width: 30px; height: 31px; display: flex; align-items: center; justify-content: center; font: 700 12px 'Cinzel', serif; color: #1a1408; background: var(--brass);
+  clip-path: polygon(2px 0, calc(100% - 2px) 0, 100% 2px, 100% 62%, 50% 100%, 0 62%, 0 2px); box-shadow: inset 2px 2px 0 #efdcaa, inset -2px -2px 0 #8a7449; }
+
+/* D: the level plate's frame metal climbs in tiers */
+.tier-iron   { --hi: #333c52; --lo: #0c0f15; }
+.tier-bronze { --hi: #b27a48; --lo: #4a2c16; }
+.tier-silver { --hi: #c9d1dd; --lo: #4d5566; }
+.tier-brass  { --hi: #ecd8a2; --lo: #7d6540; }
+.stat.framed { padding: 6px 11px; }
+.stat.framed.tier-brass b { color: #f3e3b6; }
+
+/* E: title + crest */
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Prestige on the Hero tab</h1>
+  <p class="lede">The armory header at a new hero (prestige 0), prestige 3 and prestige 8. Level stays the big number in every option. Only the prestige mark changes. Titles are placeholders.</p>
+  <div id="opts"></div>
+</div>
+<script>
+const ROOM = '../../public/sprites/home/armory.png';
+const HERO = '../../public/sprites/player/warrior.png';
+const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>';
+const FLAME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+const MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const TITLE = { 0: '', 3: 'Ashborn', 8: 'Undying' };
+const TIER = (p) => (p === 0 ? 'iron' : p < 3 ? 'bronze' : p < 6 ? 'silver' : 'brass');
+const STATES = [
+  { p: 0, lvl: 12, streak: 9, cap: 'New hero · prestige 0' },
+  { p: 3, lvl: 12, streak: 41, cap: 'Prestige 3' },
+  { p: 8, lvl: 12, streak: 118, cap: 'Prestige 8' },
+];
+
+const levelPlate = (s, extra = '', cls = '', left = 12) =>
+  `<span class="plate stat level ${cls}" style="left:${left}px"><span class="ic-exp">${UP}</span><small>Level</small><b>${s.lvl}</b>${extra}</span>`;
+const streakPlate = (s) => `<span class="plate stat streak"><span class="ic-streak">${FLAME}</span><small>Best streak</small><b>${s.streak}</b></span>`;
+const nameOnly = '<h3 class="plate name" style="margin:0">Kael</h3>';
+const named = (s) => (s.p ? `<h3 class="plate name titled" style="margin:0"><span class="title">${TITLE[s.p]}</span>Kael</h3>` : nameOnly);
+const crest = (s) => (s.p ? `<span class="crest" style="left:12px">${ROMAN[s.p]}</span>` : '');
+const pips = (s) => {
+  if (!s.p) return '';
+  const shown = Math.min(s.p, 10);
+  return `<span class="pips">${'<i></i>'.repeat(shown)}</span>`;
+};
+
+const OPTIONS = [
+  { key: 'A', name: 'A · Pips', text: 'One brass pip on the Level plate per prestige. Quiet and easy to count up to about 5; at 8 it gets long.',
+    build: (s) => nameOnly + levelPlate(s, pips(s)) + streakPlate(s) },
+  { key: 'B', name: 'B · Title', text: 'A title above the name, a new one at milestone prestiges. Reads at a glance and feels like a flex. No number, so prestige 3 and 4 can look the same.',
+    build: (s) => named(s) + levelPlate(s) + streakPlate(s) },
+  { key: 'C', name: 'C · Crest', text: 'A brass crest with the prestige number in roman numerals, beside the Level plate. Exact, and nothing shows for a new hero.',
+    build: (s) => nameOnly + crest(s) + levelPlate(s, '', '', s.p ? 48 : 12) + streakPlate(s) },
+  { key: 'D', name: 'D · Frame metal', text: 'The Level plate\'s frame changes metal in tiers: iron, bronze (1–2), silver (3–5), brass (6+). Nothing to read, only a look; exact rank lives in the hero popup.',
+    build: (s) => nameOnly + levelPlate(s, '', `framed tier-${TIER(s.p)}`) + streakPlate(s) },
+  { key: 'E', name: 'E · Title + crest (recommended)', text: 'The flex of B and the exact rank of C. A new hero has neither, so a veteran on a fresh run is clear: titled name, crest, Lv 12.',
+    build: (s) => named(s) + crest(s) + levelPlate(s, '', '', s.p ? 48 : 12) + streakPlate(s) },
+];
+
+document.getElementById('opts').innerHTML = OPTIONS.map((o) => `
+  <section class="opt">
+    <h2>${o.name}</h2>
+    <p>${o.text}</p>
+    <div class="row">${STATES.map((s) => `
+      <figure>
+        <div class="head">
+          <img class="room" src="${ROOM}" alt="" />
+          <img class="hero" src="${HERO}" alt="" />
+          <span class="menu">${MENU}</span>
+          ${o.build(s)}
+        </div>
+        <figcaption>${s.cap}</figcaption>
+      </figure>`).join('')}
+    </div>
+  </section>`).join('');
+</script>
+</body>
+</html>

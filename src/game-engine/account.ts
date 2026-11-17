@@ -14,6 +14,8 @@ export interface Account {
   // the arena; see skins.ts). Missing on saves from before skins.
   ownedSkinIds?: string[];
   wornSkins?: Partial<Record<SkinSlot, string>>;
+  // Prestige rank, 0 to 5 (see prestige.ts). Missing on saves from before prestige.
+  prestige?: number;
 }
 
 export function createAccount(): Account {

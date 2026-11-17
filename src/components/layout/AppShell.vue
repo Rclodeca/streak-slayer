@@ -5,6 +5,7 @@ import AppMenu from './AppMenu.vue';
 import TabBar from './TabBar.vue';
 import NewHeroScreen from './NewHeroScreen.vue';
 import AddGemsButton from '../debug/AddGemsButton.vue';
+import PrestigeButton from '../debug/PrestigeButton.vue';
 import AddGoldButton from '../debug/AddGoldButton.vue';
 import DropItemButton from '../debug/DropItemButton.vue';
 import PopupPreview from '../debug/PopupPreview.vue';
@@ -143,6 +144,7 @@ watch(
       <SkipDayButton v-if="isDev && devTools.on" />
       <AddGoldButton v-if="isDev && devTools.on" />
       <AddGemsButton v-if="isDev && devTools.on" />
+      <PrestigeButton v-if="isDev && devTools.on" />
       <DropItemButton v-if="isDev && devTools.on" />
       <PopupPreview v-if="isDev && devTools.on" />
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">

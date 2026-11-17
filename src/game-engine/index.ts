@@ -173,6 +173,8 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, createAccount, recordLevel, spendGems } from './account';
+export type { PrestigeMark } from './prestige';
+export { MAX_PRESTIGE, prestigeMark, prestigeRank } from './prestige';
 export type { SkinDef, SkinKind, SkinSlot } from './skins';
 export { DEFAULT_SCENE_ART, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';

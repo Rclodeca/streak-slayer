@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Prestige outline</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Prestige round 4: the outline plate (round 3, 8) with roman numerals, in the item rarity colours:
+   Veteran rare blue (P1-2), Ascendant epic purple (P3-4), Mythic relic orange (P5). Pixel-cut Moonlit. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1300px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 780px; }
+section.opt { margin: 0 0 48px; }
+section.opt h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 3px; text-transform: uppercase; text-align: center; }
+section.opt > p { margin: 0 auto 14px; max-width: 780px; text-align: center; font-size: 15px; }
+.row { display: flex; gap: 18px 22px; flex-wrap: wrap; justify-content: center; }
+figure { margin: 0; }
+figcaption { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-top: 6px; text-transform: uppercase; }
+
+.head {
+  --ink: #f0f3f7; --text: #a9adb6; --exp: #d9a93c; --streak: #e0894a; --hi: #333c52; --lo: #0c0f15;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  position: relative; width: 390px; height: 232px; overflow: hidden; background: #07080c; outline: 1px solid #000;
+}
+.head .room { position: absolute; left: -21px; top: 0; width: 432px; height: 232px; max-width: none; image-rendering: pixelated; }
+.head .hero { position: absolute; left: 131px; bottom: 30px; width: 128px; height: 128px; image-rendering: pixelated; }
+.head .menu { position: absolute; right: 8px; top: 8px; width: 36px; height: 36px; background: rgba(7,8,12,.88); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); display: flex; align-items: center; justify-content: center; color: #dbe2ee; }
+.head .menu svg { width: 18px; height: 18px; }
+.plate { position: absolute; z-index: 2; background: rgba(7,8,12,.88); clip-path: var(--px2); padding: 5px 10px; box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); color: var(--ink); }
+.stat { bottom: 10px; display: flex; align-items: center; gap: 6px; line-height: 1; }
+.stat svg { width: 14px; height: 14px; flex: none; }
+.stat small { font: 700 10px 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.stat b { font: 700 17px 'Alegreya', serif; }
+.stat.level { left: 12px; } .stat.streak { right: 12px; }
+.ic-exp { color: var(--exp); } .ic-streak { color: var(--streak); }
+
+/* rarity tiers (Moonlit --rarity-rare / -epic / -relic); d = dark edge */
+.rare  { --c: #5f95e6; --d: #1f3c70; }
+.epic  { --c: #b57be8; --d: #4f2a7e; }
+.relic { --c: #f58a35; --d: #7a3a0e; }
+
+.nameplate { left: 12px; top: 12px; display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 10px; min-height: 40px; }
+.who { font: 600 13px/1.15 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+.who .ttl { display: block; font: 700 10px/1.2 'Alegreya Sans'; letter-spacing: .16em; margin-bottom: 1px; color: var(--c); }
+
+.pb { flex: none; display: flex; align-items: center; justify-content: center; height: 30px; min-width: 34px; padding: 0 7px;
+  color: var(--c); background: #0a0c12; clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--c), inset -2px -2px 0 var(--d);
+  font: 700 14px/1 'Cinzel', serif; letter-spacing: .04em; }
+.pb.p { font-size: 16px; letter-spacing: 0; padding: 0 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Outline plate, rarity colours</h1>
+  <p class="lede">Veteran in rare blue (I–II), Ascendant in epic purple (III–IV), Mythic in relic orange (V). Roman numerals first, the P# version below to compare.</p>
+  <div id="opts"></div>
+</div>
+<script>
+const ROOM = '../../public/sprites/home/armory.png';
+const HERO = '../../public/sprites/player/warrior.png';
+const UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>';
+const FLAME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+const MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V'];
+const TIERS = [null, ['Veteran', 'rare'], ['Veteran', 'rare'], ['Ascendant', 'epic'], ['Ascendant', 'epic'], ['Mythic', 'relic']];
+const STREAKS = [9, 22, 47, 71, 96, 140];
+
+const plate = (p, roman) => {
+  if (!p) return '<div class="plate nameplate"><span class="who">Kael</span></div>';
+  const [title, cls] = TIERS[p];
+  return `<div class="plate nameplate ${cls}"><span class="who"><span class="ttl">${title}</span>Kael</span><span class="pb ${roman ? '' : 'p'}">${roman ? ROMAN[p] : `P${p}`}</span></div>`;
+};
+
+const OPTIONS = [
+  { name: 'Roman numeral outline', roman: true },
+  { name: 'P# outline (to compare)', roman: false },
+];
+
+document.getElementById('opts').innerHTML = OPTIONS.map((o) => `
+  <section class="opt">
+    <h2>${o.name}</h2>
+    <div class="row">${[0, 1, 2, 3, 4, 5].map((p) => `
+      <figure>
+        <div class="head">
+          <img class="room" src="${ROOM}" alt="" />
+          <img class="hero" src="${HERO}" alt="" />
+          <span class="menu">${MENU}</span>
+          ${plate(p, o.roman)}
+          <span class="plate stat level"><span class="ic-exp">${UP}</span><small>Level</small><b>12</b></span>
+          <span class="plate stat streak"><span class="ic-streak">${FLAME}</span><small>Best streak</small><b>${STREAKS[p]}</b></span>
+        </div>
+        <figcaption>${p ? `Prestige ${p}` : 'New hero'}</figcaption>
+      </figure>`).join('')}
+    </div>
+  </section>`).join('');
+</script>
+</body>
+</html>

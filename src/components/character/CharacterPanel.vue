@@ -6,10 +6,12 @@ import { useHeroStats } from '../../composables/useHeroStats';
 import { useHitFeed } from '../../composables/useHitFeed';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { usePress } from '../../composables/usePress';
+import { usePrestige } from '../../composables/usePrestige';
 import { useTabStore } from '../../store/tabStore';
 import ExpBar from '../ui/ExpBar.vue';
 import HealthBar from '../ui/HealthBar.vue';
 import Modal from '../ui/Modal.vue';
+import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
 import { HERO_PHONE_PLACEMENT, HERO_PLACEMENT } from './heroArt';
 import HeroDetails from './HeroDetails.vue';
 import PlayerSprite from './PlayerSprite.vue';
@@ -17,7 +19,8 @@ import PlayerSprite from './PlayerSprite.vue';
 // Only the name and the bars sit on the stage (the boss's panel shows its numbers
 // at a glance). The hero's stats, boosts and boss-skill effects all live in the
 // details, HeroDetails, behind the hero's half of the stage: the Hero tab on a
-// phone, a popup on wider screens.
+// phone, a popup on wider screens. After a prestige its numeral sits between the
+// name and the level (docs/mockups/hero-prestige-fight.html, A).
 const showDetails = ref(false);
 const isPhone = usePhoneLayout();
 const tabStore = useTabStore();
@@ -53,6 +56,7 @@ const leveling = computed(() => phase.value === 'leveling');
 const { shownHp } = useHitFeed();
 const shownHealth = computed(() => shownHp('hero', character.value.currentHealth, maxHealth.value));
 const { pressed, pressHandlers } = usePress();
+const { mark } = usePrestige();
 </script>
 
 <template>
@@ -66,6 +70,7 @@ const { pressed, pressHandlers } = usePress();
     <div class="hero-block">
       <h2 class="name-line">
         <span class="hero-name">{{ heroName }}</span>
+        <PrestigeNumeral v-if="mark" class="name-prestige" :mark="mark" small />
         <span class="level-number">{{ displayLevel }}</span>
         <span v-if="leveling" class="level-up-popup" role="status">Level up</span>
       </h2>
@@ -170,6 +175,11 @@ const { pressed, pressHandlers } = usePress();
   border-right: 1.5px solid currentColor;
   transform: rotate(45deg);
   color: var(--text);
+}
+
+.name-prestige {
+  align-self: center;
+  margin-left: 0.5em;
 }
 
 .hero-name {
