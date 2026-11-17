@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Where gold and gems live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Round 6: B, beside the menu, on every screen. Screens are the real app at 390 x 844 (2x), patched and
+   captured (docs/mockups/currency/B-*.png). Earlier rounds (a top bar, rail arms, HP-bar and
+   under-stage placements) are in the spec. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.4 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 20px 60px; max-width: 1800px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 30px; max-width: 820px; }
+.row { display: flex; flex-wrap: wrap; gap: 34px 20px; justify-content: center; }
+figure { margin: 0; flex: none; width: 320px; }
+figure h2 { font: 600 12px 'Cinzel', serif; letter-spacing: .18em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+figure p { margin: 0 0 10px; font-size: 14.5px; min-height: 42px; }
+.shot { border: 1px solid #000; border-radius: 24px; overflow: hidden; box-shadow: 0 14px 34px rgba(0,0,0,.5); }
+.shot img { display: block; width: 320px; height: auto; }
+.zoom { margin: 0 auto 36px; width: 400px; height: 120px; overflow: hidden; position: relative; border: 1px solid #000; border-radius: 6px; box-shadow: 0 14px 34px rgba(0,0,0,.5); }
+.zoom img { position: absolute; width: 780px; left: -380px; top: 0; }
+.cuts { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin: 0 0 40px; }
+.cut { width: 360px; } .cut .z { width: 360px; height: 190px; overflow: hidden; position: relative; border: 1px solid #000; border-radius: 6px; margin-bottom: 6px; }
+.cut .z img { position: absolute; width: 780px; left: -380px; top: 0; }
+.cut b { display: block; font: 600 11px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: #8a8ba3; margin: 2px 0 10px 4px; }
+h3 { font: 600 13px 'Cinzel', serif; letter-spacing: .24em; color: #d2bb85; text-transform: uppercase; margin: 10px 0 6px; text-align: center; }
+.note { text-align: center; max-width: 820px; margin: 0 auto 18px; font-size: 15px; }
+.zcap { text-align: center; font: 600 11px 'Cinzel', serif; letter-spacing: .16em; text-transform: uppercase; color: #8a8ba3; margin: -28px 0 30px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Gold and gems · B, beside the menu</h1>
+  <p class="lede">One small plate with gold and gems together, just left of the cog, its top edge level with the top of the side rail. 14.5px numbers, a tight gap between the two, and round one's brighter colours, gold #f0c64e and gem #6fd6ea, which would become the gold and gem colours everywhere. On the fight tabs the boss stands 4px (2 art pixels) lower to make room. The same spot on every tab. It replaces the Shop's two plates and the Talents brass chips. Full numbers, and nothing else moves. Hidden on the Focus strip.</p>
+  <div class="zoom"><img src="currency/B-skills.png" alt="Close up"></div>
+  <div class="zcap">Close up, 2x</div>
+  <div class="row" id="row"></div>
+  <h3 style="margin-top:56px">Bosses under the plate</h3>
+  <p class="note">I checked every boss sprite (51) against the plate. 23 never touch it. 28 do, but only at the very top: horns, crown points, weapon tips and hood peaks. No face or head goes under it. The four worst are below, as they stand today and 4px lower. Dropping the boss further would put its feet on the hero's name, which starts 6px below them. The boss name in these shots is the current boss's; only the art is swapped.</p>
+  <div class="cuts" id="cuts"></div>
+</div>
+<script>
+const SHOTS = [
+  ['B-skills', 'Skills', 'Beside the cog, clear of the boss\'s name and HP bar. Long names already wrap to two lines.'],
+  ['B-quests', 'Quests', 'The same stage, so the same spot.'],
+  ['B-shop', 'Shop', 'Moved from the top-left to beside the cog, so it matches every other tab.'],
+  ['B-talents', 'Talents', 'In place of the brass chips, in the banner row.'],
+  ['B-hero', 'Hero', 'Top row, the name plate on the left and the purse on the right.'],
+  ['B-earn', 'On a gain', 'The number ticks up and a small green +120 shows under the plate.'],
+  ['B-focus', 'Focus strip', 'Hidden: no purse and no gain.'],
+];
+const CUTS = [['warlord1', 'Warlord 1: horns'], ['arcane3', 'Arcane 3: crown and staff tip'], ['armored1', 'Armored 1: sword tip'], ['wraith2', 'Wraith 2: hood and staff']];
+document.getElementById('cuts').innerHTML = CUTS.map(([b, n]) => `<div class="cut"><div class="z"><img src="currency/B-cut-${b}-0.png" alt=""></div><b>${n} · today</b><div class="z"><img src="currency/B-cut-${b}-4.png" alt=""></div><b>${n} · 4px lower</b></div>`).join('');
+document.getElementById('row').innerHTML = SHOTS.map(([f, n, d]) => `<figure><h2>${n}</h2><p>${d}</p><div class="shot"><img src="currency/${f}.png" alt="${n}"></div></figure>`).join('');
+</script>
+</body>
+</html>
