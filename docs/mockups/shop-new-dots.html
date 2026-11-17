@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Shop "new" dots</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Shop "new" dots, Pixel-cut on Moonlit. Tap the tabs and the switch; the buttons on the right turn the day. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #1b1c20; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 980px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 640px; }
+.wrap { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; align-items: flex-start; }
+button { font: inherit; }
+svg { flex: none; }
+
+.phone {
+  --bg: #07080c; --ink: #f0f3f7; --text: #a9adb6; --dim: #6a6f7a; --touch: #dbe2ee; --brass: #d2bb85;
+  --card: #1b2030; --hi: #333c52; --lo: #0c0f15; --card-lip: #05060a; --well: #0a0c12; --well-hi: #1a1f2b; --well-lo: #040508;
+  --new: #e5483a;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  width: 390px; height: 700px; display: flex; flex-direction: column; background: var(--bg); color: var(--text);
+  border: 1px solid #000; border-radius: 34px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.5);
+}
+
+/* stand-in for the pinned stage / shopkeeper scene */
+.scene { flex: none; height: 150px; display: flex; align-items: center; justify-content: center; background: #0c0f17; border-bottom: 3px solid var(--card-lip);
+  font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #3a4358; text-transform: uppercase; }
+
+.body { flex: 1; min-height: 0; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+/* the Items | Services | Looks switch */
+.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--well); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--well-lo), inset -2px -2px 0 var(--well-hi); padding: 3px; flex: none; }
+.seg3 button { position: relative; border: 0; background: transparent; color: var(--dim); min-height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; clip-path: var(--px2); font: 600 11px 'Cinzel', serif; letter-spacing: .12em; text-transform: uppercase; padding: 0 2px; }
+.seg3 button svg { width: 15px; height: 15px; }
+.seg3 button.on { background: #202a40; color: var(--ink); box-shadow: inset 0 2px 0 var(--hi); }
+
+/* what's under the switch: placeholder rows */
+.row { flex: none; height: 58px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--hi), inset -2px -2px 0 var(--lo); display: flex; align-items: center; padding: 0 14px; gap: 10px; }
+.row i { width: 34px; height: 34px; background: #0e1117; clip-path: var(--px2); }
+.row b { font: 600 15px 'Alegreya', serif; color: var(--ink); }
+.row span { margin-left: auto; font: 700 13px 'Alegreya Sans'; color: var(--brass); }
+.head { flex: none; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; text-transform: uppercase; }
+
+/* the new dot: a small pixel-cut circle, ringed in the bar's colour so it lifts off the icon */
+.new { position: absolute; width: 10px; height: 10px; background: var(--new); clip-path: var(--px2); pointer-events: none; }
+.new.ring { filter: drop-shadow(0 0 0 #0c0f17); }
+
+/* bottom bar, as the real one */
+.bar-b { flex: none; position: relative; display: flex; padding: 0 6px 22px; background: #0c0f17; border-top: 3px solid var(--card-lip); box-shadow: 0 -10px 18px -8px rgba(0,0,0,.6); }
+.tabb { --sp: var(--touch); flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 58px; padding-top: 3px;
+  cursor: pointer; background: none; border: 0; color: #6d7280; font: 700 10.5px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; }
+.tabb svg { width: 21px; height: 21px; }
+.tabb.sel { color: var(--ink); }
+.tabb.sel::before { content: ''; position: absolute; left: 20px; right: 20px; top: -3px; height: 3px; background: var(--sp); }
+.tabb.sel svg { color: var(--sp); }
+.tabb .new { top: 8px; left: calc(50% + 9px); box-shadow: 0 0 0 2px #0c0f17; }
+.seg3 .new { top: 6px; left: calc(50% + 24px); }
+.seg3 .new.s { left: calc(50% + 40px); }
+.seg3 .new.l { left: calc(50% + 30px); }
+
+/* side panel */
+.panel { width: 300px; background: #23252b; padding: 16px 18px; font-size: 15px; }
+.panel h2 { margin: 0 0 8px; font: 600 12px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; text-transform: uppercase; }
+.panel p { margin: 0 0 12px; }
+.panel button { display: block; width: 100%; min-height: 44px; margin: 0 0 8px; border: 0; background: #2c3140; color: #ece8de; cursor: pointer; font: 600 12px 'Cinzel', serif; letter-spacing: .12em; text-transform: uppercase; }
+.panel button:hover { background: #363c50; }
+.state { margin: 12px 0 0; padding: 10px 12px; background: #1b1c20; font-size: 14px; }
+.state div { display: flex; justify-content: space-between; padding: 2px 0; }
+.state em { font-style: normal; color: #ece8de; }
+.legend { margin: 14px 0 0; padding-left: 18px; font-size: 14px; }
+.legend li { margin-bottom: 4px; }
+.pill { display: inline-block; width: 9px; height: 9px; background: #e5483a; margin-right: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Shop "new" dots</h1>
+  <p class="lede">A red dot on the Shop tab when the day has turned (new items) or a service has rotated, and on the Items or Services switch for whichever side is new. Opening a side clears it.</p>
+  <div class="wrap">
+    <div class="phone" id="phone"></div>
+    <div class="panel">
+      <h2>Try it</h2>
+      <p>Tap the Shop tab, then Services, then Looks. Then turn the day.</p>
+      <button id="day">Next day</button>
+      <button id="reset">Start as a new player</button>
+      <div class="state" id="state"></div>
+      <ul class="legend">
+        <li><span class="pill"></span>The day turns: Items is new, and Shop wears a dot.</li>
+        <li><span class="pill"></span>Every 3rd day the service rotates too: Services is new as well.</li>
+        <li>Open a side and its dot clears. The Shop dot stays while the other side is still unseen.</li>
+        <li>A new player also sees a dot on Looks, once. It clears when Looks is opened and never comes back.</li>
+        <li>The Skills, Quests and Talents badges are unchanged.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+const ICONS = {"sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","store":"<path d=\"M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5\"/><path d=\"M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244\"/><path d=\"M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05\"/>","anvil":"<path d=\"M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4\"/><path d=\"M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z\"/><path d=\"M9 12v5\"/><path d=\"M15 12v5\"/><path d=\"M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1\"/>","user-round":"<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>","hand-coins":"<path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\"/><path d=\"m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\"/><path d=\"m2 16 6 6\"/><circle cx=\"16\" cy=\"9\" r=\"2.9\"/><circle cx=\"6\" cy=\"5\" r=\"3\"/>","shirt":"<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\"/>"};
+const ic = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
+const TABS = [['skills', 'Skills', 'sword'], ['quests', 'Quests', 'scroll-text'], ['shop', 'Shop', 'store'], ['talents', 'Talents', 'anvil'], ['hero', 'Hero', 'user-round']];
+const SIDES = [['items', 'Items', 'sword'], ['services', 'Services', 'hand-coins'], ['vault', 'Looks', 'shirt']];
+const SERVICES = ['Item slots', 'Overdrive', 'Reroll', 'Enchant'];
+
+// day 1 starts the first service turn; it rotates every 3 days
+const fresh = () => ({ day: 1, tab: 'skills', side: 'items', itemsSeen: 0, servicesSeen: 0, vaultSeen: false });
+let s = fresh();
+const turnStart = () => s.day - ((s.day - 1) % 3);
+const itemsNew = () => s.itemsSeen !== s.day;
+const servicesNew = () => s.servicesSeen !== turnStart();
+// Looks is lit once, for a new player, and never again after it's been opened
+const vaultNew = () => !s.vaultSeen;
+
+function visit() {
+  if (s.tab === 'shop' && s.side === 'items') s.itemsSeen = s.day;
+  if (s.tab === 'shop' && s.side === 'services') s.servicesSeen = turnStart();
+  if (s.tab === 'shop' && s.side === 'vault') s.vaultSeen = true;
+}
+
+function render() {
+  visit();
+  const dot = (cls = '') => `<span class="new ${cls}" role="img" aria-label="New"></span>`;
+  const body = s.tab !== 'shop'
+    ? `<div class="head">${TABS.find((t) => t[0] === s.tab)[1]}</div><div class="row"><i></i><b>(not the shop, nothing changes)</b></div>`
+    : `<div class="seg3">${SIDES.map(([id, label, icon]) =>
+        `<button data-side="${id}" class="${s.side === id ? 'on' : ''}">${ic(icon)}${label}${id === 'items' && itemsNew() ? dot() : ''}${id === 'services' && servicesNew() ? dot('s') : ''}${id === 'vault' && vaultNew() ? dot('l') : ''}</button>`).join('')}</div>`
+      + (s.side === 'items'
+        ? `<div class="head">Today's stock</div><div class="row"><i></i><b>Day ${s.day} headline</b><span>420 g</span></div><div class="row"><i></i><b>Ware</b><span>85 g</span></div><div class="row"><i></i><b>Ware</b><span>85 g</span></div>`
+        : s.side === 'services'
+          ? `<div class="head">On offer</div><div class="row"><i></i><b>${SERVICES[Math.floor((turnStart() - 1) / 3) % SERVICES.length]}</b><span>${3 - ((s.day - 1) % 3)} days left</span></div>`
+          : `<div class="head">Looks</div><div class="row"><i></i><b>Skin</b><span>40 gems</span></div>`);
+  const shopDot = itemsNew() || servicesNew() || vaultNew();
+  document.getElementById('phone').innerHTML =
+    `<div class="scene">Shopkeeper scene</div><div class="body">${body}</div>`
+    + `<div class="bar-b">${TABS.map(([id, label, icon]) =>
+        `<button class="tabb ${s.tab === id ? 'sel' : ''}" data-tab="${id}">${ic(icon)}<span>${label}</span>${id === 'shop' && shopDot ? dot() : ''}</button>`).join('')}</div>`;
+  document.getElementById('state').innerHTML =
+    `<div>Day <em>${s.day}</em></div><div>Service turn began day <em>${turnStart()}</em></div><div>Items dot <em>${itemsNew() ? 'on' : 'off'}</em></div><div>Services dot <em>${servicesNew() ? 'on' : 'off'}</em></div><div>Looks dot <em>${vaultNew() ? 'on' : 'off'}</em></div><div>Shop tab dot <em>${shopDot ? 'on' : 'off'}</em></div>`;
+  document.querySelectorAll('[data-tab]').forEach((b) => b.onclick = () => { s.tab = b.dataset.tab; render(); });
+  document.querySelectorAll('[data-side]').forEach((b) => b.onclick = () => { s.side = b.dataset.side; render(); });
+}
+document.getElementById('day').onclick = () => { s.day += 1; render(); };
+document.getElementById('reset').onclick = () => { s = fresh(); render(); };
+render();
+</script>
+</body>
+</html>

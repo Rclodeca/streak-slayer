@@ -44,6 +44,26 @@ describe('ShopSection', () => {
       return wrapper.findAll('.shop-ware-row.item').find((row) => row.find('.shop-name').text() === name)!;
     };
 
+    it('dots the sides with something new, and clears each one once it is shown', async () => {
+      hero(1000);
+      const wrapper = mount(ShopSection);
+      const dotted = () => wrapper.findAll('.shop-side').filter((side) => side.find('.side-new').exists()).map((side) => side.text());
+      // Items is showing, so it is already seen; Services and Looks wait.
+      expect(dotted()).toEqual(['Services', 'Looks']);
+
+      await wrapper.findAll('.shop-side')[1]!.trigger('click');
+      expect(dotted()).toEqual(['Looks']);
+      await wrapper.findAll('.shop-side')[2]!.trigger('click');
+      expect(dotted()).toEqual([]);
+
+      // A day on: Items is new again (Services keeps its turn for three days); Looks never comes back.
+      useDebugClockStore().skipToNextDay();
+      await wrapper.vm.$nextTick();
+      expect(dotted()).toEqual(['Items']);
+      await wrapper.findAll('.shop-side')[0]!.trigger('click');
+      expect(dotted()).toEqual([]);
+    });
+
     it('opens on Items: the featured piece, then wares, potions and the restock', () => {
       hero(1000);
       const wrapper = mount(ShopSection);

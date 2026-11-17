@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { HandCoins, Shirt, Sword } from 'lucide-vue-next';
+import { watch } from 'vue';
+import { useShopNews } from '../../composables/useShopNews';
 import { useTabStore } from '../../store/tabStore';
 import type { ShopSide } from '../../store/tabStore';
 import ShopItems from './ShopItems.vue';
@@ -8,13 +10,22 @@ import ShopVault from './ShopVault.vue';
 
 // Under the shopkeeper's scene (docs/mockups/shop-tab-3.html, A): a plain
 // Items | Services | Looks switch, then that side's wares. The sides split by
-// what's bought, not by coin: each price shows its own, gold or gems.
+// what's bought, not by coin: each price shows its own, gold or gems. A red dot
+// marks a side with something new (useShopNews); showing a side clears it, and
+// again if the day or the service turns while it stays open.
 const tabStore = useTabStore();
+const shopNews = useShopNews();
 const SIDES: { id: ShopSide; label: string; icon: typeof Sword }[] = [
   { id: 'items', label: 'Items', icon: Sword },
   { id: 'services', label: 'Services', icon: HandCoins },
   { id: 'vault', label: 'Looks', icon: Shirt },
 ];
+
+watch(
+  () => [tabStore.shopSide, shopNews.todayKey.value, shopNews.turnStart.value] as const,
+  ([side]) => shopNews.see(side),
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -31,6 +42,7 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Sword }[] = [
         @click="tabStore.selectShopSide(side.id)"
       >
         <component :is="side.icon" :size="15" aria-hidden="true" />{{ side.label }}
+        <span v-if="shopNews.isNew(side.id)" class="side-new" role="img" aria-label="New" />
       </button>
     </div>
     <ShopItems v-if="tabStore.shopSide === 'items'" />
@@ -55,6 +67,7 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Sword }[] = [
 }
 
 .shop-side {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,5 +78,13 @@ const SIDES: { id: ShopSide; label: string; icon: typeof Sword }[] = [
   border: 0;
   background: transparent;
   -webkit-tap-highlight-color: transparent;
+}
+
+.side-new {
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
 }
 </style>

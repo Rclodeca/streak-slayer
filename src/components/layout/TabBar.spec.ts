@@ -10,9 +10,11 @@ import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
+import { useShopNews } from '../../composables/useShopNews';
 import TabBar from './TabBar.vue';
 
 enableAutoUnmount(afterEach);
+
 
 describe('TabBar', () => {
   beforeEach(() => {
@@ -184,6 +186,32 @@ describe('TabBar', () => {
       const resting = createHabit('Lift', 'daily', 'medium', false, rng, [0, 1, 3, 4, 5, 6]);
       useHabitStore().habits = [resting];
       expect(tab(mount(TabBar), 'skills').find('.tab-count').exists()).toBe(false);
+    });
+  });
+
+  describe('the Shop dot', () => {
+    const dot = (wrapper: ReturnType<typeof mount>) => tab(wrapper, 'shop').find('.tab-new');
+    /** Every side seen, as of today. */
+    const seeAll = () => {
+      const news = useShopNews();
+      (['items', 'services', 'vault'] as const).forEach((side) => news.see(side));
+    };
+
+    it('shows for a new player, and goes once Items, Services and Looks have been seen', async () => {
+      const wrapper = mount(TabBar);
+      expect(dot(wrapper).exists()).toBe(true);
+      seeAll();
+      await wrapper.vm.$nextTick();
+      expect(dot(wrapper).exists()).toBe(false);
+    });
+
+    it('comes back when the day turns', async () => {
+      const wrapper = mount(TabBar);
+      seeAll();
+      await wrapper.vm.$nextTick();
+      useDebugClockStore().skipToNextDay();
+      await wrapper.vm.$nextTick();
+      expect(dot(wrapper).exists()).toBe(true);
     });
   });
 });

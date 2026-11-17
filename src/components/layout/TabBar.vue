@@ -7,12 +7,14 @@ import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
+import { useShopNews } from '../../composables/useShopNews';
 import { useTalentPurchase } from '../../composables/useTalentPurchase';
 
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
 // shows under the stage. Quests counts what's due today or overdue. The Shop
 // took Trials' place and is open from the start; Trials, with its claim count,
-// is the stage's Trials button now (AppShell). Talents wears a pip
+// is the stage's Trials button now (AppShell). The Shop wears a pip while a side
+// of it has something new (useShopNews). Talents wears a pip
 // while the gold and gems in hand buy the next rank on some open node. Skills counts the good skills still to do today: the
 // dailies that are due and unchecked, and on a Sunday (the last day of the
 // Monday-start week) the unchecked weeklies too. Sealed (before QUESTS_UNLOCK_LEVEL
@@ -24,6 +26,7 @@ const questStore = useQuestStore();
 const habitStore = useHabitStore();
 const debugClockStore = useDebugClockStore();
 const talentPurchase = useTalentPurchase();
+const shopNews = useShopNews();
 
 const TABS = [
   { id: 'skills', label: 'Skills', icon: Sword },
@@ -82,6 +85,7 @@ const talentToBuy = computed(() => TALENT_DEFS.some((def) => talentPurchase.canB
       <Lock v-if="isSealed(tab.id)" :size="12" class="tab-lock" aria-hidden="true" />
       <span v-else-if="tab.id === 'skills' && skillsLeft" class="tab-count" aria-label="Left to do today"><span>{{ skillsLeft }}</span></span>
       <span v-else-if="tab.id === 'quests' && dueCount" class="tab-count"><span>{{ dueCount }}</span></span>
+      <span v-else-if="tab.id === 'shop' && shopNews.any.value" class="tab-new" role="img" aria-label="Something new in the shop"><span /></span>
       <span v-else-if="tab.id === 'talents' && talentToBuy" class="tab-pip" role="img" aria-label="A talent to learn" />
     </button>
   </div>
@@ -124,6 +128,7 @@ const talentToBuy = computed(() => TALENT_DEFS.some((def) => talentPurchase.canB
 /* The badges ride the icon's top-right corner. */
 .tab-lock,
 .tab-count,
+.tab-new,
 .tab-pip {
   position: absolute;
   top: 6px;

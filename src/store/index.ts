@@ -12,6 +12,7 @@ import { useDebugClockStore } from './debugClockStore';
 import { useHabitStore } from './habitStore';
 import { useHighScoreStore } from './highScoreStore';
 import { useHintStore } from './hintStore';
+import { useShopSeenStore } from './shopSeenStore';
 import { useQuestStore } from './questStore';
 import { setupAccountTracking } from './plugins/accountTracking';
 import { setupHighScoreTracking } from './plugins/highScoreTracking';
@@ -88,6 +89,7 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   // read as a level-up and log gems for it.
   setupAccountTracking(targetPinia);
   useHintStore(targetPinia).settle(habitStore.habits.length > 0);
+  useShopSeenStore(targetPinia).settle(habitStore.habits.length > 0);
 
   return { characterStore, bossStore, habitStore, activityLogStore, questStore, accountStore };
 }
