@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TALENT_DEFS } from '../../game-engine';
 import type { TalentDef, TalentId } from '../../game-engine';
-import { SHOOT_LOOK, TALENT_LOOK, talentAmount, talentDescription } from './talentDisplay';
+import { SHOOT_LOOK, TALENT_LOOK, talentAmount, talentDescription, talentState } from './talentDisplay';
 
 const def = (id: TalentId): TalentDef => TALENT_DEFS.find((d) => d.id === id)!;
 
@@ -53,5 +53,13 @@ describe('talentAmount', () => {
     expect(talentAmount(def('unbroken'), 1)).toBe('10% dodge');
     expect(talentAmount(def('executioner'), 1)).toBe('+0.5×');
     expect(talentAmount(def('blessed'), 1)).toBe('Heal crits');
+  });
+});
+
+describe('talentState', () => {
+  it('a full node opens again with Deeper roots', () => {
+    const might = TALENT_DEFS.find((d) => d.id === 'might')!;
+    expect(talentState({ talents: { might: 3 }, prestige: 2 }, might)).toBe('has');
+    expect(talentState({ talents: { might: 3 }, prestige: 0 }, might)).toBe('full');
   });
 });

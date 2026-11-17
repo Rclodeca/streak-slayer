@@ -11,6 +11,7 @@ import {
   talentBonusFlat,
   talentBonusPercent,
   talentEffectValue,
+  talentMaxRank,
   talentRanksBought,
   talentRanksInShoot,
   talentRank,
@@ -240,5 +241,30 @@ describe('talent bonuses', () => {
     expect(talentEffectValue(hero, 'weeklyDamage')).toBe(15);
     expect(talentEffectValue(hero, 'dodge')).toBe(10);
     expect(talentEffectValue(hero, 'milestoneExp')).toBe(0);
+  });
+});
+
+describe('Deeper roots', () => {
+  const def = (id: TalentId) => TALENT_DEFS.find((d) => d.id === id)!;
+
+  it('raise every node but the tops', () => {
+    expect(talentMaxRank({ prestige: 2 }, def('might'))).toBe(4);
+    expect(talentMaxRank({ prestige: 2 }, def('keen-edge'))).toBe(3);
+    expect(talentMaxRank({ prestige: 4 }, def('might'))).toBe(5);
+    expect(talentMaxRank({ prestige: 4 }, def('leech'))).toBe(4);
+    expect(talentMaxRank({ prestige: 4 }, def('executioner'))).toBe(1);
+    expect(talentMaxRank({}, def('might'))).toBe(3);
+  });
+
+  it('a full node takes a Deeper roots rank', () => {
+    const hero = withTalents(makeCharacter({ gold: 10000 }), { might: 3 });
+    expect(canBuyTalent(hero, 10, 'might')).toBe(false);
+    expect(canBuyTalent({ ...hero, prestige: 2 }, 10, 'might')).toBe(true);
+  });
+
+  it('a top still opens at the base max', () => {
+    const mains = Object.fromEntries(defsIn('damage').filter((d) => d.kind === 'main').map((d) => [d.id, d.maxRank]));
+    const hero = { ...withTalents(makeCharacter(), mains), prestige: 4 };
+    expect(isTalentUnlocked(hero, 'executioner')).toBe(true);
   });
 });

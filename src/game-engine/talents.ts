@@ -1,6 +1,7 @@
 import { TALENT_COST } from './constants/economy';
 import { UNLOCK_LEVELS } from './constants/unlocks';
 import { characterGold } from './gold';
+import { deeperRootsCount } from './prestige';
 import { HEAL_CRIT_MULTIPLIER, LAST_STAND_BELOW_PCT, TALENT_DEFS } from './constants/talentTree';
 import type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './constants/talentTree';
 import type { BoostableStat } from './items';
@@ -55,7 +56,8 @@ function defFor(id: TalentId): TalentDef | undefined {
  * Whether `id` can take ranks yet. The first main node of a shoot is always
  * open; each later main node opens once the main node before it has a rank;
  * an offshoot opens once its parent has a rank; the top node (★) opens once
- * every main node of its shoot is full (offshoots don't count).
+ * every main node of its shoot is at its base max (offshoots don't count), so
+ * a Deeper roots rank never re-locks it.
  */
 export function isTalentUnlocked(character: Pick<Character, 'talents'>, id: TalentId): boolean {
   const def = defFor(id);
@@ -74,6 +76,14 @@ export function isTalentUnlocked(character: Pick<Character, 'talents'>, id: Tale
 }
 
 /**
+ * How many ranks `def` can take: its base max, plus one per Deeper roots the
+ * hero's prestige has unlocked. A top node (★) stays at its base.
+ */
+export function talentMaxRank(character: Pick<Character, 'prestige'>, def: TalentDef): number {
+  return def.kind === 'top' ? def.maxRank : def.maxRank + deeperRootsCount(character.prestige ?? 0);
+}
+
+/**
  * Whether one more rank of `id` can be bought right now: the hero is alive,
  * the tab is open, the node is open and not full, and the gold and `gems` both
  * cover the next rank. Alive (rounded, as the death check is) because a dead
@@ -86,7 +96,7 @@ export function canBuyTalent(character: Character, gems: number, id: TalentId): 
   return Math.round(character.currentHealth) > 0
     && talentsOpen(character)
     && isTalentUnlocked(character, id)
-    && talentRank(character, id) < def.maxRank
+    && talentRank(character, id) < talentMaxRank(character, def)
     && characterGold(character) >= cost.gold
     && gems >= cost.gems;
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { TALENT_DEFS, TALENT_SHOOTS, talentRanksInShoot, talentRank } from '../../game-engine';
+import { TALENT_DEFS, TALENT_SHOOTS, talentMaxRank, talentRanksInShoot, talentRank } from '../../game-engine';
 import type { TalentDef, TalentShoot } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
@@ -94,12 +94,13 @@ const ROOT_X: Record<TalentShoot, number> = { damage: 61, tank: 183, support: 30
                 :def="row[side]!"
                 :state="stateOf(row[side]!)"
                 :rank="talentRank(character, row[side]!.id)"
+                :max="talentMaxRank(character, row[side]!)"
                 :place="side === 'right' ? 'rgt' : 'lft'"
                 @pick="selected = row[side]!"
               />
             </template>
           </template>
-          <TalentCell :def="row.node" :state="stateOf(row.node)" :rank="talentRank(character, row.node.id)" place="mid" @pick="selected = row.node" />
+          <TalentCell :def="row.node" :state="stateOf(row.node)" :rank="talentRank(character, row.node.id)" :max="talentMaxRank(character, row.node)" place="mid" @pick="selected = row.node" />
         </div>
       </div>
     </div>

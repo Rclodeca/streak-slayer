@@ -235,6 +235,7 @@ export {
   TALENT_DEFS,
   talentRanksBought,
   talentRanksInShoot,
+  talentMaxRank,
   talentRank,
   talentsOpen,
   TALENT_SHOOTS,

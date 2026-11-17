@@ -6,19 +6,19 @@ import type { TalentState } from './talentDisplay';
 
 // One node on the tree: its socket, name and a pip a rank. The whole cell is the
 // tap target (TalentSection opens the node's popup).
-defineProps<{ def: TalentDef; state: TalentState; rank: number; place: 'lft' | 'mid' | 'rgt' }>();
+defineProps<{ def: TalentDef; state: TalentState; rank: number; max: number; place: 'lft' | 'mid' | 'rgt' }>();
 defineEmits<{ pick: [] }>();
 </script>
 
 <template>
   <div class="cell n" :class="[state, place, { main: place === 'mid', top: def.kind === 'top' }]">
-    <button type="button" class="node" :aria-label="`${def.name}, ${rank} of ${def.maxRank}`" @click="$emit('pick')">
+    <button type="button" class="node" :aria-label="`${def.name}, ${rank} of ${max}`" @click="$emit('pick')">
       <span class="sock" :style="{ '--c': TALENT_LOOK[def.id].color }">
         <component :is="TALENT_LOOK[def.id].icon" aria-hidden="true" />
         <Lock v-if="state === 'locked'" :size="11" class="lk" aria-hidden="true" />
       </span>
       <span class="nm">{{ def.name }}</span>
-      <span class="pips" aria-hidden="true"><i v-for="n in def.maxRank" :key="n" class="pip" :class="{ lit: n <= rank }" /></span>
+      <span class="pips" aria-hidden="true"><i v-for="n in max" :key="n" class="pip" :class="{ lit: n <= rank }" /></span>
     </button>
   </div>
 </template>

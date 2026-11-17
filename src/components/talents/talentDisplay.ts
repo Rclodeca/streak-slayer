@@ -27,7 +27,7 @@ import {
   Zap,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
-import { isTalentUnlocked, talentRank } from '../../game-engine';
+import { isTalentUnlocked, talentMaxRank, talentRank } from '../../game-engine';
 import type { Character, TalentDef, TalentEffectId, TalentId, TalentShoot } from '../../game-engine';
 
 // How the Talents tab draws each node and shoot (docs/mockups/pixel-talents.html):
@@ -134,9 +134,9 @@ export function talentAmount(def: TalentDef, rank: number): string {
 /** How a node reads on the tree: locked (sunk grey), open (silver, tap it), has (a rank or more, brass) or full (every rank, lit brass). */
 export type TalentState = 'locked' | 'open' | 'has' | 'full';
 
-export function talentState(character: Pick<Character, 'talents'>, def: TalentDef): TalentState {
+export function talentState(character: Pick<Character, 'talents' | 'prestige'>, def: TalentDef): TalentState {
   const rank = talentRank(character, def.id);
-  if (rank >= def.maxRank) return 'full';
+  if (rank >= talentMaxRank(character, def)) return 'full';
   if (rank > 0) return 'has';
   return isTalentUnlocked(character, def.id) ? 'open' : 'locked';
 }

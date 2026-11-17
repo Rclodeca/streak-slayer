@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { talentRank } from '../../game-engine';
+import { talentMaxRank, talentRank } from '../../game-engine';
 import type { TalentDef } from '../../game-engine';
 import { useTalentPurchase } from '../../composables/useTalentPurchase';
 import { useCharacterStore } from '../../store/characterStore';
@@ -20,7 +20,8 @@ const purchase = useTalentPurchase();
 
 const rank = computed(() => (props.def ? talentRank(characterStore.character, props.def.id) : 0));
 const look = computed(() => (props.def ? TALENT_LOOK[props.def.id] : null));
-const full = computed(() => !!props.def && rank.value >= props.def.maxRank);
+const max = computed(() => (props.def ? talentMaxRank(characterStore.character, props.def) : 0));
+const full = computed(() => !!props.def && rank.value >= max.value);
 const state = computed(() => (props.def ? talentState(characterStore.character, props.def) : 'open'));
 const canLearn = computed(() => !!props.def && purchase.canBuy(props.def.id));
 // Open and not full, so only the price stands in the way.
@@ -38,17 +39,17 @@ function learn() {
         <span class="sock" :style="{ '--c': look.color }"><component :is="look.icon" :size="28" aria-hidden="true" /></span>
         <div class="rt">
           <span class="nm">{{ def.name }}</span>
-          <span class="pips" aria-hidden="true"><i v-for="n in def.maxRank" :key="n" class="pip" :class="{ lit: n <= rank }" /></span>
+          <span class="pips" aria-hidden="true"><i v-for="n in max" :key="n" class="pip" :class="{ lit: n <= rank }" /></span>
         </div>
       </div>
       <p class="desc">{{ talentDescription(def) }}</p>
       <div class="plates">
         <div class="plate now">
-          <small>Now · {{ rank }}/{{ def.maxRank }}</small>
+          <small>Now · {{ rank }}/{{ max }}</small>
           <span>{{ talentAmount(def, rank) }}</span>
         </div>
         <div class="plate next" :class="{ done: full }">
-          <small>Next · {{ Math.min(rank + 1, def.maxRank) }}/{{ def.maxRank }}</small>
+          <small>Next · {{ Math.min(rank + 1, max) }}/{{ max }}</small>
           <span>{{ full ? '—' : talentAmount(def, rank + 1) }}</span>
         </div>
       </div>
