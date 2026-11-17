@@ -172,15 +172,27 @@ export {
 export { characterGold } from './gold';
 
 export type { Account } from './account';
-export { addGems, createAccount, recordLevel, spendGems } from './account';
-export type { PrestigeMark } from './prestige';
-export { MAX_PRESTIGE, prestigeMark, prestigeRank } from './prestige';
+export { addGems, claimPurse, createAccount, purseDue, recordLevel, spendGems } from './account';
+export type { PrestigeMark, PrestigeRankDef, PrestigeSpecial } from './prestige';
+export {
+  canPrestige,
+  deeperRootsCount,
+  MAX_PRESTIGE,
+  nextPrestigeRank,
+  PRESTIGE_BONUS_PER_RANK,
+  PRESTIGE_RANKS,
+  prestigeBonusPercent,
+  prestigeMark,
+  prestigeOpensBetween,
+  prestigeRank,
+  withPrestige,
+} from './prestige';
 export type { SkinDef, SkinKind, SkinSlot } from './skins';
 export { DEFAULT_SCENE_ART, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
-export { FREEZE, GOLD_POUCH, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { FREEZE, GOLD_POUCH, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

@@ -168,6 +168,12 @@ export interface Character {
   // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
   // once per account. Undefined on a save from before challenges.
   challenges?: ChallengeEntry[];
+  // A copy of the account's prestige rank (Account.prestige is the truth), so
+  // the stat math (itemBonusPercent, talent max ranks) can read it. Synced on
+  // load and on prestige; undefined = 0.
+  prestige?: number;
+  // Deaths in this climb (since the last prestige); undefined = 0.
+  deaths?: number;
   // The last day a bad habit was checked off — Perfect day and Clean slate
   // read it when the day ends.
   lastBadCheckDayKey?: string;

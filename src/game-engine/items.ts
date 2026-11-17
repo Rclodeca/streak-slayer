@@ -1,6 +1,7 @@
 import { ITEM_CATALOG } from './constants/itemCatalog';
 import { TUNING } from './constants/tuning';
 import { formatCompact } from './format';
+import { prestigeBonusPercent } from './prestige';
 import { pickRandom, pickWeighted, type Rng } from './rng';
 import { talentBonusFlat, talentBonusPercent, talentEffectValue } from './talents';
 import type { Character } from './types';
@@ -161,8 +162,8 @@ export function doublableItems(character: Character): ItemDef[] {
 
 /**
  * Sums bonus.percent across every equipped item's `bonuses` entries matching
- * `stat`, plus the character's talents for it (see talentBonusPercent). 0 if
- * none equipped/matching. A drawback (negative percent) counts as-is — an
+ * `stat`, plus the character's talents and prestige rank for it (see
+ * talentBonusPercent, prestigeBonusPercent). 0 if none equipped/matching. A drawback (negative percent) counts as-is — an
  * enchanted item doubles only its positive bonuses, and never a talent.
  */
 export function itemBonusPercent(character: Character, stat: BoostableStat): number {
@@ -174,7 +175,7 @@ export function itemBonusPercent(character: Character, stat: BoostableStat): num
       if (bonus.stat === stat && bonus.percent) total += bonus.percent > 0 ? enchantedAmount(stat, bonus.percent, itemDoubleFactor(character, id)) : bonus.percent;
     }
   }
-  return total + talentBonusPercent(character, stat);
+  return total + talentBonusPercent(character, stat) + prestigeBonusPercent(character, stat);
 }
 
 /**

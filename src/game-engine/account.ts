@@ -16,6 +16,9 @@ export interface Account {
   wornSkins?: Partial<Record<SkinSlot, string>>;
   // Prestige rank, 0 to 5 (see prestige.ts). Missing on saves from before prestige.
   prestige?: number;
+  // The day the daily purse was last claimed (see claimPurse), on the account so
+  // a death and a new run the same day don't pay it twice. Missing until the first.
+  purseDayKey?: string;
 }
 
 export function createAccount(): Account {
@@ -40,4 +43,15 @@ export function addGems(account: Account, gems: number): Account {
 export function spendGems(account: Account, gems: number): Account | null {
   if (account.gems < gems) return null;
   return { ...account, gems: account.gems - gems };
+}
+
+/** Whether the daily purse is still to claim on `dayKey`. */
+export function purseDue(account: Account, dayKey: string): boolean {
+  return account.purseDayKey !== dayKey;
+}
+
+/** The account with the daily purse claimed on `dayKey`, or null if it already was. The caller pays the gold (purseGold). */
+export function claimPurse(account: Account, dayKey: string): Account | null {
+  if (!purseDue(account, dayKey)) return null;
+  return { ...account, purseDayKey: dayKey };
 }

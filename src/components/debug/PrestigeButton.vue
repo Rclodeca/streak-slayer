@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { MAX_PRESTIGE, prestigeRank } from '../../game-engine';
+import { MAX_PRESTIGE, prestigeRank, withPrestige } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
+import { useCharacterStore } from '../../store/characterStore';
 
 // Steps the account's prestige 0 → V → 0, to see the marks before prestiging exists.
 const accountStore = useAccountStore();
+const characterStore = useCharacterStore();
 const rank = computed(() => prestigeRank(accountStore.account));
+
+function step() {
+  accountStore.setPrestige((rank.value + 1) % (MAX_PRESTIGE + 1));
+  characterStore.setCharacter(withPrestige(characterStore.character, rank.value));
+}
 </script>
 
 <template>
-  <button type="button" class="prestige-step" @click="accountStore.setPrestige((rank + 1) % (MAX_PRESTIGE + 1))">
+  <button type="button" class="prestige-step" @click="step">
     Prestige {{ rank }} → {{ (rank + 1) % (MAX_PRESTIGE + 1) }} (testing)
   </button>
 </template>

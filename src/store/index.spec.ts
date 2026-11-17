@@ -284,6 +284,17 @@ describe('the account in a save', () => {
     expect(useAccountStore().account).toEqual({ gems: 2 + 3 + 4 + 5, highestLevel: 21 });
   });
 
+  it('copies the account prestige onto a saved character that has none', () => {
+    const rng = createRng(1);
+    const character = createCharacter(rng);
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ schemaVersion: CURRENT_SCHEMA_VERSION, character, boss: generateBoss(1, rng), habits: [], account: { gems: 0, highestLevel: 1, prestige: 2 } }),
+    );
+    const { characterStore } = initializeStores();
+    expect(characterStore.character.prestige).toBe(2);
+  });
+
   it('pays a milestone as the hero levels up, and logs it', () => {
     storeOldSave(4);
     const { characterStore, activityLogStore } = initializeStores();

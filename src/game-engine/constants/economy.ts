@@ -95,10 +95,14 @@ export const LEVEL_GEM_MILESTONES: readonly { level: number; gems: number }[] = 
 export const TRIAL_GEMS = 12;
 
 /** Every free gem an account can earn. `trials` and `dungeonFirstClears` are placeholders until milestones B and F. */
+/** Gems paid at each prestige (placeholder, see the prestige design §4). */
+export const PRESTIGE_GEMS = 50;
+
 export const FREE_GEM_SOURCES = {
   levels: LEVEL_GEM_MILESTONES.reduce((sum, m) => sum + m.gems, 0),
   trials: 210,
   dungeonFirstClears: 0,
+  prestige: PRESTIGE_GEMS * 5,
 };
 
 /** What a gem-priced shop item costs, by rarity. Flat, not by boss: gems don't grow with the run. */
@@ -113,6 +117,14 @@ export const GOLD_POUCH = { gems: 5, bossKills: 3 };
 /** The gold the Gold Pouch pays while boss `bossIndex` is up. */
 export function pouchGold(bossIndex: number): number {
   return roundPrice(GOLD_POUCH.bossKills * bossGold(bossIndex));
+}
+
+/** The daily purse: boss kills' worth of gold for the first open of each day. */
+export const DAILY_PURSE_BOSS_KILLS = 0.5;
+
+/** The gold the daily purse pays while boss `bossIndex` is up. */
+export function purseGold(bossIndex: number): number {
+  return roundPrice(DAILY_PURSE_BOSS_KILLS * bossGold(bossIndex));
 }
 
 /**
