@@ -1,11 +1,12 @@
 import { TUNING } from './constants/tuning';
+import { UNLOCK_LEVELS } from './constants/unlocks';
 import { hasItemEffect } from './items';
 import { expToNextLevel } from './leveling';
 import { questExpMultiplier } from './talents';
 import type { Character, Difficulty, Quest, QuestWeek } from './types';
 
 /** The player level at which the quests section opens, each run. */
-export const QUESTS_UNLOCK_LEVEL = 2;
+export const QUESTS_UNLOCK_LEVEL = UNLOCK_LEVELS.quests;
 
 /** Whether the quests section is open: unlocked this run, or at the unlock level with its popup up. */
 export function questsOpen(character: Character): boolean {

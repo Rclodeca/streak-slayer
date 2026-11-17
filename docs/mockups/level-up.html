@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Level up popup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Level-up popup, three options, Pixel-cut on Midnight. Each option is shown at a level with 0, 1 and 2 unlocks.
+   The unlock levels are placeholders: edit them in the panel at the top and every popup redraws. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #b8b6c4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1180px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 20px; max-width: 680px; }
+button, input { font: inherit; }
+svg { flex: none; }
+
+/* the unlock-level panel */
+.cfg { max-width: 760px; margin: 0 auto 34px; padding: 12px 14px; background: #161624; border: 1px solid #2c2c47; border-radius: 6px; }
+.cfg h2 { margin: 0 0 8px; font: 600 11px 'Cinzel', serif; letter-spacing: .2em; color: #8f8ca8; text-transform: uppercase; }
+.cfg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px 14px; }
+.cfg label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.cfg label svg { width: 16px; height: 16px; color: #b0b1cb; }
+.cfg input { width: 52px; margin-left: auto; padding: 4px 6px; background: #12131c; color: #f4f4fa; border: 1px solid #414163; border-radius: 4px; }
+.cfg p { margin: 8px 0 0; font-size: 13px; color: #7c7c95; }
+
+.opt { margin: 0 0 46px; }
+.opt h2 { text-align: center; margin: 0 0 4px; font: 600 13px 'Cinzel', serif; letter-spacing: .26em; color: #ece8de; text-transform: uppercase; }
+.opt .note { text-align: center; margin: 0 auto 16px; max-width: 640px; font-size: 14px; color: #8f8ca8; }
+.row { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; align-items: flex-start; }
+.col { width: 350px; max-width: 100%; }
+.col-head { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 8px; font: 700 12px 'Cinzel', serif; letter-spacing: .16em; color: #8f8ca8; text-transform: uppercase; }
+.col-head button { width: 30px; height: 30px; border: 1px solid #414163; background: #1c1c2a; color: #dfe0f0; border-radius: 4px; cursor: pointer; }
+
+/* Midnight tokens, as the app's palette */
+.screen {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --frame: #232337; --panel-hi: #373857; --panel-lo: #171823;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19; --sunk-hi: #0f1018; --sunk-lo: #2c2c47;
+  --code-bg: #202030; --line-faint: rgba(150, 141, 126, .16); --moon: #dfe0f0; --moon-solid: #b0b1cb;
+  --brass: #d2bb85; --brass-solid: #b39a66; --exp: #d8b46a; --stat: #d8cdb5; --dim: #8384a0;
+  --button-fill: #cdcedf; --button-line: rgba(255,255,255,.4); --button-text: #20202e; --button-lip: #828398;
+  --i-health: #c33a2e; --i-phys: #e86154; --i-magic: #c870d6; --i-heal: #4ac777; --i-true: #f1e9d6; --i-gold: #c8a96e; --i-violet: #a58bd0;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  position: relative; min-height: 640px; padding: 22px 16px; display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(0deg, #161624 0 58px, #11121b 58px 70px); border-radius: 26px; border: 1px solid #000; overflow: hidden;
+}
+.screen::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+
+/* the popup frame: Modal.vue's pixel panel */
+.modal { position: relative; width: 100%; background: var(--frame); clip-path: var(--px3); box-shadow: inset 3px 3px 0 var(--panel-hi), inset -3px -3px 0 var(--panel-lo); padding: 16px 16px 18px; color: var(--text); }
+.m-title { margin: 0 0 12px; font: 600 15px 'Cinzel', serif; letter-spacing: .24em; color: var(--text-h); text-transform: uppercase; }
+.cap { font: 700 11px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--text-h); }
+.well { background: var(--code-bg); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.sock { display: grid; place-items: center; width: 34px; height: 34px; background: var(--card-lo); clip-path: var(--px2); box-shadow: inset 2px 2px 0 #0b0b13, inset -2px -2px 0 var(--card-hi); }
+.sock svg { width: 16px; height: 16px; }
+.onward { display: block; width: 100%; margin-top: 16px; min-height: 48px; border: 0; cursor: pointer; background: var(--button-fill); color: var(--button-text); clip-path: var(--px2);
+  box-shadow: inset 0 2px 0 var(--button-line), inset 0 -2px 0 rgba(0,0,0,.18), 0 3px 0 var(--button-lip); font: 700 16px 'Alegreya Sans'; letter-spacing: .02em; }
+.onward-wrap { padding-bottom: 3px; }
+.onward-wrap .onward { box-shadow: inset 0 2px 0 var(--button-line), inset 0 -4px 0 var(--button-lip); }
+.up { color: var(--i-heal); font-weight: 800; }
+.unl-name { font: 700 17px 'Alegreya', serif; color: var(--text-h); }
+.unl-line { font-size: 14px; color: var(--text); }
+
+/* ---------- A · Brass plate + ledger ---------- */
+.a-plate { position: relative; width: 92px; height: 92px; margin: 2px auto 6px; display: grid; place-items: center; }
+.a-plate::before { content: ''; position: absolute; inset: 10px; transform: rotate(45deg); background: linear-gradient(var(--brass), var(--brass-solid)); clip-path: var(--px2); }
+.a-plate::after { content: ''; position: absolute; inset: 16px; transform: rotate(45deg); background: #171727; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #0b0b13, inset -2px -2px 0 #3d3c6c; }
+.a-plate b { position: relative; z-index: 1; font: 700 30px 'Cinzel', serif; color: var(--brass); }
+.a-from { text-align: center; margin: 0 0 12px; font-size: 14px; color: var(--dim); }
+.a-ledger { padding: 4px 10px; }
+.a-ledger li { display: grid; grid-template-columns: 22px 1fr auto 3.4rem; align-items: center; gap: 8px; padding: 6px 0; list-style: none; font-size: 15px; }
+.a-ledger li + li { border-top: 1px solid var(--line-faint); }
+.a-ledger svg { width: 16px; height: 16px; }
+.a-ledger .val { color: var(--text-h); font-weight: 800; font-variant-numeric: tabular-nums; }
+.a-ledger .up { text-align: right; font-variant-numeric: tabular-nums; }
+.a-ledger ul { margin: 0; padding: 0; }
+.a-heal { margin: 8px 0 0; text-align: center; font-size: 14px; color: var(--text); }
+.a-unl-head { margin: 16px 0 8px; display: flex; align-items: center; gap: 10px; color: var(--brass); }
+.a-unl-head::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, rgba(210,187,133,.5), transparent); }
+.a-card { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; padding: 10px 12px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.a-card + .a-card { margin-top: 8px; }
+.a-card .sock { color: var(--moon); }
+.a-card p { margin: 0; }
+
+/* ---------- B · Night strip + tiles ---------- */
+.b .modal { padding-top: 0; }
+.b-strip { position: relative; height: 128px; margin: 0 -16px 12px; background: #0e0e19 url('../../public/sprites/stage/arena.png') center 64% / 432px auto no-repeat; image-rendering: pixelated; border-bottom: 3px solid var(--card-lip); overflow: hidden; }
+.b-strip::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 70% at 32% 70%, rgba(210,187,133,.22), transparent 70%), linear-gradient(rgba(17,18,27,.35), rgba(17,18,27,.15)); }
+.b-strip img { position: absolute; z-index: 1; left: 56px; bottom: 10px; width: 64px; height: 64px; image-rendering: pixelated; }
+.b-title { position: absolute; z-index: 1; top: 16px; left: 16px; margin: 0; }
+.b-lvl { position: absolute; z-index: 1; right: 18px; bottom: 16px; text-align: right; }
+.b-lvl small { display: block; font: 700 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--brass); text-transform: uppercase; }
+.b-lvl b { font: 700 46px/1 'Cinzel', serif; color: var(--brass); text-shadow: 0 2px 0 #000; }
+.b-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.b-stat { padding: 8px 0 7px; text-align: center; }
+.b-stat svg { width: 16px; height: 16px; display: block; margin: 0 auto 4px; }
+.b-stat .val { display: block; font: 800 14px 'Alegreya Sans'; color: var(--text-h); font-variant-numeric: tabular-nums; }
+.b-stat .up { display: block; font-size: 12px; }
+.b-heal { margin: 8px 0 0; font-size: 13px; color: var(--dim); text-align: center; }
+.b-unl { display: grid; gap: 8px; margin-top: 14px; }
+.b-unl.two { grid-template-columns: 1fr 1fr; }
+.b-tile { position: relative; padding: 14px 10px 12px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); text-align: center; }
+.b-tile .new { position: absolute; top: 8px; left: 10px; font: 700 9px 'Cinzel', serif; letter-spacing: .2em; color: var(--brass); text-transform: uppercase; }
+.b-tile .emb { position: relative; width: 52px; height: 52px; margin: 6px auto 8px; display: grid; place-items: center; color: var(--moon); }
+.b-tile .emb::before { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--button-fill), var(--button-lip)); clip-path: var(--px3); }
+.b-tile .emb::after { content: ''; position: absolute; inset: 3px; background: var(--code-bg); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.b-tile .emb svg { position: relative; z-index: 1; width: 24px; height: 24px; }
+.b-tile p { margin: 0; }
+.b-unl.one .b-tile { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; text-align: left; padding: 12px; }
+.b-unl.one .b-tile .emb { margin: 0; }
+.b-unl.one .b-tile .new { position: static; display: block; margin-bottom: 1px; }
+
+/* ---------- C · Unlocks lead ---------- */
+.c-embs { display: flex; justify-content: center; gap: 22px; margin: 4px 0 10px; }
+.c-emb { width: 120px; text-align: center; }
+.c-emb .emb { position: relative; width: 84px; height: 84px; margin: 0 auto 8px; display: grid; place-items: center; color: var(--moon); }
+.c-emb .emb::before { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--button-fill), var(--button-lip)); clip-path: var(--px3); }
+.c-emb .emb::after { content: ''; position: absolute; inset: 4px; background: var(--code-bg); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.c-emb .emb svg { position: relative; z-index: 1; width: 36px; height: 36px; }
+.c-emb.lvl .emb::before { background: linear-gradient(var(--brass), var(--brass-solid)); }
+.c-emb.lvl .emb b { position: relative; z-index: 1; font: 700 34px 'Cinzel', serif; color: var(--brass); }
+.c-emb .unl-name { display: block; font-size: 16px; }
+.c-emb .unl-line { display: block; font-size: 13px; line-height: 1.25; margin-top: 2px; }
+.c-tag { text-align: center; margin: 0 0 12px; font-size: 15px; color: var(--text); }
+.c-lvl { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 8px; }
+.c-lvl::before, .c-lvl::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, transparent, rgba(210,187,133,.5)); }
+.c-lvl::after { transform: scaleX(-1); }
+.c-lvl span { color: var(--brass); }
+.c-strip { display: flex; justify-content: space-between; padding: 9px 12px; }
+.c-strip span { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.c-strip svg { width: 15px; height: 15px; }
+
+.legend { max-width: 680px; margin: 10px auto 0; padding: 0 0 0 18px; font-size: 14px; color: #8f8ca8; }
+.legend li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>LEVEL UP</h1>
+  <p class="lede">Three options for the level-up popup. Each one is shown at a level with no unlocks, one unlock and two. Change the unlock levels below to try other mixes, or use the ‹ › arrows to step any column's level.</p>
+
+  <div class="cfg">
+    <h2>Unlock levels (placeholders)</h2>
+    <div class="cfg-grid" id="cfg"></div>
+    <p>Shop opens with Items only. Services and Looks open inside it later. In code these would be one table of levels, not hard-coded.</p>
+  </div>
+
+  <section class="opt a">
+    <h2>A · Brass plate</h2>
+    <p class="note">The level in a brass diamond, since a level is earned. Stats are a ledger in a sunk well. Each unlock is a lifted card under an "Unlocked" rule. With no unlocks, the popup simply ends at the stats.</p>
+    <div class="row" data-opt="a"></div>
+  </section>
+
+  <section class="opt b">
+    <h2>B · Night strip</h2>
+    <p class="note">The hero stands on the arena at the top of the popup with the new level beside them. Stats are five small tiles. One unlock is a wide card; two sit side by side as square tiles.</p>
+    <div class="row" data-opt="b"></div>
+  </section>
+
+  <section class="opt c">
+    <h2>C · Unlocks lead</h2>
+    <p class="note">When something opens, its emblem is the headline (the Quests and Talents popups' silver plate), one or two side by side. The level and stats shrink to one strip below. With nothing new, the brass level takes the emblem's place.</p>
+    <div class="row" data-opt="c"></div>
+  </section>
+
+  <ul class="legend">
+    <li>Stats: health and healing +9.5% a level, physical, magic and true +6%. Numbers here are the base stats grown to the level, no items.</li>
+    <li>The heal line is the level-up heal (10% of max health).</li>
+    <li>These would replace the separate Quests and Talents unlock popups, so one level gives one popup.</li>
+  </ul>
+</div>
+
+<script>
+const ICONS = {"scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","store":"<path d=\"M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5\"/><path d=\"M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244\"/><path d=\"M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05\"/>","anvil":"<path d=\"M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4\"/><path d=\"M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z\"/><path d=\"M9 12v5\"/><path d=\"M15 12v5\"/><path d=\"M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1\"/>","sparkle":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/>","crown":"<path d=\"M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z\"/><path d=\"M5 21h14\"/>","sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","hand-coins":"<path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\"/><path d=\"m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\"/><path d=\"m2 16 6 6\"/><circle cx=\"16\" cy=\"9\" r=\"2.9\"/><circle cx=\"6\" cy=\"5\" r=\"3\"/>","shirt":"<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\"/>","heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>","heart-pulse":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","wand-sparkles":"<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\"/><path d=\"m14 7 3 3\"/><path d=\"M5 6v4\"/><path d=\"M19 14v4\"/><path d=\"M10 2v2\"/><path d=\"M7 8H3\"/><path d=\"M21 16h-4\"/><path d=\"M11 3H9\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","chevrons-up":"<path d=\"m17 11-5-5-5 5\"/><path d=\"m17 18-5-5-5 5\"/>"};
+const ic = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
+// Placeholder unlock levels; the real ones would live in one tuning table.
+const UNLOCKS = [
+  { id: 'quests', name: 'Quests', icon: 'scroll-text', line: 'Some deeds are sworn only once.', level: 2 },
+  { id: 'trials', name: 'Trials', icon: 'gift', line: 'Prove yourself. Claim the spoils.', level: 3 },
+  { id: 'shop', name: 'Shop', icon: 'store', line: 'The merchant opens. Gear for gold.', level: 4 },
+  { id: 'talents', name: 'Talents', icon: 'anvil', line: 'Grow stronger with every run.', level: 5 },
+  { id: 'special', name: 'Special', icon: 'sparkle', tint: 'var(--i-gold)', line: 'Morning run now strikes ×1.5.', level: 5 },
+  { id: 'services', name: 'Services', icon: 'hand-coins', line: 'The merchant takes on work.', level: 6 },
+  { id: 'ult', name: 'Ult', icon: 'crown', tint: 'var(--i-violet)', line: 'Long ride now strikes ×2.5.', level: 8 },
+  { id: 'looks', name: 'Looks', icon: 'shirt', line: 'New garb for your hero.', level: 10 },
+];
+
+const BASE = { health: 1250, physical: 336, magic: 336, healing: 141, true: 288 };
+const STATS = [
+  { id: 'health', label: 'Health', icon: 'heart', color: 'var(--i-health)', rate: 0.095 },
+  { id: 'physical', label: 'Physical', icon: 'sword', color: 'var(--i-phys)', rate: 0.06 },
+  { id: 'magic', label: 'Magic', icon: 'wand-sparkles', color: 'var(--i-magic)', rate: 0.06 },
+  { id: 'healing', label: 'Healing', icon: 'heart-pulse', color: 'var(--i-heal)', rate: 0.095 },
+  { id: 'true', label: 'True', icon: 'zap', color: 'var(--i-true)', rate: 0.06 },
+];
+const statAt = (s, lvl) => Math.round(BASE[s.id] * Math.pow(1 + s.rate, lvl - 1));
+const fmt = (n) => n.toLocaleString('en-US');
+const unlocksAt = (lvl) => UNLOCKS.filter((u) => u.level === lvl);
+const healAt = (lvl) => Math.round(statAt(STATS[0], lvl) * 0.1);
+
+function statRows(lvl) {
+  return STATS.map((s) => ({ ...s, val: statAt(s, lvl), up: statAt(s, lvl) - statAt(s, lvl - 1) }));
+}
+const uIcon = (u) => `<span style="color:${u.tint || 'var(--moon)'}">${ic(u.icon)}</span>`;
+
+const RENDER = {
+  a(lvl) {
+    const un = unlocksAt(lvl);
+    return `<div class="modal">
+      <h3 class="m-title">Level up</h3>
+      <div class="a-plate"><b>${lvl}</b></div>
+      <p class="a-from">from level ${lvl - 1}</p>
+      <div class="well a-ledger"><ul>${statRows(lvl).map((s) => `<li><span style="color:${s.color}">${ic(s.icon)}</span><span>${s.label}</span><span class="val">${fmt(s.val)}</span><span class="up">+${fmt(s.up)}</span></li>`).join('')}</ul></div>
+      <p class="a-heal">Healed <span class="up">+${fmt(healAt(lvl))}</span></p>
+      ${un.length ? `<div class="a-unl-head cap" style="color:var(--brass)">Unlocked</div>
+        ${un.map((u) => `<div class="a-card"><span class="sock">${uIcon(u)}</span><div><p class="unl-name">${u.name}</p><p class="unl-line">${u.line}</p></div></div>`).join('')}` : ''}
+      <div class="onward-wrap"><button class="onward">Onward</button></div>
+    </div>`;
+  },
+  b(lvl) {
+    const un = unlocksAt(lvl);
+    return `<div class="modal">
+      <div class="b-strip"><h3 class="m-title b-title">Level up</h3><img src="../../public/sprites/player/warrior.png" alt="" /><div class="b-lvl"><small>Level</small><b>${lvl}</b></div></div>
+      <div class="b-stats">${statRows(lvl).map((s) => `<div class="well b-stat"><span style="color:${s.color}">${ic(s.icon)}</span><span class="val">${fmt(s.val)}</span><span class="up">+${fmt(s.up)}</span></div>`).join('')}</div>
+      <p class="b-heal">Healed <span class="up">+${fmt(healAt(lvl))}</span></p>
+      ${un.length ? `<div class="b-unl ${un.length === 1 ? 'one' : 'two'}">${un.map((u) => `<div class="b-tile"><span class="new">New</span><span class="emb">${uIcon(u)}</span><div><p class="unl-name">${u.name}</p><p class="unl-line">${u.line}</p></div></div>`).join('')}</div>` : ''}
+      <div class="onward-wrap"><button class="onward">Onward</button></div>
+    </div>`;
+  },
+  c(lvl) {
+    const un = unlocksAt(lvl);
+    const head = un.length
+      ? `<div class="c-embs">${un.map((u) => `<div class="c-emb"><span class="emb">${uIcon(u)}</span><span class="unl-name">${u.name}</span>${un.length > 1 ? `<span class="unl-line">${u.line}</span>` : ''}</div>`).join('')}</div>
+         ${un.length === 1 ? `<p class="c-tag">${un[0].line}</p>` : ''}
+         <div class="c-lvl"><span class="cap" style="color:var(--brass)">Level ${lvl}</span></div>`
+      : `<div class="c-embs"><div class="c-emb lvl"><span class="emb"><b>${lvl}</b></span></div></div><p class="c-tag">Stronger still. Healed <span class="up">+${fmt(healAt(lvl))}</span></p>`;
+    return `<div class="modal">
+      <h3 class="m-title">${un.length ? (un.length === 1 ? `${un[0].name} unlocked` : 'Unlocked') : `Level ${lvl}`}</h3>
+      ${head}
+      <div class="well c-strip">${statRows(lvl).map((s) => `<span><span style="color:${s.color}">${ic(s.icon)}</span><span class="up">+${fmt(s.up)}</span></span>`).join('')}</div>
+      <div class="onward-wrap"><button class="onward">Onward</button></div>
+    </div>`;
+  },
+};
+
+// Each column starts at the first level (2 and up) with that many unlocks.
+const firstWith = (n) => { for (let l = 2; l <= 40; l++) if (unlocksAt(l).length === n) return l; return null; };
+const cols = [0, 1, 2].map((n) => ({ n, lvl: firstWith(n) }));
+const label = (lvl) => { const n = unlocksAt(lvl).length; return `Level ${lvl} · ${n} unlock${n === 1 ? '' : 's'}`; };
+
+function draw() {
+  for (const row of document.querySelectorAll('.row')) {
+    const opt = row.dataset.opt;
+    row.innerHTML = cols.map((c, i) => c.lvl === null
+      ? `<div class="col"><div class="col-head">No level has ${c.n} unlocks</div></div>`
+      : `<div class="col"><div class="col-head"><button data-i="${i}" data-d="-1" aria-label="Level down">‹</button>${label(c.lvl)}<button data-i="${i}" data-d="1" aria-label="Level up">›</button></div><div class="screen">${RENDER[opt](c.lvl)}</div></div>`).join('');
+  }
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.col-head button');
+  if (!b) return;
+  const c = cols[+b.dataset.i];
+  c.lvl = Math.max(2, c.lvl + +b.dataset.d);
+  draw();
+});
+
+const cfg = document.getElementById('cfg');
+cfg.innerHTML = UNLOCKS.map((u, i) => `<label><span style="color:${u.tint || ''}">${ic(u.icon)}</span>${u.name}<input type="number" min="2" max="40" value="${u.level}" data-i="${i}" /></label>`).join('');
+cfg.addEventListener('input', (e) => {
+  const v = +e.target.value;
+  if (!v) return;
+  UNLOCKS[+e.target.dataset.i].level = v;
+  [0, 1, 2].forEach((n, i) => { cols[i].lvl = firstWith(n); });
+  draw();
+});
+draw();
+</script>
+</body>
+</html>

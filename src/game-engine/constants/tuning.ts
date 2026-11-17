@@ -1,4 +1,5 @@
 import type { BossSkillId, BossStat, Breakpoint, HybridPersonality, Period } from '../types';
+import { UNLOCK_LEVELS } from './unlocks';
 
 export const TUNING = {
   // Per-skill stats: every skill hits for its type's full stat (no pools),
@@ -378,12 +379,12 @@ export const TUNING = {
   // Special: at SPECIAL_LEVEL a random daily good habit is handed the Special
   // and permanently deals SPECIAL_MULTIPLIER damage on
   // its first (non-Overdrive) use each period.
-  SPECIAL_LEVEL: 5,
+  SPECIAL_LEVEL: UNLOCK_LEVELS.special,
   SPECIAL_MULTIPLIER: 1.5,
   // Ult: at ULT_LEVEL a random weekly good habit is handed the Ult and
   // permanently deals ULT_MULTIPLIER damage on its first
   // (non-Overdrive) use each period.
-  ULT_LEVEL: 8,
+  ULT_LEVEL: UNLOCK_LEVELS.ult,
   ULT_MULTIPLIER: 2.5,
   // Overdrive: the Shop's Overdrive service gives a chosen good habit (any period)
   // the ability to be activated OVERDRIVE_MAX_EXTRA_USES extra times per

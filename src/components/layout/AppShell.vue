@@ -33,6 +33,7 @@ import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
 import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
 import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
+import LevelUpPopup from '../ui/LevelUpPopup.vue';
 import EnchantReveal from '../shop/EnchantReveal.vue';
 import ServiceDonePopup from '../shop/ServiceDonePopup.vue';
 import GameToast from '../ui/GameToast.vue';
@@ -134,6 +135,7 @@ watch(
     <QuestMissPopup />
     <BossSkillPopup />
     <QuestCompletePopup />
+    <LevelUpPopup />
     <QuestUnlockPopup />
     <TalentUnlockPopup />
     <ReviveNotice />

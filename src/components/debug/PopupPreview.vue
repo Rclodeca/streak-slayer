@@ -5,6 +5,7 @@ import type { BossFamily, Personality } from '../../game-engine';
 import { useBossSkillCard } from '../../composables/useBossSkillCard';
 import { useCelebration } from '../../composables/useCelebration';
 import { useDeathScreen } from '../../composables/useDeathScreen';
+import { useLevelUp } from '../../composables/useLevelUp';
 import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
@@ -19,6 +20,7 @@ const missedSkills = useMissedSkillsGate();
 const { triggerDeath } = useDeathScreen();
 const { celebrateBossKill, celebrateLevelUp } = useCelebration();
 const { showBossSkill } = useBossSkillCard();
+const levelUp = useLevelUp();
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const trialsBadge = useDebugTrialsBadgeStore();
@@ -41,6 +43,16 @@ function previewMiss() {
 function previewKill() {
   celebrateBossKill({ ...bossStore.boss, health: 0 }, bossStore.boss);
   celebrateLevelUp(Math.max(1, characterStore.character.level - 1));
+}
+
+// The level-up popup for the hero's current level, with up to two made-up
+// unlocks, a Special and an Ult (no skill changes). Quests and Talents show
+// only when really due.
+function previewLevelUp(unlocks: number) {
+  const level = characterStore.character.level;
+  levelUp.record(Math.max(1, level - 1), level, 120);
+  if (unlocks > 0) levelUp.noteReward('special', 'Morning run');
+  if (unlocks > 1) levelUp.noteReward('ult', 'Long ride');
 }
 
 // Puts the tallest boss image (warlord 5, 90 art px) on the stage, to check how tall bosses fit.
@@ -111,6 +123,9 @@ function previewDaily() {
     <button type="button" @click="previewMiss">Preview quest failed (testing)</button>
     <button type="button" @click="triggerDeath">Preview death screen (testing)</button>
     <button type="button" @click="previewKill">Preview boss kill (testing)</button>
+    <button type="button" @click="previewLevelUp(0)">Preview level up (testing)</button>
+    <button type="button" @click="previewLevelUp(1)">Preview level up, 1 unlock (testing)</button>
+    <button type="button" @click="previewLevelUp(2)">Preview level up, 2 unlocks (testing)</button>
     <button type="button" @click="previewBossSkills">Preview boss skills (testing)</button>
     <button type="button" @click="showTallestBoss">Show tallest boss (testing)</button>
     <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>

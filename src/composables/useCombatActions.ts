@@ -81,6 +81,7 @@ import { useHabitStore } from '../store/habitStore';
 import { useHighScoreStore } from '../store/highScoreStore';
 import { useQuestStore } from '../store/questStore';
 import { useCelebration } from './useCelebration';
+import { useLevelUp } from './useLevelUp';
 import { useDeathScreen } from './useDeathScreen';
 import { useFallenHero } from './useFallenHero';
 import { useHoodedFigure } from './useHoodedFigure';
@@ -121,12 +122,14 @@ export function useCombatActions() {
   const { clear: clearItemDrops } = useItemDropQueue();
   const { enqueue: enqueueCompletion } = useQuestCompleteQueue();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
+  const { record: recordLevelUp, noteReward, dismiss: clearLevelUp } = useLevelUp();
   const { showBossSkill, clear: clearBossSkills } = useBossSkillCard();
   const undoCheck = useUndoCheck();
 
   /**
-   * Writes a `level-up` log entry and queues the hero panel's level-up beat
-   * if `after` is at a higher level than `before` — a no-op otherwise. Stat
+   * Writes a `level-up` log entry, queues the hero panel's level-up beat and
+   * records the level-up popup's news if `after` is at a higher level than
+   * `before` — a no-op otherwise. Stat
    * deltas are derived (rather than carried on the level-up result itself)
    * since `addExpAndResolveLevelUps` only returns the count of levels gained,
    * not the resulting stat values.
@@ -134,13 +137,15 @@ export function useCombatActions() {
   function logLevelUpIfAny(before: Character, after: Character): void {
     if (after.level <= before.level) return;
     celebrateLevelUp(before.level);
+    // Isolates the level-up heal (TUNING.LEVEL_UP_HEAL_PCT + lifesteal%,
+    // see addExpAndResolveLevelUps): nothing else changes currentHealth
+    // between these two specific snapshots.
+    const healthRestored = after.currentHealth - before.currentHealth;
+    recordLevelUp(before.level, after.level, healthRestored);
     activityLogStore.addEntry({
       kind: 'level-up',
       newLevel: after.level,
-      // Isolates the level-up heal (TUNING.LEVEL_UP_HEAL_PCT + lifesteal%,
-      // see addExpAndResolveLevelUps): nothing else changes currentHealth
-      // between these two specific snapshots.
-      healthRestored: after.currentHealth - before.currentHealth,
+      healthRestored,
       statDeltas: {
         physicalDamage: effectiveStat(after, 'physicalDamage') - effectiveStat(before, 'physicalDamage'),
         magicDamage: effectiveStat(after, 'magicDamage') - effectiveStat(before, 'magicDamage'),
@@ -168,8 +173,14 @@ export function useCombatActions() {
     const { habits, special, ult } = grantLevelRewards(habitStore.habits, characterStore.character.level, rng);
     if (habits === habitStore.habits) return;
     habitStore.setHabits(habits);
-    if (special) activityLogStore.addEntry({ kind: 'special-assigned', habitName: special.name });
-    if (ult) activityLogStore.addEntry({ kind: 'ult-assigned', habitName: ult.name });
+    if (special) {
+      activityLogStore.addEntry({ kind: 'special-assigned', habitName: special.name });
+      noteReward('special', special.name);
+    }
+    if (ult) {
+      activityLogStore.addEntry({ kind: 'ult-assigned', habitName: ult.name });
+      noteReward('ult', ult.name);
+    }
   }
 
   /**
@@ -654,6 +665,7 @@ export function useCombatActions() {
       // Drops and beats from a boss kill on the fatal pass belong to the dead run.
       clearItemDrops();
       clearCelebration();
+      clearLevelUp();
       clearBossSkills();
     }
     dismissDeathScreen();

@@ -1,4 +1,5 @@
 import { TALENT_COST } from './constants/economy';
+import { UNLOCK_LEVELS } from './constants/unlocks';
 import { characterGold } from './gold';
 import { HEAL_CRIT_MULTIPLIER, LAST_STAND_BELOW_PCT, TALENT_DEFS } from './constants/talentTree';
 import type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './constants/talentTree';
@@ -9,7 +10,7 @@ export { TALENT_DEFS, TALENT_SHOOTS } from './constants/talentTree';
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './constants/talentTree';
 
 /** The player level at which the Talents tab opens, each run. */
-export const TALENTS_UNLOCK_LEVEL = 5;
+export const TALENTS_UNLOCK_LEVEL = UNLOCK_LEVELS.talents;
 
 /** Whether the Talents tab is open: unlocked once (kept through death), or at the unlock level with its popup up. */
 export function talentsOpen(character: Pick<Character, 'level' | 'talentsUnlocked'>): boolean {
