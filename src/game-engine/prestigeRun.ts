@@ -1,7 +1,7 @@
 // The prestige reset (docs/superpowers/specs/2026-11-17-prestige-design.md §4):
 // the player's chosen new run. It takes what a death used to: level, gold,
-// items, slots and the boss back to 1. Talents, skill ranks, streaks and trials
-// stay, and the account pays the rank's gems and special.
+// items, slots and the boss back to 1. Talents, skill ranks, streaks, trials
+// and every unlocked feature stay, and the account pays the rank's gems and special.
 
 import type { Account } from './account';
 import { bossAttackAnchorHealth, generateBoss } from './boss';
@@ -17,7 +17,7 @@ import type { Boss, Character, Habit } from './types';
 /**
  * Starts the next rank's run, or null unless canPrestige. A fresh character
  * rolled as the current class (the new-hero screen offers it first), keeping
- * talents, the open Talents tab and trials, at the new rank and full health.
+ * talents, trials and every feature already unlocked (Quests, Talents, the Shop's gates), at the new rank and full health.
  * The boss sequence restarts at 1. Habits keep their streaks and ranks, with
  * damage types re-rolled and Special/Ult/Overdrive cleared, to be earned again.
  */
@@ -32,7 +32,11 @@ export function prestigeRun(
   const kept: Character = {
     ...createCharacter(rng, heroClassFor(character)),
     talents: character.talents,
+    questsUnlocked: character.questsUnlocked,
     talentsUnlocked: character.talentsUnlocked,
+    shopUnlocked: character.shopUnlocked,
+    servicesUnlocked: character.servicesUnlocked,
+    looksUnlocked: character.looksUnlocked,
     trials: character.trials,
     prestige: rank + 1,
   };

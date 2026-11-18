@@ -111,6 +111,7 @@ describe('ShopSection', () => {
 
     it('too little gold disables Buy', () => {
       hero(0);
+      useAccountStore().account.gems = 0;
       const wrapper = mount(ShopSection);
       const buttons = wrapper.findAll('.shop-buy');
       expect(buttons.length).toBeGreaterThan(0);
@@ -163,7 +164,7 @@ describe('ShopSection', () => {
     it('a gem ware bought with gems is marked Out of stock', async () => {
       const characterStore = hero(0);
       const { gem } = gemDay(characterStore);
-      useAccountStore().addGems(999);
+      useAccountStore().account.gems = 999;
       const wrapper = mount(ShopSection);
       await itemRow(wrapper, gem.id).find('.shop-buy').trigger('click');
       useItemDropQueue().accept();
@@ -249,7 +250,7 @@ describe('ShopSection', () => {
 
       it("the Gold Pouch adds gold and takes the pouch's gems", async () => {
         const characterStore = hero(100);
-        useAccountStore().addGems(GOLD_POUCH.gems + 2);
+        useAccountStore().account.gems = GOLD_POUCH.gems + 2;
         const wrapper = await open();
         await rowFor(wrapper, 'Gold Pouch').find('.shop-buy').trigger('click');
         expect(characterStore.character.gold).toBe(100 + pouchGold(useBossStore().boss.index, 0));
@@ -286,7 +287,7 @@ describe('ShopSection', () => {
 
       it('a card opens its popup, and Buy spends the gems and wears it', async () => {
         hero(0);
-        useAccountStore().addGems(warrior[0].gems);
+        useAccountStore().account.gems = warrior[0].gems;
         await open();
         await tap(card(warrior[0].name));
         const popup = document.querySelector<HTMLElement>('.skin-popup')!;
@@ -302,7 +303,7 @@ describe('ShopSection', () => {
 
       it('too few gems grey out Buy and name the shortfall', async () => {
         hero(0);
-        useAccountStore().addGems(warrior[0].gems - 3);
+        useAccountStore().account.gems = warrior[0].gems - 3;
         await open();
         await tap(card(warrior[0].name));
         const popup = document.querySelector<HTMLElement>('.skin-popup')!;
@@ -312,7 +313,7 @@ describe('ShopSection', () => {
 
       it('an owned look is worn from its popup', async () => {
         hero(0);
-        useAccountStore().addGems(warrior[0].gems);
+        useAccountStore().account.gems = warrior[0].gems;
         useAccountStore().buySkin(warrior[0].id);
         await open();
         await tap(card('Starter'));
@@ -323,7 +324,7 @@ describe('ShopSection', () => {
 
       it("Browse more opens the other classes' skins, bought now and worn on their next run", async () => {
         hero(0);
-        useAccountStore().addGems(mage.gems);
+        useAccountStore().account.gems = mage.gems;
         const wrapper = await open();
         await wrapper.find('.skin-more').trigger('click');
         await flushPromises();

@@ -67,7 +67,13 @@ describe('WardrobeSection', () => {
     expect(tile(wrapper, 'Stone Hall').classes()).toContain('worn');
   });
 
+  it('has no Shop button while Looks is still sealed', () => {
+    expect(mount(WardrobeSection).find('.wardrobe-more').exists()).toBe(false);
+  });
+
   it("sends the Shop button to the Shop's Looks side", async () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 10 });
     const wrapper = mount(WardrobeSection);
     await wrapper.find('.wardrobe-more').trigger('click');
     await flushPromises();

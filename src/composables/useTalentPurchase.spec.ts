@@ -12,7 +12,7 @@ describe('useTalentPurchase', () => {
   function hero(overrides: Partial<Character>, gems = 0) {
     const characterStore = useCharacterStore();
     characterStore.setCharacter({ ...characterStore.character, level: 10, talentsUnlocked: true, ...overrides });
-    useAccountStore().initFromSave({ gems, highestLevel: 10 }, 10);
+    useAccountStore().initFromSave({ startingGemsPaid: true, gems, highestLevel: 10 }, 10);
     return characterStore;
   }
 

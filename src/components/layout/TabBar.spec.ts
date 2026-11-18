@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addDaysToDayKey, createHabit, createRng, dailyPeriodKey, periodKeyFor, weekDayKeys } from '../../game-engine';
 import type { TrialEntry } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -76,6 +77,7 @@ describe('TabBar', () => {
     expect(tab(wrapper, 'talents').find('.tab-count').exists()).toBe(false);
 
     // The 4th rank needs a gem the account doesn't have.
+    useAccountStore().account.gems = 0;
     characterStore.setCharacter({ ...characterStore.character, gold: 5000, talents: { might: 3 } });
     await wrapper.vm.$nextTick();
     expect(tab(wrapper, 'talents').find('.tab-pip').exists()).toBe(false);
@@ -100,23 +102,32 @@ describe('TabBar', () => {
     const characterStore = useCharacterStore();
     characterStore.setCharacter({ ...characterStore.character, level: 1 });
     const wrapper = mount(TabBar);
-    for (const id of ['quests', 'talents']) {
+    for (const id of ['quests', 'shop', 'talents']) {
       expect(tab(wrapper, id).attributes('disabled')).toBeDefined();
       await tab(wrapper, id).trigger('click');
       expect(useTabStore().tab).toBe('skills');
     }
     expect(tab(wrapper, 'skills').attributes('disabled')).toBeUndefined();
     expect(tab(wrapper, 'hero').attributes('disabled')).toBeUndefined();
-    expect(tab(wrapper, 'shop').attributes('disabled')).toBeUndefined();
   });
 
-  it('opens the Shop from level 1, with no seal', async () => {
+  it('seals the Shop before level 7, with no dot, and opens it from there', async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 1 });
+    characterStore.setCharacter({ ...characterStore.character, level: 6 });
     const wrapper = mount(TabBar);
+    expect(tab(wrapper, 'shop').classes()).toContain('sealed');
+    expect(tab(wrapper, 'shop').find('.tab-new').exists()).toBe(false);
+    characterStore.setCharacter({ ...characterStore.character, level: 7 });
+    await wrapper.vm.$nextTick();
     expect(tab(wrapper, 'shop').classes()).not.toContain('sealed');
     await tab(wrapper, 'shop').trigger('click');
     expect(useTabStore().tab).toBe('shop');
+  });
+
+  it('keeps the Shop open below level 7 once it has been unlocked, as after a death or prestige', () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, level: 1, shopUnlocked: true });
+    expect(tab(mount(TabBar), 'shop').classes()).not.toContain('sealed');
   });
 
   it('opens a tab again once it unseals', async () => {
@@ -196,6 +207,11 @@ describe('TabBar', () => {
       const news = useShopNews();
       (['items', 'services', 'vault'] as const).forEach((side) => news.see(side));
     };
+
+    beforeEach(() => {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 10 });
+    });
 
     it('shows for a new player, and goes once Items, Services and Looks have been seen', async () => {
       const wrapper = mount(TabBar);

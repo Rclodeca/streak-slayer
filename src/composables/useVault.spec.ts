@@ -25,7 +25,7 @@ describe('useVault', () => {
   function stocked(gems: number) {
     const characterStore = useCharacterStore();
     characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 0 });
-    useAccountStore().addGems(gems);
+    useAccountStore().account.gems = gems;
     const vault = useVault();
     return { characterStore, vault };
   }

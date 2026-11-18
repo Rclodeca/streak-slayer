@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ChevronRight, Gem, House, Shirt, Swords, UserRound } from 'lucide-vue-next';
+import { shopGateOpen } from '../../game-engine';
 import { useSkins } from '../../composables/useSkins';
 import { useSkinTiles } from '../../composables/useSkinTiles';
 import type { SkinTile } from '../../composables/useSkinTiles';
+import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
 import SectionTitle from '../ui/SectionTitle.vue';
 
@@ -12,11 +14,13 @@ import SectionTitle from '../ui/SectionTitle.vue';
 // it, so the pinned home base above changes at once. The hero's row is the
 // class being played's (only it shows in the home base). Each slot's default
 // is always owned, so no row is empty. Buying is the Shop's Looks side, one
-// button away. Art is drawn at 1 CSS px per art pixel: heroes their 64px base
+// button away once Looks is open. Art is drawn at 1 CSS px per art pixel: heroes their 64px base
 // build, backdrops 216 x 116 cropped to the tile, never scaled.
 const skins = useSkins();
 const { tilesFor, stateOf } = useSkinTiles();
 const tabStore = useTabStore();
+const characterStore = useCharacterStore();
+const looksOpen = computed(() => shopGateOpen(characterStore.character, 'looks'));
 
 const owned = (tiles: SkinTile[]) => tiles.filter((tile) => stateOf(tile) === 'worn' || stateOf(tile) === 'owned');
 
@@ -60,7 +64,7 @@ function shopLooks() {
         </li>
       </ul>
     </div>
-    <button type="button" class="primary-button wardrobe-more" @click="shopLooks">
+    <button v-if="looksOpen" type="button" class="primary-button wardrobe-more" @click="shopLooks">
       <Gem :size="18" class="wardrobe-gem" aria-hidden="true" />More looks in the Shop<ChevronRight :size="18" aria-hidden="true" />
     </button>
   </section>

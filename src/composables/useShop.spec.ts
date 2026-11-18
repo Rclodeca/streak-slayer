@@ -92,7 +92,7 @@ describe('useShop', () => {
   it("a gem potion spends the account's gems and logs a Vault buy", () => {
     const { characterStore, shop } = stocked();
     const accountStore = useAccountStore();
-    accountStore.addGems(30);
+    accountStore.account.gems = 30;
     expect(shop.buyTonic('double-exp')).toBe(true);
     expect(accountStore.account.gems).toBe(5);
     expect(characterStore.character.gold).toBe(100000);
@@ -103,7 +103,7 @@ describe('useShop', () => {
 
   it('a gem potion short on gems spends nothing', () => {
     const { characterStore, shop } = stocked();
-    useAccountStore().addGems(4);
+    useAccountStore().account.gems = 4;
     expect(shop.buyTonic('exp')).toBe(false);
     expect(useAccountStore().account.gems).toBe(4);
     expect(characterStore.character.statusEffects?.some((e) => e.type === 'expBoost')).toBeFalsy();

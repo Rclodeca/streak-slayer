@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, goldPrice, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, STARTING_GEMS, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, goldPrice, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -519,7 +519,7 @@ describe('useCombatActions', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
-    useAccountStore().addGems(50);
+    useAccountStore().account.gems = 50;
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
     characterStore.character = { ...characterStore.character, currentHealth: 1 };
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
@@ -534,7 +534,7 @@ describe('useCombatActions', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
-    useAccountStore().addGems(REVIVE_GEMS);
+    useAccountStore().account.gems = REVIVE_GEMS;
     const today = dailyPeriodKey(useDebugClockStore().now());
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
     const quest = useQuestStore().addQuest('Clean garage', 'medium', addDaysToDayKey(today, -1));
@@ -560,7 +560,7 @@ describe('useCombatActions', () => {
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
     const accountStore = useAccountStore();
-    accountStore.addGems(25);
+    accountStore.account.gems = 25;
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
     characterStore.character = { ...characterStore.character, currentHealth: 1 };
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
@@ -582,7 +582,7 @@ describe('useCombatActions', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
-    useAccountStore().addGems(REVIVE_GEMS - 1);
+    useAccountStore().account.gems = REVIVE_GEMS - 1;
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
     characterStore.character = { ...characterStore.character, currentHealth: 1 };
     bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
@@ -1214,12 +1214,12 @@ describe('useCombatActions', () => {
       return useCombatActions();
     }
 
-    it('a level-up to 5 gives a daily skill the Special and logs it', () => {
-      const { addHabit, checkOffHabit } = readyToLevel(4);
+    it('a level-up to 4 gives a daily skill the Special and logs it', () => {
+      const { addHabit, checkOffHabit } = readyToLevel(3);
       const habit = addHabit('Gym', 'daily', 'medium', false);
       expect(useHabitStore().habits[0].isSpecial).toBeFalsy();
       checkOffHabit(habit.id);
-      expect(useCharacterStore().character.level).toBe(5);
+      expect(useCharacterStore().character.level).toBe(4);
       expect(useHabitStore().habits[0].isSpecial).toBe(true);
       expect(useActivityLogStore().entries.some((e) => e.kind === 'special-assigned' && e.habitName === 'Gym')).toBe(true);
     });
@@ -1322,7 +1322,7 @@ describe('useCombatActions', () => {
 
       expect(entryOf('bosses')?.count).toBe(1);
       expect(entryOf('untouched')?.count).toBe(1);
-      expect(useAccountStore().account.gems).toBe(0);
+      expect(useAccountStore().account.gems).toBe(STARTING_GEMS);
       expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toBeUndefined();
       expect(useQuestCompleteQueue().current.value).toBeNull();
     });
@@ -1340,7 +1340,7 @@ describe('useCombatActions', () => {
       claimTrial('bosses');
 
       expect(entryOf('bosses')?.claimed).toEqual([0]);
-      expect(useAccountStore().account.gems).toBe(4);
+      expect(useAccountStore().account.gems).toBe(STARTING_GEMS + 4);
       expect(characterStore.character.gold).toBe(goldPrice(0.5, 10, 2));
       expect(characterStore.character.questWeek).toBe(questWeekBefore);
       const logged = useActivityLogStore().entries.filter((e) => e.kind === 'challenge-completed');

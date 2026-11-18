@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Crown, ScrollText, Sparkle } from 'lucide-vue-next';
+import { Crown, HandCoins, ScrollText, Shirt, Sparkle, Store } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import {
   effectiveStat,
@@ -12,6 +12,7 @@ import {
   prestigeOpensBetween,
   prestigeRank,
   questUnlockPending,
+  shopGatePending,
   talentUnlockPending,
   UNLOCK_LEVELS,
 } from '../../game-engine';
@@ -36,8 +37,9 @@ import type { StatIconName } from './statIcons';
 // The level-up popup (docs/mockups/level-up.html, option B): the hero on the
 // worn arena with the new level beside them, the five grown stats as tiles,
 // the heal, and whatever the level opened (UNLOCK_LEVELS), one wide card or
-// two side by side. Its Onward unlocks Quests and Talents, so their own
-// popups only show for a save that reached the level without one of these.
+// two side by side. Its Onward unlocks Quests, Talents and the Shop's gates, so
+// Quests' and Talents' own popups only show for a save that reached the level
+// without one of these.
 // A level that reaches the next prestige bar gets its own featured card above
 // the unlocks, in that rank's colour, whose Prestige opens the prestige popup.
 const { current, dismiss } = useLevelUp();
@@ -87,6 +89,9 @@ const unlocks = computed<Unlock[]>(() => {
     talents: talentUnlockPending(character) ? { id: 'talents', name: 'Talents', icon: TALENTS_TAB_ICON, line: 'Grow stronger with every run.' } : null,
     special: news.special ? { id: 'special', name: 'Special', icon: Sparkle, line: `${news.special} now strikes ×${TUNING.SPECIAL_MULTIPLIER}.` } : null,
     ult: news.ult ? { id: 'ult', name: 'Ult', icon: Crown, line: `${news.ult} now strikes ×${TUNING.ULT_MULTIPLIER}.` } : null,
+    shop: shopGatePending(character, 'shop') ? { id: 'shop', name: 'Shop', icon: Store, line: 'Gold finds a use.' } : null,
+    services: shopGatePending(character, 'services') ? { id: 'services', name: 'Services', icon: HandCoins, line: 'The shopkeeper takes work.' } : null,
+    looks: shopGatePending(character, 'looks') ? { id: 'looks', name: 'Looks', icon: Shirt, line: 'Wear your victories.' } : null,
   };
   return (Object.keys(UNLOCK_LEVELS) as UnlockId[]).flatMap((id) => all[id] ?? []);
 });
@@ -110,6 +115,7 @@ function toPrestige() {
 function onward() {
   if (unlocks.value.some((unlock) => unlock.id === 'quests')) characterStore.unlockQuests();
   if (unlocks.value.some((unlock) => unlock.id === 'talents')) characterStore.unlockTalents();
+  characterStore.unlockShopGates();
   dismiss();
 }
 </script>

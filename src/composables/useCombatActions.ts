@@ -693,8 +693,8 @@ export function useCombatActions() {
     highScoreStore.recordRunEnd({ ...snapshotRun(character, bossStore.boss, habitStore.habits), prestige: rank + 1 });
     const gemsBefore = accountStore.account.gems;
     accountStore.prestige();
-    // Quests survive; if any carried over, the new run starts with them open
-    // (and never shows the level-2 "Quests unlocked" popup).
+    // Quests survive, and an open Quests tab stays open (prestigeRun); quests
+    // carried over open it too (and never show the level-2 "Quests unlocked" popup).
     characterStore.setCharacter(questStore.quests.length > 0 ? unlockQuests(result.character) : result.character);
     bossStore.setBoss(result.boss);
     habitStore.setHabits(result.habits);

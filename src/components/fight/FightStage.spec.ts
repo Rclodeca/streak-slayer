@@ -126,7 +126,7 @@ describe('FightStage', () => {
     const wrapper = mountStage();
     expect(wrapper.find('.arena-img').attributes('src')).toContain('sprites/stage/arena6b.png');
     const skin = SKIN_CATALOG.find((s) => s.kind === 'arena')!;
-    useAccountStore().addGems(skin.gems);
+    useAccountStore().account.gems = skin.gems;
     useAccountStore().buySkin(skin.id);
     await nextTick();
     expect(wrapper.find('.arena-img').attributes('src')).toContain(`sprites/${skin.art}.png`);

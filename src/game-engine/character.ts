@@ -44,6 +44,9 @@ export function createCharacter(rng: Rng, heroClass?: HeroClass): Character {
     critChance: TUNING.BASE_CRIT_CHANCE,
     questsUnlocked: false,
     talentsUnlocked: false,
+    shopUnlocked: false,
+    servicesUnlocked: false,
+    looksUnlocked: false,
     heroPending: true,
     // Already at the post-rebalance baseline (BASE_STATS is already the
     // reduced value) — must be set here, not left undefined, or this fresh

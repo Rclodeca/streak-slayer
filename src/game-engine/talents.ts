@@ -10,10 +10,10 @@ import type { Character, Habit } from './types';
 export { TALENT_DEFS, TALENT_SHOOTS } from './constants/talentTree';
 export type { TalentDef, TalentEffectId, TalentId, TalentShoot } from './constants/talentTree';
 
-/** The player level at which the Talents tab opens, each run. */
+/** The player level at which the Talents tab opens, once for good. */
 export const TALENTS_UNLOCK_LEVEL = UNLOCK_LEVELS.talents;
 
-/** Whether the Talents tab is open: unlocked once (kept through death), or at the unlock level with its popup up. */
+/** Whether the Talents tab is open: unlocked once (kept through death and prestige), or at the unlock level with its popup up. */
 export function talentsOpen(character: Pick<Character, 'level' | 'talentsUnlocked'>): boolean {
   return character.talentsUnlocked === true || character.level >= TALENTS_UNLOCK_LEVEL;
 }

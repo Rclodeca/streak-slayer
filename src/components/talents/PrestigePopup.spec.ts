@@ -24,7 +24,7 @@ describe('PrestigePopup', () => {
 
   function hero(level: number, rank: number) {
     useCharacterStore().setCharacter({ ...createCharacter(createRng(1), 'warrior'), heroPending: false, name: 'Aldric', level });
-    useAccountStore().initFromSave({ gems: 0, highestLevel: level }, level);
+    useAccountStore().initFromSave({ startingGemsPaid: true, gems: 0, highestLevel: level }, level);
     useAccountStore().setPrestige(rank);
     useBossStore().setBoss({ ...useBossStore().boss, index: 30, shownIndex: 38 });
   }

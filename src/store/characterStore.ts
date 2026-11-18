@@ -25,6 +25,7 @@ import {
   recordRelicEarned,
   rollItemDrops,
   unlockQuests,
+  unlockShopGates,
   unlockTalents,
 } from '../game-engine';
 import type { Boss, Character, Habit, ItemDef, Rng } from '../game-engine';
@@ -66,7 +67,7 @@ export const useCharacterStore = defineStore('character', {
       this.character = nameCharacter(this.character, name);
     },
 
-    /** Opens the quests section for the rest of the run (the "Quests unlocked" popup's Onward). */
+    /** Opens the quests section for good (the "Quests unlocked" popup's Onward). */
     unlockQuests() {
       this.character = unlockQuests(this.character);
     },
@@ -74,6 +75,11 @@ export const useCharacterStore = defineStore('character', {
     /** Opens the Talents tab for good (the "Talents unlocked" popup's Onward). */
     unlockTalents() {
       this.character = unlockTalents(this.character);
+    },
+
+    /** Opens for good every Shop gate the level has reached (the level-up popup's Onward). */
+    unlockShopGates() {
+      this.character = unlockShopGates(this.character);
     },
 
     /** Equips an owned item into an empty slot. No-op if not owned, already equipped, or all slots are full (see maxEquipSlots). */

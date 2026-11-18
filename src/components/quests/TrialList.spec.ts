@@ -3,7 +3,7 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { goldPrice, seedTrials } from '../../game-engine';
+import { goldPrice, seedTrials, STARTING_GEMS } from '../../game-engine';
 import type { TrialEntry } from '../../game-engine';
 import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
 import { useAccountStore } from '../../store/accountStore';
@@ -67,7 +67,7 @@ describe('TrialList', () => {
     expect(card.classes()).toContain('ready');
     expect(card.find('.trial-progress').exists()).toBe(false);
     await card.get('.trial-claim').trigger('click');
-    expect(useAccountStore().account.gems).toBe(4);
+    expect(useAccountStore().account.gems).toBe(STARTING_GEMS + 4);
     expect(wrapper.get('li.trial').classes()).not.toContain('ready');
     expect(wrapper.get('li.trial').classes()).not.toContain('open');
   });

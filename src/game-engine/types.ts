@@ -128,12 +128,20 @@ export interface Character {
   spellweave?: { dayKey: string; count: number };
   // Crits landed today while Void Longbow is equipped (see critStreakStacks).
   critStreak?: { dayKey: string; count: number };
-  // Whether the quests section is open this run (see questsOpen in
-  // quests.ts). A new run starts sealed (false) until QUESTS_UNLOCK_LEVEL,
-  // when dismissing the "Quests unlocked" popup sets it — or it opens at
-  // once if quests carried over from the last run (useCombatActions.restart).
-  // Undefined only on a save from before the lock; migrateQuestUnlock settles it.
+  // Whether the quests section is open (see questsOpen in quests.ts). A new
+  // hero starts sealed (false) until QUESTS_UNLOCK_LEVEL, when dismissing the
+  // "Quests unlocked" popup sets it. It stays open through death and prestige
+  // (prestigeRun carries it). Undefined only on a save from before the lock;
+  // migrateQuestUnlock settles it.
   questsUnlocked?: boolean;
+  // Whether the Shop tab and its Services and Looks sides are open (see
+  // shopUnlocks.ts). A new hero starts sealed (false) until each gate's
+  // UNLOCK_LEVELS level, when the level-up popup's Onward sets it; kept through
+  // death and prestige. Undefined only on a save from before the gates;
+  // migrateShopGates settles them.
+  shopUnlocked?: boolean;
+  servicesUnlocked?: boolean;
+  looksUnlocked?: boolean;
   // Whether the Talents tab is open (see talentsOpen in talents.ts). It opens
   // at TALENTS_UNLOCK_LEVEL when the "Talents unlocked" popup is dismissed and
   // stays open through death (resolvePlayerDeathIfDead carries it). A save

@@ -37,7 +37,7 @@ describe('FreezePicker', () => {
   const frozenOf = (id: string) => useHabitStore().habits.find((h) => h.id === id)!.frozenDayKeys;
 
   it('lists the skills, not the bad habits, and waits for a pick', async () => {
-    useAccountStore().addGems(10);
+    useAccountStore().account.gems = 10;
     open();
     await flushPromises();
     expect(rows().map((row) => row.textContent)).toEqual([expect.stringContaining('Read'), expect.stringContaining('Hike')]);
@@ -47,7 +47,7 @@ describe('FreezePicker', () => {
   });
 
   it('a daily starts tomorrow for one day at 2 gems', async () => {
-    useAccountStore().addGems(10);
+    useAccountStore().account.gems = 10;
     open();
     await flushPromises();
     await pick('Read');
@@ -59,7 +59,7 @@ describe('FreezePicker', () => {
 
   it('three days of one skill cost 6, and confirming freezes only that skill', async () => {
     const accountStore = useAccountStore();
-    accountStore.addGems(6);
+    accountStore.account.gems = 6;
     const wrapper = open();
     await flushPromises();
     await pick('Read');
@@ -75,7 +75,7 @@ describe('FreezePicker', () => {
   });
 
   it('a weekly freezes whole weeks from next week', async () => {
-    useAccountStore().addGems(10);
+    useAccountStore().account.gems = 10;
     open();
     await flushPromises();
     await pick('Hike');
@@ -88,7 +88,7 @@ describe('FreezePicker', () => {
   });
 
   it('a weekly costs 5 gems a week', async () => {
-    useAccountStore().addGems(20);
+    useAccountStore().account.gems = 20;
     open();
     await flushPromises();
     await pick('Hike');
@@ -99,7 +99,7 @@ describe('FreezePicker', () => {
   });
 
   it('is disabled when short on gems', async () => {
-    useAccountStore().addGems(1);
+    useAccountStore().account.gems = 1;
     open();
     await flushPromises();
     await pick('Read');
@@ -107,7 +107,7 @@ describe('FreezePicker', () => {
   });
 
   it('days already frozen on that skill are not charged', async () => {
-    useAccountStore().addGems(10);
+    useAccountStore().account.gems = 10;
     const habitStore = useHabitStore();
     habitStore.updateHabit({ ...habitStore.habits[0], frozenDayKeys: [addDaysToDayKey(today(), 1)] });
     open();
@@ -120,7 +120,7 @@ describe('FreezePicker', () => {
   });
 
   it('a daily starts no later than 30 days out', async () => {
-    useAccountStore().addGems(10);
+    useAccountStore().account.gems = 10;
     open();
     await flushPromises();
     await pick('Read');

@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import { dailyPeriodKey, serviceTurn } from '../game-engine';
+import { dailyPeriodKey, serviceTurn, shopGateOpen } from '../game-engine';
 import { useCharacterStore } from '../store/characterStore';
 import { useDebugClockStore } from '../store/debugClockStore';
 import { useHabitStore } from '../store/habitStore';
@@ -10,7 +10,8 @@ import type { ShopSide } from '../store/tabStore';
  * Which sides of the Shop have something the player hasn't looked at: Items
  * when the day has turned since they last saw the stock, Services when the
  * service has rotated since they last saw it, and Looks once, for a new player.
- * `any` is what the Shop tab wears. Opening a side clears it (`see`).
+ * A side still sealed (see shopUnlocks.ts) has nothing new. `any` is what the
+ * Shop tab wears. Opening a side clears it (`see`).
  */
 export function useShopNews() {
   const characterStore = useCharacterStore();
@@ -26,9 +27,10 @@ export function useShopNews() {
   /** The day the service on offer began its turn, whether or not it has been saved to the character yet. */
   const turnStart = computed(() => serviceTurn(characterStore.character, habitStore.habits, todayKey.value).startDayKey);
 
-  const items = computed(() => seenStore.seen.itemsDay !== todayKey.value);
-  const services = computed(() => seenStore.seen.servicesStart !== turnStart.value);
-  const looks = computed(() => !seenStore.seen.looks);
+  const open = (gate: 'shop' | 'services' | 'looks') => shopGateOpen(characterStore.character, gate);
+  const items = computed(() => open('shop') && seenStore.seen.itemsDay !== todayKey.value);
+  const services = computed(() => open('services') && seenStore.seen.servicesStart !== turnStart.value);
+  const looks = computed(() => open('looks') && !seenStore.seen.looks);
   const any = computed(() => items.value || services.value || looks.value);
 
   /** Whether `side` has something new. */

@@ -24,7 +24,7 @@ describe('LevelUpPopup', () => {
 
   function reachLevel(level: number, extra = {}) {
     const store = useCharacterStore();
-    store.setCharacter({ ...store.character, level, questsUnlocked: true, talentsUnlocked: true, ...extra });
+    store.setCharacter({ ...store.character, level, questsUnlocked: true, talentsUnlocked: true, shopUnlocked: true, servicesUnlocked: true, looksUnlocked: true, ...extra });
     return store;
   }
 
@@ -63,6 +63,18 @@ describe('LevelUpPopup', () => {
     expect(q('.level-unlocks')?.classList.contains('pair')).toBe(true);
     expect(all('.unlock-name').map((el) => el.textContent)).toEqual(['Special', 'Ult']);
     expect(q('.level-unlock.special')?.textContent).toContain('Morning run');
+  });
+
+  it('carries the Shop unlock at level 7, and opens it for good on Onward', async () => {
+    const store = reachLevel(7, { shopUnlocked: false, servicesUnlocked: false, looksUnlocked: false });
+    useLevelUp().record(6, 7, 0);
+    const wrapper = mount(LevelUpPopup, { attachTo: document.body });
+    expect(all('.unlock-name').map((el) => el.textContent)).toEqual(['Shop']);
+    q('.level-up .onward')!.click();
+    await wrapper.vm.$nextTick();
+    expect(store.character.shopUnlocked).toBe(true);
+    expect(store.character.servicesUnlocked).toBe(false);
+    expect(store.character.looksUnlocked).toBe(false);
   });
 
   it('carries the Quests unlock, and opens quests on Onward', async () => {

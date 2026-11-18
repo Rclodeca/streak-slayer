@@ -17,7 +17,7 @@ describe('PlayerSprite', () => {
     const wrapper = mount(PlayerSprite, { props: { character } });
     expect(wrapper.find('img.hero').attributes('src')).toContain('sprites/player/warrior.png');
     const skin = SKIN_CATALOG.find((s) => s.heroClass === 'warrior')!;
-    useAccountStore().addGems(skin.gems);
+    useAccountStore().account.gems = skin.gems;
     useAccountStore().buySkin(skin.id);
     await wrapper.vm.$nextTick();
     expect(wrapper.find('img.hero').attributes('src')).toContain(`sprites/${skin.art}.png`);

@@ -1,13 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { claimPurse, createAccount, purseDue, recordLevel, spendGems } from './account';
-import { purseGold } from './constants/economy';
+import { claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
+import { purseGold, STARTING_GEMS } from './constants/economy';
+
+describe('starting gems', () => {
+  it('a new account starts with them', () => {
+    expect(createAccount().gems).toBe(STARTING_GEMS);
+    expect(STARTING_GEMS).toBe(30);
+  });
+
+  it('an account from before them is paid them once', () => {
+    const paid = payStartingGems({ gems: 7, highestLevel: 12 });
+    expect(paid).toEqual({ gems: 7 + STARTING_GEMS, highestLevel: 12, startingGemsPaid: true });
+    expect(payStartingGems(paid)).toBe(paid);
+    const fresh = createAccount();
+    expect(payStartingGems(fresh)).toBe(fresh);
+  });
+});
 
 describe('recordLevel', () => {
   it('pays the milestones up to the level reached', () => {
     const { account, gemsPaid } = recordLevel(createAccount(), 10);
     expect(gemsPaid).toBe(4 + 4);
     expect(account.highestLevel).toBe(10);
-    expect(account.gems).toBe(4 + 4);
+    expect(account.gems).toBe(STARTING_GEMS + 4 + 4);
   });
 
   it('a milestone pays once', () => {

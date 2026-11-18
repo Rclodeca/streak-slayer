@@ -2,7 +2,7 @@
 // reached. Death resets the Character but never this. Pure rules only; the
 // store layer (store/accountStore.ts) saves it.
 
-import { LEVEL_GEM_MILESTONES } from './constants/economy';
+import { LEVEL_GEM_MILESTONES, STARTING_GEMS } from './constants/economy';
 import type { SkinSlot } from './skins';
 
 export interface Account {
@@ -25,10 +25,19 @@ export interface Account {
   // The week the perfect week is watching, and whether a missed skill already
   // spoiled it (see perfectWeek.ts). Missing until the first rollover.
   perfectWeek?: { weekKey: string; spoiled: boolean };
+  // Whether STARTING_GEMS has been paid. A new account starts with it paid;
+  // missing on saves from before it, which payStartingGems pays once.
+  startingGemsPaid?: boolean;
 }
 
 export function createAccount(): Account {
-  return { gems: 0, highestLevel: 1 };
+  return { gems: STARTING_GEMS, highestLevel: 1, startingGemsPaid: true };
+}
+
+/** Pays STARTING_GEMS, once, to an account from before them. The same account back once paid. */
+export function payStartingGems(account: Account): Account {
+  if (account.startingGemsPaid) return account;
+  return { ...account, gems: account.gems + STARTING_GEMS, startingGemsPaid: true };
 }
 
 /** Pays every level milestone above the account's best up to `level`, and raises the best. A lower level (a new run) pays nothing and lowers nothing. */

@@ -67,7 +67,7 @@ describe('useDailyPurse', () => {
 
   it('brings the news of a service whose turn began today, and opens it', () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, serviceTurn: { id: 'overdrive', startDayKey: TODAY } });
+    characterStore.setCharacter({ ...characterStore.character, servicesUnlocked: true, serviceTurn: { id: 'overdrive', startDayKey: TODAY } });
     const purse = useDailyPurse();
     expect(purse.newService.value?.id).toBe('overdrive');
 
@@ -76,6 +76,12 @@ describe('useDailyPurse', () => {
     expect(purse.due.value).toBe(false);
     expect(useTabStore().tab).toBe('shop');
     expect(useTabStore().shopSide).toBe('services');
+  });
+
+  it('has no news while Services is still sealed', () => {
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, serviceTurn: { id: 'overdrive', startDayKey: TODAY } });
+    expect(useDailyPurse().newService.value).toBeNull();
   });
 
   it('has no news once the service was seen, on a later day of its turn, or before the run had a turn', () => {

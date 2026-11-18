@@ -150,7 +150,7 @@ describe('DeathScreen', () => {
     const reviveButton = () => document.querySelector('.revive-button') as HTMLButtonElement | null;
 
     function fallWith(gems: number) {
-      useAccountStore().addGems(gems);
+      useAccountStore().account.gems = gems;
       const characterStore = useCharacterStore();
       characterStore.setCharacter({ ...characterStore.character, currentHealth: 0 });
     }

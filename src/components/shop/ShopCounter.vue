@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { HandCoins, Shirt, Sword } from 'lucide-vue-next';
+import { HandCoins, Lock, Shirt, Sword } from 'lucide-vue-next';
 import { watch } from 'vue';
+import { shopGateOpen, UNLOCK_LEVELS } from '../../game-engine';
+import { useCharacterStore } from '../../store/characterStore';
 import { useShopNews } from '../../composables/useShopNews';
 import { useTabStore } from '../../store/tabStore';
 import type { ShopSide } from '../../store/tabStore';
@@ -12,18 +14,37 @@ import ShopVault from './ShopVault.vue';
 // Items | Services | Looks switch, then that side's wares. The sides split by
 // what's bought, not by coin: each price shows its own, gold or gems. A red dot
 // marks a side with something new (useShopNews); showing a side clears it, and
-// again if the day or the service turns while it stays open.
+// again if the day or the service turns while it stays open. Services and Looks
+// are sealed under a lock until their UNLOCK_LEVELS level, and can't be tapped.
 const tabStore = useTabStore();
 const shopNews = useShopNews();
+const characterStore = useCharacterStore();
 const SIDES: { id: ShopSide; label: string; icon: typeof Sword }[] = [
   { id: 'items', label: 'Items', icon: Sword },
   { id: 'services', label: 'Services', icon: HandCoins },
   { id: 'vault', label: 'Looks', icon: Shirt },
 ];
 
+/** Whether `side` is still sealed: Items opens with the Shop itself. */
+function isSealed(side: ShopSide): boolean {
+  if (side === 'items') return false;
+  return !shopGateOpen(characterStore.character, side === 'vault' ? 'looks' : 'services');
+}
+
+// A sealed side left selected (a new hero, or a way in from elsewhere) falls back to Items.
+watch(
+  () => isSealed(tabStore.shopSide),
+  (sealed) => {
+    if (sealed) tabStore.selectShopSide('items');
+  },
+  { immediate: true },
+);
+
 watch(
   () => [tabStore.shopSide, shopNews.todayKey.value, shopNews.turnStart.value] as const,
-  ([side]) => shopNews.see(side),
+  ([side]) => {
+    if (!isSealed(side)) shopNews.see(side);
+  },
   { immediate: true },
 );
 </script>
@@ -37,11 +58,13 @@ watch(
         type="button"
         role="tab"
         class="shop-side"
-        :class="[`side-${side.id}`, { selected: tabStore.shopSide === side.id }]"
+        :class="[`side-${side.id}`, { selected: tabStore.shopSide === side.id, sealed: isSealed(side.id) }]"
         :aria-selected="tabStore.shopSide === side.id"
+        :disabled="isSealed(side.id)"
+        :aria-label="isSealed(side.id) ? `${side.label}, opens at level ${UNLOCK_LEVELS[side.id === 'vault' ? 'looks' : 'services']}` : undefined"
         @click="tabStore.selectShopSide(side.id)"
       >
-        <component :is="side.icon" :size="15" aria-hidden="true" />{{ side.label }}
+        <component :is="isSealed(side.id) ? Lock : side.icon" :size="15" aria-hidden="true" />{{ side.label }}
         <span v-if="shopNews.isNew(side.id)" class="side-new" role="img" aria-label="New" />
       </button>
     </div>

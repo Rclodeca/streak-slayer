@@ -2,7 +2,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, createCharacter, createHabit, createRng, dailyPeriodKey, generateBoss, talentUnlockPending } from '../game-engine';
+import { addDaysToDayKey, createCharacter, createHabit, createRng, dailyPeriodKey, generateBoss, STARTING_GEMS, talentUnlockPending } from '../game-engine';
 import { STORAGE_KEY as FOCUS_MODE_KEY } from './focusModeStore';
 import { STORAGE_KEY as HINTS_KEY } from './hintStore';
 import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highScoreStore';
@@ -143,20 +143,20 @@ describe('the account in a save file', () => {
   it('is carried by the export file and back through an import', () => {
     const rng = createRng(1);
     const character = { ...createCharacter(rng), level: 3 };
-    localStorage.setItem(SAVE_KEY, serializeSaveState({ character, boss: generateBoss(2, rng), habits: [], account: { gems: 9, highestLevel: 30 } }));
+    localStorage.setItem(SAVE_KEY, serializeSaveState({ character, boss: generateBoss(2, rng), habits: [], account: { gems: 9, highestLevel: 30, startingGemsPaid: true } }));
     const file = readSaveFile(buildSaveFile())!.file;
     localStorage.clear();
 
     applySaveFile(file);
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: 9, highestLevel: 30 });
+    expect(useAccountStore().account).toEqual({ gems: 9, highestLevel: 30, startingGemsPaid: true });
   });
 
   it("carries a skill's frozen days through an export and import", () => {
     const rng = createRng(1);
     const ahead = addDaysToDayKey(dailyPeriodKey(new Date()), 3);
     const habit = { ...createHabit('Read', 'daily', 'easy', false, rng), frozenDayKeys: [ahead] };
-    localStorage.setItem(SAVE_KEY, serializeSaveState({ character: createCharacter(rng), boss: generateBoss(2, rng), habits: [habit], account: { gems: 9, highestLevel: 30 } }));
+    localStorage.setItem(SAVE_KEY, serializeSaveState({ character: createCharacter(rng), boss: generateBoss(2, rng), habits: [habit], account: { gems: 9, highestLevel: 30, startingGemsPaid: true } }));
     const file = readSaveFile(buildSaveFile())!.file;
     localStorage.clear();
 
@@ -172,7 +172,7 @@ describe('the account in a save file', () => {
 
     applySaveFile(file);
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: 4 + 4, highestLevel: 12 });
+    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true });
   });
 });
 

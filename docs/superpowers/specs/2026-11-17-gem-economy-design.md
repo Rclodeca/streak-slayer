@@ -27,11 +27,12 @@ Every source except the perfect week pays once per account.
 
 | Source | Breakdown | Gems |
 |---|---|---|
+| Starting gems | Every new account starts with 30 (added 2026-11-18); older saves are paid them once | 30 |
 | Trials | 15 easy × 5, 10 medium × 10, 5 hard × 20 (see below) | 275 |
 | Level milestones | L5, L10, L15, L20: 4 each · L25, L30, L35, L40: 8 each · L45 to L70 every 5: 12 each. Paid on the best level ever reached | 120 |
 | Prestige | 80 at each of the 5 ranks | 400 |
 | Free dungeons | 2 dungeons × 50. Bosses 1–6 pay 4, 5, 7, 9, 11, 14 (first clear only) | 100 |
-| **One-time total** | | **895** |
+| **One-time total** | | **925** |
 | Perfect week | 2 gems, every week, for good | repeats |
 
 **Trials** are front-loaded: the 15 easy ones land in a good player's first ~10 days, the medium ones in days 10–60, and the 5 hard ones spread across months 3–12. That's 30 trials, up from 17. The trial list itself is a separate rework; this sets its total and shape.

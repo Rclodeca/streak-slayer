@@ -5,20 +5,20 @@ import { expToNextLevel } from './leveling';
 import { questExpMultiplier } from './talents';
 import type { Character, Difficulty, Quest, QuestWeek } from './types';
 
-/** The player level at which the quests section opens, each run. */
+/** The player level at which the quests section opens, once for good. */
 export const QUESTS_UNLOCK_LEVEL = UNLOCK_LEVELS.quests;
 
-/** Whether the quests section is open: unlocked this run, or at the unlock level with its popup up. */
+/** Whether the quests section is open: unlocked once (kept through death and prestige), or at the unlock level with its popup up. */
 export function questsOpen(character: Character): boolean {
   return character.questsUnlocked === true || character.level >= QUESTS_UNLOCK_LEVEL;
 }
 
-/** Whether the "Quests unlocked" popup is due: the unlock level reached this run, with nothing carried over to open quests sooner. */
+/** Whether the "Quests unlocked" popup is due: the unlock level reached and quests not yet opened. */
 export function questUnlockPending(character: Character): boolean {
   return !character.questsUnlocked && character.level >= QUESTS_UNLOCK_LEVEL;
 }
 
-/** Opens the quests section for the rest of the run. */
+/** Opens the quests section for good. */
 export function unlockQuests(character: Character): Character {
   return character.questsUnlocked ? character : { ...character, questsUnlocked: true };
 }
@@ -26,7 +26,7 @@ export function unlockQuests(character: Character): Character {
 /**
  * Settles `questsUnlocked` on a save from before the quest lock: a hero
  * already at the unlock level, or holding quests, was already using them, so they
- * stay open with no popup. Anyone else is sealed like any new run.
+ * stay open with no popup. Anyone else is sealed like a new hero.
  */
 export function migrateQuestUnlock(character: Character, hasQuests: boolean): Character {
   if (character.questsUnlocked !== undefined) return character;

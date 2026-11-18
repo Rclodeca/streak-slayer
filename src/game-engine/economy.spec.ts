@@ -50,15 +50,15 @@ describe('the gem price sheet', () => {
     expect(LEVEL_GEM_MILESTONES.map((m) => m.gems)).toEqual([4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12, 12, 12]);
   });
 
-  it('the one-time sources total 895', () => {
-    expect(FREE_GEM_SOURCES).toEqual({ levels: 120, trials: 275, dungeonFirstClears: 100, prestige: 400 });
+  it('the one-time sources total 925', () => {
+    expect(FREE_GEM_SOURCES).toEqual({ start: 30, levels: 120, trials: 275, dungeonFirstClears: 100, prestige: 400 });
   });
 
-  it('one-time gems cover the tree, a hero skin and two revives, with 56 to spare', () => {
+  it('one-time gems cover the tree, a hero skin and two revives, with 86 to spare', () => {
     const oneTime = Object.values(FREE_GEM_SOURCES).reduce((a, b) => a + b, 0);
     const need = sumGems(1, totalRanks) + SKIN_PRICES.hero + 2 * REVIVE_GEMS;
     expect(need).toBe(839);
-    expect(oneTime - need).toBe(56);
+    expect(oneTime - need).toBe(86);
   });
 
   it('prices the gem sinks', () => {

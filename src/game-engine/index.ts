@@ -178,7 +178,7 @@ export { TRIAL_GEMS_TOTAL, TRIAL_GOLD_KILLS_TOTAL } from './constants/trials';
 export { characterGold } from './gold';
 
 export type { Account } from './account';
-export { addGems, claimPurse, createAccount, purseDue, recordLevel, spendGems } from './account';
+export { addGems, claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
 export type { PrestigeMark, PrestigeRankDef, PrestigeSpecial } from './prestige';
 export {
   canPrestige,
@@ -201,7 +201,9 @@ export { missWeekKey, settlePerfectWeek } from './perfectWeek';
 export type { MissSpan } from './perfectWeek';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
-export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, goldPrice, goldPriceFactor, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { migrateShopGates, SHOP_GATES, shopGateOpen, shopGatePending, unlockShopGates } from './shopUnlocks';
+export type { ShopGate } from './shopUnlocks';
+export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, STARTING_GEMS, goldPrice, goldPriceFactor, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicEffect, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

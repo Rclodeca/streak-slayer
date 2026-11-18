@@ -37,7 +37,7 @@ describe('TalentSection', () => {
   function heroAt(level: number, talents?: Partial<Record<TalentId, number>>, gold = 5000, gems = 0) {
     const store = useCharacterStore();
     store.setCharacter({ ...store.character, level, talents, gold });
-    useAccountStore().initFromSave({ gems, highestLevel: level }, level);
+    useAccountStore().initFromSave({ startingGemsPaid: true, gems, highestLevel: level }, level);
     return store;
   }
 
@@ -228,7 +228,7 @@ describe('TalentSection on desktop', () => {
   function heroAt(level: number, talents?: Partial<Record<TalentId, number>>, gold = 5000, gems = 0) {
     const store = useCharacterStore();
     store.setCharacter({ ...store.character, level, talents, gold });
-    useAccountStore().initFromSave({ gems, highestLevel: level }, level);
+    useAccountStore().initFromSave({ startingGemsPaid: true, gems, highestLevel: level }, level);
     return store;
   }
 
@@ -295,7 +295,7 @@ describe('TalentSection — the prestige ladder', () => {
   function heroAt(level: number) {
     const store = useCharacterStore();
     store.setCharacter({ ...store.character, level, gold: 5000, heroPending: false });
-    useAccountStore().initFromSave({ gems: 0, highestLevel: level }, level);
+    useAccountStore().initFromSave({ startingGemsPaid: true, gems: 0, highestLevel: level }, level);
     return store;
   }
 

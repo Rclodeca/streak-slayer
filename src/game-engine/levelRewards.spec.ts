@@ -127,14 +127,14 @@ describe('grantLevelRewards', () => {
   const daily = (id = 'd') => makeHabit({ id, period: 'daily' });
   const weekly = (id = 'w') => makeHabit({ id, period: 'weekly' });
 
-  it('is at level 5 for the Special and level 8 for the Ult', () => {
-    expect(TUNING.SPECIAL_LEVEL).toBe(5);
+  it('is at level 4 for the Special and level 8 for the Ult', () => {
+    expect(TUNING.SPECIAL_LEVEL).toBe(4);
     expect(TUNING.ULT_LEVEL).toBe(8);
   });
 
-  it('grants nothing at level 4 and returns the same array', () => {
+  it('grants nothing at level 3 and returns the same array', () => {
     const habits = [daily(), weekly()];
-    const result = grantLevelRewards(habits, 4, createRng(1));
+    const result = grantLevelRewards(habits, 3, createRng(1));
     expect(result.habits).toBe(habits);
     expect(result.special).toBeUndefined();
     expect(result.ult).toBeUndefined();

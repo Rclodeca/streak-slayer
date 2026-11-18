@@ -2,7 +2,7 @@
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, prestigeAccount, recordLevel, settlePerfectWeek, spendGems, wearSkin } from '../game-engine';
+import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, payStartingGems, prestigeAccount, recordLevel, settlePerfectWeek, spendGems, wearSkin } from '../game-engine';
 import type { Account, Habit, MissSpan, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
@@ -10,9 +10,9 @@ export const useAccountStore = defineStore('account', {
     account: createAccount(),
   }),
   actions: {
-    /** Hydrates from a save slice. A save from before accounts starts at 0 gems and is paid, once, every milestone up to `seedLevel` (its best level so far). */
+    /** Hydrates from a save slice. A save from before accounts starts like a new one and is paid, once, every milestone up to `seedLevel` (its best level so far); one from before the starting gems is paid them once. */
     initFromSave(saved: Account | null, seedLevel: number) {
-      this.account = saved ?? recordLevel(createAccount(), seedLevel).account;
+      this.account = saved ? payStartingGems(saved) : recordLevel(createAccount(), seedLevel).account;
     },
 
     /** Pays any level milestones `level` newly reaches; returns the gems paid. */

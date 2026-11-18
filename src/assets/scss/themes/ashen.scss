@@ -4126,6 +4126,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include inset-focus;
   }
 
+  .shop-switch .shop-side.sealed {
+    color: color-mix(in srgb, var(--spent-text) 60%, transparent);
+  }
+
   .shop-switch .shop-side.selected {
     color: var(--card-ink);
     background: var(--card);
@@ -4620,7 +4624,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-size: 0.95rem;
   }
 
-  .talent-sealed .lock-text {
+  :is(.talent-sealed, .shop-sealed) .lock-text {
     color: var(--text);
   }
 

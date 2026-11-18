@@ -26,7 +26,7 @@ describe('useSkins', () => {
 
   it('buys a skin with gems, wears it and logs it', () => {
     useCharacterStore().setCharacter(createCharacter(createRng(1), 'cleric'));
-    useAccountStore().addGems(mageSkin.gems + 10);
+    useAccountStore().account.gems = mageSkin.gems + 10;
     const skins = useSkins();
     expect(skins.buy(mageSkin.id)).toBe(true);
     expect(useAccountStore().account.gems).toBe(10);
@@ -41,7 +41,7 @@ describe('useSkins', () => {
   });
 
   it("follows the run's class: a new class shows that class's worn skin", () => {
-    useAccountStore().addGems(mageSkin.gems + 10);
+    useAccountStore().account.gems = mageSkin.gems + 10;
     const characterStore = useCharacterStore();
     characterStore.setCharacter(createCharacter(createRng(1), 'cleric'));
     const skins = useSkins();
@@ -52,7 +52,7 @@ describe('useSkins', () => {
   });
 
   it('lets the testing backdrop toggles override the worn arena and home base', () => {
-    useAccountStore().addGems(100);
+    useAccountStore().account.gems = 100;
     const skins = useSkins();
     skins.buy(arenaSkin.id);
     skins.buy(homeSkin.id);

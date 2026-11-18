@@ -115,6 +115,9 @@ export const LEVEL_GEM_MILESTONES: readonly { level: number; gems: number }[] = 
   { level: 70, gems: 12 },
 ];
 
+/** Gems a new account starts with, so the first revive and gem-priced talent ranks are in reach from day one. */
+export const STARTING_GEMS = 30;
+
 /** Gems paid at each prestige. */
 export const PRESTIGE_GEMS = 80;
 
@@ -124,6 +127,7 @@ export const FREE_DUNGEON_BOSS_GEMS = [4, 5, 7, 9, 11, 14] as const;
 
 /** Every one-time free gem an account can earn (the perfect week repeats, so it isn't here). */
 export const FREE_GEM_SOURCES = {
+  start: STARTING_GEMS,
   levels: LEVEL_GEM_MILESTONES.reduce((sum, m) => sum + m.gems, 0),
   trials: TRIAL_GEMS_TOTAL,
   dungeonFirstClears: FREE_DUNGEONS * FREE_DUNGEON_BOSS_GEMS.reduce((sum, gems) => sum + gems, 0),

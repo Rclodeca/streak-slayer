@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { Anvil, Lock, ScrollText, Store, Sword, UserRound } from 'lucide-vue-next';
-import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, TALENT_DEFS, talentsOpen } from '../../game-engine';
+import { dailyPeriodKey, dayOfWeekIndex, isDueOn, periodKeyFor, questsOpen, shopGateOpen, TALENT_DEFS, talentsOpen } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -12,14 +12,14 @@ import { useTalentPurchase } from '../../composables/useTalentPurchase';
 
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
 // shows under the stage. Quests counts what's due today or overdue. The Shop
-// took Trials' place and is open from the start; Trials, with its claim count,
+// took Trials' place; Trials, with its claim count,
 // is the stage's Trials button now (AppShell). The Shop wears a pip while a side
 // of it has something new (useShopNews). Talents wears a pip
 // while the gold and gems in hand buy the next rank on some open node. Skills counts the good skills still to do today: the
 // dailies that are due and unchecked, and on a Sunday (the last day of the
-// Monday-start week) the unchecked weeklies too. Sealed (before QUESTS_UNLOCK_LEVEL
-// and TALENTS_UNLOCK_LEVEL) Quests and Talents each
-// grey out under a lock, with no badges, and can't be tapped.
+// Monday-start week) the unchecked weeklies too. Sealed (before their UNLOCK_LEVELS
+// level) Quests, Shop and Talents each
+// grey out under a lock, with no badges, and can't be tapped. Once open they stay open.
 const tabStore = useTabStore();
 const characterStore = useCharacterStore();
 const questStore = useQuestStore();
@@ -37,13 +37,14 @@ const TABS = [
 ] as const;
 
 const questsSealed = computed(() => !questsOpen(characterStore.character));
+const shopSealed = computed(() => !shopGateOpen(characterStore.character, 'shop'));
 const talentsSealed = computed(() => !talentsOpen(characterStore.character));
 /** Whether a tab is greyed out under its lock. */
 function isSealed(id: (typeof TABS)[number]['id']): boolean {
-  return (id === 'quests' && questsSealed.value) || (id === 'talents' && talentsSealed.value);
+  return (id === 'quests' && questsSealed.value) || (id === 'shop' && shopSealed.value) || (id === 'talents' && talentsSealed.value);
 }
-// A death can seal the tab on show again (the run starts over at level 1), so it
-// falls back to Skills rather than leaving its seal up with no way to tap it.
+// A sealed tab left selected (a new hero after a reset) falls back to Skills
+// rather than leaving its seal up with no way to tap it.
 watch(
   () => TABS.find((tab) => tab.id === tabStore.tab && isSealed(tab.id)),
   (sealed) => {

@@ -14,7 +14,7 @@ describe('StagePurse', () => {
     setActivePinia(createPinia());
     const characterStore = useCharacterStore();
     characterStore.setCharacter({ ...characterStore.character, gold: 1540 });
-    useAccountStore().initFromSave({ gems: 94, highestLevel: 1 }, 1);
+    useAccountStore().initFromSave({ startingGemsPaid: true, gems: 94, highestLevel: 1 }, 1);
   });
   afterEach(() => vi.useRealTimers());
 
