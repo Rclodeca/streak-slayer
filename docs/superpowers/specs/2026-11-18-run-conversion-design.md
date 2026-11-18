@@ -25,9 +25,9 @@ Mostly already built. Loading an old save already runs, on every hydrate:
 
 ## What is new (the safety)
 
-1. **A marker.** `Account.economyConverted?: boolean`. `createAccount()` sets it true (a fresh account is born converted). A save without it is a pre-conversion save.
-2. **A backup before the first rewrite.** In `initializeStores`, before `setupPersistence` (so before any write): if the stored save text exists and its account does not carry the marker (or the text can't be read as a save), and no backup exists yet, copy the exact raw text to `streak-slayer:save:v5:pre-economy`. The first backup is never overwritten. A failed copy (quota) is swallowed: the load goes on, since refusing to load is worse.
-3. **Set the marker after hydration** so the debounced writer persists it with the converted save.
+1. **A marker.** A storage key, `streak-slayer:economy-converted`, set to `1` once the install has been through `backUpBeforeConversion`. A fresh install (no stored save) is marked straight away, so its later saves are never copied as "pre-conversion". (Not an `Account` field: that would touch every existing assertion on the account's shape for no gain.)
+2. **A backup before the first rewrite.** In `initializeStores`, before anything else (so before any write): if the install isn't marked and a stored save text exists (readable or not), copy the exact raw text to `streak-slayer:save:v5:pre-economy`. The first backup is never overwritten. A failed copy (quota) is swallowed: the load goes on, since refusing to load is worse.
+3. **The marker is set in the same step** as the backup (even when the copy fails), so the backup always means "before conversion".
 4. **A legacy-save test** that hydrates a realistic old-shape save (level 24, boss 27, 23 ranks, both slot events taken, claimed old trials, no `account`) and pins: ranks and slots kept, gates open, trials credited with no gems paid for them, gems = starting + milestones only, gold 0, marker set, backup byte-identical to the original, a second load changes nothing, and the written save reloads to the same state.
 
 The backup key is left out of the export file (`ENTRY_KEYS`) and the cloud sync, so a file import or a restore can't overwrite or leak it. Cloud sync (`syncSave`) is not wired into the app yet, so there is no conflict with it today.
