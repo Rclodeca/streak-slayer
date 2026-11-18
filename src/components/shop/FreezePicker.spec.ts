@@ -87,6 +87,17 @@ describe('FreezePicker', () => {
     expect(frozenOf('hike')![0]).toBe(nextMonday);
   });
 
+  it('a weekly costs 5 gems a week', async () => {
+    useAccountStore().addGems(20);
+    open();
+    await flushPromises();
+    await pick('Hike');
+    const price = () => document.querySelector('.ok .picker-price')!.getAttribute('aria-label');
+    expect(price()).toBe('5 gems');
+    await tap('.freeze-days .more');
+    expect(price()).toBe('10 gems');
+  });
+
   it('is disabled when short on gems', async () => {
     useAccountStore().addGems(1);
     open();

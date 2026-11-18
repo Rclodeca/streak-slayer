@@ -16,12 +16,12 @@ function coveredDays(habit: Habit, fromDayKey: string, count: number): string[] 
   return Array.from({ length: days }, (_, i) => addDaysToDayKey(fromDayKey, i));
 }
 
-/** What freezing `count` periods from `fromDayKey` costs: FREEZE.gemsPerPeriod for each period not already frozen. */
+/** What freezing `count` periods from `fromDayKey` costs: FREEZE.gemsPerDay for each day not already frozen, or FREEZE.gemsPerWeek for each week on a weekly. */
 export function freezeCost(habit: Habit, fromDayKey: string, count: number): number {
   const frozen = habit.frozenDayKeys ?? [];
-  const perPeriod = habit.period === 'weekly' ? 7 : 1;
+  const weekly = habit.period === 'weekly';
   const newDays = coveredDays(habit, fromDayKey, count).filter((key) => !frozen.includes(key)).length;
-  return Math.ceil(newDays / perPeriod) * FREEZE.gemsPerPeriod;
+  return weekly ? Math.ceil(newDays / 7) * FREEZE.gemsPerWeek : newDays * FREEZE.gemsPerDay;
 }
 
 /** Whether `fromDayKey` and `count` are a freeze `habit` may take on `todayKey`: ahead of time, not too far out, not too long. */

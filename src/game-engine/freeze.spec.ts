@@ -58,9 +58,10 @@ describe('buyFreeze on a daily', () => {
 });
 
 describe('buyFreeze on a weekly', () => {
-  it('freezes whole weeks from next week at 2 gems a week', () => {
-    const result = buyFreeze(weekly(), TODAY, '2026-11-16', 2, 4)!;
-    expect(result.gemsSpent).toBe(4);
+  it('freezes whole weeks from next week at 5 gems a week', () => {
+    expect(buyFreeze(weekly(), TODAY, '2026-11-16', 2, 9)).toBeNull();
+    const result = buyFreeze(weekly(), TODAY, '2026-11-16', 2, 10)!;
+    expect(result.gemsSpent).toBe(10);
     expect(result.habit.frozenDayKeys).toHaveLength(14);
     expect(result.habit.frozenDayKeys![0]).toBe('2026-11-16');
     expect(result.habit.frozenDayKeys![13]).toBe('2026-11-29');
@@ -79,7 +80,7 @@ describe('buyFreeze on a weekly', () => {
 
   it('charges only weeks not already frozen', () => {
     const once = buyFreeze(weekly(), TODAY, '2026-11-23', 1, 99)!.habit;
-    expect(freezeCost(once, '2026-11-16', 2)).toBe(2);
+    expect(freezeCost(once, '2026-11-16', 2)).toBe(5);
   });
 });
 

@@ -145,11 +145,11 @@ export function purseGold(bossIndex: number): number {
 }
 
 /**
- * The streak freeze, bought for one skill: gems per frozen period (a daily's
- * day, a weekly's week), the most one buy covers, and how far ahead it may
- * start (in days for a daily, weeks for a weekly).
+ * The streak freeze, bought for one skill: gems per frozen day (a daily) or
+ * week (a weekly), the most one buy covers, and how far ahead it may start
+ * (in days for a daily, weeks for a weekly).
  */
-export const FREEZE = { gemsPerPeriod: 2, maxDays: 7, maxLeadDays: 30, maxWeeks: 4, maxLeadWeeks: 4 };
+export const FREEZE = { gemsPerDay: 2, gemsPerWeek: 5, maxDays: 7, maxLeadDays: 30, maxWeeks: 4, maxLeadWeeks: 4 };
 
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
 export const REVIVE_GEMS = 15;

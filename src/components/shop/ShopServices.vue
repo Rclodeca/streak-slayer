@@ -88,7 +88,7 @@ const frozenAhead = computed(() => {
   const span = soonest.end === soonest.start ? formatDayKey(soonest.start) : `${formatDayKey(soonest.start)} – ${formatDayKey(soonest.end)}`;
   return `${soonest.name}: ${span}${runs.length > 1 ? ` · +${runs.length - 1} more` : ''}`;
 });
-const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerPeriod);
+const freezeShort = computed(() => accountStore.account.gems < FREEZE.gemsPerDay);
 
 const pouch = computed(() => {
   const state = vault.pouch.value;
@@ -119,7 +119,7 @@ const pouch = computed(() => {
         name="Streak Freeze"
         art="services/freeze"
         text="One skill rests on the days you pick. Its streak holds, but doesn't grow."
-        :price="FREEZE.gemsPerPeriod"
+        :price="FREEZE.gemsPerDay"
         :buyable="!freezeShort"
         :short="freezeShort"
         :warn="frozenAhead"
