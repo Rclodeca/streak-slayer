@@ -665,8 +665,11 @@ export function useCombatActions() {
     if (deathResult.died) {
       bossStore.setBoss(deathResult.boss);
       activityLogStore.addEntry({ kind: 'fell', levels: toll.levels, gold: toll.gold, ...(deathResult.lostItem && { itemName: deathResult.lostItem.name }) });
-      // Drops and beats from a boss kill on the fatal pass belong to before the fall.
-      clearRunBeats();
+      // Beats from a boss kill on the fatal pass belong to before the fall. Its
+      // drops are already owned, so they stay queued and show once the hero rises.
+      clearCelebration();
+      clearLevelUp();
+      clearBossSkills();
     }
     dismissDeathScreen();
   }

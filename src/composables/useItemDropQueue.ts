@@ -41,7 +41,8 @@ export function useItemDropQueue() {
 
   // Hidden while the death screen is up: a boss kill and a death can land in
   // the same pass, and the drop popup would otherwise paint over the death
-  // screen. The run is over, so `clear()` (called on restart) discards them.
+  // screen. The run goes on after "Rise again", so they show once it closes;
+  // a prestige's new run discards them (`clear()`).
   const current = computed<ItemDef | null>(() => (isDead.value ? null : queue.value[0]?.item ?? null));
   const droppedBy = computed<string | null>(() => (isDead.value ? null : queue.value[0]?.droppedBy ?? null));
   const offer = computed<ItemOffer | null>(() => (isDead.value ? null : queue.value[0]?.offer ?? null));

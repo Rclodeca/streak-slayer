@@ -594,6 +594,25 @@ describe('useCombatActions', () => {
     expect(useDeathScreen().isDead.value).toBe(true);
   });
 
+  it('restart keeps a drop from a boss killed on the fatal pass, to show once the hero rises', () => {
+    const characterStore = useCharacterStore();
+    const { restart } = useCombatActions();
+    const drops = useItemDropQueue();
+    const full = ['rusty-blade', 'steel-sword', 'apprentice-wand', 'ember-heart'];
+    characterStore.character = { ...characterStore.character, name: 'Aria', heroPending: false, level: 20, currentHealth: 0, equippedItemIds: full, ownedItemIds: [...full, 'soul-lantern'] };
+    drops.clear();
+    drops.enqueueDrops([availableRelics({ ...characterStore.character, ownedItemIds: full }).find((item) => item.id === 'soul-lantern')!]);
+    useDeathScreen().triggerDeath();
+
+    restart();
+
+    const { ownedItemIds, equippedItemIds } = characterStore.character;
+    const waiting = ownedItemIds.filter((id) => !equippedItemIds.includes(id));
+    expect(waiting).toEqual(['soul-lantern']);
+    expect(drops.current.value?.id).toBe('soul-lantern');
+    drops.clear();
+  });
+
   it('restart takes the death setback and keeps the run going', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
