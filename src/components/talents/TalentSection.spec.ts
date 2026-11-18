@@ -177,17 +177,18 @@ describe('TalentSection', () => {
       const learn = q('.talent-popup .learn') as HTMLButtonElement;
       expect(learn.disabled).toBe(false);
       expect(learn.textContent).toContain('Learn');
-      expect(learn.querySelector('.gold .count')?.textContent).toBe('20');
-      expect(learn.querySelector('.gems .count')?.textContent).toBe('2');
+      expect(learn.querySelector('.price.gold')?.textContent?.trim()).toBe('20');
+      expect(learn.querySelector('.price.gems')?.textContent?.trim()).toBe('2');
     });
 
-    it('greys Learn out and says Not enough when short', async () => {
+    it('greys Learn out with its price in red when short', async () => {
       const store = heroAt(9, { might: 3 }, 1000, 0); // gold enough, gems short
       const wrapper = mountSection();
       await node(wrapper, 'Precision').find('button').trigger('click');
       const learn = q('.talent-popup .learn') as HTMLButtonElement;
       expect(learn.disabled).toBe(true);
-      expect(learn.textContent).toContain('Not enough');
+      expect(learn.classList).toContain('short');
+      expect(learn.querySelector('.price.gems')?.textContent?.trim()).toBe('2');
       learn.click();
       expect(talentRank(store.character, 'precision')).toBe(0);
       expect(store.character.gold).toBe(1000);

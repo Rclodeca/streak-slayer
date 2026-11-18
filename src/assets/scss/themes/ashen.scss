@@ -5286,20 +5286,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       color: var(--spent-text);
     }
 
-    .learn .count {
-      @include brass-count;
-      min-width: 22px;
-      height: 22px;
-    }
-
-    // Nothing to learn: the key sits flat and dark, as an unpicked choice does.
-    .learn:disabled {
-      color: var(--spent-text);
-      background: $well;
-      border-bottom-color: transparent;
-      box-shadow: inset 2px 2px 0 var(--sunk-hi);
-      cursor: default;
-      transform: none;
+    // Learn is the Shop's buy key (.shop-buy); a gem price in the gems' cyan,
+    // as on a gem buy, beside the gold one.
+    .learn:not(.short) .price.gems {
+      color: var(--icon-gem);
     }
   }
 

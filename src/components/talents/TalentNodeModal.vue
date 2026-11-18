@@ -4,15 +4,17 @@ import { talentMaxRank, talentRank } from '../../game-engine';
 import type { TalentDef } from '../../game-engine';
 import { useTalentPurchase } from '../../composables/useTalentPurchase';
 import { useCharacterStore } from '../../store/characterStore';
-import CurrencyChips from '../ui/CurrencyChips.vue';
 import Modal from '../ui/Modal.vue';
+import StatIcon from '../ui/StatIcon.vue';
 import { TALENT_LOOK, talentAmount, talentDescription, talentState } from './talentDisplay';
 
 // A node's popup (docs/mockups/pixel-talents.html, "Tap a node"): what it does,
 // what the rank in hand gives and what the next would. A bought rank can't be
 // taken back, so Learn, with the next rank's price on it, is the confirm: the
 // tap on the node, then this one. It stays up so the next rank is one more tap,
-// and greys out when it can't be bought ("Not enough" when the purse is short).
+// and greys out when it can't be bought (its price red when the purse is short).
+// The key is the Shop's buy key (docs/mockups/talent-learn.html), so a price
+// reads the same everywhere.
 const props = defineProps<{ def: TalentDef | null }>();
 const emit = defineEmits<{ close: [] }>();
 const characterStore = useCharacterStore();
@@ -26,6 +28,12 @@ const state = computed(() => (props.def ? talentState(characterStore.character, 
 const canLearn = computed(() => !!props.def && purchase.canBuy(props.def.id));
 // Open and not full, so only the price stands in the way.
 const short = computed(() => !full.value && state.value !== 'locked' && !canLearn.value);
+// Gold then gems, a 0 left out (the first ranks are gold only).
+const prices = computed(() =>
+  (['gold', 'gems'] as const)
+    .map((currency) => ({ currency, amount: purchase.cost.value[currency] }))
+    .filter((p) => p.amount > 0),
+);
 
 function learn() {
   if (props.def) purchase.buy(props.def.id);
@@ -53,9 +61,14 @@ function learn() {
           <span>{{ full ? '—' : talentAmount(def, rank + 1) }}</span>
         </div>
       </div>
-      <button type="button" class="learn primary-button" :disabled="!canLearn" @click="learn">
+      <button type="button" class="learn shop-buy" :class="{ short, spent: full }" :disabled="!canLearn" @click="learn">
         <template v-if="full">Full</template>
-        <template v-else>{{ short ? 'Not enough' : 'Learn' }} <CurrencyChips :gold="purchase.cost.value.gold" :gems="purchase.cost.value.gems" /></template>
+        <template v-else>
+          <span class="verb">Learn</span>
+          <span v-for="p in prices" :key="p.currency" class="price" :class="p.currency" :aria-label="`${p.amount} ${p.currency}`">
+            <StatIcon :name="p.currency" :size="13" />{{ p.amount.toLocaleString('en-US') }}
+          </span>
+        </template>
       </button>
     </div>
   </Modal>
@@ -126,5 +139,11 @@ function learn() {
   gap: 8px;
   width: 100%;
   min-height: 48px;
+}
+
+.price {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 </style>
