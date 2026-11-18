@@ -24,7 +24,7 @@ function makeHabit(overrides: Partial<Habit> = {}): Habit {
   };
 }
 
-const challenges = [{ id: 'resist' as const, takenDayKey: '2026-11-01', progress: 3 }];
+const trials = [{ id: 'resisted' as const, takenDayKey: '2026-11-01', count: 3, claimed: [] }];
 const veteran = (overrides: Partial<Character> = {}): Character => ({
   ...createCharacter(createRng(1), 'warrior'),
   heroPending: false,
@@ -36,7 +36,7 @@ const veteran = (overrides: Partial<Character> = {}): Character => ({
   slotUpgrades: 2,
   talents: { might: 3 },
   talentsUnlocked: true,
-  challenges,
+  trials,
   deaths: 2,
   ...overrides,
 });
@@ -55,7 +55,7 @@ describe('prestigeRun', () => {
     expect(heroClassFor(character)).toBe('warrior');
     expect(character.talents).toEqual({ might: 3 });
     expect(character.talentsUnlocked).toBe(true);
-    expect(character.challenges).toEqual(challenges);
+    expect(character.trials).toEqual(trials);
     expect(character.prestige).toBe(1);
     expect(character.deaths).toBeUndefined();
     expect(characterGold(character)).toBe(0);

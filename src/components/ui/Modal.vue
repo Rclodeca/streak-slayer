@@ -8,8 +8,10 @@ import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 
 // `sheet`: docked to the bottom of the screen, full width, sliding up as it
 // opens and down as it closes; dragging its grab bar down far enough closes
-// it too (the phone's log, docs/mockups/pixel-tabs-final.html).
-const props = withDefaults(defineProps<{ modelValue: boolean; title?: string; dismissible?: boolean; maxWidth?: string; scrollKey?: unknown; sheet?: boolean }>(), {
+// it too (the phone's log, docs/mockups/pixel-tabs-final.html). `tall`: a
+// sheet that rises to just under the top of the screen, leaving a strip of
+// the app above it (the Trials, docs/mockups/trial-sets-2.html).
+const props = withDefaults(defineProps<{ modelValue: boolean; title?: string; dismissible?: boolean; maxWidth?: string; scrollKey?: unknown; sheet?: boolean; tall?: boolean }>(), {
   dismissible: true,
   maxWidth: '420px',
 });
@@ -87,7 +89,7 @@ watch(
       <div v-if="modelValue" class="modal-backdrop" :class="{ sheet }" @click="close">
         <div
           class="modal-content"
-          :class="{ 'has-footer': $slots.footer, sheet, dragging }"
+          :class="{ 'has-footer': $slots.footer, sheet, tall: sheet && tall, dragging }"
           :style="sheet ? { '--drag': `${drag}px` } : { maxWidth }"
           @click.stop
         >
@@ -191,6 +193,11 @@ watch(
   border-radius: 12px 12px 0 0;
   transform: translateY(var(--drag, 0px));
   transition: transform 0.2s ease;
+}
+
+.modal-content.sheet.tall {
+  height: calc(100vh - 52px);
+  height: calc(100dvh - 52px - env(safe-area-inset-top, 0px));
 }
 
 .modal-content.sheet.dragging {

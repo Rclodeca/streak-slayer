@@ -176,7 +176,7 @@ export type CombatResult = {
   lifestealHealed?: number;
   // Bloodcrystal Blade's heal on a crit — not lifesteal, so reported apart from it.
   critHealed?: number;
-  // Blessed: a heal skill's crit doubled its healing. Kept apart from wasCrit, which counts damage crits (challenges, the log).
+  // Blessed: a heal skill's crit doubled its healing. Kept apart from wasCrit, which counts damage crits (trials, the log).
   healCrit?: true;
   reflectedDamage?: number;
   // A boss skill this hit made fire (see resolveBreakpoints in bossSkills.ts).

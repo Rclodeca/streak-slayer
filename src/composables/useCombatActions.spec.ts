@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, goldPrice, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -29,7 +29,7 @@ import { useQuestMissGate } from './useQuestMissGate';
 import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useUndoCheck } from './useUndoCheck';
 import { setHitPlayer } from './useHitFeed';
-import type { Character, ChallengeEntry, ChallengeId, Habit, Quest } from '../game-engine';
+import type { Character, Habit, Quest, TrialEntry, TrialSetId } from '../game-engine';
 import type { Hit } from './useHitFeed';
 import { useReviveNotice } from './useReviveNotice';
 
@@ -1275,16 +1275,16 @@ describe('useCombatActions', () => {
     });
   });
 
-  describe('challenges', () => {
+  describe('trials', () => {
     const dayKey = () => dailyPeriodKey(useDebugClockStore().now());
 
-    function take(id: ChallengeId, relicId = 'ember-heart', overrides: Partial<ChallengeEntry> = {}) {
+    function take(id: TrialSetId, overrides: Partial<TrialEntry> = {}) {
       const characterStore = useCharacterStore();
-      const entry: ChallengeEntry = { id, relicId, takenDayKey: dayKey(), progress: 0, ...overrides };
-      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0, challenges: [...(characterStore.character.challenges ?? []), entry] });
+      const entry: TrialEntry = { id, takenDayKey: dayKey(), count: 0, ...overrides };
+      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0, trials: [...(characterStore.character.trials ?? []), entry] });
     }
 
-    const entryOf = (id: ChallengeId) => useCharacterStore().character.challenges?.find((e) => e.id === id);
+    const entryOf = (id: TrialSetId) => useCharacterStore().character.trials?.find((e) => e.id === id);
 
     function strikeHabit(overrides: Partial<Habit> = {}) {
       const habitStore = useHabitStore();
@@ -1300,103 +1300,89 @@ describe('useCombatActions', () => {
       while (completions.current.value) completions.dismiss();
     });
 
-    function slayBoss(index: number) {
+    it('a live crit counts toward Crits landed', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
-      const { addHabit, checkOffHabit } = useCombatActions();
-      characterStore.setCharacter({ ...characterStore.character, level: 20, exp: 0 });
-      bossStore.setBoss({ ...bossStore.boss, index, health: 0.0001, armor: 0 });
-      checkOffHabit(addHabit('Gym', 'daily', 'medium', false).id);
-    }
-
-    it('slaying a boss hands over no trial: they are all live from the start', () => {
-      slayBoss(5);
-      expect(useCharacterStore().character.challenges ?? []).toHaveLength(0);
-    });
-
-    it('a live crit advances a taken Crit streak', () => {
-      const characterStore = useCharacterStore();
-      const bossStore = useBossStore();
-      take('land-crits');
+      take('crits');
       characterStore.setCharacter({ ...characterStore.character, critChance: 1 });
       bossStore.setBoss({ ...bossStore.boss, health: 100000, maxHealth: 100000 });
-      const habit = strikeHabit();
 
-      useCombatActions().checkOffHabit(habit.id);
+      useCombatActions().checkOffHabit(strikeHabit().id);
 
-      expect(entryOf('land-crits')?.progress).toBe(1);
+      expect(entryOf('crits')?.count).toBe(1);
     });
 
-    it('a kill with no hit taken completes Untouched, but pays nothing until it is claimed', () => {
-      const characterStore = useCharacterStore();
+    it('a kill with no hit taken counts toward Bosses slain and Untouched kills, but pays nothing until claimed', () => {
       const bossStore = useBossStore();
-      take('untouched', 'ember-heart');
+      take('bosses');
+      take('untouched');
       bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: undefined });
-      const habit = strikeHabit();
 
-      useCombatActions().checkOffHabit(habit.id);
+      useCombatActions().checkOffHabit(strikeHabit().id);
 
-      expect(entryOf('untouched')).toMatchObject({ doneDayKey: dayKey(), progress: 1, unclaimed: true });
-      expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
+      expect(entryOf('bosses')?.count).toBe(1);
+      expect(entryOf('untouched')?.count).toBe(1);
+      expect(useAccountStore().account.gems).toBe(0);
       expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toBeUndefined();
       expect(useQuestCompleteQueue().current.value).toBeNull();
     });
 
-    it('claiming pays TRIAL_GEMS gems and medium EXP, no relic, uses no weekly slot, and only once', () => {
+    it("claiming pays the rung's gems, its gold at the current boss, and medium EXP, using no weekly slot, once", () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
-      take('untouched', 'ember-heart');
-      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: undefined });
-      const { checkOffHabit, claimChallenge } = useCombatActions();
-      checkOffHabit(strikeHabit().id);
+      take('bosses', { count: 1 });
+      bossStore.setBoss({ ...bossStore.boss, index: 10 });
+      characterStore.setCharacter({ ...characterStore.character, gold: 0, prestige: 2 });
       const questWeekBefore = characterStore.character.questWeek;
+      const { claimTrial } = useCombatActions();
 
-      claimChallenge('untouched');
-      claimChallenge('untouched');
+      claimTrial('bosses');
+      claimTrial('bosses');
 
-      expect(entryOf('untouched')?.unclaimed).toBeUndefined();
-      expect(useAccountStore().account.gems).toBe(TRIAL_GEMS);
-      expect(characterStore.character.ownedItemIds).not.toContain('ember-heart');
+      expect(entryOf('bosses')?.claimed).toEqual([0]);
+      expect(useAccountStore().account.gems).toBe(4);
+      expect(characterStore.character.gold).toBe(goldPrice(0.5, 10, 2));
       expect(characterStore.character.questWeek).toBe(questWeekBefore);
       const logged = useActivityLogStore().entries.filter((e) => e.kind === 'challenge-completed');
       expect(logged).toHaveLength(1);
-      expect(logged[0]).toMatchObject({ name: 'Untouched', amount: questSlotExp(20, 'medium', 0), gems: TRIAL_GEMS });
-      expect(useItemDropQueue().current.value).toBeNull();
-      expect(useQuestCompleteQueue().current.value).toMatchObject({ description: 'Untouched', difficulty: 'medium', amount: questSlotExp(20, 'medium', 0) });
+      expect(logged[0]).toMatchObject({ name: 'Bosses slain: Slay a boss', amount: questSlotExp(20, 'medium', 0), gems: 4, gold: goldPrice(0.5, 10, 2) });
+      expect(useQuestCompleteQueue().current.value).toMatchObject({ description: 'Slay a boss', difficulty: 'medium', amount: questSlotExp(20, 'medium', 0) });
     });
 
-    it('claiming a trial that is still active or unknown does nothing', () => {
+    it('a rung with no gold pays no gold', () => {
       const characterStore = useCharacterStore();
-      take('untouched', 'ember-heart');
+      take('crits', { count: 5 });
+      characterStore.setCharacter({ ...characterStore.character, gold: 0 });
+      useCombatActions().claimTrial('crits');
+      expect(characterStore.character.gold).toBe(0);
+      expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).not.toHaveProperty('gold');
+    });
+
+    it('claiming a set with nothing waiting, or one not held, does nothing', () => {
+      const characterStore = useCharacterStore();
+      take('untouched');
       const before = characterStore.character;
 
-      useCombatActions().claimChallenge('untouched');
-      useCombatActions().claimChallenge('resist');
+      useCombatActions().claimTrial('untouched');
+      useCombatActions().claimTrial('resisted');
 
       expect(characterStore.character).toBe(before);
     });
 
-    it('a kill of a boss that already hurt the player leaves Untouched open', () => {
+    it('a kill of a boss that already hurt the player leaves Untouched kills where it was', () => {
       const bossStore = useBossStore();
       take('untouched');
       bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0, hurtPlayer: true });
-      const habit = strikeHabit();
-
-      useCombatActions().checkOffHabit(habit.id);
-
-      expect(entryOf('untouched')).toMatchObject({ progress: 0 });
-      expect(entryOf('untouched')?.doneDayKey).toBeUndefined();
+      useCombatActions().checkOffHabit(strikeHabit().id);
+      expect(entryOf('untouched')?.count).toBe(0);
     });
 
-    it('a kill with a true damage skill completes True strike', () => {
+    it('a kill with a true damage skill marks True strike in Feats', () => {
       const bossStore = useBossStore();
-      take('true-kill', 'ember-heart');
+      take('feats');
       bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
-      const habit = strikeHabit({ damageType: 'trueDamage' });
-
-      useCombatActions().checkOffHabit(habit.id);
-
-      expect(entryOf('true-kill')?.doneDayKey).toBe(dayKey());
+      useCombatActions().checkOffHabit(strikeHabit({ damageType: 'trueDamage' }).id);
+      expect(entryOf('feats')?.marks).toContain('true-kill');
     });
 
     it('a bad-habit check notes the day, and a good habit does not', () => {
@@ -1411,40 +1397,35 @@ describe('useCombatActions', () => {
       expect(characterStore.character.lastBadCheckDayKey).toBe(dayKey());
     });
 
-    it('resisting a bad habit advances Hold the line', () => {
+    it('resisting a bad habit counts toward Bad habits resisted', () => {
       const habitStore = useHabitStore();
-      take('resist');
+      take('resisted');
       const bad = habitStore.addHabit('Doomscroll', 'daily', 'easy', true, createRng());
-
       useCombatActions().checkAvoidedHabit(bad.id);
-
-      expect(entryOf('resist')?.progress).toBe(1);
+      expect(entryOf('resisted')?.count).toBe(1);
     });
 
-    it('a skill rank-up completes Rank up', () => {
-      take('rank-up');
-      const habit = strikeHabit({ streakCount: 9, rank: 0 });
-
-      useCombatActions().checkOffHabit(habit.id);
-
-      expect(entryOf('rank-up')?.doneDayKey).toBe(dayKey());
+    it('a skill rank-up counts toward Skill ranks raised, and a check lifts Longest streak', () => {
+      take('ranks');
+      take('streak');
+      useCombatActions().checkOffHabit(strikeHabit({ streakCount: 9, rank: 0 }).id);
+      expect(entryOf('ranks')?.count).toBe(1);
+      expect(entryOf('streak')?.count).toBe(10);
     });
 
-    it('a check that completes a challenge is not offered to Undo', () => {
+    it('a check that reaches a rung is not offered to Undo', () => {
       const { checkOffHabit } = useCombatActions();
       checkOffHabit(strikeHabit({ streakCount: 0 }).id);
       expect(useUndoCheck().canUndo()).toBe(true); // a plain check is offered
 
-      take('rank-up');
+      take('ranks');
       checkOffHabit(strikeHabit({ streakCount: 9, rank: 0 }).id);
-      expect(entryOf('rank-up')?.doneDayKey).toBeDefined();
+      expect(entryOf('ranks')?.count).toBe(1);
       expect(useUndoCheck().canUndo()).toBe(false);
     });
 
-    it('addHabit queues a pending addition, and addQuest stamps the day and queues one', () => {
-      const characterStore = useCharacterStore();
-      take('new-good');
-      take('fresh-quests', 'stone-heart');
+    it('addHabit and addQuest queue First steps additions, and addQuest stamps the day', () => {
+      take('first-steps');
       const { addHabit, addQuest } = useCombatActions();
 
       const habit = addHabit('Stretch', 'daily', 'easy', false);
@@ -1452,13 +1433,14 @@ describe('useCombatActions', () => {
 
       expect(quest.createdDayKey).toBe(dayKey());
       expect(useQuestStore().quests).toEqual([quest]);
-      expect(entryOf('new-good')?.pending).toEqual([{ id: habit.id, dayKey: dayKey() }]);
-      expect(entryOf('fresh-quests')?.pending).toEqual([{ id: quest.id, dayKey: dayKey() }]);
-      expect(characterStore.character.challenges).toHaveLength(2);
+      expect(entryOf('first-steps')?.pending).toEqual([
+        { id: habit.id, dayKey: dayKey(), mark: 'good-skill' },
+        { id: quest.id, dayKey: dayKey(), mark: 'quest' },
+      ]);
     });
 
-    it('completing a quest on time advances Quest run only when it survived a day', () => {
-      take('quest-run');
+    it('completing a quest on time counts toward Quests completed only when it survived a day', () => {
+      take('quests');
       const questStore = useQuestStore();
       const { completeQuest } = useCombatActions();
       const fresh = questStore.addQuest('Today', 'easy', '2099-01-01', dayKey());
@@ -1466,54 +1448,36 @@ describe('useCombatActions', () => {
       const legacy = questStore.addQuest('Legacy', 'easy', '2099-01-01');
 
       completeQuest(fresh.id);
-      expect(entryOf('quest-run')?.progress).toBe(0);
+      expect(entryOf('quests')?.count).toBe(0);
       completeQuest(old.id);
       completeQuest(legacy.id);
-      expect(entryOf('quest-run')?.progress).toBe(2);
+      expect(entryOf('quests')?.count).toBe(2);
     });
 
-    it('an overdue quest completion does not count toward Quest run', () => {
-      take('quest-run');
+    it('an overdue quest completion does not count toward Quests completed', () => {
+      take('quests');
       const questStore = useQuestStore();
       const { completeQuest, failQuest } = useCombatActions();
       const quest = questStore.addQuest('Late', 'easy', '2026-02-01');
       failQuest(quest.id);
       completeQuest(quest.id);
-      expect(entryOf('quest-run')?.progress).toBe(0);
+      expect(entryOf('quests')?.count).toBe(0);
     });
 
-    it('claiming a challenge whose relic is already owned still completes, with no second grant and no crash', () => {
-      const characterStore = useCharacterStore();
-      const bossStore = useBossStore();
-      take('untouched', 'ember-heart');
-      characterStore.setCharacter({ ...characterStore.character, ownedItemIds: ['ember-heart'], equippedItemIds: ['ember-heart'] });
-      bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
-
-      const { checkOffHabit, claimChallenge } = useCombatActions();
-      checkOffHabit(strikeHabit().id);
-      claimChallenge('untouched');
-
-      expect(entryOf('untouched')?.doneDayKey).toBe(dayKey());
-      expect(entryOf('untouched')?.unclaimed).toBeUndefined();
-      expect(characterStore.character.ownedItemIds.filter((id) => id === 'ember-heart')).toHaveLength(1);
-      expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toMatchObject({ amount: questSlotExp(20, 'medium', 0) });
-      expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).not.toHaveProperty('itemName');
-    });
-
-    it('a character with no challenges goes through every hook untouched', () => {
+    it('a character with no trials goes through every hook untouched', () => {
       const characterStore = useCharacterStore();
       const habitStore = useHabitStore();
-      const { checkOffHabit, checkAvoidedHabit, addHabit, addQuest, completeQuest, reportChallenge } = useCombatActions();
-      expect(characterStore.character.challenges).toBeUndefined();
+      const { checkOffHabit, checkAvoidedHabit, addHabit, addQuest, completeQuest, reportTrial } = useCombatActions();
+      expect(characterStore.character.trials).toBeUndefined();
 
       const good = addHabit('Stretch', 'daily', 'easy', false);
       const bad = addHabit('Doomscroll', 'daily', 'easy', true);
       checkOffHabit(good.id);
       checkAvoidedHabit(bad.id);
       completeQuest(addQuest('Q', 'easy', '2099-01-01').id);
-      reportChallenge({ type: 'rank-up' });
+      reportTrial({ type: 'rank-up' });
 
-      expect(characterStore.character.challenges).toBeUndefined();
+      expect(characterStore.character.trials).toBeUndefined();
       expect(habitStore.habits).toHaveLength(2);
     });
   });

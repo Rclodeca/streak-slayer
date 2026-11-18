@@ -55,7 +55,7 @@ function drawOne(pool: ItemDef[], shares: Record<DropRarity, number>, floor: Ite
 /**
  * A fresh stock: SHOP_STOCK.size items, each rolled like a boss drop on
  * shopRarityShares, from what the character doesn't own (and, for relics,
- * hasn't earned or been promised by a challenge). The best is the headline,
+ * hasn't earned). The best is the headline,
  * in gold; below the level's headlineFloor it's redrawn from the floor up.
  * When the headline is rare or better, the other items of its rarity cost
  * gems and lead the rows, at most SHOP_STOCK.gemCap of them; any more are

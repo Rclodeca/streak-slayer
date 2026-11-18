@@ -20,8 +20,9 @@ import Modal from '../ui/Modal.vue';
 // theme, or flipping Show log, keeps the menu open so the change can
 // be seen and flipped back; anything else (Focus mode too, which reshapes the
 // stage behind it), a tap outside (which does nothing else), or Escape closes it.
-// In Focus mode on a phone the Trials button isn't on the stage, so the stage
-// asks for a Trials item here (trialsItem), and the cog wears the Trials badge.
+// Where the stage has no Trials button (Focus mode on a phone, and wider
+// screens) it asks for a Trials item here (trialsItem), and the cog wears the
+// Trials badge.
 // The panel is teleported to <body> and placed under the button: the button
 // rides inside the pinned stage, and on a phone the panel was being cut off
 // where the stage's layer ends, so it lives above the whole page instead.

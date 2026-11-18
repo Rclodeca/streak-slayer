@@ -299,21 +299,21 @@ $light: ":root[data-theme='light']";
   top: -1px;
 }
 
-// ---------- Side quests: white cards, a brass tile for the icon ----------
+// ---------- Trials: white cards, a brass tile for the icon ----------
 // The dark sockets are Moonlit's; here the icon sits on a brass tile with a
 // white glyph, as the level-up's side card did.
-#{$light} .challenge .challenge-socket {
+#{$light} .trial .trial-socket {
   color: #fff;
   background: var(--brass-solid);
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brass-solid) 70%, #000);
 }
 
 // The count sits on a light well, so no black halo.
-#{$light} .challenge .challenge-count {
+#{$light} .trial .trial-count {
   color: var(--card-ink);
   text-shadow: none;
 }
 
-#{$light} .challenge .challenge-gems {
+#{$light} .trial .trial-pay {
   color: var(--brass);
 }

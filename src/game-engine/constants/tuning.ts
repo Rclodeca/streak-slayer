@@ -226,15 +226,8 @@ export const TUNING = {
   QUEST_DIFFICULTY_MULT: { easy: 0.7, medium: 1, hard: 1.3 },
   // Share of a quest's EXP paid when it's finished after its due date (side quests pay this instead of their relic).
   QUEST_OVERDUE_EXP_FRACTION: 0.5,
-  // Side-quest challenge goals (see challenges.ts).
-  CHALLENGES: {
-    RESISTS: 5,
-    CLEAN_DAYS: 3,
-    FRESH_QUESTS: 3,
-    QUEST_RUN: 3,
-    SLAY_BOSSES: 2,
-    LAND_CRITS: 5,
-    STREAK_EVERYTHING_MIN: 3,
+  // Trials (see trials.ts): Feats' Early riser wants a hard skill checked before this hour.
+  TRIALS: {
     EARLY_START_HOUR: 12,
   },
   HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.38, magic: 0.38, healing: 0.12, trueDamage: 0.12 },

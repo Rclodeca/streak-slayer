@@ -158,19 +158,22 @@ export {
   spellweaveStacks,
 } from './itemEffects';
 
-export type { ChallengeDef, ChallengeEntry, ChallengeEvent, ChallengeId, ChallengeProgress, PendingAddition } from './challenges';
+export type { TrialCard, TrialEntry, TrialEvent, TrialFloors, TrialMark, TrialRung, TrialRungState, TrialSetDef, TrialSetId } from './trials';
 export {
-  activeChallenges,
-  applyChallengeEvent,
-  challengeProgress,
-  CHALLENGE_DEFS,
-  claimableChallenges,
-  doneChallenges,
-  getChallengeDef,
-  markChallengeClaimed,
+  applyTrialEvent,
+  claimableTrials,
+  getTrialSet,
+  markTrialClaimed,
+  openRung,
+  reachedRungCount,
   recordBadCheck,
-  seedChallenges,
-} from './challenges';
+  seedTrials,
+  trialCard,
+  trialCards,
+  TRIAL_SETS,
+  waitingRung,
+} from './trials';
+export { TRIAL_GEMS_TOTAL, TRIAL_GOLD_KILLS_TOTAL } from './constants/trials';
 
 export { characterGold } from './gold';
 
@@ -198,7 +201,7 @@ export { missWeekKey, settlePerfectWeek } from './perfectWeek';
 export type { MissSpan } from './perfectWeek';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
-export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, goldPrice, goldPriceFactor, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, goldPrice, goldPriceFactor, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicEffect, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

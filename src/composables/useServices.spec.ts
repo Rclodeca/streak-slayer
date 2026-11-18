@@ -40,7 +40,7 @@ describe('useServices', () => {
       serviceTurn: { id: turn, startDayKey: '2026-11-13' },
       ownedItemIds: [item.id],
       equippedItemIds: [item.id],
-      challenges: [{ id: 'enchant', takenDayKey: '2026-11-01', progress: 0 }],
+      trials: [{ id: 'enchants', takenDayKey: '2026-11-01', count: 0 }],
     });
     const habitStore = useHabitStore();
     habitStore.setHabits([createHabit('Read', 'daily', 'easy', false, createRng(3)), createHabit('Run', 'weekly', 'easy', false, createRng(4))]);
@@ -55,9 +55,7 @@ describe('useServices', () => {
     expect(characterStore.character.doubledItemIds).toEqual([item.id]);
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'item-doubled', itemName: item.name, gold: price });
     expect(services.revealed.value?.id).toBe(item.id);
-    const trial = characterStore.character.challenges!.find((entry) => entry.id === 'enchant')!;
-    expect(trial.doneDayKey).toBeDefined();
-    expect(trial.unclaimed).toBe(true);
+    expect(characterStore.character.trials!.find((entry) => entry.id === 'enchants')!.count).toBe(1);
   });
 
   it('buyOverdrive and buyReroll change the skill in the store and log it', () => {

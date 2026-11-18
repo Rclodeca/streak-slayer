@@ -81,7 +81,7 @@ describe('FightStage', () => {
     vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
     const wrapper = mountStage();
     const tabStore = useTabStore();
-    for (const tab of ['quests', 'trials', 'hero', 'talents', 'skills'] as const) {
+    for (const tab of ['quests', 'hero', 'talents', 'skills'] as const) {
       tabStore.select(tab);
       await nextTick();
       expect(wrapper.find('.fight-stage').classes()).not.toContain('focus');

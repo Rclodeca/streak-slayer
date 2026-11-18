@@ -7,6 +7,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { useTabStore } from '../../store/tabStore';
 import Modal from '../ui/Modal.vue';
+import TrialsModal from '../quests/TrialsModal.vue';
 import AppMenu from './AppMenu.vue';
 import AppShell from './AppShell.vue';
 
@@ -26,18 +27,28 @@ describe('AppShell', () => {
   // The phone layout (usePhoneLayout) is the 820px media query.
   const stubPhone = () => vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
 
-  it('puts the stage on top, skills, quests and trials on the left, progress and the log on the right', () => {
+  it('puts the stage on top, skills and quests on the left, progress and the log on the right', () => {
     useLogVisibleStore().setOn(true);
     const wrapper = shallowMount(AppShell);
     const layout = wrapper.find('.layout');
     expect(layout.element.firstElementChild!.tagName.toLowerCase()).toBe('fight-stage-stub');
     expect(layout.find('.main habit-list-stub').exists()).toBe(true);
     expect(layout.find('.main quest-section-stub').exists()).toBe(true);
-    expect(layout.find('.main trial-section-stub').exists()).toBe(true);
+    expect(layout.find('.main trials-modal-stub').exists()).toBe(false);
     expect(layout.find('tab-bar-stub').exists()).toBe(false);
     expect(layout.find('hero-details-stub').exists()).toBe(false);
     expect(layout.find('.side progress-summary-stub').exists()).toBe(true);
     expect(layout.find('.side activity-log-stub').exists()).toBe(true);
+  });
+
+  it('lists Trials in the menu on wider screens, and opens them as a modal', async () => {
+    const wrapper = shallowMount(AppShell, { global: { stubs: { FightStage: { template: '<div class="stage-slot"><slot /></div>' } } } });
+    const menu = wrapper.findComponent(AppMenu);
+    expect(menu.props('trialsItem')).toBe(true);
+    expect(wrapper.find('.stage-trials').exists()).toBe(false);
+    menu.vm.$emit('trials');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(true);
   });
 
   it('puts Talents on the right under the progress boxes and above the log, not in the lists', () => {
@@ -121,8 +132,10 @@ describe('AppShell', () => {
       expect(button.exists()).toBe(true);
       expect(wrapper.findComponent(AppMenu).props('trialsItem')).toBe(false);
 
+      expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(false);
       await button.trigger('click');
-      expect(useTabStore().tab).toBe('trials');
+      expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(true);
+      expect(useTabStore().tab).toBe('hero');
     });
 
     it('pins the shop scene on the Shop tab, with the menu and the Trials button', async () => {
@@ -138,16 +151,15 @@ describe('AppShell', () => {
       expect(current[0].find('shop-section-stub').exists()).toBe(true);
 
       await wrapper.find('.shop-scene-slot .stage-trials').trigger('click');
-      expect(useTabStore().tab).toBe('trials');
-      await wrapper.vm.$nextTick();
-      expect(wrapper.findAll('.tab-panel.current')[0].find('trial-section-stub').exists()).toBe(true);
+      expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(true);
+      expect(useTabStore().tab).toBe('shop');
     });
 
     it('the stage Trials button counts the claims waiting', async () => {
       const homeBase = { template: '<div class="home-base-slot"><slot /></div>' };
-      const entry = { id: 'resist' as const, takenDayKey: '2026-11-01', progress: 0 };
+      const entry = { id: 'resisted' as const, takenDayKey: '2026-11-01', count: 0 };
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 5, challenges: [entry] });
+      characterStore.setCharacter({ ...characterStore.character, level: 5, trials: [entry] });
       useTabStore().select('hero');
       const wrapper = shallowMount(AppShell, { global: { stubs: { HomeBase: homeBase } } });
       await wrapper.vm.$nextTick();
@@ -155,7 +167,7 @@ describe('AppShell', () => {
 
       characterStore.setCharacter({
         ...characterStore.character,
-        challenges: [entry, { id: 'rank-up', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02', unclaimed: true }],
+        trials: [entry, { id: 'ranks', takenDayKey: '2026-11-01', count: 1 }],
       });
       await wrapper.vm.$nextTick();
       expect(wrapper.find('.stage-trials .trials-count').text()).toBe('1');

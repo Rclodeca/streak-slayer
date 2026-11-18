@@ -268,21 +268,10 @@ export function unownedDroppableItems(character: Character): ItemDef[] {
   return ITEM_CATALOG.filter((item) => item.rarity !== 'relic' && !character.ownedItemIds.includes(item.id) && shares[item.rarity] > 0);
 }
 
-/**
- * Relics a new challenge could reserve: not yet earned this run (earned is
- * earned, even if later dropped), not owned, and not already promised to an
- * active challenge or a finished one still waiting to be claimed.
- */
+/** Relics the shop may stock: not yet earned this run (earned is earned, even if later dropped) and not owned. */
 export function availableRelics(character: Character): ItemDef[] {
   const earned = character.earnedRelicIds ?? [];
-  const promised = (character.challenges ?? []).filter((c) => !c.doneDayKey || c.unclaimed).map((c) => c.relicId);
-  return ITEM_CATALOG.filter(
-    (item) =>
-      item.rarity === 'relic' &&
-      !earned.includes(item.id) &&
-      !character.ownedItemIds.includes(item.id) &&
-      !promised.includes(item.id),
-  );
+  return ITEM_CATALOG.filter((item) => item.rarity === 'relic' && !earned.includes(item.id) && !character.ownedItemIds.includes(item.id));
 }
 
 /** Marks a relic earned for the run; the same character back for anything else or a relic already recorded. */

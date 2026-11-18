@@ -33,7 +33,7 @@ export function prestigeRun(
     ...createCharacter(rng, heroClassFor(character)),
     talents: character.talents,
     talentsUnlocked: character.talentsUnlocked,
-    challenges: character.challenges,
+    trials: character.trials,
     prestige: rank + 1,
   };
   const fresh = { ...kept, currentHealth: effectiveStat(kept, 'health') };

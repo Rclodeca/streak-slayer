@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { bossBaseHealth, createCharacter, createHabit, createRng, generateBoss } from '../game-engine';
+import { bossBaseHealth, createCharacter, createHabit, createRng, generateBoss, TRIAL_SETS } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from './accountStore';
 import { RUNS_KEY } from './highScoreStore';
@@ -185,17 +185,17 @@ describe('store persistence smoke test', () => {
     expect(characterStore.character.slotUpgrades).toBeUndefined();
   });
 
-  it('a new account starts with every trial live', () => {
+  it('a new account starts with every trial set live', () => {
     const { characterStore } = initializeStores();
-    expect(characterStore.character.challenges).toHaveLength(17);
-    expect(characterStore.character.challenges!.every((entry) => entry.progress === 0 && !entry.doneDayKey)).toBe(true);
+    expect(characterStore.character.trials).toHaveLength(TRIAL_SETS.length);
+    expect(characterStore.character.trials!.every((entry) => entry.count === 0 && !entry.claimed)).toBe(true);
   });
 
-  it('an old save with two trials gets the other fifteen and keeps its two entries unchanged', () => {
+  it("an old save's one-off trials are credited to the sets, and the old field goes", () => {
     const rng = createRng(1);
     const held = [
       { id: 'resist', takenDayKey: '2026-11-01', progress: 3 },
-      { id: 'rank-up', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02', unclaimed: true },
+      { id: 'rank-up', takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' },
     ];
     localStorage.setItem(
       STORAGE_KEY,
@@ -204,8 +204,11 @@ describe('store persistence smoke test', () => {
 
     const { characterStore } = initializeStores();
 
-    expect(characterStore.character.challenges).toHaveLength(17);
-    expect(characterStore.character.challenges!.slice(0, 2)).toEqual(held);
+    const { character } = characterStore;
+    expect(character.challenges).toBeUndefined();
+    expect(character.trials).toHaveLength(TRIAL_SETS.length);
+    expect(character.trials!.find((e) => e.id === 'resisted')).toMatchObject({ count: 3 });
+    expect(character.trials!.find((e) => e.id === 'ranks')).toMatchObject({ count: 1, claimed: [0] });
   });
 
   it('a save at level 9 with no Special or Ult gets both on load, once', () => {

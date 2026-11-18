@@ -21,7 +21,7 @@ import StagePurse from './StagePurse.vue';
 import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
 import QuestSection from '../quests/QuestSection.vue';
-import TrialSection from '../quests/TrialSection.vue';
+import TrialsModal from '../quests/TrialsModal.vue';
 import TalentSection from '../talents/TalentSection.vue';
 import TalentUnlockPopup from '../talents/TalentUnlockPopup.vue';
 import ProgressSummary from './ProgressSummary.vue';
@@ -88,6 +88,8 @@ const showHighScores = ref(false);
 const isPhone = usePhoneLayout();
 const tabStore = useTabStore();
 const showLog = ref(false);
+// Trials open as a modal over the app (a tall sheet on a phone), from the stage's button or the menu.
+const showTrials = ref(false);
 
 // What sits above the lists on a phone: the fight stage, the home base on the Hero tab,
 // the shopkeeper's scene on the Shop tab, or nothing but the menu's corner on Talents,
@@ -100,14 +102,14 @@ const topBar = computed(() => {
 });
 // The Trials button under the menu and the purse beside it, where there's room: not on
 // the Focus strip; the menu lists Trials instead, and the purse only shows its gains.
-// Talents, the Hero and Shop tabs have no stage, so always have room. Trials has no
-// bottom tab of its own: this button and the menu are the way in.
+// Talents, the Hero and Shop tabs have no stage, so always have room. Wider screens
+// have no button: the menu lists Trials there too.
 const cornerRoom = computed(
   () =>
     isPhone.value &&
     (tabStore.tab === 'hero' || tabStore.tab === 'talents' || tabStore.tab === 'shop' || !stageFocused.value),
 );
-const trialsInMenu = computed(() => isPhone.value && !cornerRoom.value);
+const trialsInMenu = computed(() => !isPhone.value || !cornerRoom.value);
 const scrollBody = ref<HTMLElement | null>(null);
 watch(
   () => tabStore.tab,
@@ -155,8 +157,8 @@ watch(
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
         <component :is="topBar">
           <StagePurse v-if="isPhone" :plate="cornerRoom" />
-          <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="tabStore.select('trials')" />
-          <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Trials" @click="tabStore.select('trials')">
+          <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="showTrials = true" />
+          <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Trials" @click="showTrials = true">
             <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
             <Gift :size="22" />
             <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
@@ -168,7 +170,6 @@ watch(
             <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>
             <div class="tab-panel" :class="{ current: tabStore.tab === 'quests' }"><QuestSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'shop' }"><ShopSection /></div>
-            <div class="tab-panel" :class="{ current: tabStore.tab === 'trials' }"><TrialSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'talents' }"><TalentSection /></div>
             <div v-if="isPhone" class="tab-panel" :class="{ current: tabStore.tab === 'hero' }"><HeroDetails page /></div>
           </main>
@@ -191,6 +192,7 @@ watch(
       <Modal v-model="showLog" title="Log" sheet>
         <ActivityLog bare />
       </Modal>
+      <TrialsModal v-model="showTrials" />
     </template>
   </div>
 </template>
@@ -212,7 +214,7 @@ watch(
   opacity: 1;
 }
 
-/* Under the menu button, in the stage's corner: a way to the Trials tab. The
+/* Under the menu button, in the stage's corner: a way to the Trials. The
    Focus strip is too short to hold both. */
 .stage-trials {
   position: relative;

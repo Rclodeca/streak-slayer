@@ -4,6 +4,7 @@
 // are pinned in economy.spec.ts.
 
 import type { ItemRarity } from '../items';
+import { TRIAL_GEMS_TOTAL } from './trials';
 
 /** Gold a boss pays when slain: rises with the boss's place in the run. */
 export function bossGold(bossIndex: number): number {
@@ -114,16 +115,6 @@ export const LEVEL_GEM_MILESTONES: readonly { level: number; gems: number }[] = 
   { level: 70, gems: 12 },
 ];
 
-/** Gems a finished trial pays when claimed. Flat until the trial rework; 17 trials at 12 sit inside the 275 budget. */
-export const TRIAL_GEMS = 12;
-
-/** The trial rework's shape: many small easy trials early, a few big hard ones late (275 in all). */
-export const TRIAL_GEM_TIERS = {
-  easy: { count: 15, gems: 5 },
-  medium: { count: 10, gems: 10 },
-  hard: { count: 5, gems: 20 },
-} as const;
-
 /** Gems paid at each prestige. */
 export const PRESTIGE_GEMS = 80;
 
@@ -134,7 +125,7 @@ export const FREE_DUNGEON_BOSS_GEMS = [4, 5, 7, 9, 11, 14] as const;
 /** Every one-time free gem an account can earn (the perfect week repeats, so it isn't here). */
 export const FREE_GEM_SOURCES = {
   levels: LEVEL_GEM_MILESTONES.reduce((sum, m) => sum + m.gems, 0),
-  trials: Object.values(TRIAL_GEM_TIERS).reduce((sum, tier) => sum + tier.count * tier.gems, 0),
+  trials: TRIAL_GEMS_TOTAL,
   dungeonFirstClears: FREE_DUNGEONS * FREE_DUNGEON_BOSS_GEMS.reduce((sum, gems) => sum + gems, 0),
   prestige: PRESTIGE_GEMS * 5,
 };

@@ -1128,7 +1128,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // and Trials), in its title's icon and its add button. No line or node down
   // the left any more (the spine, docs/mockups/pixel-sections.html): the
   // cards run the full width.
-  :is(.skill-list, .resist-list, .quest-section, .trial-section, .hero-page, .talent-section) {
+  :is(.skill-list, .resist-list, .quest-section, .hero-page, .talent-section) {
     --spine: var(--accent);
     position: relative;
   }
@@ -1137,13 +1137,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     --spine: var(--damage-color);
   }
 
-  :is(.quest-section, .trial-section, .shop-section) {
+  :is(.quest-section, .shop-section) {
     --spine: #{$brass};
   }
 
   // The gap between sections is the layout's 20px plus this. On a phone, a
   // section that opens its tab sits straight under the stage.
-  :is(.resist-list, .quest-section, .trial-section) {
+  :is(.resist-list, .quest-section) {
     margin-top: 10px;
   }
 
@@ -1186,7 +1186,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     --medal-ink: var(--bg);
   }
 
-  :is(.quest-section, .trial-section, .shop-section) .section-title {
+  :is(.quest-section, .shop-section) .section-title {
     --medal: var(--brass-solid);
     --medal-ink: #2a2010;
   }
@@ -1794,11 +1794,10 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     cursor: default;
   }
 
-  // ---------- Challenges (Trials) ----------
-  // Game-side deeds, kept apart from the quests the player writes in a
-  // section (a phone tab) of their own, the challenge cards cut like the quest
-  // cards (docs/mockups/pixel-challenges-2.html option C; pixel-challenges.html,
-  // Rim for the level-up card, Cards for the list).
+  // ---------- Trials ----------
+  // The trial sets as ledger cards in the Trials modal, cut like the quest
+  // cards (docs/mockups/trial-sets-2.html, A1): name and prize, the deed, a
+  // brass bar or Claim, pips for the ladder; a card folds its ladder out.
 
   // A small brass count, as on the Quests tab.
   @mixin brass-count {
@@ -1815,47 +1814,45 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     line-height: 1;
   }
 
-  .challenge-list {
-    margin-top: 0;
-  }
-
-  .challenge {
-    display: flex;
-    align-items: center;
+  .trial {
     gap: 12px;
-    min-height: 56px;
-    padding: 10px 12px 12px 10px;
+    padding: 10px 12px 10px 10px;
     border-radius: 0;
     @include lifted-card;
   }
 
-  .challenge .challenge-socket {
-    align-self: flex-start;
+  .trial .trial-socket {
     width: 42px;
     height: 42px;
     color: var(--moon-solid);
     @include socket(var(--card-hi));
   }
 
-  .challenge .challenge-body {
+  .trial .trial-body {
     gap: 6px;
   }
 
-  .challenge .challenge-name {
+  .trial .trial-name {
     @include name-serif;
     font-size: 1.05rem;
     line-height: 1.2;
     color: var(--card-ink);
   }
 
-  .challenge .challenge-deed {
+  .trial :is(.trial-deed, .trial-ladder-deed) {
     @include true-sans(0.84rem);
     line-height: 1.3;
     color: var(--text);
   }
 
-  // The counted ones: a brass bar sunk in a well, "cur / max" on it.
-  .challenge .challenge-progress {
+  .trial .trial-pay {
+    @include name-serif(700);
+    font-size: 0.95rem;
+    color: $brass;
+  }
+
+  // The counted rungs: a brass bar sunk in a well, "cur / max" on it.
+  .trial .trial-progress {
     position: relative;
     display: block;
     height: 14px;
@@ -1864,21 +1861,21 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo);
   }
 
-  .challenge .challenge-bar {
+  .trial .trial-bar {
     position: absolute;
     inset: 2px;
     height: auto;
     background: none;
   }
 
-  .challenge .challenge-bar i {
+  .trial .trial-bar i {
     background: $brass;
     box-shadow:
       inset 0 2px 0 color-mix(in srgb, #{$brass} 60%, #fff),
       inset 0 -2px 0 $brass-solid;
   }
 
-  .challenge .challenge-count {
+  .trial .trial-count {
     position: absolute;
     top: 0;
     right: 5px;
@@ -1891,42 +1888,102 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-shadow: 0 0 3px #000, 0 0 2px #000;
   }
 
-  // The state ones: one brass line.
-  .challenge .challenge-status {
+  // The marked rungs and finished sets: one brass line.
+  .trial .trial-status {
     @include plain-label($label-sm, 700);
     color: $brass;
   }
 
-  .challenge .challenge-gems {
-    align-self: flex-start;
-    @include name-serif(700);
-    font-size: 1rem;
-    color: $brass;
+  // The ladder in pips: brass for paid, a glowing brass ring for waiting, sunk dark ahead.
+  .trial .trial-pips i {
+    background: var(--field);
+    box-shadow: inset 1px 1px 0 var(--sunk-hi), inset -1px -1px 0 var(--sunk-lo);
   }
 
-  // Earned: the card sinks.
-  .challenge.done {
-    --card: var(--struck-card);
-    background: var(--struck-card);
-    @include bevel(var(--struck-hi), var(--struck-lo));
-    opacity: 1;
+  .trial .trial-pips i.paid {
+    background: $brass;
+    box-shadow: inset 0 -2px 0 $brass-solid;
   }
 
-  .challenge.done :is(.challenge-name, .challenge-deed) {
+  .trial .trial-pips i.waiting {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px $brass;
+    animation: trial-glow 1.2s ease-in-out infinite;
+  }
+
+  @keyframes trial-glow {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .trial .trial-pips i.waiting {
+      animation: none;
+    }
+  }
+
+  .trial .trial-rung {
+    @include plain-label($label-sm, 800);
+    color: var(--text);
+  }
+
+  .trial .trial-fold {
+    color: var(--moon-solid);
+  }
+
+  // The folded-out ladder: a check on a brass tile for paid (struck), a brass
+  // ring for the one waiting, a quiet ring ahead.
+  .trial .trial-ladder {
+    border-top: 2px solid var(--card-lo);
+  }
+
+  .trial .trial-mark {
+    @include pixel-corners(2px);
+    color: var(--on-brass);
+    box-shadow: inset 0 0 0 2px var(--card-hi);
+  }
+
+  .trial .trial-ladder li.paid .trial-mark {
+    background: $brass;
+    box-shadow: none;
+  }
+
+  .trial .trial-ladder li.waiting .trial-mark {
+    box-shadow: inset 0 0 0 2px $brass;
+  }
+
+  .trial .trial-ladder li.paid :is(.trial-ladder-deed, .trial-pay) {
     color: var(--struck-ink);
   }
 
-  .challenge.done .challenge-name {
+  .trial .trial-ladder li.paid .trial-ladder-deed {
     text-decoration-color: color-mix(in srgb, var(--moon) 30%, transparent);
   }
 
-  .challenge.done .challenge-socket {
+  .trial .trial-ladder .trial-pay {
+    font-size: 0.85rem;
+  }
+
+  // Finished: the card sinks.
+  .trial.done {
+    --card: var(--struck-card);
+    background: var(--struck-card);
+    @include bevel(var(--struck-hi), var(--struck-lo));
+  }
+
+  .trial.done .trial-name {
+    color: var(--struck-ink);
+    text-decoration-color: color-mix(in srgb, var(--moon) 30%, transparent);
+  }
+
+  .trial.done .trial-socket {
     opacity: 0.45;
   }
 
-  // Finished and waiting: a brass rim round the card, as on the level-up's
-  // side card, and a yellow (brass) Claim button in the prize's place.
-  .challenge.ready {
+  // A rung waiting: a brass rim round the card, as on the level-up's side
+  // card, and a yellow (brass) Claim button in the bar's place.
+  .trial.ready {
     box-shadow:
       inset 2px 2px 0 var(--card-hi),
       inset -2px -2px 0 var(--card-lo),
@@ -1934,12 +1991,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // The gift takes the button's dark ink, not its own gold.
-  .challenge .challenge-claim .stat-icon {
+  .trial .trial-claim .stat-icon {
     color: var(--on-brass);
   }
 
-  .challenge .challenge-claim {
-    align-self: center;
+  .trial .trial-claim {
     gap: 6px;
     @include stone-button;
     color: var(--on-brass);

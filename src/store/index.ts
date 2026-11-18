@@ -3,7 +3,7 @@
 // fresh) and wire up debounced localStorage persistence.
 
 import { createPinia, getActivePinia, setActivePinia, type Pinia } from 'pinia';
-import { applyBossAttackEase, applyRankRebalance, createRng, dailyPeriodKey, migrateLevelEvents, grantLevelRewards, migrateQuestUnlock, prestigeRank, pruneFrozenDays, seedChallenges, withPrestige } from '../game-engine';
+import { applyBossAttackEase, applyRankRebalance, bossNumber, createRng, dailyPeriodKey, migrateLevelEvents, grantLevelRewards, migrateQuestUnlock, prestigeRank, pruneFrozenDays, seedTrials, withPrestige } from '../game-engine';
 import { useAccountStore } from './accountStore';
 import { useActivityLogStore } from './activityLogStore';
 import { useBossStore } from './bossStore';
@@ -83,8 +83,10 @@ export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia)
   characterStore.setCharacter(migrateQuestUnlock(characterStore.character, questStore.quests.length > 0));
   // A save from before Special and Ult were handed out: a hero at level 5 or 8 that holds none gets it now.
   habitStore.setHabits(grantLevelRewards(habitStore.habits, characterStore.character.level, rng).habits);
-  // Every trial is live from the start; a load tops up any the save doesn't hold.
-  characterStore.setCharacter(seedChallenges(characterStore.character, dailyPeriodKey(useDebugClockStore(targetPinia).now())));
+  // Every trial set is live from the start; a load tops up any the save doesn't hold,
+  // counting what the save shows, and credits an old save's one-off trials.
+  const floors = { bossesBeaten: bossNumber(bossStore.boss) - 1, habits: habitStore.habits };
+  characterStore.setCharacter(seedTrials(characterStore.character, dailyPeriodKey(useDebugClockStore(targetPinia).now()), floors));
 
   setupHighScoreTracking(targetPinia, dailyPeriodKey(useDebugClockStore(targetPinia).now()));
   // After hydration too: wired earlier, loading the save's character would

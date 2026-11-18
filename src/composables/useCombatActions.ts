@@ -31,9 +31,10 @@ import {
   addExpAndResolveLevelUps,
   bossArt,
   bossNumber,
-  applyChallengeEvent,
+  characterGold,
+  applyTrialEvent,
   chooseHero,
-  claimableChallenges,
+  claimableTrials,
   completeHabit,
   createRng,
   dailyPeriodKey,
@@ -42,10 +43,10 @@ import {
   effectiveCritChance,
   effectiveStat,
   describeItemBonus,
-  doneChallenges,
   grantLevelRewards,
-  getChallengeDef,
-  markChallengeClaimed,
+  getTrialSet,
+  goldPrice,
+  markTrialClaimed,
   HERO_CLASSES,
   heroClassFor,
   ITEM_CATALOG,
@@ -64,16 +65,16 @@ import {
   questRewardExp,
   questWeekFor,
   recordBadCheck,
+  reachedRungCount,
   recordQuestCompletion,
   resolveBossDefeatIfDead,
   resolveDoom,
   reviveForGems,
   skillCompletionExp,
-  TRIAL_GEMS,
   unlockQuests,
   weeklyPeriodKey,
 } from '../game-engine';
-import type { Boss, Character, ChallengeEntry, ChallengeEvent, ChallengeId, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest } from '../game-engine';
+import type { Boss, Character, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest, TrialEvent, TrialRung, TrialSetId } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -189,12 +190,14 @@ export function useCombatActions() {
   }
 
   /**
-   * Pays one finished challenge: TRIAL_GEMS gems, and EXP as a medium quest
-   * at the current weekly slot — without using that slot up.
+   * Pays one trial rung: its gems, its gold (boss kills at the current boss and
+   * prestige, read now), and EXP as a medium quest at the current weekly slot,
+   * without using that slot up.
    */
-  function payChallenge(entry: ChallengeEntry): void {
-    const def = getChallengeDef(entry.id);
-    accountStore.addGems(TRIAL_GEMS);
+  function payTrialRung(setId: TrialSetId, rung: TrialRung): void {
+    accountStore.addGems(rung.gems);
+    const gold = rung.goldKills ? goldPrice(rung.goldKills, bossStore.boss.index, characterStore.character.prestige ?? 0) : 0;
+    if (gold > 0) characterStore.setCharacter({ ...characterStore.character, gold: characterGold(characterStore.character) + gold });
 
     const before = characterStore.character;
     const week = questWeekFor(before.questWeek, weeklyPeriodKey(debugClockStore.now()));
@@ -204,28 +207,29 @@ export function useCombatActions() {
     characterStore.setCharacter(character);
     handOutLevelRewards();
 
-    activityLogStore.addEntry({ kind: 'challenge-completed', name: def.name, amount, gems: TRIAL_GEMS });
-    enqueueCompletion({ description: def.name, difficulty: 'medium', amount });
+    const name = `${getTrialSet(setId).name}: ${rung.deed}`;
+    activityLogStore.addEntry({ kind: 'challenge-completed', name, amount, gems: rung.gems, ...(gold > 0 && { gold }) });
+    enqueueCompletion({ description: rung.deed, difficulty: 'medium', amount });
   }
 
   /**
-   * Feeds one happening to the character's challenges; a finished one waits
-   * to be claimed (claimChallenge). A no-op for a character with no
-   * challenges. Reads the character fresh, so call it between steps that
-   * already wrote theirs back.
+   * Feeds one happening to the character's trial sets; a reached rung waits
+   * to be claimed (claimTrial). A no-op for a character with no trials.
+   * Reads the character fresh, so call it between steps that already wrote
+   * theirs back.
    */
-  function reportChallenge(event: ChallengeEvent, todayKey: string = dailyPeriodKey(debugClockStore.now())): void {
-    const result = applyChallengeEvent(characterStore.character, event, todayKey);
-    if (result.character === characterStore.character) return;
-    characterStore.setCharacter(result.character);
+  function reportTrial(event: TrialEvent, todayKey: string = dailyPeriodKey(debugClockStore.now())): void {
+    const next = applyTrialEvent(characterStore.character, event, todayKey);
+    if (next !== characterStore.character) characterStore.setCharacter(next);
   }
 
-  /** The player's claim of a finished challenge: pays it, once. A no-op for one not waiting to be claimed. */
-  function claimChallenge(id: ChallengeId): void {
-    const entry = claimableChallenges(characterStore.character).find((e) => e.id === id);
-    if (!entry) return;
-    characterStore.setCharacter(markChallengeClaimed(characterStore.character, id));
-    payChallenge(entry);
+  /** The player's claim on a trial set: pays its waiting rung, once. A no-op when none waits. */
+  function claimTrial(id: TrialSetId): void {
+    if (!claimableTrials(characterStore.character).some((e) => e.id === id)) return;
+    const { character, rung } = markTrialClaimed(characterStore.character, id);
+    if (!rung) return;
+    characterStore.setCharacter(character);
+    payTrialRung(id, rung);
   }
 
   /**
@@ -339,13 +343,13 @@ export function useCombatActions() {
       activityLogStore.addEntry({ kind: 'rank-up', habitName: habit.name, rank: result.updatedHabit.rank ?? 0 });
     }
 
-    // Challenges that watch this blow. A live tap of a good habit is the only
+    // Trials that watch this blow. A live tap of a good habit is the only
     // one that counts as a check (a rollover resolution or an Overdrive use
     // is not); the rest read what the engine rolled.
     const rankedUp = (result.updatedHabit.rank ?? 0) > (habit.rank ?? 0);
-    if (result.wasCrit) reportChallenge({ type: 'crit-landed' });
-    if (rankedUp) reportChallenge({ type: 'rank-up' });
-    if (stampPeriodKey && !habit.isBad) reportChallenge({ type: 'habit-checked', habit, hour: debugClockStore.now().getHours() });
+    if (result.wasCrit) reportTrial({ type: 'crit-landed' });
+    if (rankedUp) reportTrial({ type: 'rank-up' });
+    if (stampPeriodKey && !habit.isBad) reportTrial({ type: 'habit-checked', habit, hour: debugClockStore.now().getHours() });
 
     // Overdrive uses pay no skill EXP (and no milestone, see completeHabit).
     const skillExp = options.isOverdriveUse
@@ -364,7 +368,7 @@ export function useCombatActions() {
     const slain = bossStore.boss;
     const defeatResult = resolveBossDefeatIfDead(characterStore.character, slain, rng, dailyPeriodKey(debugClockStore.now()));
     if (!defeatResult.defeated) {
-      reportChallenge({ type: 'state-changed', habits: habitStore.habits });
+      reportTrial({ type: 'state-changed', habits: habitStore.habits });
       return { itemsDropped: [] };
     }
 
@@ -379,9 +383,9 @@ export function useCombatActions() {
     bossStore.setBoss(defeatResult.boss);
     handOutLevelRewards();
 
-    reportChallenge({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
-    if (defeatResult.itemsDropped.some((item) => item.rarity === 'epic')) reportChallenge({ type: 'epic-dropped' });
-    reportChallenge({ type: 'state-changed', habits: habitStore.habits });
+    reportTrial({ type: 'boss-defeated', boss: slain, byTrueSkill: habit.damageType === 'trueDamage', byCrit: result.wasCrit ?? false });
+    if (defeatResult.itemsDropped.length > 0) reportTrial({ type: 'items-found', rarities: defeatResult.itemsDropped.map((item) => item.rarity) });
+    reportTrial({ type: 'state-changed', habits: habitStore.habits });
 
     return { itemsDropped: defeatResult.itemsDropped, droppedBy: PERSONALITY_NAME[slain.personality] };
   }
@@ -501,12 +505,12 @@ export function useCombatActions() {
       characterStore.setCharacter(recordBadCheck(characterStore.character, dailyPeriodKey(debugClockStore.now())));
     } else result = applyReward(habitId, currentPeriodKey);
 
-    // A finished challenge isn't offered to Undo.
+    // A check that reaches a trial rung isn't offered to Undo.
     const plain =
       !fell &&
       characterStore.character.level === before.character.level &&
       bossStore.boss.index === before.boss.index &&
-      doneChallenges(characterStore.character).length === doneChallenges(before.character).length;
+      reachedRungCount(characterStore.character) === reachedRungCount(before.character);
     if (plain) undoCheck.offer(before);
     else undoCheck.forget();
     return result;
@@ -530,7 +534,7 @@ export function useCombatActions() {
    */
   function checkAvoidedHabit(habitId: string): RewardResult {
     const result = applyReward(habitId);
-    if (habitStore.habits.find((h) => h.id === habitId)?.isBad) reportChallenge({ type: 'bad-resisted' });
+    if (habitStore.habits.find((h) => h.id === habitId)?.isBad) reportTrial({ type: 'bad-resisted' });
     return result;
   }
 
@@ -565,7 +569,7 @@ export function useCombatActions() {
     const now = debugClockStore.now();
     const habit = { ...created, lastCheckedPeriodKey: periodKeyFor(period, now), createdDayKey: dailyPeriodKey(now) };
     habitStore.updateHabit(habit);
-    reportChallenge({ type: 'habit-added', habit });
+    reportTrial({ type: 'habit-added', habit });
     handOutLevelRewards();
     return habit;
   }
@@ -573,7 +577,7 @@ export function useCombatActions() {
   /** Adds a quest stamped with today's day, so Fresh quests and Quest run can tell when it was made. */
   function addQuest(description: string, difficulty: Difficulty, dueDateKey: string): Quest {
     const quest = questStore.addQuest(description, difficulty, dueDateKey, dailyPeriodKey(debugClockStore.now()));
-    reportChallenge({ type: 'quest-added', questId: quest.id });
+    reportTrial({ type: 'quest-added', questId: quest.id });
     return quest;
   }
 
@@ -750,7 +754,7 @@ export function useCombatActions() {
 
     activityLogStore.addEntry({ kind: 'quest-completed', description: quest.description, amount });
     questStore.markDone(questId, dayKey);
-    if (!quest.overdue) reportChallenge({ type: 'quest-completed', createdDayKey: quest.createdDayKey });
+    if (!quest.overdue) reportTrial({ type: 'quest-completed', createdDayKey: quest.createdDayKey });
     return { amount };
   }
 
@@ -804,8 +808,8 @@ export function useCombatActions() {
     landDoom,
     addHabit,
     addQuest,
-    reportChallenge,
-    claimChallenge,
+    reportTrial,
+    claimTrial,
     restart,
     prestige,
     revive,

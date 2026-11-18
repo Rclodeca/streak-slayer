@@ -155,10 +155,10 @@ export function useDailyRollover(now: Date = new Date()): void {
     if (regen.healed > 0) useActivityLogStore().addEntry({ kind: 'item-heal', itemName: 'Ember Heart', amount: regen.healed });
   }
 
-  // Challenges look back at the day that just ended, before a quest finished
+  // Trials look back at the day that just ended, before a quest finished
   // that day leaves the list. Safe to repeat: a day is only counted once.
   const combat = useCombatActions();
-  combat.reportChallenge(
+  combat.reportTrial(
     { type: 'day-end', endedDate: new Date(now.getTime() - MS_PER_DAY), habits: habitStore.habits, quests: questStore.quests },
     todayKey,
   );

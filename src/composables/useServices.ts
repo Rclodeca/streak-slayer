@@ -51,7 +51,7 @@ export function useServices() {
   const bossStore = useBossStore();
   const activityLogStore = useActivityLogStore();
   const debugClockStore = useDebugClockStore();
-  const { reportChallenge } = useCombatActions();
+  const { reportTrial } = useCombatActions();
   const toast = useToast();
 
   /** Today's key, read fresh. `dayTick` makes a computed reading it follow a real day turnover. */
@@ -110,7 +110,7 @@ export function useServices() {
     characterStore.setCharacter(result.character);
     activityLogStore.addEntry({ kind: 'item-doubled', itemName: result.item.name, gold: price });
     revealed.value = result.item;
-    reportChallenge({ type: 'enchanted' });
+    reportTrial({ type: 'enchanted' });
     return true;
   }
 

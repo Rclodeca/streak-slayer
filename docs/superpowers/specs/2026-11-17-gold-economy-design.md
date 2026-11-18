@@ -33,7 +33,7 @@ Every gold price is **boss kills × the prestige price factor** (§4). Boss gold
 | Boss kill | `bossGold` = 40 + 10 × boss index | unchanged |
 | Daily purse | **0.2** of a boss kill a day | was 0.5 |
 | Gold Pouch (15 gems, once a day) | 3 boss kills × the prestige price factor | was 3 kills flat |
-| Trials | none, gems only | the user toyed with trial gold; not needed once prices rise per prestige |
+| Trials | 4 boss kills in all, on First steps and the early Bosses slain rungs (all in climb I) | was none; changed with the trial sets, `2026-11-18-trial-sets-design.md` §2 |
 
 *My call:* purse at 0.2 (about 20% of a climb's gold). The user said half a kill was too much; 0.2 is the number the model below uses.
 

@@ -4,7 +4,7 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addDaysToDayKey, createHabit, createRng, dailyPeriodKey, periodKeyFor, weekDayKeys } from '../../game-engine';
-import type { ChallengeEntry } from '../../game-engine';
+import type { TrialEntry } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
@@ -23,11 +23,11 @@ describe('TabBar', () => {
   });
 
   const tab = (wrapper: ReturnType<typeof mount>, id: string) => wrapper.find(`.tab-${id}`);
-  const entry = (id: ChallengeEntry['id']): ChallengeEntry => ({ id, relicId: 'ember-heart', takenDayKey: '2026-11-01', progress: 0 });
+  const entry = (id: TrialEntry['id']): TrialEntry => ({ id, takenDayKey: '2026-11-01', count: 0 });
 
-  function unseal(challenges?: ChallengeEntry[]) {
+  function unseal(trials?: TrialEntry[]) {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, challenges });
+    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, trials });
   }
 
   it('opens on Skills and switches tabs', async () => {
@@ -83,7 +83,7 @@ describe('TabBar', () => {
 
   it('greys Quests out under a lock while sealed, with no badges, and does not open it', async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, challenges: [entry('resist')] });
+    characterStore.setCharacter({ ...characterStore.character, trials: [entry('resisted')] });
     useQuestStore().addQuest('Today', 'easy', dailyPeriodKey(useDebugClockStore().now()));
     const wrapper = mount(TabBar);
     expect(tab(wrapper, 'quests').classes()).toContain('sealed');

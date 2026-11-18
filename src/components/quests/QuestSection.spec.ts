@@ -4,7 +4,7 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addDaysToDayKey, dailyPeriodKey } from '../../game-engine';
-import type { ChallengeEntry } from '../../game-engine';
+import type { TrialEntry } from '../../game-engine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
@@ -20,11 +20,11 @@ describe('QuestSection', () => {
     setActivePinia(pinia);
   });
 
-  const entry = (id: ChallengeEntry['id']): ChallengeEntry => ({ id, relicId: 'ember-heart', takenDayKey: '2026-11-01', progress: 0 });
+  const entry = (id: TrialEntry['id']): TrialEntry => ({ id, takenDayKey: '2026-11-01', count: 0 });
 
   function openSection() {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, challenges: [entry('resist')] });
+    characterStore.setCharacter({ ...characterStore.character, level: 5, questsUnlocked: true, trials: [entry('resisted')] });
     useQuestStore().addQuest('Clean garage', 'medium', addDaysToDayKey(dailyPeriodKey(useDebugClockStore().now()), 3));
   }
 
@@ -40,12 +40,12 @@ describe('QuestSection', () => {
     expect(mountSection().find('h2.section-title .cloth').text()).toBe('Quests');
   });
 
-  it('lists only the quests the player wrote, with +: the challenges are Trials now', () => {
+  it('lists only the quests the player wrote, with +: the trials are their own modal', () => {
     openSection();
     const wrapper = mountSection();
     expect(wrapper.find('[role="tablist"]').exists()).toBe(false);
     expect(wrapper.find('li.quest-item').text()).toContain('Clean garage');
     expect(wrapper.find('.add-button').exists()).toBe(true);
-    expect(wrapper.find('li.challenge').exists()).toBe(false);
+    expect(wrapper.find('li.trial').exists()).toBe(false);
   });
 });

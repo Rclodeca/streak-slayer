@@ -1,4 +1,5 @@
 import type { TalentId } from './constants/talentTree';
+import type { TrialMark, TrialSetId } from './constants/trials';
 
 export type DamageType = 'physical' | 'magic' | 'healing' | 'trueDamage';
 
@@ -160,10 +161,13 @@ export interface Character {
   // has none, so a death resets it. (A save from before the daily stock took
   // the gem gear may still carry an unused `vault`.)
   pouchDayKey?: string;
-  // Side-quest challenges (see challenges.ts): every one taken, active and
-  // done, so a finished one is never offered again. Kept through death
-  // (resolvePlayerDeathIfDead carries them), so each trial is done and paid
-  // once per account. Undefined on a save from before challenges.
+  // The trial sets (see trials.ts): one entry per set, with its count and the
+  // rungs paid. Kept through death (resolvePlayerDeathIfDead carries them) and
+  // prestige, so each rung is reached and paid once per account. Undefined
+  // until the first load seeds them.
+  trials?: TrialEntry[];
+  // The one-off trials from before the sets, on an old save only: seedTrials
+  // credits them to the sets and drops the field.
   challenges?: ChallengeEntry[];
   // A copy of the account's prestige rank (Account.prestige is the truth), so
   // the stat math (itemBonusPercent, talent max ranks) can read it. Synced on
@@ -176,6 +180,7 @@ export interface Character {
   lastBadCheckDayKey?: string;
 }
 
+/** An old save's one-off trial (before the trial sets). */
 export type ChallengeId =
   | 'perfect-day'
   | 'clean-days'
@@ -216,12 +221,30 @@ export interface ShopStock {
   potionsSold?: string[];
 }
 
-/** A habit or quest added after a challenge was taken; it counts at the next day rollover if it still exists. */
+/** A habit or quest added for a trial; it counts at the next day rollover if it still exists. */
 export interface PendingAddition {
   id: string;
   dayKey: string;
+  /** The First steps step it would mark. */
+  mark?: TrialMark;
 }
 
+/** One trial set's state on the character (see trials.ts). */
+export interface TrialEntry {
+  id: TrialSetId;
+  takenDayKey: string;
+  /** A counter set's running count (a high-water mark for Longest streak); 0 for a step set. */
+  count: number;
+  /** The marked rungs reached: the step sets' deeds, Epic finds' relic. */
+  marks?: TrialMark[];
+  /** The rungs paid, by index into the set's rungs. */
+  claimed?: number[];
+  /** The last day a day-end check ran (so a repeat run can't double count). */
+  lastDayKey?: string;
+  pending?: PendingAddition[];
+}
+
+/** An old save's one-off trial, read only to credit it to the sets. */
 export interface ChallengeEntry {
   id: ChallengeId;
   /** The relic reserved when the challenge was taken, on a save from before trials paid gems. Unused now. */

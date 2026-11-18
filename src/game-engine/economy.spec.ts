@@ -13,7 +13,6 @@ import {
   SLOT_PRICE_FACTORS,
   TALENT_COST,
   TALENT_RANK_BOSS_KILLS,
-  TRIAL_GEMS,
   bossGold,
   goldPrice,
   goldPriceFactor,
@@ -24,7 +23,7 @@ import {
   slotPrice,
   warePrice,
 } from './constants/economy';
-import { CHALLENGE_DEFS } from './challenges';
+import { TRIAL_GEMS_TOTAL, TRIAL_GOLD_KILLS_TOTAL, TRIAL_SETS } from './constants/trials';
 
 const sumGems = (from: number, to: number) => {
   let total = 0;
@@ -69,8 +68,21 @@ describe('the gem price sheet', () => {
     expect(GOLD_POUCH.gems).toBe(15);
   });
 
-  it('one-time trials fit the trial budget', () => {
-    expect(CHALLENGE_DEFS.length * TRIAL_GEMS).toBeLessThanOrEqual(FREE_GEM_SOURCES.trials);
+  it('the trial sets pay 275 gems and 4 boss kills of gold', () => {
+    expect(TRIAL_GEMS_TOTAL).toBe(275);
+    expect(TRIAL_GOLD_KILLS_TOTAL).toBe(4);
+  });
+
+  it('every trial rung pays at least the one before it, and gems rise where gold stops', () => {
+    for (const set of TRIAL_SETS) {
+      set.rungs.slice(1).forEach((rung, i) => {
+        const before = set.rungs[i];
+        const label = `${set.id}: ${rung.deed}`;
+        expect(rung.gems, label).toBeGreaterThanOrEqual(before.gems);
+        if (before.goldKills && !rung.goldKills) expect(rung.gems, label).toBeGreaterThan(before.gems);
+        else expect(rung.goldKills ?? 0, label).toBeGreaterThanOrEqual(before.goldKills ?? 0);
+      });
+    }
   });
 });
 
@@ -132,7 +144,7 @@ describe('the gold price sheet', () => {
 });
 
 describe('the gold budget', () => {
-  // The spec §6 climbs: a good player, one talent rank per level gained, no deaths.
+  // The gold spec §6 climbs: a good player, one talent rank per level gained, no deaths. Climb I adds the trial gold (trial sets spec §2).
   const CLIMBS = [
     { prestige: 0, days: 45, bosses: 34, ranks: 29 },
     { prestige: 1, days: 55, bosses: 44, ranks: 39 },
@@ -153,7 +165,9 @@ describe('the gold budget', () => {
   // §6's full extras list, in order: 2nd enchant, Overdrive, a 3rd reroll, rare, rare, epic, rare, 3rd enchant, 2nd Overdrive, epic.
   const { rare, epic } = SHOP_PRICE_FACTOR;
   const extras = sum([svc('enchant', 1), svc('overdrive', 0), SERVICE_PRICES.reroll.base, rare, rare, epic, rare, svc('enchant', 2), svc('overdrive', 1), epic]);
-  const earned = (c: Climb) => (c.bosses + DAILY_PURSE_BOSS_KILLS * c.days) / goldPriceFactor(c.prestige);
+  // Trial gold sits on the easiest rungs, all reached in climb I, and is already priced with the factor.
+  const trialGold = (c: Climb) => (c.prestige === 0 ? TRIAL_GOLD_KILLS_TOTAL : 0);
+  const earned = (c: Climb) => (c.bosses + DAILY_PURSE_BOSS_KILLS * c.days) / goldPriceFactor(c.prestige) + trialGold(c);
 
   it('the full extras list is 50.5 kills', () => expect(extras).toBe(50.5));
 

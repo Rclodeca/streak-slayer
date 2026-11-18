@@ -8,7 +8,7 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weekDayKeys, weekKeyOfDayKey } from '../game-engine';
-import type { ChallengeEntry } from '../game-engine';
+import type { TrialEntry } from '../game-engine';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
@@ -498,66 +498,69 @@ describe('useDailyRollover — run again before the popup is acknowledged', () =
     expect(useQuestMissGate().misses.value).toHaveLength(1);
   });
 
-  describe('challenge day-end', () => {
+  describe('trial day-end', () => {
     const DAY_MS = 24 * 60 * 60 * 1000;
 
-    function take(entry: ChallengeEntry) {
+    function take(entry: TrialEntry) {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 20, challenges: [...(characterStore.character.challenges ?? []), entry] });
+      characterStore.setCharacter({ ...characterStore.character, level: 20, trials: [...(characterStore.character.trials ?? []), entry] });
     }
 
-    const entryOf = (id: ChallengeEntry['id']) => useCharacterStore().character.challenges?.find((e) => e.id === id);
+    const entryOf = (id: TrialEntry['id']) => useCharacterStore().character.trials?.find((e) => e.id === id);
     const today = () => dailyPeriodKey(new Date());
 
-    it('counts a kept addition at the next rollover, and not one deleted before it', () => {
+    it('marks a kept First steps addition at the next rollover, and not one deleted before it', () => {
       const habitStore = useHabitStore();
       const { addHabit } = useCombatActions();
-      take({ id: 'new-good', relicId: 'ember-heart', takenDayKey: today(), progress: 0 });
-      take({ id: 'new-bad', relicId: 'stone-heart', takenDayKey: today(), progress: 0 });
-      const kept = addHabit('Stretch', 'daily', 'easy', false);
+      take({ id: 'first-steps', takenDayKey: today(), count: 0 });
+      addHabit('Stretch', 'daily', 'easy', false);
       const dropped = addHabit('Doomscroll', 'daily', 'easy', true);
       habitStore.removeHabit(dropped.id);
 
-      expect(entryOf('new-good')?.pending).toEqual([{ id: kept.id, dayKey: today() }]);
+      expect(entryOf('first-steps')?.pending).toHaveLength(2);
       useDailyRollover(new Date(Date.now() + DAY_MS));
 
-      expect(entryOf('new-good')).toMatchObject({ progress: 1, doneDayKey: dailyPeriodKey(new Date(Date.now() + DAY_MS)) });
-      expect(entryOf('new-bad')).toMatchObject({ progress: 0 });
-      expect(entryOf('new-bad')?.doneDayKey).toBeUndefined();
+      expect(entryOf('first-steps')?.marks).toEqual(['good-skill']);
+      expect(entryOf('first-steps')?.pending).toBeUndefined();
     });
 
     it('does not count an addition made the same day the rollover runs', () => {
       const { addHabit } = useCombatActions();
-      take({ id: 'new-good', relicId: 'ember-heart', takenDayKey: today(), progress: 0 });
+      take({ id: 'first-steps', takenDayKey: today(), count: 0 });
       addHabit('Stretch', 'daily', 'easy', false);
 
       useDailyRollover(new Date());
 
-      expect(entryOf('new-good')).toMatchObject({ progress: 0 });
+      expect(entryOf('first-steps')?.marks).toBeUndefined();
     });
 
-    it('running the rollover twice for the same day does not double count Clean slate', () => {
-      take({ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today(), -5), progress: 0 });
+    it('running the rollover twice for the same day counts a perfect day once', () => {
+      const habitStore = useHabitStore();
+      const habit = habitStore.addHabit('Stretch', 'daily', 'easy', false, createRng());
+      habitStore.updateHabit({ ...habit, createdDayKey: addDaysToDayKey(today(), -5), lastCompletedPeriodKey: today() });
+      take({ id: 'perfect-days', takenDayKey: addDaysToDayKey(today(), -5), count: 0 });
       const next = new Date(Date.now() + DAY_MS);
 
       useDailyRollover(next);
       useDailyRollover(next);
 
-      expect(entryOf('clean-days')?.progress).toBe(1);
+      expect(entryOf('perfect-days')).toMatchObject({ count: 1, lastDayKey: today() });
     });
 
-    it('a bad habit checked that day breaks Clean slate, and a gap resets it', () => {
+    it('a bad habit checked that day spoils the perfect day', () => {
       const habitStore = useHabitStore();
       const { checkOffHabit } = useCombatActions();
-      take({ id: 'clean-days', relicId: 'ember-heart', takenDayKey: addDaysToDayKey(today(), -9), progress: 2, lastDayKey: addDaysToDayKey(today(), -1) });
+      const good = habitStore.addHabit('Stretch', 'daily', 'easy', false, createRng());
+      habitStore.updateHabit({ ...good, createdDayKey: addDaysToDayKey(today(), -5), lastCompletedPeriodKey: today() });
+      take({ id: 'perfect-days', takenDayKey: addDaysToDayKey(today(), -9), count: 2 });
       checkOffHabit(habitStore.addHabit('Doomscroll', 'daily', 'easy', true, createRng()).id);
 
       useDailyRollover(new Date(Date.now() + DAY_MS));
 
-      expect(entryOf('clean-days')).toMatchObject({ progress: 0, lastDayKey: today() });
+      expect(entryOf('perfect-days')).toMatchObject({ count: 2, lastDayKey: today() });
     });
 
-    it('a character with no challenges is left alone by the rollover', () => {
+    it('a character with no trials is left alone by the rollover', () => {
       const characterStore = useCharacterStore();
       const before = characterStore.character;
       useDailyRollover(new Date(Date.now() + DAY_MS));

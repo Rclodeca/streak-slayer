@@ -414,25 +414,12 @@ describe('relics', () => {
     expect(availableRelics(makeCharacter({ level: 1 })).map((i) => i.id)).toEqual(relicIds);
   });
 
-  it('availableRelics excludes earned, owned, and promised relics', () => {
-    const [a, b, c, d] = relicIds;
-    const challenges = [
-      { id: 'resist' as const, relicId: c, takenDayKey: '2026-11-01', progress: 0 },
-      { id: 'rank-up' as const, relicId: d, takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' },
-    ];
-    const character = makeCharacter({ level: 1, earnedRelicIds: [a], ownedItemIds: [b], challenges });
-    const ids = availableRelics(character).map((i) => i.id);
+  it('availableRelics excludes earned and owned relics', () => {
+    const [a, b] = relicIds;
+    const ids = availableRelics(makeCharacter({ level: 1, earnedRelicIds: [a], ownedItemIds: [b] })).map((i) => i.id);
     expect(ids).not.toContain(a);
     expect(ids).not.toContain(b);
-    expect(ids).not.toContain(c);
-    // A done entry's relic is no longer promised (it was granted or is owned/earned by then).
-    expect(ids).toContain(d);
-    expect(ids).toHaveLength(relicIds.length - 3);
-    // A finished one still waiting to be claimed keeps its relic promised.
-    const waiting = challenges.map((c) => (c.id === 'rank-up' ? { ...c, unclaimed: true } : c));
-    expect(availableRelics({ ...character, challenges: waiting }).map((i) => i.id)).not.toContain(d);
-    // Once that challenge is gone, its relic is available again.
-    expect(availableRelics({ ...character, challenges: [] }).map((i) => i.id)).toContain(c);
+    expect(ids).toHaveLength(relicIds.length - 2);
   });
 
   it('recordRelicEarned records a relic once and ignores other items', () => {
