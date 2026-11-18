@@ -57,7 +57,7 @@ function onSubmit() {
     <p class="intro">A deed, sworn once.</p>
 
     <label class="field">
-      <span class="field-label">Deed</span>
+      <span class="field-label">Name</span>
       <input v-model="description" class="name-input" type="text" placeholder="What must be done?" required />
     </label>
 
@@ -96,7 +96,7 @@ function onSubmit() {
       <p v-if="dueLabel" class="due-summary">Due {{ dueLabel }}</p>
     </fieldset>
 
-    <button type="submit" class="submit">Add quest</button>
+    <button type="submit" class="submit">Add task</button>
   </form>
 </template>
 

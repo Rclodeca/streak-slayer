@@ -52,9 +52,9 @@ export const TRIAL_SETS: readonly TrialSetDef[] = [
     name: 'First steps',
     icon: 'footprints',
     rungs: [
-      { deed: 'Add a good skill and keep it a day', gems: 4, goldKills: 0.5, mark: 'good-skill' },
+      { deed: 'Add a habit and keep it a day', gems: 4, goldKills: 0.5, mark: 'good-skill' },
       { deed: 'Add a bad habit and keep it a day', gems: 4, goldKills: 0.5, mark: 'bad-habit' },
-      { deed: 'Add a quest and keep it a day', gems: 4, goldKills: 0.5, mark: 'quest' },
+      { deed: 'Add a task and keep it a day', gems: 4, goldKills: 0.5, mark: 'quest' },
     ],
   },
   {
@@ -75,7 +75,7 @@ export const TRIAL_SETS: readonly TrialSetDef[] = [
     id: 'streak',
     name: 'Longest streak',
     icon: 'flame',
-    rungs: counted((n) => `Keep a daily skill on a ${n}-day streak`, [
+    rungs: counted((n) => `Keep a daily habit on a ${n}-day streak`, [
       [3, 4],
       [7, 4],
       [14, 6],
@@ -88,7 +88,7 @@ export const TRIAL_SETS: readonly TrialSetDef[] = [
     id: 'perfect-days',
     name: 'Perfect days',
     icon: 'calendar-check',
-    rungs: counted((n) => plural(n, 'Check off every daily skill in a day, and no bad habit', `Have ${n} perfect days`), [
+    rungs: counted((n) => plural(n, 'Check off every daily habit in a day, and no bad habit', `Have ${n} perfect days`), [
       [1, 4],
       [3, 4],
       [7, 6],
@@ -98,9 +98,9 @@ export const TRIAL_SETS: readonly TrialSetDef[] = [
   },
   {
     id: 'quests',
-    name: 'Quests completed',
+    name: 'Tasks completed',
     icon: 'list-checks',
-    rungs: counted((n) => plural(n, 'Complete a quest on time', `Complete ${n} quests on time`), [
+    rungs: counted((n) => plural(n, 'Complete a task on time', `Complete ${n} tasks on time`), [
       [1, 4],
       [3, 4],
       [10, 6],
@@ -140,9 +140,9 @@ export const TRIAL_SETS: readonly TrialSetDef[] = [
   },
   {
     id: 'ranks',
-    name: 'Skill ranks raised',
+    name: 'Habit ranks raised',
     icon: 'chevrons-up',
-    rungs: counted((n) => plural(n, "Raise a skill's rank", `Raise skill ranks ${n} times`), [
+    rungs: counted((n) => plural(n, "Raise a habit's rank", `Raise habit ranks ${n} times`), [
       [1, 4],
       [5, 6],
       [15, 7],
@@ -178,8 +178,8 @@ export const TRIAL_SETS: readonly TrialSetDef[] = [
     icon: 'award',
     rungs: [
       { deed: 'Kill a boss with a critical hit', gems: 4, mark: 'crit-kill' },
-      { deed: 'Kill a boss with a true damage skill', gems: 4, mark: 'true-kill' },
-      { deed: 'Check off a hard skill before noon', gems: 4, mark: 'early-riser' },
+      { deed: 'Kill a boss with a true damage habit', gems: 4, mark: 'true-kill' },
+      { deed: 'Check off a hard habit before noon', gems: 4, mark: 'early-riser' },
     ],
   },
 ];

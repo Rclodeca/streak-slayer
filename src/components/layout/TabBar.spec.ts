@@ -34,7 +34,7 @@ describe('TabBar', () => {
   it('opens on Skills and switches tabs', async () => {
     const wrapper = mount(TabBar);
     const tabs = wrapper.findAll('[role="tab"]');
-    expect(tabs.map((t) => t.find('.tab-label').text())).toEqual(['Skills', 'Quests', 'Shop', 'Talents', 'Hero']);
+    expect(tabs.map((t) => t.find('.tab-label').text())).toEqual(['Habits', 'Tasks', 'Shop', 'Talents', 'Hero']);
     expect(tab(wrapper, 'skills').attributes('aria-selected')).toBe('true');
 
     await tab(wrapper, 'hero').trigger('click');

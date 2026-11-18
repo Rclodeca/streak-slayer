@@ -158,7 +158,7 @@ watch(
         <component :is="topBar">
           <StagePurse v-if="isPhone" :plate="cornerRoom" />
           <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="showTrials = true" />
-          <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Trials" @click="showTrials = true">
+          <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Challenges" @click="showTrials = true">
             <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
             <Gift :size="22" />
             <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>

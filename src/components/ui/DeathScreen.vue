@@ -123,7 +123,7 @@ const sparks = Array.from({ length: 14 }, () => ({
         </ul>
 
         <template v-if="embers.length">
-          <p class="kept">Your skills keep their power</p>
+          <p class="kept">Your habits keep their power</p>
           <ul class="kindle">
             <li v-for="(habit, n) in embers" :key="habit.id" class="ember" :class="{ cold: habit.streakCount === 0 }">
               <span class="fl" :style="{ '--d': `${(n * 0.3).toFixed(1)}s` }"><Flame :size="22" :stroke-width="2" /></span>

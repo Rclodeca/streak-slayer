@@ -68,7 +68,7 @@ describe('DeathScreen', () => {
       expect(chips).toEqual(['−1 level', '−40', 'One item']);
       expect(document.querySelector('.toll .toll-chip.gold .stat-icon, .toll .toll-chip.gold svg, .toll .toll-chip.gold img')).not.toBeNull();
       expect(document.querySelector('.meta')!.textContent).toContain('Boss 12');
-      expect(document.querySelector('.kept')!.textContent).toBe('Your skills keep their power');
+      expect(document.querySelector('.kept')!.textContent).toBe('Your habits keep their power');
       expect(document.querySelector('.restart-button')!.textContent).toBe('Rise again');
     });
 
@@ -86,7 +86,7 @@ describe('DeathScreen', () => {
     await toBonfire();
     expect(document.querySelector('.figure')).toBeNull();
     expect(document.querySelector('.fire-stage')).not.toBeNull();
-    expect(document.querySelector('.kept')!.textContent).toBe('Your skills keep their power');
+    expect(document.querySelector('.kept')!.textContent).toBe('Your habits keep their power');
   });
 
   it('shows an ember per ranked or streaking skill, strongest first', async () => {

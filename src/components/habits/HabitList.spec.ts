@@ -48,7 +48,7 @@ describe('HabitList', () => {
     habitStore.addHabit('Takeout', 'weekly', 'medium', true, createRng(4));
     const wrapper = mountList();
     expect(names(wrapper, '.skill-list')).toEqual(['Run', 'Hike']);
-    expect(wrapper.find('.resist-list h2').text()).toBe('Resist');
+    expect(wrapper.find('.resist-list h2').text()).toBe('Bad habits');
     expect(names(wrapper, '.resist-list')).toEqual(['Doomscroll', 'Takeout']);
   });
 
@@ -56,9 +56,9 @@ describe('HabitList', () => {
     useHabitStore().addHabit('Doomscroll', 'daily', 'medium', true, createRng(2));
     addDaily();
     const wrapper = mountList();
-    expect(wrapper.find('.skill-list h2.section-title .cloth').text()).toBe('Skills');
-    expect(wrapper.find('.resist-list h2.section-title .cloth').text()).toBe('Resist');
-    expect(wrapper.find('.habit-list-header').text()).toBe('Skills');
+    expect(wrapper.find('.skill-list h2.section-title .cloth').text()).toBe('Habits');
+    expect(wrapper.find('.resist-list h2.section-title .cloth').text()).toBe('Bad habits');
+    expect(wrapper.find('.habit-list-header').text()).toBe('Habits');
   });
 
   it('draws no panel frame around Skills or Resist', () => {
@@ -70,12 +70,12 @@ describe('HabitList', () => {
     expect(wrapper.find('.resist-list').classes()).not.toContain('panel');
   });
 
-  it('keeps Resist in view without a bad habit, saying what it is for', () => {
+  it('keeps Bad habits in view without a bad habit', () => {
     addDaily();
     const wrapper = mountList();
     expect(wrapper.find('.resist-list').exists()).toBe(true);
-    expect(wrapper.find('.resist-list .habit-group-caption').text()).toBe('Habits to break');
-    expect(wrapper.find('.resist-list .section-empty').text()).toContain('Nothing to resist yet');
+    expect(wrapper.find('.resist-list .habit-group-caption').exists()).toBe(false);
+    expect(wrapper.find('.resist-list .section-empty').text()).toContain('No bad habits yet');
     expect(wrapper.find('.resist-list .habit-item').exists()).toBe(false);
   });
 
@@ -188,7 +188,7 @@ describe('HabitList', () => {
     document.body.querySelector<HTMLButtonElement>('.hint-hole')!.click();
     await nextTick();
     expect(document.body.querySelector('.spotlight-hint')).toBeNull();
-    expect(document.body.textContent).toContain('Forge a habit');
+    expect(document.body.textContent).toContain('New habit');
 
     document.body.querySelector<HTMLButtonElement>('.modal-close')!.click();
     await nextTick();

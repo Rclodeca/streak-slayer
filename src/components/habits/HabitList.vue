@@ -140,18 +140,16 @@ function checkOffFromHint() {
 <template>
   <section ref="listEl" class="habit-list skill-list">
     <div class="habit-list-header">
-      <SectionTitle title="Skills"><Sword :size="18" class="section-icon" /></SectionTitle>
+      <SectionTitle title="Habits"><Sword :size="18" class="section-icon" /></SectionTitle>
       <button ref="addButton" type="button" class="add-button" aria-label="Add habit" @click="openAdd(false)"><Plus :size="16" /></button>
     </div>
 
     <template v-if="!goodHabits.length">
-      <div class="habit-group-head"><span class="habit-group-caption">Habits to keep</span></div>
-      <p class="section-empty">Nothing forged yet. Tap +.</p>
+      <p class="section-empty">No habits yet. Tap +.</p>
     </template>
     <template v-else>
       <div class="habit-group">
         <div class="habit-group-head">
-          <span class="habit-group-caption">Habits to keep</span>
           <h3 v-if="orderedDailyHabits.length" class="habit-group-label">Daily</h3>
         </div>
         <ul v-if="orderedDailyHabits.length">
@@ -171,17 +169,15 @@ function checkOffFromHint() {
 
   <section ref="resistEl" class="habit-list resist-list">
     <div class="habit-list-header">
-      <SectionTitle title="Resist"><Shield :size="18" class="section-icon" /></SectionTitle>
-      <button type="button" class="add-button" aria-label="Add habit to resist" @click="openAdd(true)"><Plus :size="16" /></button>
+      <SectionTitle title="Bad habits"><Shield :size="18" class="section-icon" /></SectionTitle>
+      <button type="button" class="add-button" aria-label="Add bad habit" @click="openAdd(true)"><Plus :size="16" /></button>
     </div>
     <template v-if="!badHabits.length">
-      <div class="habit-group-head"><span class="habit-group-caption">Habits to break</span></div>
-      <p class="section-empty">Nothing to resist yet. Tap +.</p>
+      <p class="section-empty">No bad habits yet. Tap +.</p>
     </template>
     <template v-else>
       <div class="habit-group">
         <div class="habit-group-head">
-          <span class="habit-group-caption">Habits to break</span>
           <h3 v-if="resistDailyHabits.length" class="habit-group-label">Daily</h3>
         </div>
         <ul v-if="resistDailyHabits.length">

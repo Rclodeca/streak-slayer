@@ -47,14 +47,14 @@ describe('AppMenu', () => {
     useDebugTrialsBadgeStore().set(3, null);
     const without = mount(AppMenu, { attachTo: document.body });
     await without.find('.menu-button').trigger('click');
-    expect([...document.body.querySelectorAll('.menu-item')].some((el) => el.textContent?.includes('Trials'))).toBe(false);
+    expect([...document.body.querySelectorAll('.menu-item')].some((el) => el.textContent?.includes('Challenges'))).toBe(false);
     expect(without.find('.trials-count').exists()).toBe(false);
     without.unmount();
 
     const wrapper = mount(AppMenu, { attachTo: document.body, props: { trialsItem: true } });
     expect(wrapper.find('.menu-button .trials-count').text()).toBe('3');
     await wrapper.find('.menu-button').trigger('click');
-    const item = [...document.body.querySelectorAll('.menu-item')].find((el) => el.textContent?.includes('Trials')) as HTMLElement;
+    const item = [...document.body.querySelectorAll('.menu-item')].find((el) => el.textContent?.includes('Challenges')) as HTMLElement;
     item.click();
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted('trials')).toHaveLength(1);

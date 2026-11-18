@@ -61,7 +61,7 @@ describe('LevelUpPopup', () => {
     levelUp.noteReward('ult', 'Long ride');
     mount(LevelUpPopup, { attachTo: document.body });
     expect(q('.level-unlocks')?.classList.contains('pair')).toBe(true);
-    expect(all('.unlock-name').map((el) => el.textContent)).toEqual(['Special', 'Ult']);
+    expect(all('.unlock-name').map((el) => el.textContent)).toEqual(['Special', 'Ultimate']);
     expect(q('.level-unlock.special')?.textContent).toContain('Morning run');
   });
 
@@ -81,7 +81,7 @@ describe('LevelUpPopup', () => {
     const store = reachLevel(2, { questsUnlocked: false, talentsUnlocked: false });
     useLevelUp().record(1, 2, 0);
     const wrapper = mount(LevelUpPopup, { attachTo: document.body });
-    expect(all('.unlock-name').map((el) => el.textContent)).toEqual(['Quests']);
+    expect(all('.unlock-name').map((el) => el.textContent)).toEqual(['Tasks']);
     q('.level-up .onward')!.click();
     await wrapper.vm.$nextTick();
     expect(store.character.questsUnlocked).toBe(true);

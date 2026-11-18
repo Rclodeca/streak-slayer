@@ -106,7 +106,7 @@ export const TALENT_DEFS: readonly TalentDef[] = [
   { id: 'spell-break', name: 'Spell Break', shoot: 'damage', kind: 'offshoot', parent: 'arcana', maxRank: 3, bonuses: [percent('magicPen', 2)], text: '+2% magic pen' },
   { id: 'might-2', name: 'Might II', shoot: 'damage', kind: 'main', maxRank: 3, bonuses: [percent('allDamage', 2)], text: '+2% all damage' },
   { id: 'truestrike', name: 'Truestrike', shoot: 'damage', kind: 'offshoot', parent: 'might-2', maxRank: 3, bonuses: [percent('trueDamage', 4)], text: '+4% true damage' },
-  { id: 'weekly-might', name: 'Weekly Might', shoot: 'damage', kind: 'offshoot', parent: 'might-2', maxRank: 3, effect: { id: 'weeklyDamage', perRank: 5 }, text: '+5% damage from weekly skills' },
+  { id: 'weekly-might', name: 'Weekly Might', shoot: 'damage', kind: 'offshoot', parent: 'might-2', maxRank: 3, effect: { id: 'weeklyDamage', perRank: 5 }, text: '+5% damage from weekly habits' },
   { id: 'precision-2', name: 'Precision II', shoot: 'damage', kind: 'main', maxRank: 3, bonuses: [percent('critChance', 1)], text: '+1% crit chance' },
   { id: 'armor-break-2', name: 'Armor Break II', shoot: 'damage', kind: 'offshoot', parent: 'precision-2', maxRank: 3, bonuses: [percent('armorPen', 2)], text: '+2% armor pen' },
   { id: 'spell-break-2', name: 'Spell Break II', shoot: 'damage', kind: 'offshoot', parent: 'precision-2', maxRank: 3, bonuses: [percent('magicPen', 2)], text: '+2% magic pen' },
@@ -136,7 +136,7 @@ export const TALENT_DEFS: readonly TalentDef[] = [
   { id: 'second-wind', name: 'Second Wind', shoot: 'support', kind: 'offshoot', parent: 'mending-2', maxRank: 3, effect: { id: 'bossKillHeal', perRank: 2 }, text: 'Heal +2% of max HP when a boss falls' },
   { id: 'renewal-2', name: 'Renewal II', shoot: 'support', kind: 'main', maxRank: 3, effect: { id: 'levelUpHeal', perRank: 2 }, text: 'Level-ups heal +2% of max HP' },
   { id: 'leech', name: 'Leech', shoot: 'support', kind: 'main', maxRank: 2, bonuses: [percent('lifesteal', 0.5)], text: '+0.5% lifesteal' },
-  { id: 'blessed', name: 'Blessed', shoot: 'support', kind: 'top', maxRank: 1, effect: { id: 'healCrit', perRank: 1 }, text: 'Heal skills can crit, for double healing' },
+  { id: 'blessed', name: 'Blessed', shoot: 'support', kind: 'top', maxRank: 1, effect: { id: 'healCrit', perRank: 1 }, text: 'Healing habits can crit, for double healing' },
 ];
 
 /** Last Stand only applies while the hero's health is below this share of max. */

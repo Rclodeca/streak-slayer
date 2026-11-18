@@ -25,8 +25,8 @@ export type ServiceId = 'reroll' | 'overdrive' | 'enchant' | 'slot';
 /** The services, in turn order. Each one's seal is public/sprites/services/<id>.png (npm run service-art) and its card's scene <id>-scene.png. */
 export const SERVICE_DEFS: readonly { id: ServiceId; name: string; effect: string }[] = [
   { id: 'slot', name: 'Item slots', effect: 'Increase item slots by one.' },
-  { id: 'overdrive', name: 'Overdrive', effect: `One skill can be used ${TUNING.OVERDRIVE_MAX_EXTRA_USES} extra times a period.` },
-  { id: 'reroll', name: 'Reroll', effect: "Reroll one skill's damage type." },
+  { id: 'overdrive', name: 'Overdrive', effect: `One habit can be used ${TUNING.OVERDRIVE_MAX_EXTRA_USES} extra times a period.` },
+  { id: 'reroll', name: 'Reroll', effect: "Reroll one habit's damage type." },
   { id: 'enchant', name: 'Enchant', effect: "Greatly increase one item's power." },
 ];
 

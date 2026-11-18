@@ -37,7 +37,7 @@ describe('QuestSection', () => {
   });
 
   it('titles itself with a banner', () => {
-    expect(mountSection().find('h2.section-title .cloth').text()).toBe('Quests');
+    expect(mountSection().find('h2.section-title .cloth').text()).toBe('Tasks');
   });
 
   it('lists only the quests the player wrote, with +: the trials are their own modal', () => {

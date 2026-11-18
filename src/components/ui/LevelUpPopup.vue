@@ -85,10 +85,10 @@ const unlocks = computed<Unlock[]>(() => {
   if (!news) return [];
   const character = characterStore.character;
   const all: Record<UnlockId, Unlock | null> = {
-    quests: questUnlockPending(character) ? { id: 'quests', name: 'Quests', icon: ScrollText, line: 'Some deeds are sworn only once.' } : null,
+    quests: questUnlockPending(character) ? { id: 'quests', name: 'Tasks', icon: ScrollText, line: 'Some deeds are sworn only once.' } : null,
     talents: talentUnlockPending(character) ? { id: 'talents', name: 'Talents', icon: TALENTS_TAB_ICON, line: 'Grow stronger with every run.' } : null,
     special: news.special ? { id: 'special', name: 'Special', icon: Sparkle, line: `${news.special} now strikes ×${TUNING.SPECIAL_MULTIPLIER}.` } : null,
-    ult: news.ult ? { id: 'ult', name: 'Ult', icon: Crown, line: `${news.ult} now strikes ×${TUNING.ULT_MULTIPLIER}.` } : null,
+    ult: news.ult ? { id: 'ult', name: 'Ultimate', icon: Crown, line: `${news.ult} now strikes ×${TUNING.ULT_MULTIPLIER}.` } : null,
     shop: shopGatePending(character, 'shop') ? { id: 'shop', name: 'Shop', icon: Store, line: 'Gold finds a use.' } : null,
     services: shopGatePending(character, 'services') ? { id: 'services', name: 'Services', icon: HandCoins, line: 'The shopkeeper takes work.' } : null,
     looks: shopGatePending(character, 'looks') ? { id: 'looks', name: 'Looks', icon: Shirt, line: 'Wear your victories.' } : null,

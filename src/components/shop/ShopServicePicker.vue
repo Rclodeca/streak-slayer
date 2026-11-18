@@ -24,8 +24,8 @@ const baseUrl = import.meta.env.BASE_URL;
 
 const NAMES = { reroll: 'Reroll', overdrive: 'Overdrive', enchant: 'Enchant' } as const;
 const HINTS = {
-  reroll: 'Pick a skill to re-roll. Its damage type changes; nothing else does.',
-  overdrive: 'Pick a skill to Overdrive.',
+  reroll: 'Pick a habit to re-roll. Its damage type changes; nothing else does.',
+  overdrive: 'Pick a habit to Overdrive.',
   enchant: 'Pick a worn item to enchant.',
 } as const;
 
@@ -91,7 +91,7 @@ function confirm() {
     </ul>
 
     <button type="button" class="ok primary-button" :disabled="!picked || state.status === 'short'" @click="confirm">
-      <template v-if="!picked">{{ service === 'enchant' ? 'Pick an item' : 'Pick a skill' }}</template>
+      <template v-if="!picked">{{ service === 'enchant' ? 'Pick an item' : 'Pick a habit' }}</template>
       <template v-else-if="state.status === 'short'">Not enough gold</template>
       <template v-else>
         {{ NAMES[service] }} {{ picked.name }} <span class="picker-price"><StatIcon name="gold" :size="14" />{{ state.price.toLocaleString('en-US') }}</span>

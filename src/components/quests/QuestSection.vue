@@ -74,10 +74,10 @@ function onCheckOff(quest: Quest) {
 <template>
   <section class="quest-section" :class="{ locked: !open }">
     <div class="quest-header">
-      <SectionTitle title="Quests"><Lock v-if="!open" :size="18" class="section-icon lock-icon" /><ScrollText v-else :size="18" class="section-icon" /></SectionTitle>
-      <button v-if="open" type="button" class="add-button" aria-label="Add quest" @click="showAdd = true"><Plus :size="16" /></button>
+      <SectionTitle title="Tasks"><Lock v-if="!open" :size="18" class="section-icon lock-icon" /><ScrollText v-else :size="18" class="section-icon" /></SectionTitle>
+      <button v-if="open" type="button" class="add-button" aria-label="Add task" @click="showAdd = true"><Plus :size="16" /></button>
     </div>
-    <p class="section-caption">One-off tasks</p>
+    <p class="section-caption">Todos</p>
     <SealedNotice v-if="!open" :level="QUESTS_UNLOCK_LEVEL" />
     <ul v-else-if="questStore.quests.length">
       <li
@@ -107,10 +107,10 @@ function onCheckOff(quest: Quest) {
         </button>
       </li>
     </ul>
-    <p v-else class="section-empty">No quests yet. Tap +.</p>
+    <p v-else class="section-empty">No tasks yet. Tap +.</p>
   </section>
 
-  <Modal v-model="showAdd" title="New quest" max-width="480px">
+  <Modal v-model="showAdd" title="New task" max-width="480px">
     <QuestForm @submit="onAdd" />
   </Modal>
 

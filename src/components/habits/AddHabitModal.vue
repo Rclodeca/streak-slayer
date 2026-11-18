@@ -64,7 +64,7 @@ function onSubmit() {
 <template>
   <Modal
     :model-value="modelValue"
-    title="Forge a habit"
+    title="New habit"
     max-width="480px"
     @update:model-value="(value) => $emit('update:modelValue', value)"
   >
@@ -94,7 +94,7 @@ function onSubmit() {
       </fieldset>
 
       <fieldset class="field">
-        <legend class="field-label">Cadence</legend>
+        <legend class="field-label">Repeats</legend>
         <div class="cards two">
           <label v-for="opt in periodOptions" :key="opt.value" class="card" :class="{ selected: period === opt.value }">
             <input v-model="period" type="radio" name="habit-period" :value="opt.value" />
@@ -120,7 +120,7 @@ function onSubmit() {
         </div>
       </fieldset>
 
-      <button type="submit" class="submit">Forge</button>
+      <button type="submit" class="submit">Create</button>
     </form>
   </Modal>
 </template>

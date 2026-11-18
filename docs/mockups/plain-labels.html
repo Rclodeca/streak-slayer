@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Plain Labels</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+:root {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19;
+  --spent: #686877; --new: #8fe3a8; --old: #e48a8a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: var(--text); font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; padding: 24px 16px 48px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.sub { text-align: center; margin: 0 auto 24px; max-width: 560px; font-size: 14.5px; }
+.row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.opt h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 10px; text-transform: uppercase; text-align: center; }
+.phone { width: 340px; max-width: 100%; background: var(--bg); border: 2px solid #22233a; display: flex; flex-direction: column; }
+.stage { height: 120px; background: linear-gradient(#1c1d33, #262546); display: flex; align-items: end; justify-content: space-between; padding: 10px 14px; font-size: 12px; color: var(--spent); }
+.banner { margin: 14px 12px 8px; display: flex; align-items: center; gap: 8px; font: 600 13px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--text-h); }
+.banner::before { content: ''; width: 10px; height: 10px; background: var(--brass); transform: rotate(45deg); }
+.banner .add { margin-left: auto; font: 700 13px 'Alegreya Sans'; letter-spacing: 0; text-transform: none; color: var(--moon); border: 2px solid var(--card-hi); padding: 6px 10px; }
+.card { margin: 0 12px 6px; background: var(--card); border-bottom: 3px solid var(--card-lip); min-height: 52px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+.card .nm { font: 600 16px 'Alegreya', serif; color: var(--text-h); }
+.card .meta { font-size: 12px; color: var(--spent); }
+.card .btn { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--moon); border: 2px solid var(--card-hi); padding: 6px 10px; white-space: nowrap; }
+.card.resist { background: #23243a; }
+.menu { margin: 12px; background: var(--card-lo); padding: 6px 0; }
+.menu div { padding: 10px 14px; font-size: 14px; }
+.tabs { margin-top: auto; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--card-lo); border-top: 2px solid #22233a; }
+.tabs div { text-align: center; padding: 10px 0 12px; font-size: 12px; font-weight: 700; color: var(--spent); }
+.tabs div.on { color: var(--moon); }
+.chg { color: var(--new); }
+.was { color: var(--old); text-decoration: line-through; }
+table { margin: 32px auto 0; border-collapse: collapse; max-width: 720px; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #22233a; vertical-align: top; }
+th { font: 600 12px 'Cinzel', serif; letter-spacing: .16em; color: #ece8de; text-transform: uppercase; }
+h3 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 36px 0 0; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<h1>PLAIN LABELS</h1>
+<p class="sub">Labels and buttons say what they are. Flavor text (death, popups, shopkeeper) keeps its mood. Changed labels are <span class="chg">green</span>.</p>
+
+<div class="row">
+  <div class="opt">
+    <h2>Now</h2>
+    <div class="phone">
+      <div class="stage"><span>Hero</span><span>Boss 12</span></div>
+      <div class="banner">Skills <span class="add">+ New habit</span></div>
+      <div class="card"><div><div class="nm">Morning run</div><div class="meta">PWR ▮▮▮▯ · 6 days</div></div><span class="btn">Strike</span></div>
+      <div class="card"><div><div class="nm">Read 20 pages</div><div class="meta">PWR ▮▮▯▯ · 3 days</div></div><span class="btn">Strike</span></div>
+      <div class="banner">Resist <span class="add">+</span></div>
+      <div class="card resist"><div><div class="nm">Doomscrolling</div><div class="meta">Boss strikes you</div></div><span class="btn">Give in</span></div>
+      <div class="menu"><div>Trials</div><div>Log</div><div>Focus mode</div></div>
+      <div class="tabs"><div class="on">Skills</div><div>Quests</div><div>Shop</div><div>Talents</div><div>Hero</div></div>
+    </div>
+  </div>
+  <div class="opt">
+    <h2>Proposed</h2>
+    <div class="phone">
+      <div class="stage"><span>Hero</span><span>Boss 12</span></div>
+      <div class="banner"><span class="chg">Habits</span> <span class="add">+ New habit</span></div>
+      <div class="card"><div><div class="nm">Morning run</div><div class="meta">PWR ▮▮▮▯ · 6 days</div></div><span class="btn">Strike</span></div>
+      <div class="card"><div><div class="nm">Read 20 pages</div><div class="meta">PWR ▮▮▯▯ · 3 days</div></div><span class="btn">Strike</span></div>
+      <div class="banner"><span class="chg">Bad habits</span> <span class="add">+</span></div>
+      <div class="card resist"><div><div class="nm">Doomscrolling</div><div class="meta">Boss strikes you</div></div><span class="btn">Give in</span></div>
+      <div class="menu"><div class="chg">Challenges</div><div>Log</div><div>Focus mode</div></div>
+      <div class="tabs"><div class="on chg">Habits</div><div class="chg">Tasks</div><div>Shop</div><div>Talents</div><div>Hero</div></div>
+    </div>
+  </div>
+</div>
+
+<table>
+  <tr><th>Where</th><th>Now</th><th>Proposed</th></tr>
+  <tr><td>Bottom tab + section banner</td><td class="was">Skills</td><td class="chg">Habits</td></tr>
+  <tr><td>Bad-habit panel banner</td><td class="was">Resist</td><td class="chg">Bad habits</td></tr>
+  <tr><td>Menu item + modal title</td><td class="was">Trials</td><td class="chg">Challenges</td></tr>
+  <tr><td>Bottom tab, banner, buttons, popups</td><td class="was">Quests / Add quest / New quest / Quest complete</td><td class="chg">Tasks / Add task / New task / Task complete</td></tr>
+  <tr><td>New-habit popup title</td><td class="was">Forge a habit</td><td class="chg">New habit</td></tr>
+  <tr><td>New-habit popup button</td><td class="was">Forge</td><td class="chg">Create</td></tr>
+  <tr><td>Death screen line</td><td class="was">Your skills keep their power</td><td class="chg">Your habits keep their power</td></tr>
+  <tr><td>Task name field</td><td class="was">Deed</td><td class="chg">Name</td></tr>
+</table>
+
+<h3>Kept as is (already clear, or flavor)</h3>
+<table>
+  <tr><td>PWR, Strike, Give in, I did this, Claim, Shop, Talents, Hero, Log, Focus mode</td><td>Clear already</td></tr>
+  <tr><td>Rise again, Onward, death and popup lines</td><td>Flavor, keeps the mood</td></tr>
+</table>
+</body>
+</html>

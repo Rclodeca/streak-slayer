@@ -51,7 +51,7 @@ function removeQuest() {
 </script>
 
 <template>
-  <Modal :model-value="quest !== null" title="Quest" max-width="420px" @update:model-value="emit('close')">
+  <Modal :model-value="quest !== null" title="Task" max-width="420px" @update:model-value="emit('close')">
     <div v-if="quest" class="quest-detail">
       <div class="deed-well">
         <p class="deed">{{ quest.description }}</p>
@@ -76,7 +76,7 @@ function removeQuest() {
         </div>
       </div>
       <div v-if="!quest.doneDayKey" class="remove-section">
-        <button v-if="!confirmingRemove" type="button" class="remove-button" @click="confirmingRemove = true">Delete quest</button>
+        <button v-if="!confirmingRemove" type="button" class="remove-button" @click="confirmingRemove = true">Delete task</button>
         <template v-else>
           <span class="confirm-text">Delete "{{ quest.description }}" for good?</span>
           <div class="confirm-actions">

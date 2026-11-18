@@ -45,7 +45,7 @@ describe('ShopServicePicker', () => {
     open('reroll');
     await flushPromises();
     expect(confirm().disabled).toBe(true);
-    expect(confirm().textContent).toContain('Pick a skill');
+    expect(confirm().textContent).toContain('Pick a habit');
     rows()[0].click();
     await flushPromises();
     expect(confirm().disabled).toBe(false);

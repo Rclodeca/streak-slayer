@@ -29,8 +29,8 @@ const talentPurchase = useTalentPurchase();
 const shopNews = useShopNews();
 
 const TABS = [
-  { id: 'skills', label: 'Skills', icon: Sword },
-  { id: 'quests', label: 'Quests', icon: ScrollText },
+  { id: 'skills', label: 'Habits', icon: Sword },
+  { id: 'quests', label: 'Tasks', icon: ScrollText },
   { id: 'shop', label: 'Shop', icon: Store },
   { id: 'talents', label: 'Talents', icon: Anvil },
   { id: 'hero', label: 'Hero', icon: UserRound },

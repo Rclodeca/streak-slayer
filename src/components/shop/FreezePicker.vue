@@ -72,7 +72,7 @@ function confirm() {
 
 <template>
   <Modal :model-value="modelValue" title="Streak Freeze" max-width="520px" @update:model-value="emit('update:modelValue', $event)">
-    <p class="picker-hint">Pick a skill to freeze. It rests on the days you set: no misses, no streak gained.</p>
+    <p class="picker-hint">Pick a habit to freeze. It rests on the days you set: no misses, no streak gained.</p>
 
     <div v-for="group in groups" :key="group.label" class="habit-group">
       <template v-if="group.habits.length">
@@ -100,7 +100,7 @@ function confirm() {
     </template>
 
     <button type="button" class="ok primary-button" :disabled="!picked || cost === 0 || short" @click="confirm">
-      <template v-if="!picked">Pick a skill</template>
+      <template v-if="!picked">Pick a habit</template>
       <template v-else-if="cost === 0">Already frozen</template>
       <template v-else-if="short">Not enough gems</template>
       <template v-else>

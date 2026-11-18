@@ -42,7 +42,7 @@ describe('FreezePicker', () => {
     await flushPromises();
     expect(rows().map((row) => row.textContent)).toEqual([expect.stringContaining('Read'), expect.stringContaining('Hike')]);
     expect(confirm().disabled).toBe(true);
-    expect(confirm().textContent).toContain('Pick a skill');
+    expect(confirm().textContent).toContain('Pick a habit');
     expect(document.querySelector('.freeze-step')).toBeNull();
   });
 

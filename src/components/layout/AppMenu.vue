@@ -188,7 +188,7 @@ onBeforeUnmount(() => {
       <div v-if="open" ref="panel" class="menu-panel" role="menu" :style="panelPos">
         <button type="button" class="menu-item" role="menuitem" :disabled="!canUndo()" @click="undoCheck"><Undo2 :size="15" />Undo</button>
         <button v-if="isPhone" type="button" class="menu-item" role="menuitem" @click="openLog"><ScrollText :size="15" />Log</button>
-        <button v-if="trialsItem" type="button" class="menu-item" role="menuitem" @click="openTrials"><Gift :size="15" />Trials</button>
+        <button v-if="trialsItem" type="button" class="menu-item" role="menuitem" @click="openTrials"><Gift :size="15" />Challenges</button>
         <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
         <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
         <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="toggleFocus">

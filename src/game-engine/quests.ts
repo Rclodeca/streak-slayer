@@ -101,7 +101,7 @@ export function recordQuestCompletion(questWeek: QuestWeek | undefined, weekKey:
 
 /** Builds a new Quest record with a generated id; `createdDayKey` is the day it was added. */
 export function createQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string): Quest {
-  if (!dueDateKey) throw new Error('A quest needs a due date');
+  if (!dueDateKey) throw new Error('A task needs a due date');
   const quest: Quest = { id: crypto.randomUUID(), description, difficulty, dueDateKey };
   if (createdDayKey !== undefined) quest.createdDayKey = createdDayKey;
   return quest;

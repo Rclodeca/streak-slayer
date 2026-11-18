@@ -87,7 +87,7 @@ const multipliers = computed(() => {
   if (props.habit.period === 'weekly') rows.push({ label: 'Weekly', icon: 'weekly', text: formatMultiplier(weeklyMultiplier.value) });
   return rows;
 });
-const bonusLabel = computed(() => (props.habit.isSpecial ? 'Special' : props.habit.isUlt ? 'Ult' : null));
+const bonusLabel = computed(() => (props.habit.isSpecial ? 'Special' : props.habit.isUlt ? 'Ultimate' : null));
 const totalLabel = computed(() =>
   props.habit.isBad ? 'If resisted' : props.habit.damageType === 'healing' ? 'Heals for' : 'Strikes for',
 );

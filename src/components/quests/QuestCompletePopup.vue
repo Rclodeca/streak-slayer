@@ -13,7 +13,7 @@ const PIPS = { easy: 1, medium: 2, hard: 3 };
 </script>
 
 <template>
-  <Modal :model-value="questCompleteVisible" title="Quest complete" max-width="420px" @update:model-value="dismiss">
+  <Modal :model-value="questCompleteVisible" title="Task complete" max-width="420px" @update:model-value="dismiss">
     <div v-if="current" :key="current.description" class="hero">
       <div class="seal" aria-hidden="true">
         <BadgeCheck class="seal-icon" :size="42" :stroke-width="1.75" />

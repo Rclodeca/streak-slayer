@@ -20,7 +20,7 @@ describe('talentDescription', () => {
 
   it('leaves out "per rank" for a single-rank node', () => {
     expect(talentDescription(def('executioner'))).toBe('Crits deal +0.5×.');
-    expect(talentDescription(def('blessed'))).toBe('Heal skills can crit, for double healing.');
+    expect(talentDescription(def('blessed'))).toBe('Healing habits can crit, for double healing.');
   });
 });
 

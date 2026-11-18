@@ -16,7 +16,7 @@ const isPhone = usePhoneLayout();
 <template>
   <Modal
     :model-value="modelValue"
-    title="Trials"
+    title="Challenges"
     :sheet="isPhone"
     tall
     max-width="460px"

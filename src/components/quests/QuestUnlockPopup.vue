@@ -20,7 +20,7 @@ const RULES: Rule[] = [
 </script>
 
 <template>
-  <Modal :model-value="questUnlockVisible" :dismissible="false" title="Quests unlocked" max-width="440px">
+  <Modal :model-value="questUnlockVisible" :dismissible="false" title="Tasks unlocked" max-width="440px">
     <div class="emblem" aria-hidden="true">
       <ScrollText :size="34" :stroke-width="1.5" />
     </div>

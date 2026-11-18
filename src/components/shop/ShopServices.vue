@@ -35,7 +35,7 @@ watch(
 );
 
 // A slot buys in one tap, the others ask for a target first.
-const SERVICE_LABELS = { none: { reroll: 'No skills', overdrive: 'No skills', enchant: 'Nothing worn', slot: '' }, maxed: 'Full' } as const;
+const SERVICE_LABELS = { none: { reroll: 'No habits', overdrive: 'No habits', enchant: 'Nothing worn', slot: '' }, maxed: 'Full' } as const;
 const pickerService = ref<'reroll' | 'overdrive' | 'enchant' | null>(null);
 const pickerOpen = computed({
   get: () => pickerService.value !== null,
@@ -118,7 +118,7 @@ const pouch = computed(() => {
         kind="service"
         name="Streak Freeze"
         art="services/freeze"
-        text="One skill rests on the days you pick. Its streak holds, but doesn't grow."
+        text="One habit rests on the days you pick. Its streak holds, but doesn't grow."
         :price="FREEZE.gemsPerDay"
         :buyable="!freezeShort"
         :short="freezeShort"
