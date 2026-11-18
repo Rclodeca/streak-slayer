@@ -231,6 +231,10 @@ export const TUNING = {
     EARLY_START_HOUR: 12,
   },
   HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.38, magic: 0.38, healing: 0.12, trueDamage: 0.12 },
+  // A warrior rolls physical skills a bit more often than magic ones, and a
+  // cleric (the mage) the reverse; healing and true damage stay as they are.
+  WARRIOR_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.44, magic: 0.32, healing: 0.12, trueDamage: 0.12 },
+  CLERIC_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.32, magic: 0.44, healing: 0.12, trueDamage: 0.12 },
   // A ranger rolls true damage twice as often, taken equally from physical
   // and magic.
   RANGER_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.32, magic: 0.32, healing: 0.12, trueDamage: 0.24 },

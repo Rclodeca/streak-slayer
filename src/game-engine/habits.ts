@@ -11,9 +11,12 @@ import type { DamageType, Difficulty, Habit, Period } from './types';
  */
 const FIRST_HABIT_DAMAGE_TYPES: readonly DamageType[] = ['physical', 'magic', 'trueDamage'];
 
-/** The damage type roll odds for `heroClass`: a ranger rolls true damage more often. */
+/** The damage type roll odds for `heroClass`: a warrior rolls more physical, a cleric more magic, a ranger more true damage. */
 function classDamageTypeWeights(heroClass?: HeroClass): Record<DamageType, number> {
-  return heroClass === 'ranger' ? TUNING.RANGER_HABIT_DAMAGE_TYPE_WEIGHTS : TUNING.HABIT_DAMAGE_TYPE_WEIGHTS;
+  if (heroClass === 'warrior') return TUNING.WARRIOR_HABIT_DAMAGE_TYPE_WEIGHTS;
+  if (heroClass === 'cleric') return TUNING.CLERIC_HABIT_DAMAGE_TYPE_WEIGHTS;
+  if (heroClass === 'ranger') return TUNING.RANGER_HABIT_DAMAGE_TYPE_WEIGHTS;
+  return TUNING.HABIT_DAMAGE_TYPE_WEIGHTS;
 }
 
 function damageTypeWeights(isFirstHabit: boolean, excludeHealing: boolean, heroClass?: HeroClass): Record<string, number> {
