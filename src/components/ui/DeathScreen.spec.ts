@@ -57,6 +57,30 @@ describe('DeathScreen', () => {
     expect(document.querySelector('.fire-stage')).toBeNull();
   });
 
+  describe('the toll', () => {
+    it('shows what the fall takes: three levels, a quarter of the gold, one item', async () => {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], currentHealth: 0 });
+      useBossStore().setBoss({ ...useBossStore().boss, index: 9, shownIndex: 12 });
+      mountWith([{ rank: 1, streakCount: 2 }]);
+      await toBonfire();
+      const chips = [...document.querySelectorAll('.toll .toll-chip')].map((c) => c.textContent!.replace(/\s+/g, ' ').trim());
+      expect(chips).toEqual(['−3 levels', '−100', 'One item']);
+      expect(document.querySelector('.toll .toll-chip.gold .stat-icon, .toll .toll-chip.gold svg, .toll .toll-chip.gold img')).not.toBeNull();
+      expect(document.querySelector('.meta')!.textContent).toContain('Boss 12');
+      expect(document.querySelector('.kept')!.textContent).toBe('Your skills keep their power');
+      expect(document.querySelector('.restart-button')!.textContent).toBe('Rise again');
+    });
+
+    it('shows no toll for a level 1 hero with nothing to lose', async () => {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 1, gold: 0, ownedItemIds: [], equippedItemIds: [], currentHealth: 0 });
+      mountWith([]);
+      await toBonfire();
+      expect(document.querySelector('.toll')).toBeNull();
+    });
+  });
+
   it('shows the bonfire once his line is done', async () => {
     mountWith([{ rank: 2, streakCount: 3 }]);
     await toBonfire();

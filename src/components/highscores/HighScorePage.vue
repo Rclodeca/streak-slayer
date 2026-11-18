@@ -49,6 +49,12 @@ function itemStats(item: HighScoreRunItem): string {
   return def ? describeItemBonus(def) : '';
 }
 
+/** A prestige run's line: the level it retired at, and how many deaths the climb took. */
+function retiredText(run: HighScoreRun): string {
+  const deaths = run.deaths ?? 0;
+  return deaths > 0 ? `Retired at level ${run.level} · ${deaths} death${deaths === 1 ? '' : 's'}` : `Retired at level ${run.level}`;
+}
+
 function daysText(days: number): string {
   return days === 1 ? '1 day' : `${days} days`;
 }
@@ -77,7 +83,7 @@ function skillGroups(run: HighScoreRun) {
   <section class="panel high-score-page">
     <h2>High Scores</h2>
     <p v-if="!highScoreStore.topRuns.length">
-      No runs completed yet — your best 10 will show up here after your first death.
+      No runs completed yet — your best 10 will show up here after your first prestige.
     </p>
     <template v-else>
       <p class="page-note">Your ten deepest runs.</p>
@@ -90,7 +96,10 @@ function skillGroups(run: HighScoreRun) {
                 <span class="epitaph-name">{{ runHero(run).name }}</span>
                 <span class="epitaph-rank" :class="{ podium: i < 3 }">#{{ i + 1 }}</span>
               </span>
-              <span class="epitaph-line">Fell before <b>Boss {{ run.bossIndex }}</b> at level {{ run.level }}.</span>
+              <span class="epitaph-line">
+                <template v-if="run.prestige">{{ retiredText(run) }}</template>
+                <template v-else>Fell before <b>Boss {{ run.bossIndex }}</b> at level {{ run.level }}.</template>
+              </span>
               <span class="epitaph-tail">
                 <span class="gear-strip">
                   <span v-for="item in equipped(run)" :key="item.id" class="gear-chip" :style="rarityStyle(item)">
@@ -118,7 +127,8 @@ function skillGroups(run: HighScoreRun) {
         </div>
         <h3 class="run-hero">{{ openHero.name }}</h3>
         <p class="run-epitaph">
-          <template v-if="openRun.bossPersonality">
+          <template v-if="openRun.prestige">{{ retiredText(openRun) }}</template>
+          <template v-else-if="openRun.bossPersonality">
             Fell to <b>{{ PERSONALITY_NAME[openRun.bossPersonality] }}</b>, Boss {{ openRun.bossIndex }}, at level {{ openRun.level }}.
           </template>
           <template v-else>Fell before <b>Boss {{ openRun.bossIndex }}</b> at level {{ openRun.level }}.</template>

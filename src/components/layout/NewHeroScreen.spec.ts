@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createCharacter, createRng, heroClassFor } from '../../game-engine';
 import type { HeroClass } from '../../game-engine';
+import { useRetiredHero } from '../../composables/useRetiredHero';
 import { useCharacterStore } from '../../store/characterStore';
 import NewHeroScreen from './NewHeroScreen.vue';
 
@@ -25,6 +26,21 @@ describe('NewHeroScreen', () => {
   }
 
   const label = (wrapper: ReturnType<typeof mountAs>) => wrapper.find('.pick-name').text();
+
+  it('names the hero who retired', () => {
+    useRetiredHero().recordRetired({ name: 'Aldric', level: 31 });
+    const wrapper = mountAs('warrior', { heroPending: true });
+    expect(wrapper.find('.fell').text()).toBe('Aldric retired at level 31. Your habits remain.');
+    expect(wrapper.find('.begin').text()).toBe('Rise');
+    useRetiredHero().clearRetired();
+  });
+
+  it('greets a first hero plainly', () => {
+    useRetiredHero().clearRetired();
+    const wrapper = mountAs('warrior', { heroPending: true });
+    expect(wrapper.find('.fell').exists()).toBe(false);
+    expect(wrapper.find('.begin').text()).toBe('Begin');
+  });
 
   it('opens on the hero the run was rolled as', () => {
     expect(label(mountAs('ranger'))).toBe('Ranger');

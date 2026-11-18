@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Flame } from 'lucide-vue-next';
-import { REVIVE_GEMS, bossNumber, heroClassFor, reviveState } from '../../game-engine';
+import { REVIVE_GEMS, bossNumber, deathToll, formatCompact, heroClassFor, reviveState } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useDeathScreen } from '../../composables/useDeathScreen';
@@ -20,7 +20,8 @@ import StatIcon from './StatIcon.vue';
 
 // A death plays in two parts over the whole screen (docs/mockups/pixel-hooded-flow.html):
 // the hooded figure's line over the fallen hero, then a bonfire where each
-// skill that keeps its power burns on. "Rise again" there starts the reset.
+// skill that keeps its power burns on, under what the fall takes. "Rise again"
+// there takes the setback and the run goes on.
 const { isDead } = useDeathScreen();
 // The screen waits while the daily update or a missed quest is still to land
 // (their popups show first), so a revive never meets a hit queued that day.
@@ -40,6 +41,8 @@ const heroClass = computed(() => heroClassFor(characterStore.character));
 const skins = useSkins();
 // The gem revive: open on every fall while the gems cover it.
 const revival = computed(() => reviveState(characterStore.character, accountStore.account.gems));
+// What "Rise again" will take; each chip shows only for a loss above zero.
+const toll = computed(() => deathToll(characterStore.character));
 const heroLabel = computed(() => heroClass.value.charAt(0).toUpperCase() + heroClass.value.slice(1));
 
 let releaseScrollLock: (() => void) | null = null;
@@ -112,6 +115,12 @@ const sparks = Array.from({ length: 14 }, () => ({
           <span class="fire"><i v-for="(frame, n) in flames" :key="n" :style="{ boxShadow: frame }" /></span>
           <i v-for="(spark, n) in sparks" :key="n" class="spark" :style="spark" />
         </div>
+
+        <ul v-if="toll.levels || toll.gold || toll.items" class="toll" aria-label="The fall takes">
+          <li v-if="toll.levels" class="toll-chip">−{{ toll.levels }} level{{ toll.levels === 1 ? '' : 's' }}</li>
+          <li v-if="toll.gold" class="toll-chip gold"><StatIcon name="gold" :size="13" />−{{ formatCompact(toll.gold) }}</li>
+          <li v-if="toll.items" class="toll-chip">One item</li>
+        </ul>
 
         <template v-if="embers.length">
           <p class="kept">Your skills keep their power</p>
@@ -372,6 +381,30 @@ const sparks = Array.from({ length: 14 }, () => ({
     opacity: 0;
     transform: translate(var(--dx), -150px);
   }
+}
+
+/* What the fall takes: small chips sunk into the ash, quieter than the embers. */
+.toll {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toll-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(224, 138, 60, 0.18);
+  color: #c9a58a;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .kept {
