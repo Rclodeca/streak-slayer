@@ -10,13 +10,14 @@ import SectionTitle from '../ui/SectionTitle.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { BOOST_STAT_ICON } from '../ui/statIcons';
 import PlayerSprite from './PlayerSprite.vue';
+import WardrobeSection from './WardrobeSection.vue';
 
 // The hero's details: what's running on them, their gear and their stats.
 // In the popup (CharacterPanel) they open on the hero with their level and
 // bars; as the phone's Hero tab (`page`), where the pinned home base (HomeBase,
 // in AppShell) already shows the hero, their name, level and best streak, straight
 // on the gear: a rack of every slot (RACK_ROW across, locked ones shown) and the card
-// of the one picked.
+// of the one picked. The page ends on the wardrobe.
 const props = defineProps<{ page?: boolean }>();
 
 const baseUrl = import.meta.env.BASE_URL;
@@ -136,6 +137,8 @@ const listedItems = computed(() => (props.page ? (selected.value ? [selected.val
         </div>
       </div>
     </section>
+
+    <WardrobeSection v-if="page" />
   </div>
 </template>
 

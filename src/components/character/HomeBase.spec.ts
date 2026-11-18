@@ -2,13 +2,12 @@
 
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SKIN_CATALOG, createCharacter, createRng, heroClassFor } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import HomeBase from './HomeBase.vue';
-import WardrobeSheet from './WardrobeSheet.vue';
 
 enableAutoUnmount(afterEach);
 
@@ -37,11 +36,16 @@ describe('HomeBase', () => {
     expect(wrapper.find('img.home-hero').attributes('src')).toContain(`sprites/${hero.art}.png`);
   });
 
-  it('opens the wardrobe when the scene is tapped', async () => {
+  it('scrolls down to the wardrobe when the scene is tapped', async () => {
+    const wardrobe = document.createElement('section');
+    wardrobe.id = 'wardrobe';
+    wardrobe.scrollIntoView = vi.fn();
+    document.body.appendChild(wardrobe);
     const wrapper = mount(HomeBase);
     expect(wrapper.find('button.home-art').attributes('aria-label')).toBe('Wardrobe');
     await wrapper.find('button.home-art').trigger('click');
-    expect(wrapper.findComponent(WardrobeSheet).props('modelValue')).toBe(true);
+    expect(wardrobe.scrollIntoView).toHaveBeenCalled();
+    wardrobe.remove();
   });
 
   it('shows the name, level and best streak on plates', () => {

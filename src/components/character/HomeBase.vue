@@ -10,7 +10,6 @@ import { baseSpriteUrl } from '../ui/spriteUrl';
 import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import { HERO_STAGE_CANVAS } from './heroArt';
-import WardrobeSheet from './WardrobeSheet.vue';
 
 // The phone's Hero tab banner (docs/mockups/hero-armory.html, option B): the
 // armory, pinned at the top of the screen where the fight stage's Focus strip
@@ -26,7 +25,7 @@ import WardrobeSheet from './WardrobeSheet.vue';
 // and the page crops the sides evenly, so a narrow phone loses some rack and shield
 // and keeps the hero. The offset is snapped to whole CSS px, so on a phone of an
 // odd width the art pixels still land on whole device pixels. Tapping the scene
-// opens the wardrobe, where its skins are bought and worn.
+// scrolls the page down to its wardrobe (WardrobeSection), where looks are worn.
 const baseUrl = import.meta.env.BASE_URL;
 const ART_W = 432;
 const ART_H = 232;
@@ -45,7 +44,9 @@ const bestStreak = computed(() =>
 const streak = computed(() => bestStreak.value?.streakCount ?? 0);
 const streakLabel = computed(() => `Best streak ${streak.value}${bestStreak.value ? `, ${bestStreak.value.name}` : ''}`);
 
-const wardrobeOpen = ref(false);
+function showWardrobe() {
+  document.getElementById('wardrobe')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 const frame = ref<HTMLElement | null>(null);
 const offset = useCenteredArt(frame, ART_W);
@@ -58,7 +59,7 @@ const offset = useCenteredArt(frame, ART_W);
       class="home-crop"
       :style="{ '--art-w': `${ART_W}px`, '--art-h': `${ART_H}px`, '--art-x': `${offset}px`, '--hero-size': `${HERO_STAGE_CANVAS}px` }"
     >
-      <button type="button" class="home-art" aria-label="Wardrobe" @click="wardrobeOpen = true">
+      <button type="button" class="home-art" aria-label="Wardrobe" @click="showWardrobe">
         <img class="home-room" :src="roomUrl" alt="" />
         <img class="home-hero" :src="baseSpriteUrl(skins.heroArt.value)" alt="" />
       </button>
@@ -75,7 +76,6 @@ const offset = useCenteredArt(frame, ART_W);
       </span>
     </div>
     <div class="stage-menu"><slot /></div>
-    <WardrobeSheet v-model="wardrobeOpen" />
   </section>
 </template>
 
