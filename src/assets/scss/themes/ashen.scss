@@ -76,6 +76,18 @@ $well: var(--well);
   }
 }
 
+// A circle cut in pixel steps of $s: three steps in from each corner on the
+// first row, one on the next two, flat from there (the prestige crest).
+@mixin pixel-round($s: 3px) {
+  $a: $s * 3;
+  clip-path: polygon(
+    0 $a, $s $a, $s $s, $a $s, $a 0,
+    calc(100% - #{$a}) 0, calc(100% - #{$a}) $s, calc(100% - #{$s}) $s, calc(100% - #{$s}) $a, 100% $a,
+    100% calc(100% - #{$a}), calc(100% - #{$s}) calc(100% - #{$a}), calc(100% - #{$s}) calc(100% - #{$s}), calc(100% - #{$a}) calc(100% - #{$s}), calc(100% - #{$a}) 100%,
+    $a 100%, $a calc(100% - #{$s}), $s calc(100% - #{$s}), $s calc(100% - #{$a}), 0 calc(100% - #{$a})
+  );
+}
+
 // A 2px pixel bevel: light along the top and left, dark along the bottom
 // and right.
 @mixin bevel($hi, $lo) {
@@ -4569,12 +4581,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: $brass;
   }
 
-  // ---------- Prestige ladder (docs/mockups/prestige-tree.html, A · Crown plinth) ----------
-  // The fourth plinth and the ladder it opens, in the prestige tiers' colours
-  // (PrestigeNumeral): Veteran rare blue, Ascendant epic purple, Mythic relic
-  // orange. A colour class on the ladder, its rungs and the crown sets --c, the
-  // tier, --d its dark and --g its glow.
-  :is(.prestige-ladder, .ladder-node, .talent-foot .pl.crown, .level-prestige) {
+  // ---------- Prestige crest + ladder (docs/mockups/prestige-entrance.html, A · Crest; prestige-tree.html, A) ----------
+  // The crest on the Talents banner and the ladder page it opens, in the prestige
+  // tiers' colours (PrestigeNumeral): Veteran rare blue, Ascendant epic purple,
+  // Mythic relic orange. A colour class on the crest, the ladder and its rungs
+  // sets --c, the tier, --d its dark and --g its glow.
+  :is(.prestige-crest, .prestige-ladder, .ladder-node, .level-prestige) {
     &.rare {
       --c: #5f95e6;
       --d: #1f3c70;
@@ -4594,33 +4606,109 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     }
   }
 
-  .talent-foot .pl.crown {
-    color: var(--text-h);
-    background: linear-gradient(color-mix(in srgb, var(--c) 40%, var(--card-hi)) 0 7px, color-mix(in srgb, var(--c) 18%, var(--card)) 7px);
+  // The crest: a pixel-round seal rimmed in the tier, the earned rank burning
+  // on it and a ring filling toward the next bar; at the bar its rays turn
+  // behind it. The rim is the disc's own colour showing round its dark face.
+  .prestige-crest {
+    @include inset-focus;
   }
 
-  .talent-foot .pl.crown svg,
-  .talent-foot .pl.crown b {
+  .crest-seal {
+    filter: drop-shadow(0 0 6px var(--g));
+  }
+
+  .crest-ring {
+    @include pixel-round(3px);
+    background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--sunk-lo) 0);
+  }
+
+  .crest-disc {
+    @include pixel-round(3px);
+    font: 900 0.95rem/1 var(--heading);
+    color: #fff;
+    background: var(--c);
+    text-shadow: 0 0 6px var(--c);
+  }
+
+  .crest-disc::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    @include pixel-round(2px);
+    background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--c) 55%, #0a0c12), #0a0c12 78%);
+  }
+
+  .crest-disc > * {
+    position: relative;
+  }
+
+  .crest-disc svg {
     color: var(--c);
   }
 
-  .talent-foot .pl.crown.on {
-    background: linear-gradient(color-mix(in srgb, var(--c) 55%, var(--card-hi)) 0 8px, color-mix(in srgb, var(--c) 28%, var(--card)) 8px);
-    box-shadow: 0 0 14px var(--g);
+  .crest-rays {
+    background: repeating-conic-gradient(var(--g) 0 8deg, transparent 8deg 30deg);
+    -webkit-mask: radial-gradient(circle, #000 20%, transparent 70%);
+    mask: radial-gradient(circle, #000 20%, transparent 70%);
   }
 
-  .talent-foot .pl.crown.sealed {
+  .crest-text em {
+    @include engraved(0.625rem, 0.2em);
+    color: var(--c);
+  }
+
+  .crest-text b {
+    @include true-sans(0.75rem, 800);
+    color: var(--text-h);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .prestige-crest.sealed .crest-seal {
+    filter: none;
+  }
+
+  .prestige-crest.sealed .crest-disc {
     color: var(--spent-text);
-    background: linear-gradient(var(--stone-face) 0 7px, var(--quiet-card) 7px);
-    box-shadow: none;
+    background: #2a2a42;
+    text-shadow: none;
   }
 
-  .talent-foot .pl.crown.sealed :is(svg, b) {
+  .prestige-crest.sealed .crest-disc::before {
+    background: #0c0c15;
+  }
+
+  .prestige-crest.sealed :is(.crest-disc svg, .crest-text em, .crest-text b) {
     color: var(--spent-text);
   }
 
-  .talent-foot .stand path.sealed {
-    stroke: var(--sunk-lo);
+  @media (prefers-reduced-motion: no-preference) {
+    .prestige-crest.ready .crest-disc {
+      animation: prestige-glow 2.2s ease-in-out infinite;
+    }
+
+    .crest-rays {
+      animation: prestige-spin 14s linear infinite;
+    }
+  }
+
+  // The prestige page: the ladder under a glow of the next rank's colour, its
+  // plates a size up on any talent node.
+  .prestige-page {
+    background: radial-gradient(120% 55% at 50% 0%, color-mix(in srgb, var(--c, #5f95e6) 14%, transparent), transparent 70%);
+  }
+
+  .prestige-back {
+    color: var(--moon);
+    @include inset-focus;
+  }
+
+  .prestige-ladder .ladder-plate {
+    width: 76px;
+    height: 76px;
+    font-size: 1.875rem;
+    box-shadow:
+      inset 4px 4px 0 var(--tier),
+      inset -4px -4px 0 var(--tier-dark);
   }
 
   .prestige-ladder.sealed .ladder-trunk {
@@ -4639,7 +4727,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .ladder-bar,
   .ladder-line {
-    @include true-sans(0.75rem, 800);
+    @include true-sans(0.8125rem, 800);
     color: var(--spent-text);
     font-variant-numeric: tabular-nums;
   }
@@ -4652,7 +4740,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .ladder-spec {
-    font: 700 0.95rem/1.2 var(--serif);
+    font: 700 1rem/1.2 var(--serif);
     color: var(--text-h);
   }
 
@@ -4669,8 +4757,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: #3a3a55;
     background: #0c0c15;
     box-shadow:
-      inset 3px 3px 0 #2a2a42,
-      inset -3px -3px 0 #14141f;
+      inset 4px 4px 0 #2a2a42,
+      inset -4px -4px 0 #14141f;
   }
 
   .ladder-plate.done {
@@ -4686,9 +4774,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   .ladder-node.top .ladder-plate {
-    width: 62px;
-    height: 62px;
-    font-size: 1.5rem;
+    width: 90px;
+    height: 90px;
+    font-size: 2.25rem;
   }
 
   .ladder-rays {
@@ -5052,10 +5140,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       box-shadow: 0 12px 12px -6px var(--bg);
     }
 
-    // Above the banner's fade, which would otherwise fall over the line.
-    .talent-kept {
+    // Above the banner's fade, which would otherwise fall over the line and the
+    // crest; the line stops short of the menu's column down the right edge.
+    .talent-band {
       position: relative;
       z-index: 3;
+      padding-right: 52px;
     }
 
     .talent-foot {

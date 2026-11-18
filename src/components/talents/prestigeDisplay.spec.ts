@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { ladderSealed, ladderState, plinthLabel, PRESTIGE_SPECIAL_LOOK } from './prestigeDisplay';
+import { climbPercent, crestLabel, ladderSealed, ladderState, PRESTIGE_SPECIAL_LOOK } from './prestigeDisplay';
 
-describe('the crown plinth', () => {
-  it('reads the bar, Ready, the rank count, or V', () => {
-    expect(plinthLabel(0, 22)).toBe('Lv 30');
-    expect(plinthLabel(0, 31)).toBe('Ready');
-    expect(plinthLabel(2, 44)).toBe('2 / 5');
-    expect(plinthLabel(2, 50)).toBe('Ready');
-    expect(plinthLabel(5, 58)).toBe('V');
+describe('the prestige crest', () => {
+  it('reads the first bar, the climb, Ready, or Mythic', () => {
+    expect(crestLabel(0, 22)).toBe('Lv 30');
+    expect(crestLabel(0, 31)).toBe('Ready');
+    expect(crestLabel(2, 44)).toBe('Lv 44 / 50');
+    expect(crestLabel(2, 50)).toBe('Ready');
+    expect(crestLabel(5, 58)).toBe('Mythic');
+  });
+
+  it('fills from level 1 to the next bar, never quite empty, full once Mythic', () => {
+    expect(climbPercent(2, 25)).toBeCloseTo((24 / 49) * 100);
+    expect(climbPercent(0, 1)).toBe(4);
+    expect(climbPercent(2, 60)).toBe(100);
+    expect(climbPercent(5, 58)).toBe(100);
   });
 });
 

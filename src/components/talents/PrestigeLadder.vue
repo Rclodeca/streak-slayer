@@ -7,10 +7,11 @@ import { useCharacterStore } from '../../store/characterStore';
 import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
 import StatIcon from '../ui/StatIcon.vue';
 import PrestigePopup from './PrestigePopup.vue';
-import { ladderSealed, ladderState, PRESTIGE_SPECIAL_LOOK } from './prestigeDisplay';
+import { climbPercent, ladderSealed, ladderState, PRESTIGE_SPECIAL_LOOK } from './prestigeDisplay';
 
-// The prestige ladder (docs/mockups/prestige-tree.html, A · Crown plinth): what the
-// Talents tab's crown plinth shows in place of a shoot. Five numeral plates climb
+// The prestige ladder (docs/mockups/prestige-tree.html, A, at the plate sizes of
+// prestige-entrance.html): the prestige page the Talents tab's crest opens
+// (TalentSection), the plates a size up on any talent node. Five numeral plates climb
 // from I at the foot to V at the top, each with its bar on the left and its special
 // on the right, the trunk lit up to the last rank earned. Under it, the next
 // rank's gains and either the climb to its bar or, at the bar, the Prestige button,
@@ -39,8 +40,7 @@ const rungs = computed(() =>
   })).reverse(),
 );
 
-/** How far up the climb from level 1 to the next bar the hero is. */
-const progress = computed(() => (next.value ? Math.max(4, Math.min(100, ((level.value - 1) / (next.value.bar - 1)) * 100)) : 100));
+const progress = computed(() => climbPercent(rank.value, level.value));
 const EMBERS = Array.from({ length: 10 }, (_, i) => ({ left: `${8 + ((i * 37) % 86)}%`, animationDuration: `${4 + (i % 4) * 1.3}s`, animationDelay: `${(i * 0.7) % 4}s` }));
 </script>
 
@@ -57,7 +57,7 @@ const EMBERS = Array.from({ length: 10 }, (_, i) => ({ left: `${8 + ((i * 37) % 
         </span>
         <PrestigeNumeral :mark="rung.mark" large class="ladder-plate" :class="rung.state" />
         <span class="ladder-rgt">
-          <span class="ladder-spec"><component :is="rung.look.icon" :size="15" aria-hidden="true" />{{ rung.look.name }}</span>
+          <span class="ladder-spec"><component :is="rung.look.icon" :size="17" aria-hidden="true" />{{ rung.look.name }}</span>
           <span v-if="rung.look.line" class="ladder-line">{{ rung.look.line }}</span>
         </span>
       </li>
@@ -120,16 +120,16 @@ const EMBERS = Array.from({ length: 10 }, (_, i) => ({ left: `${8 + ((i * 37) % 
 .ladder-trunk {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 16px;
   margin: 0;
-  padding: 10px 0 8px;
+  padding: 10px 0 12px;
   list-style: none;
 }
 
 .ladder-node {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 64px 1fr;
+  grid-template-columns: 1fr 92px 1fr;
   align-items: center;
 }
 
@@ -139,9 +139,9 @@ const EMBERS = Array.from({ length: 10 }, (_, i) => ({ left: `${8 + ((i * 37) % 
   top: 50%;
   left: 50%;
   z-index: 0;
-  width: 4px;
-  height: calc(100% + 22px);
-  margin-left: -2px;
+  width: 6px;
+  height: calc(100% + 16px);
+  margin-left: -3px;
 }
 
 .ladder-rays {
@@ -149,9 +149,9 @@ const EMBERS = Array.from({ length: 10 }, (_, i) => ({ left: `${8 + ((i * 37) % 
   top: 50%;
   left: 50%;
   z-index: 0;
-  width: 120px;
-  height: 120px;
-  margin: -60px 0 0 -60px;
+  width: 170px;
+  height: 170px;
+  margin: -85px 0 0 -85px;
   border-radius: 50%;
   pointer-events: none;
 }

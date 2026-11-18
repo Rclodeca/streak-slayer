@@ -7,6 +7,7 @@ import { talentRank } from '../../game-engine';
 import type { TalentId } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useTabStore } from '../../store/tabStore';
 import TalentSection from './TalentSection.vue';
 
 enableAutoUnmount(afterEach);
@@ -254,7 +255,7 @@ describe('TalentSection on desktop', () => {
     await wrapper.find('.open-tree').trigger('click');
     expect(q('.talent-tree-view')).not.toBeNull();
     expect(q('.talent-tree-view .cell .nm')?.textContent).toBe('Executioner');
-    expect(document.body.querySelectorAll('.talent-tree-view .pl')).toHaveLength(4);
+    expect(document.body.querySelectorAll('.talent-tree-view .pl')).toHaveLength(3);
     expect(q('.talent-modal-points .gold .count')?.textContent).toBe('250');
   });
 
@@ -290,7 +291,6 @@ describe('TalentSection — the prestige ladder', () => {
   });
 
   const mountSection = () => mount(TalentSection, { attachTo: document.body });
-  const plinth = (wrapper: ReturnType<typeof mount>, name: string) => wrapper.findAll('.pl').find((pl) => pl.text().startsWith(name))!;
 
   function heroAt(level: number) {
     const store = useCharacterStore();
@@ -304,15 +304,58 @@ describe('TalentSection — the prestige ladder', () => {
     useAccountStore().setPrestige(rank);
   }
   const ladder = async (wrapper: ReturnType<typeof mount>) => {
-    await plinth(wrapper, 'Prestige').trigger('click');
+    await wrapper.find('.prestige-crest').trigger('click');
   };
 
-  it('stands as a fourth plinth, and shows five ranks', async () => {
+  it('hangs a crest on the banner, beside three plinths', () => {
     climber(44, 2);
     const wrapper = mountSection();
-    expect(wrapper.findAll('.pl')).toHaveLength(4);
+    expect(wrapper.findAll('.pl')).toHaveLength(3);
+    expect(wrapper.find('.talent-band .prestige-crest').text()).toContain('Lv 44 / 50');
+  });
+
+  it('opens its own page from the crest, in place of the tree, with five ranks', async () => {
+    climber(44, 2);
+    const wrapper = mountSection();
     await ladder(wrapper);
+    expect(wrapper.find('.prestige-page').exists()).toBe(true);
+    expect(wrapper.find('.talent-tree-view').exists()).toBe(false);
     expect(wrapper.findAll('.ladder-node')).toHaveLength(5);
+  });
+
+  it('goes back to the tree', async () => {
+    climber(44, 2);
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    await wrapper.find('.prestige-back').trigger('click');
+    expect(wrapper.find('.prestige-page').exists()).toBe(false);
+    expect(wrapper.find('.talent-tree-view').exists()).toBe(true);
+  });
+
+  it('closes the page on leaving the tab', async () => {
+    climber(44, 2);
+    const tabs = useTabStore();
+    tabs.select('talents');
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    tabs.select('skills');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.prestige-page').exists()).toBe(false);
+  });
+
+  it('opens the ladder in a modal on a wider screen', async () => {
+    layout(false);
+    climber(44, 2);
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    expect(document.body.querySelectorAll('.prestige-ladder .ladder-node')).toHaveLength(5);
+  });
+
+  it('greys the crest before level 30', () => {
+    climber(22, 0);
+    const wrapper = mountSection();
+    expect(wrapper.find('.prestige-crest').classes()).toContain('sealed');
+    expect(wrapper.find('.prestige-crest').text()).toContain('Lv 30');
   });
 
   it('shows the climb to the next bar, then the Prestige button at it', async () => {

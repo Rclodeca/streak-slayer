@@ -2,8 +2,9 @@ import { Castle, Shirt, Sprout } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import { nextPrestigeRank, PRESTIGE_RANKS } from '../../game-engine';
 
-// How the Talents tab's prestige ladder draws each rank (docs/mockups/prestige-tree.html,
-// A · Crown plinth): the special a rank gives, and where the climb stands.
+// How the Talents tab's prestige crest and ladder draw the ranks (docs/mockups/prestige-tree.html,
+// A, and prestige-entrance.html, A · Crest on the banner): the special a rank gives,
+// and where the climb stands.
 export interface PrestigeSpecialLook {
   name: string;
   line?: string;
@@ -33,10 +34,17 @@ export function ladderSealed(rank: number, level: number): boolean {
   return rank === 0 && level < PRESTIGE_RANKS[0].bar;
 }
 
-/** The line under the crown plinth: the first bar, Ready, the ranks so far, or V once Mythic. */
-export function plinthLabel(rank: number, level: number): string {
+/** The crest's line: the first bar, the climb to the next, Ready, or Mythic once done. */
+export function crestLabel(rank: number, level: number): string {
   const next = nextPrestigeRank(rank);
-  if (!next) return 'V';
+  if (!next) return 'Mythic';
   if (level >= next.bar) return 'Ready';
-  return rank === 0 ? `Lv ${next.bar}` : `${rank} / ${PRESTIGE_RANKS.length}`;
+  return rank === 0 ? `Lv ${next.bar}` : `Lv ${level} / ${next.bar}`;
+}
+
+/** How far up the climb from level 1 to the next bar the hero is, as a percent: never under 4, so a sliver shows; 100 once Mythic. */
+export function climbPercent(rank: number, level: number): number {
+  const next = nextPrestigeRank(rank);
+  if (!next) return 100;
+  return Math.max(4, Math.min(100, ((level - 1) / (next.bar - 1)) * 100));
 }

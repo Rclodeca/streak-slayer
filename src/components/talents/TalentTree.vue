@@ -1,22 +1,17 @@
 <script setup lang="ts">
-import { Crown, Lock } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { nextPrestigeRank, PRESTIGE_RANKS, prestigeMark, prestigeRank, TALENT_DEFS, TALENT_SHOOTS, talentMaxRank, talentRanksInShoot, talentRank } from '../../game-engine';
+import { TALENT_DEFS, TALENT_SHOOTS, talentMaxRank, talentRanksInShoot, talentRank } from '../../game-engine';
 import type { TalentDef, TalentShoot } from '../../game-engine';
-import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
 import TalentCell from './TalentCell.vue';
-import PrestigeLadder from './PrestigeLadder.vue';
 import TalentNodeModal from './TalentNodeModal.vue';
-import { ladderSealed, plinthLabel } from './prestigeDisplay';
 import { SHOOT_LOOK, talentState } from './talentDisplay';
 
 // The tree itself (docs/mockups/pixel-talents.html, Plinths): the hero's tree for
 // this run, one shoot at a time. The shoot's trunk grows up from its first node to
 // its ★ with the offshoots to either side, turning brass up to the nodes with
-// ranks. Three plinths at the foot pick the shoot, in thumb reach; a fourth, the
-// crown, shows the prestige ladder (PrestigeLadder) in the tree's place. It opens
+// ranks. Three plinths at the foot pick the shoot, in thumb reach. It opens
 // scrolled to the bottom, the first node. Tapping a node opens its popup
 // (TalentNodeModal). TalentSection puts it on the page on a phone, in a modal on
 // a wider screen.
@@ -28,14 +23,7 @@ const character = computed(() => characterStore.character);
 function busiestShoot(): TalentShoot {
   return TALENT_SHOOTS.reduce((best, shoot) => (talentRanksInShoot(character.value, shoot) > talentRanksInShoot(character.value, best) ? shoot : best));
 }
-const view = ref<TalentShoot | 'prestige'>(busiestShoot());
-const shoot = computed<TalentShoot>(() => (view.value === 'prestige' ? 'damage' : view.value));
-
-const accountStore = useAccountStore();
-const rank = computed(() => prestigeRank(accountStore.account));
-const crownSealed = computed(() => ladderSealed(rank.value, character.value.level));
-/** The crown's colour: the rank being climbed to, or relic once Mythic. */
-const crownTier = computed(() => prestigeMark(nextPrestigeRank(rank.value)?.rank ?? PRESTIGE_RANKS.length)!.rarity);
+const shoot = ref<TalentShoot>(busiestShoot());
 const selected = ref<TalentDef | null>(null);
 
 const stateOf = (def: TalentDef) => talentState(character.value, def);
@@ -75,8 +63,8 @@ const rows = computed<Row[]>(() => {
     .reverse();
 });
 
-function pick(next: TalentShoot | 'prestige') {
-  view.value = next;
+function pick(next: TalentShoot) {
+  shoot.value = next;
 }
 
 // The tree opens at the bottom: the first node, and the plinth it grows from.
@@ -86,17 +74,16 @@ function scrollToBottom() {
   for (const box of [tree.value, tree.value?.closest<HTMLElement>('.modal-scroll')]) if (box) box.scrollTop = box.scrollHeight;
 }
 onMounted(scrollToBottom);
-watch([view, () => tabStore.tab], () => nextTick(scrollToBottom));
+watch([shoot, () => tabStore.tab], () => nextTick(scrollToBottom));
 
-/** Where the brass root meets each plinth along the 366-wide drawing: the middle of each of four. */
-const ROOT_X: Record<TalentShoot | 'prestige', number> = { damage: 46, tank: 137, support: 229, prestige: 320 };
+/** Where the brass root meets each plinth along the 366-wide drawing: a sixth, a half and five sixths across. */
+const ROOT_X: Record<TalentShoot, number> = { damage: 61, tank: 183, support: 305 };
 </script>
 
 <template>
   <div class="talent-tree-view">
     <div ref="tree" class="talent-tree">
-      <PrestigeLadder v-if="view === 'prestige'" />
-      <div v-else class="trunk">
+      <div class="trunk">
         <div v-for="row in rows" :key="row.node.id" class="trunk-row">
           <span v-if="row.hasUp" class="seg up" :class="{ lit: row.litUp }" />
           <span class="seg down" :class="{ lit: row.litDown }" />
@@ -120,7 +107,7 @@ const ROOT_X: Record<TalentShoot | 'prestige', number> = { damage: 46, tank: 137
 
     <div class="talent-foot">
       <svg class="stand" viewBox="0 0 366 18" preserveAspectRatio="none" aria-hidden="true">
-        <path :class="{ sealed: view === 'prestige' && crownSealed }" :d="`M183 0 V8 H${ROOT_X[view]} V18`" fill="none" stroke-width="4" vector-effect="non-scaling-stroke" />
+        <path :d="`M183 0 V8 H${ROOT_X[shoot]} V18`" fill="none" stroke-width="4" vector-effect="non-scaling-stroke" />
       </svg>
       <div class="plinths" role="group" aria-label="Shoots">
         <button
@@ -128,17 +115,13 @@ const ROOT_X: Record<TalentShoot | 'prestige', number> = { damage: 46, tank: 137
           :key="id"
           type="button"
           class="pl"
-          :class="{ on: id === view }"
+          :class="{ on: id === shoot }"
           :style="{ '--c': SHOOT_LOOK[id].color }"
-          :aria-pressed="id === view"
+          :aria-pressed="id === shoot"
           @click="pick(id)"
         >
           <span class="pl-name"><component :is="SHOOT_LOOK[id].icon" :size="14" aria-hidden="true" />{{ SHOOT_LOOK[id].name }}</span>
           <b>{{ talentRanksInShoot(character, id) }} spent</b>
-        </button>
-        <button type="button" class="pl crown" :class="[crownTier, { on: view === 'prestige', sealed: crownSealed }]" :aria-pressed="view === 'prestige'" @click="pick('prestige')">
-          <span class="pl-name"><component :is="crownSealed ? Lock : Crown" :size="14" aria-hidden="true" />Prestige</span>
-          <b>{{ plinthLabel(rank, character.level) }}</b>
         </button>
       </div>
     </div>
@@ -215,8 +198,8 @@ const ROOT_X: Record<TalentShoot | 'prestige', number> = { damage: 46, tank: 137
 
 .plinths {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   align-items: end;
 }
 
