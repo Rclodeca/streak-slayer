@@ -188,6 +188,11 @@ export const TUNING = {
   // the day it's bought.
   EXP_BOOST_BONUS: 0.25,
   EXP_BOOST_DAYS: 3,
+  // Double EXP, the EXP Potion's big brother: the same boost at
+  // DOUBLE_EXP_BONUS for DOUBLE_EXP_DAYS days. Only one EXP boost runs at a
+  // time; buying either replaces the other.
+  DOUBLE_EXP_BONUS: 1,
+  DOUBLE_EXP_DAYS: 3,
   // The shop's Health Potion restores DRAUGHT_HEAL_PCT% of max health.
   DRAUGHT_HEAL_PCT: 25,
   // The Shop's Enchant multiplies every bonus of one equipped item by

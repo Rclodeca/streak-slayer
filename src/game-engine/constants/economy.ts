@@ -125,6 +125,9 @@ export const FREE_GEM_SOURCES = {
 /** What a gem-priced shop item costs, by rarity. Flat, not by boss: gems don't grow with the run. */
 export const GEM_WARE_PRICES = { rare: 6, epic: 12, relic: 20 } as const;
 
+/** The EXP potions' gem prices: EXP is the speed knob, so gold can't buy it. The other potions cost gold (tonicPrice). */
+export const GEM_POTION_PRICES = { exp: 5, 'double-exp': 25 } as const;
+
 /** The shop's potions come back every this many days (and with a restock, and after a death): one of each. */
 export const POTION_STOCK_DAYS = 3;
 

@@ -1,11 +1,12 @@
 // The shop (docs/ideas/2026-11-13-shop-economy.md §4): a stock drawn once a
 // day, rolled like boss drops (its headline in gold, others of its rarity in
-// gems), one of each potion every POTION_STOCK_DAYS days, all used at once,
+// gems), one of each potion every POTION_STOCK_DAYS days (the EXP ones for
+// gems, the rest for gold), all used at once,
 // and restocked (potions too) for a climbing gold fee.
 // The stock lives on Character.shop, so a death wipes it. Everything here is
 // pure; composables/useShop.ts runs it against the stores.
 
-import { GEM_WARE_PRICES, POTION_STOCK_DAYS, SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
+import { GEM_POTION_PRICES, GEM_WARE_PRICES, POTION_STOCK_DAYS, SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { characterGold } from './gold';
 import { DROP_RARITIES, ITEM_CATALOG, availableRelics, blendByLevel, normalizeShares, recordRelicEarned } from './items';
@@ -146,7 +147,7 @@ export function buyWare(character: Character, itemId: string, gems: number): { c
   return { character: recordRelicEarned(bought, itemId), item, gemsSpent: inGems ? ware.price : 0 };
 }
 
-export type TonicId = 'draught' | 'crit' | 'heal' | 'exp';
+export type TonicId = 'draught' | 'crit' | 'heal' | 'exp' | 'double-exp';
 
 const pct = (bonus: number) => Math.round(bonus * 100);
 
@@ -156,9 +157,26 @@ export const TONIC_DEFS: readonly { id: TonicId; name: string; effect: string; a
   { id: 'crit', name: 'Crit Potion', effect: `+${pct(TUNING.CRIT_BOOST_BONUS)}% crit chance for ${TUNING.CRIT_BOOST_DAYS} days.`, art: 'potions/crit' },
   { id: 'heal', name: 'Mending Potion', effect: `+${pct(TUNING.HEAL_BOOST_BONUS)}% healing for ${TUNING.HEAL_BOOST_DAYS} days.`, art: 'potions/mending' },
   { id: 'exp', name: 'EXP Potion', effect: `+${pct(TUNING.EXP_BOOST_BONUS)}% EXP for ${TUNING.EXP_BOOST_DAYS} days.`, art: 'potions/exp' },
+  // Shares the EXP Potion's sprite until it has its own.
+  { id: 'double-exp', name: 'Double EXP', effect: `+${pct(TUNING.DOUBLE_EXP_BONUS)}% EXP for ${TUNING.DOUBLE_EXP_DAYS} days.`, art: 'potions/exp' },
 ];
 
-const BOOSTS = { crit: activeCritBoost, heal: activeHealBoost, exp: activeExpBoost } as const;
+/** The two EXP potions share one boost: the one running is the row whose bonus it carries, so the other stays buyable and replaces it. */
+const isDouble = (bonus: number) => bonus === TUNING.DOUBLE_EXP_BONUS;
+const BOOSTS = {
+  crit: activeCritBoost,
+  heal: activeHealBoost,
+  exp: (character: Character, dayKey: string) => {
+    const boost = activeExpBoost(character, dayKey);
+    return boost && !isDouble(boost.bonus) ? boost : undefined;
+  },
+  'double-exp': (character: Character, dayKey: string) => {
+    const boost = activeExpBoost(character, dayKey);
+    return boost && isDouble(boost.bonus) ? boost : undefined;
+  },
+} as const;
+
+const isGemPotion = (id: TonicId): id is keyof typeof GEM_POTION_PRICES => id in GEM_POTION_PRICES;
 
 /** The first day of `dayKey`'s potion window. */
 export function potionWindowKey(dayKey: string): string {
@@ -174,43 +192,55 @@ function potionsSold(shop: ShopStock | undefined, dayKey: string): string[] {
  * What a potion's row shows on `dayKey`: buyable, too dear, bought out of this
  * window (`out`, until the window turns or a restock), its boost still running
  * (`active`), or the hero at full health (`full`, Health Potion only).
- * `daysLeft` counts the running boost.
+ * `daysLeft` counts the running boost. The EXP potions are priced in the
+ * account's `gems`, the rest in the hero's gold.
  */
 export function tonicState(
   character: Character,
   id: TonicId,
   bossIndex: number,
   dayKey: string,
-): { price: number; status: 'buy' | 'short' | 'out' | 'active' | 'full'; daysLeft: number } {
-  const price = tonicPrice(bossIndex);
-  const afford = characterGold(character) >= price ? 'buy' : 'short';
-  if (potionsSold(character.shop, dayKey).includes(id)) return { price, status: 'out', daysLeft: 0 };
+  gems: number,
+): { price: number; currency: 'gold' | 'gems'; status: 'buy' | 'short' | 'out' | 'active' | 'full'; daysLeft: number } {
+  const inGems = isGemPotion(id);
+  const price = inGems ? GEM_POTION_PRICES[id] : tonicPrice(bossIndex);
+  const currency = inGems ? 'gems' : 'gold';
+  const afford = (inGems ? gems : characterGold(character)) >= price ? 'buy' : 'short';
+  if (potionsSold(character.shop, dayKey).includes(id)) return { price, currency, status: 'out', daysLeft: 0 };
   if (id === 'draught') {
-    if (character.currentHealth >= effectiveStat(character, 'health')) return { price, status: 'full', daysLeft: 0 };
-    return { price, status: afford, daysLeft: 0 };
+    if (character.currentHealth >= effectiveStat(character, 'health')) return { price, currency, status: 'full', daysLeft: 0 };
+    return { price, currency, status: afford, daysLeft: 0 };
   }
   const boost = BOOSTS[id](character, dayKey);
-  if (boost) return { price, status: 'active', daysLeft: boost.durationDays - daysBetweenDayKeys(boost.appliedDayKey, dayKey) };
-  return { price, status: afford, daysLeft: 0 };
+  if (boost) return { price, currency, status: 'active', daysLeft: boost.durationDays - daysBetweenDayKeys(boost.appliedDayKey, dayKey) };
+  return { price, currency, status: afford, daysLeft: 0 };
 }
 
 /**
  * Buys and uses a potion at once, taking it out of the window's stock. Null
  * with no shop stock, or unless its row reads `buy`. `healed` is what the
- * Health Potion restored.
+ * Health Potion restored; the caller spends `gemsSpent` (an EXP potion's).
  */
-export function buyTonic(character: Character, id: TonicId, bossIndex: number, dayKey: string): { character: Character; healed?: number } | null {
+export function buyTonic(
+  character: Character,
+  id: TonicId,
+  bossIndex: number,
+  dayKey: string,
+  gems: number,
+): { character: Character; healed?: number; gemsSpent: number } | null {
   const shop = character.shop;
-  const { price, status } = tonicState(character, id, bossIndex, dayKey);
+  const { price, currency, status } = tonicState(character, id, bossIndex, dayKey, gems);
   if (!shop || status !== 'buy' || !standing(character)) return null;
   const sold: ShopStock = { ...shop, potionsKey: potionWindowKey(dayKey), potionsSold: [...potionsSold(shop, dayKey), id] };
-  const paid = { ...character, gold: characterGold(character) - price, shop: sold };
+  const gemsSpent = currency === 'gems' ? price : 0;
+  const paid = { ...character, gold: characterGold(character) - (gemsSpent ? 0 : price), shop: sold };
   if (id === 'draught') {
     const max = effectiveStat(paid, 'health');
     const currentHealth = Math.min(paid.currentHealth + max * (TUNING.DRAUGHT_HEAL_PCT / 100), max);
-    return { character: { ...paid, currentHealth }, healed: currentHealth - paid.currentHealth };
+    return { character: { ...paid, currentHealth }, healed: currentHealth - paid.currentHealth, gemsSpent };
   }
-  if (id === 'crit') return { character: applyCritBoostEffect(paid, dayKey) };
-  if (id === 'heal') return { character: applyHealBoostEffect(paid, dayKey) };
-  return { character: applyExpBoost(paid, dayKey) };
+  if (id === 'crit') return { character: applyCritBoostEffect(paid, dayKey), gemsSpent };
+  if (id === 'heal') return { character: applyHealBoostEffect(paid, dayKey), gemsSpent };
+  if (id === 'double-exp') return { character: applyExpBoost(paid, dayKey, TUNING.DOUBLE_EXP_BONUS, TUNING.DOUBLE_EXP_DAYS), gemsSpent };
+  return { character: applyExpBoost(paid, dayKey), gemsSpent };
 }

@@ -62,7 +62,7 @@ const potions = computed(() =>
           : state.status === 'full'
             ? 'Full health'
             : undefined;
-    return { ...def, price: state.price, buyable: state.status === 'buy', short: state.status === 'short', label };
+    return { ...def, price: state.price, currency: state.currency, buyable: state.status === 'buy', short: state.status === 'short', label };
   }),
 );
 
@@ -116,6 +116,7 @@ function buyPotion(id: TonicId) {
         :buyable="potion.buyable"
         :short="potion.short"
         :label="potion.label"
+        :currency="potion.currency"
         @buy="buyPotion(potion.id)"
       />
     </div>

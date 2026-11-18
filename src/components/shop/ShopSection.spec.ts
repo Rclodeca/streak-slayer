@@ -129,6 +129,14 @@ describe('ShopSection', () => {
       expect(characterStore.character.gold).toBe(100000);
     });
 
+    it('the EXP potions are priced in gems', () => {
+      hero(100000);
+      const wrapper = mount(ShopSection);
+      const priceOf = (name: string) => wrapper.findAll('.shop-ware-row.tonic').find((row) => row.text().includes(name))!.find('.price').attributes('aria-label');
+      expect(priceOf('EXP Potion')).toBe('5 gems');
+      expect(priceOf('Double EXP')).toBe('25 gems');
+    });
+
     it('an active boost shows days left', () => {
       const today = dailyPeriodKey(useDebugClockStore().now());
       const characterStore = hero(100000);

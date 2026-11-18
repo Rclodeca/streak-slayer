@@ -3,6 +3,7 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_CATALOG, createRng, dailyPeriodKey } from '../game-engine';
+import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
@@ -86,6 +87,26 @@ describe('useShop', () => {
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'shop-bought', name: 'Crit Potion' });
     expect(useToast().current.value).toMatchObject({ art: 'potions/crit', title: 'Crit Potion', text: '+20% crit · 3 days' });
     useToast().dismiss();
+  });
+
+  it("a gem potion spends the account's gems and logs a Vault buy", () => {
+    const { characterStore, shop } = stocked();
+    const accountStore = useAccountStore();
+    accountStore.addGems(30);
+    expect(shop.buyTonic('double-exp')).toBe(true);
+    expect(accountStore.account.gems).toBe(5);
+    expect(characterStore.character.gold).toBe(100000);
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'vault-bought', name: 'Double EXP', gems: 25 });
+    expect(useToast().current.value).toMatchObject({ title: 'Double EXP', text: '+100% EXP · 3 days' });
+    useToast().dismiss();
+  });
+
+  it('a gem potion short on gems spends nothing', () => {
+    const { characterStore, shop } = stocked();
+    useAccountStore().addGems(4);
+    expect(shop.buyTonic('exp')).toBe(false);
+    expect(useAccountStore().account.gems).toBe(4);
+    expect(characterStore.character.statusEffects?.some((e) => e.type === 'expBoost')).toBeFalsy();
   });
 
   it('restock charges its fee and logs it', () => {

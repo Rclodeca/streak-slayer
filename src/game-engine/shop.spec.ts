@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { GEM_WARE_PRICES, restockFee, tonicPrice, warePrice } from './constants/economy';
 import { resolvePlayerDeathIfDead } from './combat';
-import { activeExpBoost, effectiveStat } from './leveling';
+import { activeExpBoost, applyExpBoost, effectiveStat } from './leveling';
+import { characterGold } from './gold';
+import { addDaysToDayKey } from './time';
 import { ITEM_CATALOG, dropRarityShares } from './items';
 import { createRng } from './rng';
 import { buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
@@ -205,59 +207,98 @@ describe('potions', () => {
   it('the Health Potion heals 25%, then is out of stock until the window turns', () => {
     const c = hurt();
     const max = effectiveStat(c, 'health');
-    const drunk = buyTonic(c, 'draught', 4, DAY)!;
+    const drunk = buyTonic(c, 'draught', 4, DAY, 0)!;
     expect(drunk.character.currentHealth).toBeCloseTo(c.currentHealth + max * 0.25, 6);
     expect(drunk.healed).toBeCloseTo(max * 0.25, 6);
     expect(drunk.character.gold).toBe(1000 - tonicPrice(4));
-    expect(tonicState(drunk.character, 'draught', 4, DAY).status).toBe('out');
-    expect(buyTonic(drunk.character, 'draught', 4, DAY)).toBeNull();
-    expect(tonicState(drunk.character, 'draught', 4, '2026-11-14').status).toBe('out');
-    expect(tonicState(drunk.character, 'draught', 4, '2026-11-15').status).toBe('buy');
+    expect(tonicState(drunk.character, 'draught', 4, DAY, 0).status).toBe('out');
+    expect(buyTonic(drunk.character, 'draught', 4, DAY, 0)).toBeNull();
+    expect(tonicState(drunk.character, 'draught', 4, '2026-11-14', 0).status).toBe('out');
+    expect(tonicState(drunk.character, 'draught', 4, '2026-11-15', 0).status).toBe('buy');
   });
 
   it("the day's redraw keeps the potions bought, a restock puts them back", () => {
-    const drunk = buyTonic(hurt(10000), 'draught', 4, DAY)!.character;
+    const drunk = buyTonic(hurt(10000), 'draught', 4, DAY, 0)!.character;
     const nextDay = stockShop(drunk, 4, '2026-11-14', createRng(5));
-    expect(tonicState(nextDay, 'draught', 4, '2026-11-14').status).toBe('out');
+    expect(tonicState(nextDay, 'draught', 4, '2026-11-14', 0).status).toBe('out');
     const restocked = restockShop(nextDay, 4, createRng(6))!.character;
-    expect(tonicState(restocked, 'draught', 4, '2026-11-14').status).toBe('buy');
+    expect(tonicState(restocked, 'draught', 4, '2026-11-14', 0).status).toBe('buy');
   });
 
   it('no Health Potion at full health', () => {
     const base = stockShop(makeCharacter({ gold: 1000 }), 4, DAY, createRng(3));
     const c = { ...base, currentHealth: effectiveStat(base, 'health') };
-    expect(tonicState(c, 'draught', 4, DAY).status).toBe('full');
-    expect(buyTonic(c, 'draught', 4, DAY)).toBeNull();
+    expect(tonicState(c, 'draught', 4, DAY, 0).status).toBe('full');
+    expect(buyTonic(c, 'draught', 4, DAY, 0)).toBeNull();
   });
 
   it('a boost still running holds its potion back after a restock', () => {
-    const c = buyTonic(hurt(10000), 'crit', 4, DAY)!.character;
-    expect(tonicState(c, 'crit', 4, DAY).status).toBe('out');
+    const c = buyTonic(hurt(10000), 'crit', 4, DAY, 0)!.character;
+    expect(tonicState(c, 'crit', 4, DAY, 0).status).toBe('out');
     const restocked = restockShop(c, 4, createRng(6))!.character;
-    expect(tonicState(restocked, 'crit', 4, DAY)).toMatchObject({ status: 'active', daysLeft: 3 });
-    expect(buyTonic(restocked, 'crit', 4, DAY)).toBeNull();
-    expect(tonicState(restocked, 'heal', 4, DAY).status).toBe('buy');
+    expect(tonicState(restocked, 'crit', 4, DAY, 0)).toMatchObject({ status: 'active', daysLeft: 3 });
+    expect(buyTonic(restocked, 'crit', 4, DAY, 0)).toBeNull();
+    expect(tonicState(restocked, 'heal', 4, DAY, 0).status).toBe('buy');
   });
 
   it('the EXP Potion grants the EXP boost', () => {
-    const c = buyTonic(hurt(), 'exp', 4, DAY)!.character;
+    const c = buyTonic(hurt(), 'exp', 4, DAY, 99)!.character;
     expect(activeExpBoost(c, DAY)).toBeDefined();
   });
 
   it('short on gold buys no potion', () => {
     const c = hurt(0);
-    expect(tonicState(c, 'heal', 4, DAY).status).toBe('short');
-    expect(buyTonic(c, 'heal', 4, DAY)).toBeNull();
+    expect(tonicState(c, 'heal', 4, DAY, 0).status).toBe('short');
+    expect(buyTonic(c, 'heal', 4, DAY, 0)).toBeNull();
   });
 
   it('no stock, no potion', () => {
-    expect(buyTonic(makeCharacter({ gold: 1000 }), 'exp', 4, DAY)).toBeNull();
+    expect(buyTonic(makeCharacter({ gold: 1000 }), 'exp', 4, DAY, 99)).toBeNull();
   });
 
   it('a death keeps the potions bought', () => {
-    const drunk = buyTonic(hurt(), 'exp', 4, DAY)!.character;
+    const drunk = buyTonic(hurt(), 'exp', 4, DAY, 99)!.character;
     const boss = { index: 1, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
     expect(resolvePlayerDeathIfDead({ ...drunk, currentHealth: 0 }, { ...boss }, createRng(1)).character.shop).toEqual(drunk.shop);
+  });
+});
+
+describe('EXP potions for gems', () => {
+  const c = stockShop(makeCharacter({ gold: 1000 }), 4, DAY, createRng(3));
+
+  it('the EXP Potion costs 5 gems and leaves gold alone', () => {
+    expect(tonicState(c, 'exp', 4, DAY, 5)).toMatchObject({ price: 5, currency: 'gems', status: 'buy' });
+    const bought = buyTonic(c, 'exp', 4, DAY, 5)!;
+    expect(bought.gemsSpent).toBe(5);
+    expect(characterGold(bought.character)).toBe(characterGold(c));
+    expect(activeExpBoost(bought.character, DAY)).toMatchObject({ bonus: 0.25, durationDays: 3 });
+  });
+
+  it('Double EXP costs 25 gems for +100% EXP over 3 days', () => {
+    expect(tonicState(c, 'double-exp', 4, DAY, 24).status).toBe('short');
+    expect(buyTonic(c, 'double-exp', 4, DAY, 24)).toBeNull();
+    const bought = buyTonic(c, 'double-exp', 4, DAY, 25)!;
+    expect(bought.gemsSpent).toBe(25);
+    expect(activeExpBoost(bought.character, DAY)).toMatchObject({ bonus: 1, durationDays: 3 });
+  });
+
+  it('buying one EXP potion replaces the other', () => {
+    const single = buyTonic(c, 'exp', 4, DAY, 99)!.character;
+    expect(tonicState(single, 'double-exp', 4, DAY, 99).status).toBe('buy');
+    const doubled = buyTonic(single, 'double-exp', 4, DAY, 99)!.character;
+    expect(doubled.statusEffects!.filter((e) => e.type === 'expBoost')).toHaveLength(1);
+    expect(activeExpBoost(doubled, DAY)!.bonus).toBe(1);
+  });
+
+  it('an old gold EXP Potion runs out as it was', () => {
+    const old = applyExpBoost(c, addDaysToDayKey(DAY, -1)); // bought yesterday, under the old gold price
+    expect(tonicState(old, 'exp', 4, DAY, 0)).toMatchObject({ status: 'active', daysLeft: 2 });
+    expect(tonicState(old, 'double-exp', 4, DAY, 25).status).toBe('buy');
+  });
+
+  it('crit and mending stay on gold', () => {
+    expect(tonicState(c, 'crit', 4, DAY, 0)).toMatchObject({ currency: 'gold', price: tonicPrice(4) });
+    expect(buyTonic(c, 'heal', 4, DAY, 0)!.gemsSpent).toBe(0);
   });
 });
 
@@ -267,8 +308,8 @@ describe('a fallen hero', () => {
 
   it('buys no draught, ware or restock', () => {
     const c = fallen();
-    expect(buyTonic(c, 'draught', 3, DAY)).toBeNull();
-    expect(buyTonic(c, 'crit', 3, DAY)).toBeNull();
+    expect(buyTonic(c, 'draught', 3, DAY, 0)).toBeNull();
+    expect(buyTonic(c, 'crit', 3, DAY, 0)).toBeNull();
     expect(buyWare(c, c.shop!.wares[0].itemId, 0)).toBeNull();
     expect(restockShop(c, 3, createRng(1))).toBeNull();
   });

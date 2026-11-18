@@ -134,14 +134,9 @@ export function activeExpBoost(character: Character, currentDayKey: string): Exp
   return activeTimedBoost<ExpBoostStatusEffect>(character, 'expBoost', currentDayKey);
 }
 
-/** Grants (or refreshes) the temporary EXP boost, replacing any existing one. */
-export function applyExpBoost(character: Character, dayKey: string): Character {
-  const boost: ExpBoostStatusEffect = {
-    type: 'expBoost',
-    appliedDayKey: dayKey,
-    durationDays: TUNING.EXP_BOOST_DAYS,
-    bonus: TUNING.EXP_BOOST_BONUS,
-  };
+/** Grants (or refreshes) the temporary EXP boost, replacing any existing one: the EXP Potion's by default, or Double EXP's. */
+export function applyExpBoost(character: Character, dayKey: string, bonus: number = TUNING.EXP_BOOST_BONUS, durationDays: number = TUNING.EXP_BOOST_DAYS): Character {
+  const boost: ExpBoostStatusEffect = { type: 'expBoost', appliedDayKey: dayKey, durationDays, bonus };
   return { ...character, statusEffects: [...(character.statusEffects ?? []).filter((e) => e.type !== 'expBoost'), boost] };
 }
 

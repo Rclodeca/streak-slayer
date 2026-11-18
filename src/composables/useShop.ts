@@ -40,8 +40,15 @@ const TONIC_DONE: Record<TonicId, (healed: number) => string> = {
   crit: () => `+${pct(TUNING.CRIT_BOOST_BONUS)}% crit · ${TUNING.CRIT_BOOST_DAYS} days`,
   heal: () => `+${pct(TUNING.HEAL_BOOST_BONUS)}% healing · ${TUNING.HEAL_BOOST_DAYS} days`,
   exp: () => `+${pct(TUNING.EXP_BOOST_BONUS)}% EXP · ${TUNING.EXP_BOOST_DAYS} days`,
+  'double-exp': () => `+${pct(TUNING.DOUBLE_EXP_BONUS)}% EXP · ${TUNING.DOUBLE_EXP_DAYS} days`,
 };
-const TONIC_TONES: Record<TonicId, string> = { draught: 'var(--dmg-healing)', crit: 'var(--icon-crit)', heal: 'var(--dmg-healing)', exp: 'var(--icon-exp)' };
+const TONIC_TONES: Record<TonicId, string> = {
+  draught: 'var(--dmg-healing)',
+  crit: 'var(--icon-crit)',
+  heal: 'var(--dmg-healing)',
+  exp: 'var(--icon-exp)',
+  'double-exp': 'var(--icon-exp)',
+};
 
 // A second Restock within this long of the last is a double tap, not a choice:
 // nothing else stops it, since a restock is never sold out.
@@ -103,20 +110,20 @@ export function useShop() {
     return true;
   }
 
-  /** A tonic's row: price, status and days left today. */
+  /** A tonic's row: price, currency, status and days left today. */
   function tonic(id: TonicId) {
-    return tonicState(characterStore.character, id, bossStore.boss.index, today());
+    return tonicState(characterStore.character, id, bossStore.boss.index, today(), accountStore.account.gems);
   }
 
-  /** Buys a tonic and uses it at once. False (nothing spent) unless its row reads `buy`. */
+  /** Buys a tonic and uses it at once, paying gold or (an EXP potion) the account's gems. False (nothing spent) unless its row reads `buy`. */
   function buyTonic(id: TonicId): boolean {
     const { price } = tonic(id);
-    const result = buyTonicRule(characterStore.character, id, bossStore.boss.index, today());
-    if (!result) return false;
+    const result = buyTonicRule(characterStore.character, id, bossStore.boss.index, today(), accountStore.account.gems);
+    if (!result || (result.gemsSpent > 0 && !accountStore.spendGems(result.gemsSpent))) return false;
     characterStore.setCharacter(result.character);
     const def = TONIC_DEFS.find((entry) => entry.id === id);
     const name = def?.name ?? id;
-    activityLogStore.addEntry({ kind: 'shop-bought', name, gold: price });
+    activityLogStore.addEntry(result.gemsSpent > 0 ? { kind: 'vault-bought', name, gems: result.gemsSpent } : { kind: 'shop-bought', name, gold: price });
     if (result.healed) activityLogStore.addEntry({ kind: 'event-heal', amount: result.healed });
     if (def) toast.show({ art: def.art, title: name, text: TONIC_DONE[id](result.healed ?? 0), tone: TONIC_TONES[id] });
     return true;
