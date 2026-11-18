@@ -3,6 +3,12 @@ import { TALENT_DEFS } from './constants/talentTree';
 import { FREE_GEM_SOURCES, PLANNED_GEM_SINKS, REVIVE_GEMS, TALENT_COST, TRIAL_GEMS, bossGold, roundPrice, warePrice } from './constants/economy';
 import { CHALLENGE_DEFS } from './challenges';
 
+describe('prestige gems', () => {
+  it('five ranks of 50', () => {
+    expect(FREE_GEM_SOURCES.prestige).toBe(250);
+  });
+});
+
 describe('economy price sheet', () => {
   it('the tree costs the spec examples', () => {
     expect(TALENT_COST(1)).toEqual({ gold: 100, gems: 0 });

@@ -191,7 +191,8 @@ export {
   withPrestige,
 } from './prestige';
 export type { SkinDef, SkinKind, SkinSlot } from './skins';
-export { DEFAULT_SCENE_ART, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
+export { DEFAULT_SCENE_ART, MYTHIC_SKIN_IDS, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinOffered, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
+export { prestigeAccount, prestigeRun } from './prestigeRun';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Account } from './account';
 import { createAccount } from './account';
 import { SKIN_PRICES } from './constants/economy';
-import { SKIN_CATALOG, buySkin, heroArt, sceneArt, skinState, skinsFor, wearSkin, wornSkin } from './skins';
+import { MYTHIC_SKIN_IDS, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinOffered, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 
 const rich = (overrides: Partial<Account> = {}): Account => ({ ...createAccount(), gems: 100, ...overrides });
 const warriorSkin = SKIN_CATALOG.find((skin) => skin.heroClass === 'warrior')!;
@@ -13,7 +13,7 @@ const homeSkin = SKIN_CATALOG.find((skin) => skin.kind === 'home')!;
 describe('the skin catalog', () => {
   it('has skins for every class, the home base and the arena, priced by kind', () => {
     for (const slot of ['warrior', 'cleric', 'ranger', 'home', 'arena'] as const) expect(skinsFor(slot).length).toBeGreaterThan(0);
-    for (const skin of SKIN_CATALOG) expect(skin.gems).toBe(SKIN_PRICES[skin.kind]);
+    for (const skin of SKIN_CATALOG) expect(skin.gems).toBe(skin.mythic ? 0 : SKIN_PRICES[skin.kind]);
     expect(new Set(SKIN_CATALOG.map((skin) => skin.id)).size).toBe(SKIN_CATALOG.length);
   });
 });
@@ -87,5 +87,25 @@ describe('a worn skin that left the catalog', () => {
     expect(heroArt(account, 'warrior')).toBe('player/warrior');
     expect(sceneArt(account, 'arena')).toBe('stage/arena6b');
     expect(wornSkin(account, 'warrior')).toBeNull();
+  });
+});
+
+describe('the Mythic skins', () => {
+  const mythic = SKIN_CATALOG.find((skin) => skin.id === 'mythic-warrior')!;
+
+  it('one per class, given at prestige V, never sold', () => {
+    expect(MYTHIC_SKIN_IDS).toEqual(['mythic-warrior', 'mythic-mage', 'mythic-ranger']);
+    expect(MYTHIC_SKIN_IDS.map((id) => SKIN_CATALOG.find((skin) => skin.id === id)?.heroClass)).toEqual(['warrior', 'cleric', 'ranger']);
+    expect(skinState(rich(), mythic)).toBe('sealed');
+    expect(buySkin(rich(), 'mythic-warrior')).toBeNull();
+    expect(skinOffered(rich(), mythic)).toBe(false);
+    expect(skinOffered(rich(), warriorSkin)).toBe(true);
+  });
+
+  it('once owned, shows and can be worn', () => {
+    const owner = rich({ ownedSkinIds: [...MYTHIC_SKIN_IDS] });
+    expect(skinState(owner, mythic)).toBe('owned');
+    expect(skinOffered(owner, mythic)).toBe(true);
+    expect(wearSkin(owner, 'warrior', 'mythic-warrior')?.wornSkins?.warrior).toBe('mythic-warrior');
   });
 });

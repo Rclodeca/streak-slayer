@@ -27,7 +27,7 @@ describe('WardrobeSheet', () => {
     el.click();
     await flushPromises();
   };
-  const warrior = SKIN_CATALOG.filter((skin) => skin.heroClass === 'warrior');
+  const warrior = SKIN_CATALOG.filter((skin) => skin.heroClass === 'warrior' && !skin.mythic);
   const mage = SKIN_CATALOG.find((skin) => skin.heroClass === 'cleric')!;
   const arena = SKIN_CATALOG.find((skin) => skin.kind === 'arena')!;
 

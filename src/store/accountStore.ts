@@ -2,7 +2,7 @@
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, recordLevel, spendGems, wearSkin } from '../game-engine';
+import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, prestigeAccount, recordLevel, spendGems, wearSkin } from '../game-engine';
 import type { Account, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
@@ -33,6 +33,12 @@ export const useAccountStore = defineStore('account', {
       if (!spent) return false;
       this.account = spent;
       return true;
+    },
+
+    /** Takes the next prestige rank: its gems and its special (see prestigeAccount). No-op past V. */
+    prestige() {
+      const next = prestigeAccount(this.account);
+      if (next !== this.account) this.account = next;
     },
 
     /** Buys a skin and wears it; the skin, or null (nothing spent) if it can't be bought. */

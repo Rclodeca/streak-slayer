@@ -19,6 +19,9 @@ export interface Account {
   // The day the daily purse was last claimed (see claimPurse), on the account so
   // a death and a new run the same day don't pay it twice. Missing until the first.
   purseDayKey?: string;
+  // Free dungeons unlocked by prestige ranks I and III (see prestigeAccount).
+  // Recorded now; dungeons themselves come later. Missing = 0.
+  freeDungeons?: number;
 }
 
 export function createAccount(): Account {

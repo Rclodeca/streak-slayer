@@ -20,10 +20,15 @@ export interface SkinDef {
   /** The sprite's path under sprites/, without .png. */
   art: string;
   heroClass?: HeroClass;
+  /** Given at prestige V, never sold: hidden until owned. */
+  mythic?: boolean;
 }
 
 const hero = (id: string, name: string, heroClass: HeroClass): SkinDef => ({
   id, kind: 'hero', name, gems: SKIN_PRICES.hero, art: `player/skins/${id}`, heroClass,
+});
+const mythic = (id: string, name: string, heroClass: HeroClass, art: string): SkinDef => ({
+  id, kind: 'hero', name, gems: 0, art, heroClass, mythic: true,
 });
 const scene = (id: string, kind: 'home' | 'arena', name: string, art: string): SkinDef => ({ id, kind, name, gems: SKIN_PRICES[kind], art });
 
@@ -36,11 +41,18 @@ export const SKIN_CATALOG: readonly SkinDef[] = [
   hero('mage-dusk', 'Dusk Seer', 'cleric'),
   hero('ranger-moss', 'Moss Stalker', 'ranger'),
   hero('ranger-ash', 'Ash Strider', 'ranger'),
+  // The Mythic skins, one per class, given at prestige V.
+  mythic('mythic-warrior', 'Mythic Warlord', 'warrior', 'player/skins/warrior-steel'), // placeholder until the Pixellab run
+  mythic('mythic-mage', 'Mythic Archmage', 'cleric', 'player/skins/mage-dusk'), // placeholder until the Pixellab run
+  mythic('mythic-ranger', 'Mythic Pathfinder', 'ranger', 'player/skins/ranger-ash'), // placeholder until the Pixellab run
   scene('home-barred-hall', 'home', 'Barred Hall', 'stage/arena7b'),
   scene('home-moonlit-hall', 'home', 'Moonlit Hall', 'stage/arena6b'),
   scene('arena-barred-hall', 'arena', 'Barred Hall', 'stage/arena7b'),
   scene('arena-mossy-hall', 'arena', 'Mossy Hall', 'stage/arena3'),
 ];
+
+/** The Mythic skins prestige V gives, in class order. */
+export const MYTHIC_SKIN_IDS: readonly string[] = SKIN_CATALOG.filter((skin) => skin.mythic).map((skin) => skin.id);
 
 /** The art worn when no skin is: the armory and the default arena. */
 export const DEFAULT_SCENE_ART = { home: 'home/armory', arena: 'stage/arena6b' } as const;
@@ -61,11 +73,17 @@ export function wornSkin(account: Account, slot: SkinSlot): SkinDef | null {
   return SKIN_CATALOG.find((skin) => skin.id === id && skinSlot(skin) === slot) ?? null;
 }
 
-/** A skin's button: worn now, owned, buyable, or too dear. */
-export function skinState(account: Account, skin: SkinDef): 'worn' | 'owned' | 'buy' | 'short' {
+/** A skin's button: worn now, owned, buyable, too dear, or sealed (a Mythic skin not yet earned). */
+export function skinState(account: Account, skin: SkinDef): 'worn' | 'owned' | 'buy' | 'short' | 'sealed' {
   if (wornSkin(account, skinSlot(skin))?.id === skin.id) return 'worn';
   if (account.ownedSkinIds?.includes(skin.id)) return 'owned';
+  if (skin.mythic) return 'sealed';
   return account.gems >= skin.gems ? 'buy' : 'short';
+}
+
+/** Whether the Wardrobe and the Looks shop show `skin`: every skin but a sealed Mythic one. */
+export function skinOffered(account: Account, skin: SkinDef): boolean {
+  return skinState(account, skin) !== 'sealed';
 }
 
 /** Buys a skin and wears it at once. Null if it isn't in the catalog, is owned already, or costs more gems than the account holds. */

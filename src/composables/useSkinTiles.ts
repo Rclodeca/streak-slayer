@@ -2,7 +2,7 @@
 // slot's default first, then its skins in catalog order, each with its state
 // for the account (worn, owned, buyable or too dear).
 
-import { DEFAULT_SCENE_ART, skinState, skinsFor, wornSkin } from '../game-engine';
+import { DEFAULT_SCENE_ART, skinOffered, skinState, skinsFor, wornSkin } from '../game-engine';
 import type { SkinDef, SkinSlot } from '../game-engine';
 import { useAccountStore } from '../store/accountStore';
 
@@ -15,7 +15,8 @@ export interface SkinTile {
   skin: SkinDef | null;
 }
 
-export type SkinTileState = 'worn' | 'owned' | 'buy' | 'short';
+// 'sealed' never shows: sealed skins are filtered out (see skinOffered).
+export type SkinTileState = 'worn' | 'owned' | 'buy' | 'short' | 'sealed';
 
 const DEFAULTS: Record<'home' | 'arena', { name: string; art: string }> = {
   home: { name: 'Armory', art: DEFAULT_SCENE_ART.home },
@@ -31,7 +32,7 @@ export function useSkinTiles() {
     const base = slot === 'home' || slot === 'arena' ? DEFAULTS[slot] : { name: 'Starter', art: `player/${slot}` };
     return [
       { key: `${slot}-default`, name: base.name, src: spriteSrc(base.art), slot, skin: null },
-      ...skinsFor(slot).map((skin) => ({ key: skin.id, name: skin.name, src: spriteSrc(skin.art), slot, skin })),
+      ...skinsFor(slot).filter((skin) => skinOffered(accountStore.account, skin)).map((skin) => ({ key: skin.id, name: skin.name, src: spriteSrc(skin.art), slot, skin })),
     ];
   }
 
