@@ -16,6 +16,7 @@ import {
   frenzyDaysLeft,
   reflectDaysLeft,
   undyingActive,
+  bossNumber,
 } from '../../game-engine';
 import { TUNING } from '../../game-engine/constants/tuning';
 import { useCelebration } from '../../composables/useCelebration';
@@ -137,7 +138,7 @@ const skillTiles = computed<StatTile[]>(() => [
       </template>
     </div>
     <div class="boss-block">
-      <h2 class="boss-name"><span class="boss-number">#{{ boss.index }}</span> {{ nameHead }}<span class="name-tail">{{ nameTail }}</span></h2>
+      <h2 class="boss-name"><span class="boss-number">#{{ bossNumber(boss) }}</span> {{ nameHead }}<span class="name-tail">{{ nameTail }}</span></h2>
       <HealthBar :current="shownHealth" :max="boss.maxHealth" variant="boss" :marks="skillMarks" />
       <p class="stat-summary">
         <span><StatIcon name="physical" /> {{ formatCompact(physicalAttack) }}</span>
@@ -166,7 +167,7 @@ const skillTiles = computed<StatTile[]>(() => [
           <img class="sprite" :srcset="spriteSrcset(sprite)" alt="Boss" />
         </div>
         <div class="hero-info">
-          <span class="hero-tag">Boss #{{ boss.index }}</span>
+          <span class="hero-tag">Boss #{{ bossNumber(boss) }}</span>
           <span class="hero-name">{{ PERSONALITY_NAME[boss.personality] }}</span>
           <HealthBar :current="boss.health" :max="boss.maxHealth" variant="boss" :marks="skillMarks" />
           <div class="ledger">

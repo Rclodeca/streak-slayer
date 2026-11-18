@@ -1,4 +1,4 @@
-import { applyResist, bossAttackAnchorHealth, bossExpReward, generateBoss } from './boss';
+import { applyResist, bossAttackAnchorHealth, bossExpReward, bossNumber, generateBoss, withBossNumber } from './boss';
 import { activeSever, activeSunder, bloodlustActive, frenzyActive, reflectActive, resolveBreakpoints, spendPassedBreakpoints } from './bossSkills';
 import type { FiredBossSkill } from './bossSkills';
 import { createCharacter, heroClassFor } from './character';
@@ -571,7 +571,7 @@ export function resolveBossDefeatIfDead(
   // bossAttackAnchorHealth — so equipping health items doesn't just chase
   // the cap upward and cancel itself out.
   const baseMaxHealth = bossAttackAnchorHealth(boss.index + 1, withItems.starterStats.health, withItems.level);
-  const generated = generateBoss(boss.index + 1, rng, boss.difficultyModifier, baseMaxHealth, boss);
+  const generated = withBossNumber(generateBoss(boss.index + 1, rng, boss.difficultyModifier, baseMaxHealth, boss), bossNumber(boss) + 1);
   // Echoing Scythe: the killing blow's overkill carries into the next boss —
   // that boss only, and never down past 1 health, so kills can't chain.
   const carried = hasItemEffect(withItems, 'echoing-blade') ? Math.min(boss.overkill ?? 0, generated.health - 1) : 0;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyResist, bossExpReward } from './boss';
+import { applyResist, bossExpReward, bossNumber } from './boss';
 import { bossGold, REVIVE_GEMS } from './constants/economy';
 import { characterGold } from './gold';
 import { MILESTONE_EXP } from './constants/milestones';
@@ -961,6 +961,15 @@ describe('reviveForGems', () => {
 });
 
 describe('resolveBossDefeatIfDead', () => {
+  it('the next boss keeps the gap between power and shown number', () => {
+    const next = resolveBossDefeatIfDead(makeCharacter(), makeBoss({ index: 7, shownIndex: 10, health: 0 }), createRng(1)).boss;
+    expect(next.index).toBe(8);
+    expect(bossNumber(next)).toBe(11);
+    const plain = resolveBossDefeatIfDead(makeCharacter(), makeBoss({ index: 7, health: 0 }), createRng(1)).boss;
+    expect(plain.index).toBe(8);
+    expect('shownIndex' in plain).toBe(false);
+  });
+
   it('pays bossGold(slain.index)', () => {
     const result = resolveBossDefeatIfDead(makeCharacter({ gold: 50 }), makeBoss({ index: 3, health: 0 }), createRng(1));
     expect(result.character.gold).toBe(50 + bossGold(3));

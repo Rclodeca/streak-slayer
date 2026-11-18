@@ -248,6 +248,17 @@ export function bossFamily(personality: Personality): BossFamily {
   return personality.replace(/[345]x$/, '') as BossFamily;
 }
 
+/** The boss number the player sees: past deaths can leave it ahead of the power index. */
+export function bossNumber(boss: Pick<Boss, 'index' | 'shownIndex'>): number {
+  return boss.shownIndex ?? boss.index;
+}
+
+/** The boss shown as `shown`, keeping `shownIndex` only when it differs from the power index. */
+export function withBossNumber(boss: Boss, shown: number): Boss {
+  const { shownIndex: _old, ...rest } = boss;
+  return shown === boss.index ? rest : { ...rest, shownIndex: shown };
+}
+
 /**
  * The image (0-based, within its family) a boss wears. A boss saved before art
  * was picked has none: it gets a fixed one from its index, so it looks the

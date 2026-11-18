@@ -5,6 +5,7 @@
 // key, so a file still imports after a key rename. Storage only: the share
 // sheet and file picker live in composables/useSaveFileTransfer.
 
+import { bossNumber } from '../game-engine';
 import { STORAGE_KEY as FOCUS_MODE_KEY } from './focusModeStore';
 import { STORAGE_KEY as HINTS_KEY } from './hintStore';
 import { RUN_START_KEY, RUNS_KEY, STORAGE_KEY as HIGH_SCORE_KEY } from './highScoreStore';
@@ -84,7 +85,7 @@ export function readSaveFile(text: string): { file: SaveFile; summary: SaveFileS
     summary: {
       heroName: save.character.name,
       level: save.character.level,
-      bossIndex: save.boss.index,
+      bossIndex: bossNumber(save.boss),
       exportedAt: parsed.exportedAt,
     },
   };

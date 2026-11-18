@@ -4,12 +4,14 @@ import {
   BOSS_ART_COUNT,
   bossArt,
   bossFamily,
+  bossNumber,
   bossAttackAnchorHealth,
   bossExpReward,
   bossBaseHealth,
   damageReductionPct,
   expectedLevelForBossIndex,
   generateBoss,
+  withBossNumber,
   PERSONALITY_NAME,
   personalityWeightsForIndex,
   rescaleBossToHealthBands,
@@ -757,5 +759,19 @@ describe('boss art', () => {
     expect(bossArt(old)).toBe(bossArt({ ...old }));
     expect(bossArt(old)).toBe(11 % BOSS_ART_COUNT.arcane);
     expect(bossArt({ ...old, art: 99 })).toBe(11 % BOSS_ART_COUNT.arcane); // out of range: same fallback
+  });
+});
+
+describe('the shown boss number', () => {
+  it('reads shownIndex, or the index when there is none', () => {
+    expect(bossNumber({ index: 5 })).toBe(5);
+    expect(bossNumber({ index: 5, shownIndex: 8 })).toBe(8);
+  });
+
+  it('keeps shownIndex only when it differs from the index', () => {
+    const boss = generateBoss(5, createRng(1));
+    expect('shownIndex' in withBossNumber(boss, 5)).toBe(false);
+    expect('shownIndex' in withBossNumber({ ...boss, shownIndex: 9 }, 5)).toBe(false);
+    expect(withBossNumber(boss, 8).shownIndex).toBe(8);
   });
 });

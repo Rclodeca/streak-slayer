@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { ArrowLeft, Gift } from 'lucide-vue-next';
+import { bossNumber } from '../../game-engine';
 import AppMenu from './AppMenu.vue';
 import TabBar from './TabBar.vue';
 import NewHeroScreen from './NewHeroScreen.vue';
@@ -62,7 +63,7 @@ const devTools = useDevToolsStore();
 
 // Follows the fight stage, which keeps a slain boss up until the next arrives.
 const { displayedBoss } = useCelebration();
-const bossIndex = computed(() => (displayedBoss.value ?? bossStore.boss).index);
+const bossIndex = computed(() => bossNumber(displayedBoss.value ?? bossStore.boss));
 
 // An unnamed hero (first launch, or a new run after a death) gets the
 // full-screen NewHeroScreen instead of the whole shell. The popups live inside

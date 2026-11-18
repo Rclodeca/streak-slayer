@@ -305,7 +305,11 @@ export interface WoundsStatusEffect {
 }
 
 export interface Boss {
+  // The power index: every stat, gold and price is made from it.
   index: number;
+  // The boss number shown to the player, when a death has set it apart from
+  // `index` (see bossNumber). Absent whenever it equals `index`.
+  shownIndex?: number;
   personality: Personality;
   maxHealth: number;
   health: number;

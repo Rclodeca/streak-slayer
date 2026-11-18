@@ -7,6 +7,7 @@
 // pattern as `setupPersistence`.
 
 import type { Pinia } from 'pinia';
+import { bossNumber } from '../../game-engine';
 import { useBossStore } from '../bossStore';
 import { useHighScoreStore } from '../highScoreStore';
 
@@ -19,9 +20,9 @@ export function setupHighScoreTracking(pinia: Pinia, currentDayKey: string): voi
   const bossStore = useBossStore(pinia);
   const highScoreStore = useHighScoreStore(pinia);
 
-  highScoreStore.recordBossIndex(bossStore.boss.index);
+  highScoreStore.recordBossIndex(bossNumber(bossStore.boss));
   highScoreStore.ensureRunStarted(currentDayKey);
   bossStore.$subscribe((_mutation, state) => {
-    highScoreStore.recordBossIndex(state.boss.index);
+    highScoreStore.recordBossIndex(bossNumber(state.boss));
   }, { detached: true });
 }

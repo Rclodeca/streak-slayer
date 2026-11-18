@@ -5,7 +5,10 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createRng, generateBoss } from '../game-engine';
+import { useBossStore } from './bossStore';
 import { runHabitRank, runHero, useHighScoreStore } from './highScoreStore';
+import { setupHighScoreTracking } from './plugins/highScoreTracking';
 
 describe('highScoreStore', () => {
   beforeEach(() => {
@@ -30,6 +33,14 @@ describe('highScoreStore', () => {
     store.recordBossIndex(5);
     store.recordBossIndex(3); // e.g. after a death resets boss.index back to 1..N
     expect(store.highestBossIndex).toBe(5);
+  });
+
+  it('records the shown boss number, not the power index', () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useBossStore().setBoss({ ...generateBoss(4, createRng(1)), shownIndex: 9 });
+    setupHighScoreTracking(pinia, '2026-11-17');
+    expect(useHighScoreStore().highestBossIndex).toBe(9);
   });
 
   it('loads a previously persisted record on a fresh store instance', () => {

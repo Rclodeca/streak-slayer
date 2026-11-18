@@ -2,6 +2,7 @@
 // on Character.challenges (seeded by seedChallenges, kept through death, so each
 // is done once per account), and everything here is pure. Progress rules arrive with applyChallengeEvent.
 
+import { bossNumber } from './boss';
 import { TUNING } from './constants/tuning';
 import { isDueOn } from './habits';
 import { dailyPeriodKey, daysBetweenDayKeys } from './time';
@@ -273,7 +274,7 @@ export function challengeProgress(entry: ChallengeEntry, ctx: { habits: Habit[];
       return { kind: 'bar', cur: streaking, max: daily.length };
     }
     case 'untouched':
-      return { kind: 'text', text: `Boss ${ctx.boss.index} · ${ctx.boss.hurtPlayer ? 'struck' : 'untouched so far'}` };
+      return { kind: 'text', text: `Boss ${bossNumber(ctx.boss)} · ${ctx.boss.hurtPlayer ? 'struck' : 'untouched so far'}` };
     case 'new-good':
     case 'new-bad':
       return { kind: 'text', text: entry.pending?.length ? 'Counts at dawn' : 'Not yet' };

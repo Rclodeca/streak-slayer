@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Flame } from 'lucide-vue-next';
-import { REVIVE_GEMS, heroClassFor, reviveState } from '../../game-engine';
+import { REVIVE_GEMS, bossNumber, heroClassFor, reviveState } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useCombatActions } from '../../composables/useCombatActions';
 import { useDeathScreen } from '../../composables/useDeathScreen';
@@ -52,7 +52,7 @@ watch(
   (dead) => {
     if (dead) {
       phase.value = 'speak';
-      lines.value = deathLines({ level: characterStore.character.level, bossIndex: bossStore.boss.index });
+      lines.value = deathLines({ level: characterStore.character.level, bossIndex: bossNumber(bossStore.boss) });
       if (!releaseScrollLock) releaseScrollLock = lockBodyScroll();
     } else {
       unlock();
@@ -100,7 +100,7 @@ const sparks = Array.from({ length: 14 }, () => ({
 
       <div v-else class="bonfire">
         <p class="who">{{ characterStore.character.name }}</p>
-        <p class="meta">Level {{ characterStore.character.level }} {{ heroLabel }} · Boss {{ bossStore.boss.index }}</p>
+        <p class="meta">Level {{ characterStore.character.level }} {{ heroLabel }} · Boss {{ bossNumber(bossStore.boss) }}</p>
 
         <div class="fire-stage" aria-hidden="true">
           <span class="stars" />

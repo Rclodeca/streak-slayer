@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { bossSkillMarks, effectiveStat, expToNextLevel, PERSONALITY_NAME } from '../../game-engine';
+import { bossNumber, bossSkillMarks, effectiveStat, expToNextLevel, PERSONALITY_NAME } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { setHitPlayer, useHitFeed } from '../../composables/useHitFeed';
 import { useScrolledPast } from '../../composables/useScrolledPast';
@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
         ref="bar"
         :sprite="bossSprite(boss)"
         :name="PERSONALITY_NAME[boss.personality]"
-        :boss-index="boss.index"
+        :boss-index="bossNumber(boss)"
         :current="bossHp"
         :max="boss.maxHealth"
         :hero-art="skins.heroArt.value"
