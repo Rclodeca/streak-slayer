@@ -430,7 +430,7 @@ describe('trials across deaths', () => {
       ],
     });
     const boss = makeBoss({ index: 1, personality: 'balanced', physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 });
-    return resolvePlayerDeathIfDead(dead, boss, [], createRng(1)).character;
+    return resolvePlayerDeathIfDead(dead, boss, createRng(1)).character;
   };
 
   it('a death keeps every entry, and seeding adds nothing back', () => {

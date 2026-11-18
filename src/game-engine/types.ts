@@ -156,9 +156,6 @@ export interface Character {
   // `takenEventIds` instead (see migrateLevelEvents).
   slotUpgrades?: number;
   serviceTurn?: ServiceTurn;
-  // The boss index this run last revived against for gems (see reviveState in
-  // combat.ts): one revive per boss. A fresh character has none.
-  revivedAtBoss?: number;
   // The day the Gold Pouch was last bought (see vault.ts). A fresh character
   // has none, so a death resets it. (A save from before the daily stock took
   // the gem gear may still carry an unused `vault`.)

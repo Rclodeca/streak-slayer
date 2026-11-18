@@ -139,6 +139,7 @@ export {
   overdriveDamagePreview,
   overdriveHabit,
   overdriveUsesRemaining,
+  deathToll,
   reviveForGems,
   reviveState,
   resolveBossDefeatIfDead,
@@ -194,7 +195,7 @@ export { DEFAULT_SCENE_ART, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinSlot, 
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
-export { FREEZE, GOLD_POUCH, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

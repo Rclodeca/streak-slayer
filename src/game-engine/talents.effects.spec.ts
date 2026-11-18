@@ -429,17 +429,17 @@ describe('Scavenger', () => {
 });
 
 describe('a run’s end', () => {
-  it('keeps the tree when the hero dies, and the level resets', () => {
+  it('keeps the tree when the hero dies, three levels down', () => {
     const fallen = hero({ might: 3, vigor: 2 }, [], { level: 12, currentHealth: 0, talentsUnlocked: true });
-    const { character } = resolvePlayerDeathIfDead(fallen, makeBoss(), [], createRng(1));
+    const { character } = resolvePlayerDeathIfDead(fallen, makeBoss(), createRng(1));
     expect(character.talents).toEqual({ might: 3, vigor: 2 });
     expect(character.talentsUnlocked).toBe(true);
-    expect(character.level).toBe(1);
+    expect(character.level).toBe(9);
   });
 
   it('keeps the tree through a gem revive', () => {
     const fallen = hero({ might: 3, vigor: 2 }, [], { level: 12, currentHealth: 0 });
-    const { character } = reviveForGems(fallen, makeBoss(), 99)!;
+    const { character } = reviveForGems(fallen, 99)!;
     expect(character.talents).toEqual({ might: 3, vigor: 2 });
     expect(character.level).toBe(12);
   });

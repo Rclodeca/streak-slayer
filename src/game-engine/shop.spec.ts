@@ -254,10 +254,10 @@ describe('potions', () => {
     expect(buyTonic(makeCharacter({ gold: 1000 }), 'exp', 4, DAY)).toBeNull();
   });
 
-  it('a death clears the potions bought', () => {
+  it('a death keeps the potions bought', () => {
     const drunk = buyTonic(hurt(), 'exp', 4, DAY)!.character;
     const boss = { index: 1, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
-    expect(resolvePlayerDeathIfDead({ ...drunk, currentHealth: 0 }, { ...boss }, [], createRng(1)).character.shop).toBeUndefined();
+    expect(resolvePlayerDeathIfDead({ ...drunk, currentHealth: 0 }, { ...boss }, createRng(1)).character.shop).toEqual(drunk.shop);
   });
 });
 

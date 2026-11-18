@@ -96,11 +96,12 @@ describe('useShop', () => {
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'shop-restocked', gold: fee });
   });
 
-  it('a fresh run gets a fresh stock the same day', () => {
+  it('a death keeps today\'s stock', () => {
     const { characterStore, shop } = stocked();
+    const before = characterStore.character.shop;
     characterStore.setCharacter({ ...characterStore.character, currentHealth: 0 });
-    characterStore.resolvePlayerDeathIfDead(useBossStore().boss, [], createRng(1));
-    expect(characterStore.character.shop).toBeUndefined();
+    characterStore.resolvePlayerDeathIfDead(useBossStore().boss, createRng(1));
+    expect(characterStore.character.shop).toEqual(before);
     shop.ensureStock();
     expect(shop.stock.value?.dayKey).toBe(dailyPeriodKey(useDebugClockStore().now()));
   });

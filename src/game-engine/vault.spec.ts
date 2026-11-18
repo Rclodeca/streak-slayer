@@ -45,10 +45,10 @@ describe('the Gold Pouch', () => {
 });
 
 describe('a death', () => {
-  it('wipes the pouch mark', () => {
+  it('keeps the pouch mark', () => {
     const fallen = { ...makeCharacter(), pouchDayKey: DAY, currentHealth: 0 };
     const boss = { index: 3, personality: 'balanced', maxHealth: 100, health: 100, physicalAttack: 20, magicAttack: 20, armor: 10, magicResist: 10, lifestealPct: 0 } as const;
-    const { character } = resolvePlayerDeathIfDead(fallen, { ...boss }, [], createRng(1));
-    expect(character.pouchDayKey).toBeUndefined();
+    const { character } = resolvePlayerDeathIfDead(fallen, { ...boss }, createRng(1));
+    expect(character.pouchDayKey).toBe(DAY);
   });
 });

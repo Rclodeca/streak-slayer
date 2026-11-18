@@ -584,11 +584,11 @@ export function useCombatActions() {
 
   /**
    * The death screen's revive: brings a fallen hero back at half health for
-   * gems, once per boss (see reviveForGems), and closes the death screen.
+   * gems, on any fall (see reviveForGems), and closes the death screen.
    * False, with nothing spent, when it can't be bought.
    */
   function revive(): boolean {
-    const result = reviveForGems(characterStore.character, bossStore.boss, accountStore.account.gems);
+    const result = reviveForGems(characterStore.character, accountStore.account.gems);
     if (!result || !accountStore.spendGems(result.gemsSpent)) return false;
     characterStore.setCharacter(result.character);
     dismissDeathScreen();
@@ -612,7 +612,7 @@ export function useCombatActions() {
     const bossIndexAtDeath = bossStore.boss.index;
     const habits = habitStore.habits;
 
-    const deathResult = resolvePlayerDeathIfDead(character, bossStore.boss, habits, rng);
+    const deathResult = resolvePlayerDeathIfDead(character, bossStore.boss, rng);
     if (deathResult.died) {
       highScoreStore.recordRunEnd({
         bossIndex: bossIndexAtDeath,
@@ -662,7 +662,6 @@ export function useCombatActions() {
       // them open (and never shows the level-2 "Quests unlocked" popup).
       characterStore.setCharacter(questStore.quests.length > 0 ? unlockQuests(deathResult.character) : deathResult.character);
       bossStore.setBoss(deathResult.boss);
-      habitStore.setHabits(deathResult.habits);
       // Drops and beats from a boss kill on the fatal pass belong to the dead run.
       clearItemDrops();
       clearCelebration();

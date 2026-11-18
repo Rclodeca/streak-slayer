@@ -227,12 +227,12 @@ describe('characterStore talents', () => {
     expect(store.character.talentsUnlocked).toBe(true);
   });
 
-  it('starts a fresh run with the tree kept', () => {
+  it('takes the death setback with the tree kept', () => {
     const store = heroAt(12);
     store.character = { ...store.character, talents: { might: 3 }, talentsUnlocked: true, currentHealth: 0 };
-    store.resolvePlayerDeathIfDead(generateBoss(5, createRng(1)), [], createRng(2));
+    store.resolvePlayerDeathIfDead(generateBoss(5, createRng(1)), createRng(2));
     expect(store.character.talents).toEqual({ might: 3 });
     expect(store.character.talentsUnlocked).toBe(true);
-    expect(store.character.level).toBe(1);
+    expect(store.character.level).toBe(9);
   });
 });

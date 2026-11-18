@@ -38,8 +38,8 @@ const lines = ref<string[]>([]);
 
 const heroClass = computed(() => heroClassFor(characterStore.character));
 const skins = useSkins();
-// The gem revive: once per boss, so it's gone after one against this boss.
-const revival = computed(() => reviveState(characterStore.character, bossStore.boss, accountStore.account.gems));
+// The gem revive: open on every fall while the gems cover it.
+const revival = computed(() => reviveState(characterStore.character, accountStore.account.gems));
 const heroLabel = computed(() => heroClass.value.charAt(0).toUpperCase() + heroClass.value.slice(1));
 
 let releaseScrollLock: (() => void) | null = null;
@@ -132,7 +132,7 @@ const sparks = Array.from({ length: 14 }, () => ({
           <button type="button" class="revive-button" :disabled="revival === 'short'" @click="revive">
             Revive<span class="revive-price" :aria-label="`${REVIVE_GEMS} gems`"><StatIcon name="gems" :size="15" />{{ REVIVE_GEMS }}</span>
           </button>
-          <p class="revive-note">Half health. Once per foe.</p>
+          <p class="revive-note">Half health.</p>
         </template>
         <button type="button" class="restart-button" :class="{ after: revival === 'buy' || revival === 'short' }" @click="restart">Rise again</button>
       </div>

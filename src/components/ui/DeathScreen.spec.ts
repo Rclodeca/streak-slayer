@@ -6,7 +6,7 @@ import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { createRng } from '../../game-engine';
-import type { Habit } from '../../game-engine';
+import type { Character, Habit } from '../../game-engine';
 import { REVIVE_GEMS } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
@@ -136,7 +136,7 @@ describe('DeathScreen', () => {
       mountWith([]);
       await toBonfire();
       expect(reviveButton()!.textContent).toContain(String(REVIVE_GEMS));
-      expect(document.querySelector('.revive-note')!.textContent).toBe('Half health. Once per foe.');
+      expect(document.querySelector('.revive-note')!.textContent).toBe('Half health.');
       reviveButton()!.click();
       await nextTick();
       expect(useDeathScreen().isDead.value).toBe(false);
@@ -150,14 +150,14 @@ describe('DeathScreen', () => {
       expect(reviveButton()!.disabled).toBe(true);
     });
 
-    it('is gone once this boss has been revived against', async () => {
+    it('stays open after a revive against this boss, with a plain note', async () => {
       fallWith(99);
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, revivedAtBoss: useBossStore().boss.index });
+      characterStore.setCharacter({ ...characterStore.character, revivedAtBoss: useBossStore().boss.index } as Character);
       mountWith([]);
       await toBonfire();
-      expect(reviveButton()).toBeNull();
-      expect(document.querySelector('.restart-button')).not.toBeNull();
+      expect(reviveButton()).not.toBeNull();
+      expect(document.querySelector('.revive-note')?.textContent).toBe('Half health.');
     });
   });
 });

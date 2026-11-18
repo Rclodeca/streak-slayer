@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { applyResist, bossExpReward, bossNumber } from './boss';
 import { bossGold, REVIVE_GEMS } from './constants/economy';
-import { characterGold } from './gold';
 import { MILESTONE_EXP } from './constants/milestones';
 import { TUNING } from './constants/tuning';
-import { ITEM_CATALOG, itemBonusPercent, itemFlatBonus } from './items';
+import { availableRelics, ITEM_CATALOG, itemBonusPercent, itemFlatBonus } from './items';
 import { addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { createRng } from './rng';
 import { rankMultiplier } from './streaks';
-import { createCharacter, heroClassFor } from './character';
+import { createCharacter, heroClassFor, migrateCharacter } from './character';
 import {
   activeWoundsEffect,
   bossMissDamage,
   chooseHero,
   completeHabit,
+  deathToll,
   effectiveResistAfterPen,
   expectedMediumDailyDamage,
   habitDamageBreakdown,
@@ -912,51 +912,44 @@ describe('reviveForGems', () => {
 
   it('brings the hero back at half health for REVIVE_GEMS, changing nothing else', () => {
     const character = fallen();
-    const boss = makeBoss({ index: 4 });
-    expect(reviveState(character, boss, REVIVE_GEMS)).toBe('buy');
+    expect(reviveState(character, REVIVE_GEMS)).toBe('buy');
 
-    const result = reviveForGems(character, boss, REVIVE_GEMS)!;
+    const result = reviveForGems(character, REVIVE_GEMS)!;
 
     expect(result.gemsSpent).toBe(REVIVE_GEMS);
     expect(result.character.currentHealth).toBeCloseTo(effectiveStat(character, 'health') * 0.5, 10);
-    expect(result.character.revivedAtBoss).toBe(4);
     expect(result.character.level).toBe(3);
     expect(result.character.gold).toBe(200);
     expect(result.character.equippedItemIds).toEqual(['rusty-blade']);
   });
 
   it('needs the full price', () => {
-    expect(reviveState(fallen(), makeBoss(), REVIVE_GEMS - 1)).toBe('short');
-    expect(reviveForGems(fallen(), makeBoss(), REVIVE_GEMS - 1)).toBeNull();
+    expect(reviveState(fallen(), REVIVE_GEMS - 1)).toBe('short');
+    expect(reviveForGems(fallen(), REVIVE_GEMS - 1)).toBeNull();
   });
 
   it('does nothing for a hero still standing', () => {
     const standing = makeCharacter({ currentHealth: 5 });
-    expect(reviveState(standing, makeBoss(), 99)).toBe('standing');
-    expect(reviveForGems(standing, makeBoss(), 99)).toBeNull();
+    expect(reviveState(standing, 99)).toBe('standing');
+    expect(reviveForGems(standing, 99)).toBeNull();
   });
 
   it('treats health that rounds to 0 as fallen', () => {
-    expect(reviveState(fallen({ currentHealth: 0.3 }), makeBoss(), REVIVE_GEMS)).toBe('buy');
+    expect(reviveState(fallen({ currentHealth: 0.3 }), REVIVE_GEMS)).toBe('buy');
   });
 
-  it('allows one revive per boss', () => {
-    const boss = makeBoss({ index: 4 });
-    const again = { ...reviveForGems(fallen(), boss, 99)!.character, currentHealth: 0 };
-    expect(reviveState(again, boss, 99)).toBe('spent');
-    expect(reviveForGems(again, boss, 99)).toBeNull();
+  it('opens again on every fall against the same boss', () => {
+    expect(reviveState(fallen(), 20)).toBe('buy');
+    const again = { ...reviveForGems(fallen(), 20)!.character, currentHealth: 0 };
+    expect(reviveState(again, 20)).toBe('buy');
+    expect(reviveForGems(again, 20)).not.toBeNull();
+    expect(reviveState(again, 9)).toBe('short');
   });
 
-  it('opens again once that boss is slain', () => {
-    const boss = makeBoss({ index: 4 });
-    const revived = reviveForGems(fallen(), boss, 99)!.character;
-    const { character, boss: next } = resolveBossDefeatIfDead(revived, { ...boss, health: 0 }, createRng(1));
-    expect(reviveState({ ...character, currentHealth: 0 }, next, 99)).toBe('buy');
-  });
-
-  it('a death wipes the revive mark', () => {
-    const { character } = resolvePlayerDeathIfDead(fallen({ revivedAtBoss: 4 }), makeBoss({ index: 4 }), [], createRng(1));
-    expect(character.revivedAtBoss).toBeUndefined();
+  it('ignores an old save\'s revive mark, and migrateCharacter drops it', () => {
+    const old = { ...fallen(), revivedAtBoss: 4 } as Character;
+    expect(reviveState(old, 20)).toBe('buy');
+    expect('revivedAtBoss' in migrateCharacter(old, createRng(1))).toBe(false);
   });
 });
 
@@ -1079,183 +1072,107 @@ describe('resolveBossDefeatIfDead', () => {
   });
 });
 
+describe('deathToll', () => {
+  it('takes three levels, a quarter of the gold and one item', () => {
+    const hero = makeCharacter({ level: 20, gold: 401, ownedItemIds: ['rusty-blade', 'steel-sword'], equippedItemIds: ['rusty-blade', 'steel-sword'] });
+    expect(deathToll(hero)).toEqual({ levels: 3, gold: 100, items: 1 });
+  });
+
+  it('never takes a hero under level 1, or an item they lack', () => {
+    expect(deathToll(makeCharacter({ level: 2 })).levels).toBe(1);
+    expect(deathToll(makeCharacter({ level: 1 }))).toEqual({ levels: 0, gold: 0, items: 0 });
+  });
+});
+
 describe('resolvePlayerDeathIfDead', () => {
-  it('a death keeps talents and the open tab', () => {
-    const dead = makeCharacter({ currentHealth: 0, talents: { might: 3 }, talentsUnlocked: true });
-    const result = resolvePlayerDeathIfDead(dead, makeBoss(), [], createRng(1));
-    expect(result.character.talents).toEqual({ might: 3 });
-    expect(result.character.talentsUnlocked).toBe(true);
-  });
+  const items = ['rusty-blade', 'steel-sword', 'first-blood'];
+  const fallen = (overrides: Partial<Character> = {}) =>
+    makeCharacter({
+      currentHealth: 0,
+      level: 20,
+      exp: 50,
+      gold: 401,
+      ownedItemIds: items,
+      equippedItemIds: items,
+      doubledItemIds: ['steel-sword'],
+      earnedRelicIds: ['first-blood'],
+      talents: { might: 3 },
+      talentsUnlocked: true,
+      questsUnlocked: true,
+      slotUpgrades: 2,
+      ...overrides,
+    });
+  const boss12 = makeBoss({ index: 12, health: 40, maxHealth: 900, difficultyModifier: 1.07 });
 
-  it('a death keeps every trial', () => {
-    const challenges = [
-      { id: 'resist' as const, takenDayKey: '2026-11-01', progress: 3 },
-      { id: 'rank-up' as const, takenDayKey: '2026-11-01', progress: 1, doneDayKey: '2026-11-02' },
-      { id: 'slay-two' as const, takenDayKey: '2026-11-01', progress: 2, doneDayKey: '2026-11-03', unclaimed: true },
-    ];
-    const dead = makeCharacter({ currentHealth: 0, challenges });
-    const { character } = resolvePlayerDeathIfDead(dead, makeBoss(), [], createRng(1));
-    expect(character.challenges).toEqual(challenges);
-  });
-
-  it('a death with kept Vigor ranks starts the new run at full health', () => {
-    const dead = makeCharacter({ currentHealth: 0, talents: { vigor: 3 }, talentsUnlocked: true });
-    const { character } = resolvePlayerDeathIfDead(dead, makeBoss(), [], createRng(1));
+  it('takes three levels, a quarter of the gold and one item, and keeps the rest', () => {
+    const result = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
+    const { character } = result;
+    expect(result.died).toBe(true);
+    expect(character.level).toBe(17);
+    expect(character.exp).toBe(0);
+    expect(character.gold).toBe(301);
+    expect(character.equippedItemIds).toHaveLength(2);
+    expect(character.ownedItemIds).toEqual(character.equippedItemIds);
+    expect(result.lostItem).toBeDefined();
+    expect(items).toContain(result.lostItem!.id);
+    expect(character.equippedItemIds).not.toContain(result.lostItem!.id);
+    expect(character.doubledItemIds ?? []).not.toContain(result.lostItem!.id);
     expect(character.currentHealth).toBeCloseTo(effectiveStat(character, 'health'), 6);
-    expect(character.currentHealth).toBeGreaterThan(character.starterStats.health);
+    expect(character.deaths).toBe(1);
+    expect(character.talents).toEqual({ might: 3 });
+    expect(character.talentsUnlocked).toBe(true);
+    expect(character.questsUnlocked).toBe(true);
+    expect(character.slotUpgrades).toBe(2);
   });
 
-  it('a death wipes gold', () => {
-    const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0, gold: 900 }), makeBoss(), [], createRng(1));
-    expect(characterGold(result.character)).toBe(0);
+  it('sends a boss three back in power, shown as the same number, at full health', () => {
+    const { boss } = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
+    expect(boss.index).toBe(9);
+    expect(bossNumber(boss)).toBe(12);
+    expect(boss.health).toBe(boss.maxHealth);
+    expect(boss.difficultyModifier).toBe(1.07);
   });
 
-  it('keeps every habit\'s rank through a death', () => {
-    const habits = [makeHabit({ id: 'a', rank: 4 }), makeHabit({ id: 'b', rank: 1, damageType: 'healing' })];
-    const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0 }), makeBoss(), habits, createRng(1));
-    expect(result.habits.map((h) => h.rank)).toEqual([4, 1]);
+  it('a lost relic can be bought again', () => {
+    for (let seed = 0; seed < 40; seed++) {
+      const result = resolvePlayerDeathIfDead(fallen(), boss12, createRng(seed));
+      if (result.lostItem?.id !== 'first-blood') continue;
+      expect(result.character.earnedRelicIds ?? []).not.toContain('first-blood');
+      expect(availableRelics(result.character).map((item) => item.id)).toContain('first-blood');
+      return;
+    }
+    throw new Error('no seed lost the relic');
+  });
+
+  it('a second death widens the gap by three', () => {
+    const first = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
+    const second = resolvePlayerDeathIfDead({ ...first.character, currentHealth: 0 }, first.boss, createRng(2));
+    expect(second.boss.index).toBe(6);
+    expect(bossNumber(second.boss)).toBe(12);
+    expect(second.character.deaths).toBe(2);
+  });
+
+  it('floors at level 1 and boss power 1, with nothing to lose', () => {
+    const result = resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0, level: 2 }), makeBoss({ index: 2 }), createRng(1));
+    expect(result.character.level).toBe(1);
+    expect(result.character.gold ?? 0).toBe(0);
+    expect(result.lostItem).toBeUndefined();
+    expect(result.boss.index).toBe(1);
+    expect(bossNumber(result.boss)).toBe(2);
+    expect(Number.isNaN(result.character.currentHealth)).toBe(false);
   });
 
   it('is a no-op when currentHealth > 0', () => {
     const character = makeCharacter({ currentHealth: 5 });
     const boss = makeBoss();
-    const habits = [makeHabit()];
-    const rng = createRng(1);
-
-    const result = resolvePlayerDeathIfDead(character, boss, habits, rng);
-
+    const result = resolvePlayerDeathIfDead(character, boss, createRng(1));
     expect(result.died).toBe(false);
     expect(result.character).toBe(character);
     expect(result.boss).toBe(boss);
-    expect(result.habits).toBe(habits);
-  });
-
-  it('produces a fresh level-1/0-exp character and resets the boss index to 1 when currentHealth <= 0', () => {
-    const character = makeCharacter({ currentHealth: 0 });
-    const boss = makeBoss({ index: 7 });
-    const habits = [makeHabit()];
-    const rng = createRng(1);
-
-    const result = resolvePlayerDeathIfDead(character, boss, habits, rng);
-
-    expect(result.died).toBe(true);
-    expect(result.character.level).toBe(1);
-    expect(result.character.exp).toBe(0);
-    expect(result.character.currentHealth).toBe(result.character.starterStats.health);
-    expect(result.boss.index).toBe(1);
-  });
-
-  it('rolls a brand new difficultyModifier for the fresh run instead of carrying the dead run\'s forward', () => {
-    const character = makeCharacter({ currentHealth: 0 });
-    const habits = [makeHabit()];
-    const oldBoss = makeBoss({ index: 7, difficultyModifier: 1.1 });
-
-    const rolledModifiers = new Set<number>();
-    for (let seed = 0; seed < 20; seed++) {
-      const result = resolvePlayerDeathIfDead(character, oldBoss, habits, createRng(seed));
-      rolledModifiers.add(result.boss.difficultyModifier as number);
-    }
-
-    expect(rolledModifiers.size).toBeGreaterThan(1); // proves it's re-rolled, not just copied from oldBoss
   });
 
   it('treats a tiny positive currentHealth that rounds to 0 as dead', () => {
-    const character = makeCharacter({ currentHealth: 0.3 }); // rounds to 0 on the health bar, but is not literally 0
-    const boss = makeBoss({ index: 7 });
-    const habits = [makeHabit()];
-    const rng = createRng(1);
-
-    const result = resolvePlayerDeathIfDead(character, boss, habits, rng);
-
-    expect(result.died).toBe(true);
-  });
-
-  it('retains habit definitions (id/name/period/difficulty) and streak, but re-rolls damageType', () => {
-    const character = makeCharacter({ currentHealth: -5 });
-    const boss = makeBoss();
-    const original = makeHabit({
-      id: 'keep-me',
-      name: 'Read a book',
-      period: 'weekly',
-      difficulty: 'hard',
-      damageType: 'physical',
-      streakCount: 12,
-    });
-
-    const result = resolvePlayerDeathIfDead(character, boss, [original], createRng(1));
-
-    expect(result.habits).toHaveLength(1);
-    const [rerolled] = result.habits;
-    expect(rerolled.id).toBe(original.id);
-    expect(rerolled.name).toBe(original.name);
-    expect(rerolled.period).toBe(original.period);
-    expect(rerolled.difficulty).toBe(original.difficulty);
-    expect(rerolled.streakCount).toBe(12);
-  });
-
-  it('leaves an already-zero streak at zero (death should never appear to reset it)', () => {
-    const character = makeCharacter({ currentHealth: 0 });
-    const boss = makeBoss();
-    const original = makeHabit({ streakCount: 0 });
-
-    const result = resolvePlayerDeathIfDead(character, boss, [original], createRng(1));
-
-    expect(result.habits[0].streakCount).toBe(0);
-  });
-
-  it('clears Special/Ult/Overdrive flags and overdrive-use tracking on reset', () => {
-    const character = makeCharacter({ currentHealth: 0 });
-    const boss = makeBoss();
-    const original = makeHabit({
-      isSpecial: true,
-      isUlt: true,
-      isOverdrive: true,
-      overdrivePeriodKey: 'some-key',
-      overdriveUsesThisPeriod: 2,
-    });
-
-    const result = resolvePlayerDeathIfDead(character, boss, [original], createRng(1));
-
-    const [reset] = result.habits;
-    expect(reset.isSpecial).toBe(false);
-    expect(reset.isUlt).toBe(false);
-    expect(reset.isOverdrive).toBe(false);
-    expect(reset.overdrivePeriodKey).toBeNull();
-    expect(reset.overdriveUsesThisPeriod).toBe(0);
-  });
-
-  it('actually re-randomizes damageType across many seeds (not just structurally present)', () => {
-    const original = makeHabit({ damageType: 'physical' });
-    const counts: Record<string, number> = { physical: 0, magic: 0, healing: 0 };
-    const iterations = 300;
-    let differentFromOriginal = 0;
-
-    for (let seed = 0; seed < iterations; seed++) {
-      const character = makeCharacter({ currentHealth: 0 });
-      const boss = makeBoss();
-      const rng = createRng(seed);
-      const result = resolvePlayerDeathIfDead(character, boss, [original], rng);
-      const damageType = result.habits[0].damageType;
-      counts[damageType] += 1;
-      if (damageType !== original.damageType) differentFromOriginal += 1;
-    }
-
-    // With weights 0.4/0.4/0.2, most seeds should NOT reroll back to 'physical'.
-    expect(differentFromOriginal).toBeGreaterThan(iterations * 0.3);
-    expect(counts.magic).toBeGreaterThan(0);
-    expect(counts.healing).toBeGreaterThan(0);
-  });
-});
-
-describe('resolvePlayerDeathIfDead — the next hero', () => {
-  it('rolls the new hero as the fallen one, waiting on the pick', () => {
-    const warrior = makeCharacter({ currentHealth: 0, starterStats: { physicalDamage: 14, magicDamage: 6, healing: 6, health: 50, trueDamage: 6 } });
-    const mage = makeCharacter({ currentHealth: 0, starterStats: { physicalDamage: 6, magicDamage: 14, healing: 6, health: 50, trueDamage: 6 } });
-    for (const [fallen, heroClass] of [[warrior, 'warrior'], [mage, 'cleric']] as const) {
-      const result = resolvePlayerDeathIfDead(fallen, makeBoss(), [], createRng(2));
-      expect(heroClassFor(result.character)).toBe(heroClass);
-      expect(result.character.heroPending).toBe(true);
-    }
+    expect(resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0.3 }), makeBoss({ index: 7 }), createRng(1)).died).toBe(true);
   });
 });
 

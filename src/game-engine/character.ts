@@ -116,7 +116,9 @@ export function migrateCharacter(character: Character, rng: Rng): Character {
   const hasLegacySideOnly = 'sideOnlyItemIds' in (character as unknown as Record<string, unknown>);
   const hasLegacyTiers = 'newItemUnlockTiers' in (character as unknown as Record<string, unknown>);
   const hasLegacyDoubled = 'doubledItemId' in (character as unknown as Record<string, unknown>);
-  if (!needsStats && !hasLegacySideOnly && !hasLegacyExpGain && !hasLegacyTiers && !hasLegacyDoubled) return character;
+  // The once-per-boss revive mark is gone: a revive is open on every fall.
+  const hasLegacyRevive = 'revivedAtBoss' in (character as unknown as Record<string, unknown>);
+  if (!needsStats && !hasLegacySideOnly && !hasLegacyExpGain && !hasLegacyTiers && !hasLegacyDoubled && !hasLegacyRevive) return character;
   const starterStats = {
     ...character.starterStats,
     trueDamage: trueDamage ?? randomizeStat(TUNING.BASE_STATS.trueDamage, rng),
@@ -126,6 +128,7 @@ export function migrateCharacter(character: Character, rng: Rng): Character {
   delete (migrated as { expGainRebalanceApplied?: boolean }).expGainRebalanceApplied;
   delete (migrated as { sideOnlyItemIds?: string[] }).sideOnlyItemIds;
   delete (migrated as { newItemUnlockTiers?: unknown }).newItemUnlockTiers;
+  delete (migrated as { revivedAtBoss?: number }).revivedAtBoss;
   if (hasLegacyDoubled) {
     const { doubledItemId } = character as unknown as { doubledItemId?: string };
     delete (migrated as { doubledItemId?: string }).doubledItemId;

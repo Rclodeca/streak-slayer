@@ -122,9 +122,9 @@ export const useCharacterStore = defineStore('character', {
       return result;
     },
 
-    /** No-op unless dead; otherwise resets to a fresh character. */
-    resolvePlayerDeathIfDead(boss: Boss, habits: Habit[], rng: Rng) {
-      const result = resolvePlayerDeathIfDead(this.character, boss, habits, rng);
+    /** No-op unless dead; otherwise takes the death setback (see resolvePlayerDeathIfDead). */
+    resolvePlayerDeathIfDead(boss: Boss, rng: Rng) {
+      const result = resolvePlayerDeathIfDead(this.character, boss, rng);
       this.character = result.character;
       return result;
     },

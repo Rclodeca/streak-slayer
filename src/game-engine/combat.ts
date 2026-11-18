@@ -4,15 +4,15 @@ import type { FiredBossSkill } from './bossSkills';
 import { createCharacter, heroClassFor } from './character';
 import type { HeroClass } from './character';
 import { DIFFICULTY_WEIGHT } from './constants/difficulty';
-import { bossGold, REVIVE_GEMS } from './constants/economy';
+import { bossGold, DEATH_SETBACK, REVIVE_GEMS } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { characterGold } from './gold';
-import { crowdingFactor, rerollAllDamageTypes, resetLevelRewards, skillBaseDamage } from './habits';
+import { crowdingFactor, rerollAllDamageTypes, skillBaseDamage } from './habits';
 import { activeHealBoost, addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { bumpCritStreak, bumpSpellweave, critMultiplierFor, effectDamageMultiplier, effectUsedToday, hasItemEffect, isForcedCrit, stampEffectDay, starfallReady } from './itemEffects';
-import { itemBonusPercent, itemFlatBonus, rollItemDrops, rollScavengerDrop } from './items';
+import { ITEM_CATALOG, itemBonusPercent, itemFlatBonus, rollItemDrops, rollScavengerDrop } from './items';
 import type { ItemDef } from './items';
-import type { Rng } from './rng';
+import { pickRandom, type Rng } from './rng';
 import { bossKillHealPct, dodgeChancePct, healsCanCrit, HEAL_CRIT_MULTIPLIER, lastStandFactor, milestoneExpMultiplier, weeklyMightMultiplier } from './talents';
 import { completeHabitStreak, rankBonus, rankMultiplier, resetHabitStreak, streakBonus } from './streaks';
 import { daysBetweenDayKeys } from './time';
@@ -487,26 +487,34 @@ export function missQuest(character: Character, quest: Quest, boss: Boss, curren
 
 /**
  * Whether a fallen hero can revive for gems (docs/ideas/2026-11-13-shop-economy.md §3):
- * `standing` while the rounded health is above 0, `spent` once this run has
- * revived against this boss (one revive per boss), else `buy` or `short`.
+ * `standing` while the rounded health is above 0, else `buy` or `short`. Open
+ * on every fall, as long as the gems cover it.
  */
-export function reviveState(character: Character, boss: Boss, gems: number): 'buy' | 'short' | 'spent' | 'standing' {
+export function reviveState(character: Character, gems: number): 'buy' | 'short' | 'standing' {
   // Rounded, matching the rounded "is dead" check that raised the death screen.
   if (Math.round(character.currentHealth) > 0) return 'standing';
-  if (character.revivedAtBoss === boss.index) return 'spent';
   return gems >= REVIVE_GEMS ? 'buy' : 'short';
 }
 
 /**
  * Revives a fallen hero at half max health against the same boss, keeping
- * everything else, and marks this boss as revived against. Null unless
- * reviveState reads `buy`. The caller spends `gemsSpent` from the account.
+ * everything else. Null unless reviveState reads `buy`. The caller spends
+ * `gemsSpent` from the account.
  */
-export function reviveForGems(character: Character, boss: Boss, gems: number): { character: Character; gemsSpent: number } | null {
-  if (reviveState(character, boss, gems) !== 'buy') return null;
+export function reviveForGems(character: Character, gems: number): { character: Character; gemsSpent: number } | null {
+  if (reviveState(character, gems) !== 'buy') return null;
   return {
-    character: { ...character, currentHealth: effectiveStat(character, 'health') * REVIVE_HEALTH_FRACTION, revivedAtBoss: boss.index },
+    character: { ...character, currentHealth: effectiveStat(character, 'health') * REVIVE_HEALTH_FRACTION },
     gemsSpent: REVIVE_GEMS,
+  };
+}
+
+/** What a death would take from `character`: levels (never below 1), carried gold, and equipped items. */
+export function deathToll(character: Character): { levels: number; gold: number; items: number } {
+  return {
+    levels: Math.max(0, Math.min(DEATH_SETBACK.levels, character.level - 1)),
+    gold: Math.floor((characterGold(character) * DEATH_SETBACK.goldPct) / 100),
+    items: Math.min(DEATH_SETBACK.items, character.equippedItemIds.length),
   };
 }
 
@@ -581,45 +589,45 @@ export function resolveBossDefeatIfDead(
 }
 
 /**
- * No-op unless the character's health has reached 0. When it has, resets
- * the run: a fresh character, the boss sequence restarted at index 1, and
- * the same habit definitions retained with damage types re-rolled (healing
- * kept to the cap, see rerollAllDamageTypes) and
- * Special/Ult/Overdrive flags cleared (they're re-earned by leveling up
- * again). Streaks are deliberately NOT reset here — a streak should only
- * break when its own period is actually missed (`missHabit` ->
- * `resetHabitStreak`), not merely because the character died. Ranks are
- * never lowered by anything.
+ * No-op unless the character's health has reached 0. When it has, the hero
+ * takes the death setback (DEATH_SETBACK, see deathToll): three levels back
+ * (never below 1, EXP to 0), a quarter of the carried gold, and one random
+ * equipped item. Everything else in the run stays: talents, items, slots,
+ * enchants, habits and their streaks. The hero rises at full health at the new
+ * level. The next boss is a new one, three bosses back in power (never below
+ * 1) but shown as the same number, so the gap stays until prestige and each
+ * death widens it. A lost relic leaves earnedRelicIds, so it can be bought
+ * again. Rng order: the lost item, then the boss.
  */
 export function resolvePlayerDeathIfDead(
   character: Character,
   boss: Boss,
-  habits: Habit[],
   rng: Rng,
-): { character: Character; boss: Boss; habits: Habit[]; died: boolean } {
+): { character: Character; boss: Boss; died: boolean; lostItem?: ItemDef } {
   // Rounded, matching the rounded "is dead" check that triggered the death
   // screen in the first place (see useCombatActions.ts) — otherwise a tiny
   // positive health remainder would make `restart()` dismiss the death
-  // screen without actually resetting the run.
-  if (Math.round(character.currentHealth) > 0) return { character, boss, habits, died: false };
-  // Rolled as the fallen hero, which the new-hero screen then offers first.
-  // Talents are bought and kept through death, and the tab stays open. Trials
-  // are kept too (active, finished and unclaimed), so each one is done and paid
-  // once per account. Kept Vigor ranks raise max health, so the new run starts
-  // full against that max.
-  const kept = {
-    ...createCharacter(rng, heroClassFor(character)),
-    talents: character.talents,
-    talentsUnlocked: character.talentsUnlocked,
-    challenges: character.challenges,
+  // screen without actually taking the setback.
+  if (Math.round(character.currentHealth) > 0) return { character, boss, died: false };
+  const toll = deathToll(character);
+  const lostId = toll.items > 0 ? pickRandom(character.equippedItemIds, rng) : undefined;
+  const lostItem = lostId ? ITEM_CATALOG.find((item) => item.id === lostId) : undefined;
+  const without = (ids: string[] | undefined) => (lostId && ids?.includes(lostId) ? ids.filter((id) => id !== lostId) : ids);
+  const setback: Character = {
+    ...character,
+    level: character.level - toll.levels,
+    exp: 0,
+    gold: characterGold(character) - toll.gold,
+    ownedItemIds: without(character.ownedItemIds)!,
+    equippedItemIds: without(character.equippedItemIds)!,
+    doubledItemIds: without(character.doubledItemIds),
+    earnedRelicIds: without(character.earnedRelicIds),
+    deaths: (character.deaths ?? 0) + 1,
   };
-  const freshCharacter = { ...kept, currentHealth: effectiveStat(kept, 'health') };
-  return {
-    character: freshCharacter,
-    boss: generateBoss(1, rng, undefined, bossAttackAnchorHealth(1, freshCharacter.starterStats.health, freshCharacter.level), boss),
-    habits: rerollAllDamageTypes(habits, rng, heroClassFor(freshCharacter)).map(resetLevelRewards),
-    died: true,
-  };
+  const risen = { ...setback, currentHealth: effectiveStat(setback, 'health') };
+  const power = Math.max(1, boss.index - DEATH_SETBACK.bossPower);
+  const next = generateBoss(power, rng, boss.difficultyModifier, bossAttackAnchorHealth(power, risen.starterStats.health, risen.level), boss);
+  return { character: risen, boss: withBossNumber(next, bossNumber(boss)), died: true, ...(lostItem && { lostItem }) };
 }
 
 /**

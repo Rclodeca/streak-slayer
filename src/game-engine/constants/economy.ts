@@ -137,6 +137,9 @@ export const FREEZE = { gemsPerPeriod: 2, maxDays: 7, maxLeadDays: 30, maxWeeks:
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
 export const REVIVE_GEMS = 10;
 
+/** What a death takes (the prestige design §3): levels, a share of carried gold, equipped items, and boss power. */
+export const DEATH_SETBACK = { levels: 3, goldPct: 25, items: 1, bossPower: 3 } as const;
+
 /** Gem prices beyond the tree that the free budget must also cover: one hero skin. */
 export const PLANNED_GEM_SINKS = { skin: 40 };
 
