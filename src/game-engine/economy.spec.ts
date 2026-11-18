@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { TALENT_DEFS } from './constants/talentTree';
 import {
+  DAILY_PURSE_BOSS_KILLS,
   FREE_GEM_SOURCES,
   GEM_WARE_PRICES,
   GOLD_POUCH,
   LEVEL_GEM_MILESTONES,
   REVIVE_GEMS,
+  SERVICE_PRICES,
+  SHOP_PRICE_FACTOR,
   SKIN_PRICES,
+  SLOT_PRICE_FACTORS,
   TALENT_COST,
+  TALENT_RANK_BOSS_KILLS,
   TRIAL_GEMS,
   bossGold,
   goldPrice,
@@ -124,4 +129,35 @@ describe('the gold price sheet', () => {
     expect(pouchGold(10, 4)).toBeGreaterThan(pouchGold(10, 0));
     expect(purseGold(10)).toBe(30); // 0.2 × 140 = 28 → 30
   });
+});
+
+describe('the gold budget', () => {
+  // The spec §6 climbs: a good player, one talent rank per level gained, no deaths.
+  const CLIMBS = [
+    { prestige: 0, days: 45, bosses: 34, ranks: 29 },
+    { prestige: 1, days: 55, bosses: 44, ranks: 39 },
+    { prestige: 2, days: 65, bosses: 52, ranks: 49 },
+    { prestige: 3, days: 75, bosses: 62, ranks: 46 },
+    { prestige: 4, days: 85, bosses: 72, ranks: 0 },
+  ];
+  type Climb = (typeof CLIMBS)[number];
+  const sum = (xs: readonly number[]) => xs.reduce((s, x) => s + x, 0);
+  const svc = (id: keyof typeof SERVICE_PRICES, n: number) => SERVICE_PRICES[id].base * SERVICE_PRICES[id].climb ** n;
+  // All in boss kills, unrounded.
+  const core = (c: Climb) =>
+    sum(SLOT_PRICE_FACTORS) +
+    TALENT_RANK_BOSS_KILLS * c.ranks +
+    Math.floor(c.days / 3) * 0.4 + // Health Potions: 0.4 per 3-day window, one kill each
+    2 * SERVICE_PRICES.reroll.base + // two rerolls on different turns
+    svc('enchant', 0);
+  // §6's full extras list, in order: 2nd enchant, Overdrive, a 3rd reroll, rare, rare, epic, rare, 3rd enchant, 2nd Overdrive, epic.
+  const { rare, epic } = SHOP_PRICE_FACTOR;
+  const extras = sum([svc('enchant', 1), svc('overdrive', 0), SERVICE_PRICES.reroll.base, rare, rare, epic, rare, svc('enchant', 2), svc('overdrive', 1), epic]);
+  const earned = (c: Climb) => (c.bosses + DAILY_PURSE_BOSS_KILLS * c.days) / goldPriceFactor(c.prestige);
+
+  it('the full extras list is 50.5 kills', () => expect(extras).toBe(50.5));
+
+  it.each(CLIMBS)('climb at prestige $prestige covers its core build', (c) => expect(earned(c)).toBeGreaterThanOrEqual(core(c)));
+
+  it.each(CLIMBS)('climb at prestige $prestige leaves a choice: not every extra', (c) => expect(earned(c)).toBeLessThan(core(c) + extras));
 });

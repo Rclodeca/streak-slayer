@@ -102,7 +102,7 @@ The shape this gives:
 ## 8. Left for other work
 
 - **The EXP and boss-curve balance:** hit the §2 prestige pace.
-- **The gold balance:** price each talent rank at about one level's worth of gold at that point in the climb (one rank per level). It also needs new gold sinks to replace the EXP Potion.
+- **The gold balance:** done, see `2026-11-17-gold-economy-design.md`. A rank is half a boss kill of gold, not a level's gold (that left nothing for the shop); steep service climbs replace the EXP Potion as gold sinks.
 - **The trial rework:** 30 trials in the §3 shape, totalling 275.
 - **The dungeon design:** free dungeons pay §3's amounts; paid dungeons pay more.
 - **Gem pack prices** (real money), once the backend exists.
