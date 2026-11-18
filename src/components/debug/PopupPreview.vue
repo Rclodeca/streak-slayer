@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { BOSS_ART_COUNT, bossArt, bossFamily, createHabit, createQuest, createRng, dailyPeriodKey } from '../../game-engine';
 import type { BossFamily, Personality } from '../../game-engine';
 import { useBossSkillCard } from '../../composables/useBossSkillCard';
@@ -16,6 +16,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useDebugBackdropStore } from '../../store/debugBackdropStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
+import PrestigePopup from '../talents/PrestigePopup.vue';
 
 const { enqueue } = useQuestCompleteQueue();
 const { queueMiss } = useQuestMissGate();
@@ -30,6 +31,8 @@ const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const trialsBadge = useDebugTrialsBadgeStore();
 const backdrop = useDebugBackdropStore();
+// The prestige popup at the next rank; its Prestige only goes through at the bar.
+const prestigeOpen = ref(false);
 
 // Fake quests/habits never enter their stores, so acknowledging a preview is
 // a no-op (the resolvers all bail on an unknown id).
@@ -140,6 +143,7 @@ function previewPurse() {
     <button type="button" @click="previewLevelUp(1)">Preview level up, 1 unlock (testing)</button>
     <button type="button" @click="previewLevelUp(2)">Preview level up, 2 unlocks (testing)</button>
     <button type="button" @click="previewBossSkills">Preview boss skills (testing)</button>
+    <button type="button" @click="prestigeOpen = true">Preview prestige (testing)</button>
     <button type="button" @click="showTallestBoss">Show tallest boss (testing)</button>
     <button type="button" @click="showSwordWarlord">Show sword warlord (testing)</button>
     <button type="button" @click="showNextKnight">Show next dark knight (testing)</button>
@@ -151,6 +155,7 @@ function previewPurse() {
     <button type="button" @click="trialsBadge.set(12, null)">Trials 12 (testing)</button>
     <button type="button" @click="trialsBadge.set(0, false)">Trials none (testing)</button>
     <button type="button" @click="trialsBadge.set(null, null)">Trials real (testing)</button>
+    <PrestigePopup v-model="prestigeOpen" />
   </div>
 </template>
 

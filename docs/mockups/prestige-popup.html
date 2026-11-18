@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Prestige popup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The prestige moment: the popup after Prestige is confirmed. The hero retires, the rank lands, and the player
+   goes on to pick a new hero at level 1. Three options, Pixel-cut on Midnight. The rank buttons redraw all of them. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #b8b6c4; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1240px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 8px; }
+.lede { text-align: center; margin: 0 auto 16px; max-width: 700px; }
+button { font: inherit; }
+svg { flex: none; }
+.states { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 0 34px; }
+.states button { min-height: 40px; padding: 0 14px; border: 1px solid #414163; background: #1c1c2a; color: #dfe0f0; border-radius: 4px; cursor: pointer; }
+.states button.on { background: #d2bb85; color: #1a1a24; border-color: #d2bb85; font-weight: 800; }
+.opt { margin: 0 0 54px; }
+.opt h2 { text-align: center; margin: 0 0 4px; font: 600 13px 'Cinzel', serif; letter-spacing: .26em; color: #ece8de; text-transform: uppercase; }
+.opt .note { text-align: center; margin: 0 auto 16px; max-width: 660px; font-size: 14px; color: #8f8ca8; }
+.row { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; align-items: flex-start; }
+figure { margin: 0; }
+figcaption { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-top: 8px; text-transform: uppercase; }
+
+.phone {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --frame: #232337; --panel-hi: #373857; --panel-lo: #171823;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --code-bg: #202030; --sunk-hi: #0f1018; --sunk-lo: #2c2c47;
+  --moon: #dfe0f0; --brass: #d2bb85; --brass-solid: #b39a66; --dim: #8384a0; --spent: #686877;
+  --phys: #e86154; --health: #c33a2e; --exp: #d8b46a; --gem: #6fd6ea;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  position: relative; width: 375px; max-width: 100%; height: 740px; display: flex; align-items: center; justify-content: center; padding: 16px; overflow: hidden;
+  background: repeating-linear-gradient(0deg, #161624 0 58px, #11121b 58px 70px); color: var(--text); border-radius: 28px; outline: 1px solid #000; box-shadow: 0 0 0 6px #1a1a24;
+}
+.phone::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.62); }
+.rare  { --c: #5f95e6; --d: #1f3c70; --g: rgba(95,149,230,.5); }
+.epic  { --c: #b57be8; --d: #4f2a7e; --g: rgba(181,123,232,.5); }
+.relic { --c: #f58a35; --d: #7a3a0e; --g: rgba(245,138,53,.55); }
+
+.modal { position: relative; width: 100%; background: var(--frame); clip-path: var(--px3); box-shadow: inset 3px 3px 0 var(--panel-hi), inset -3px -3px 0 var(--panel-lo); padding: 0 16px 18px; }
+.scene { position: relative; height: 172px; margin: 0 -16px 0; overflow: hidden; background: #0e0e19 url('../../public/sprites/stage/arena6b.png') center 78% / 432px auto no-repeat; image-rendering: pixelated; border-bottom: 3px solid #0e0e19; }
+.scene::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(10,10,20,.6), rgba(10,10,20,.25)); }
+.scene > * { z-index: 2; }
+.glow { position: absolute; inset: 0; z-index: 1 !important; background: radial-gradient(ellipse 45% 70% at var(--gx, 50%) 80%, var(--g), transparent 70%); }
+.sprite { position: absolute; width: 64px; height: 64px; image-rendering: pixelated; }
+.stone { filter: grayscale(1) brightness(1.05) contrast(1.15) drop-shadow(0 0 4px rgba(0,0,0,.9)); }
+.ghost { filter: grayscale(1) brightness(.9); opacity: .7; }
+
+.plate { position: relative; display: inline-grid; place-items: center; width: 64px; height: 64px; color: #fff; clip-path: var(--px3);
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--c) 40%, #0a0c12), #0a0c12 75%);
+  box-shadow: inset 3px 3px 0 var(--c), inset -3px -3px 0 var(--d); font: 900 26px/1 'Cinzel', serif; text-shadow: 0 0 10px var(--c), 0 2px 0 var(--d); }
+.plate.big { width: 84px; height: 84px; font-size: 34px; }
+.rays { position: absolute; width: 220px; height: 220px; border-radius: 50%; background: repeating-conic-gradient(var(--g) 0 7deg, transparent 7deg 24deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%); animation: spin 16s linear infinite; }
+.badge { position: relative; display: grid; place-items: center; }
+.badge .rays { left: 50%; top: 50%; margin: -110px 0 0 -110px; }
+.badge .plate { animation: land .9s cubic-bezier(.2,1.6,.4,1) both, glow 2.4s 1s ease-in-out infinite; }
+
+.ttl { font: 700 11px/1.2 'Alegreya Sans'; letter-spacing: .2em; text-transform: uppercase; color: var(--c); }
+.rank-name { font: 900 24px/1.1 'Cinzel', serif; letter-spacing: .1em; color: #fff; text-shadow: 0 0 12px var(--c), 0 2px 0 #000; }
+.center { text-align: center; }
+.dim { color: var(--dim); font-size: 14px; }
+
+.gains { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 12px 0 0; }
+.gain { padding: 8px 0 7px; text-align: center; background: var(--code-bg); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.gain svg { width: 16px; height: 16px; display: block; margin: 0 auto 4px; }
+.gain b { display: block; font: 800 15px 'Alegreya Sans'; color: var(--text-h); }
+.gain small { font-size: 12px; color: var(--dim); }
+.i-phys { color: var(--phys); } .i-health { color: var(--health); } .i-exp { color: var(--exp); } .i-gem { color: var(--gem); }
+.special { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; margin-top: 8px; padding: 9px 12px; clip-path: var(--px2);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--c) 24%, var(--card)), var(--card) 70%); box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--c) 60%, var(--card-hi)), inset -2px -2px 0 var(--card-lo); }
+.special .sock { width: 44px; height: 44px; display: grid; place-items: center; background: #0a0c12; clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--c), inset -2px -2px 0 var(--d); color: var(--c); }
+.special .sock svg { width: 22px; height: 22px; }
+.special .sock img { width: 40px; height: 40px; image-rendering: pixelated; }
+.special .nm { font: 700 16px 'Alegreya', serif; color: var(--text-h); }
+.special .ln { font-size: 13px; color: var(--text); }
+.special .new { display: block; font: 700 9px 'Cinzel', serif; letter-spacing: .2em; color: var(--c); text-transform: uppercase; }
+
+.go { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; white-space: nowrap; margin-top: 14px; border: 0; cursor: pointer; overflow: hidden;
+  color: #fff; background: linear-gradient(color-mix(in srgb, var(--c) 85%, #fff), var(--c) 45%, var(--d)); clip-path: var(--px3);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.4), inset 0 -4px 0 var(--d); font: 900 15px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 2px 0 var(--d); }
+.go::after { content: ''; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent); animation: sweep 2.8s ease-in-out infinite; }
+.go svg { width: 18px; height: 18px; }
+.go-wrap { filter: drop-shadow(0 0 12px var(--g)); }
+.choice { display: grid; grid-template-columns: 1fr 1.7fr; gap: 8px; margin-top: 14px; align-items: end; }
+.choice .go { margin-top: 0; }
+.cancel { display: block; width: 100%; min-height: 52px; border: 0; cursor: pointer; background: var(--card); color: var(--text-h); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -4px 0 var(--card-lo); font: 700 16px "Alegreya Sans"; }
+.warn { margin: 12px 0 0; text-align: center; font-size: 14px; color: var(--text); }
+.warn b { color: var(--text-h); }
+
+.embers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.embers i { position: absolute; bottom: -6px; width: 3px; height: 3px; background: var(--c); box-shadow: 0 0 6px var(--c); animation: rise linear infinite; opacity: 0; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes glow { 0%,100% { filter: drop-shadow(0 0 3px var(--c)); } 50% { filter: drop-shadow(0 0 14px var(--c)); } }
+@keyframes sweep { 0% { left: -60%; } 55%,100% { left: 130%; } }
+@keyframes rise { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-200px); opacity: 0; } }
+@keyframes land { 0% { transform: scale(2.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* the retired hero's plaque */
+.plaque { display: inline-flex; flex-direction: column; align-items: center; padding: 5px 12px 6px; background: #0b0c14; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #3a3a52, inset -2px -2px 0 #09090f; }
+.plaque .who { font: 600 13px 'Cinzel', serif; letter-spacing: .16em; color: #b9b9c8; text-transform: uppercase; }
+.plaque .meta { font: 700 11px 'Alegreya Sans'; color: var(--spent); letter-spacing: .04em; }
+.stamp { display: inline-block; padding: 2px 8px; font: 900 10px 'Cinzel', serif; letter-spacing: .26em; color: #c9c3b0; text-transform: uppercase; border: 2px solid #6d6a5f; transform: rotate(-6deg); background: rgba(10,10,16,.8); }
+
+/* ---------- A · The statue ---------- */
+.a .pedestal { position: absolute; left: 50%; bottom: 44px; width: 92px; height: 22px; margin-left: -46px; clip-path: var(--px2); background: linear-gradient(#55566f, #33344a); box-shadow: inset 0 3px 0 #77788f, inset 0 -3px 0 #1d1e2c; }
+.a .statue { left: 50%; bottom: 62px; margin-left: -32px; width: 64px; height: 64px; }
+.a .stamp { position: absolute; left: calc(50% + 30px); top: 40px; }
+.a .lft { position: absolute; left: 14px; top: 14px; }
+.a .badge-row { display: flex; justify-content: center; margin: -36px 0 4px; position: relative; z-index: 3; }
+.a .plaque { position: absolute; left: 12px; top: 12px; }
+
+/* ---------- B · Passing on ---------- */
+.b .scene { height: 186px; }
+.b .old { left: 26px; bottom: 16px; transform: scaleX(-1); }
+.b .new { right: 26px; bottom: 16px; }
+.b .who-old { position: absolute; left: 14px; top: 14px; }
+.b .slot { position: absolute; right: 26px; bottom: 16px; width: 64px; height: 64px; display: grid; place-items: center; font: 900 32px 'Cinzel', serif; color: var(--c); text-shadow: 0 0 12px var(--c); }
+.b .slot::before { content: ''; position: absolute; left: 12px; right: 12px; bottom: 0; height: 52px; background: #000; opacity: .55; clip-path: polygon(30% 0, 70% 0, 70% 20%, 85% 30%, 85% 100%, 15% 100%, 15% 30%, 30% 20%); }
+.b .slot span { position: relative; }
+.b .lv1 { position: absolute; right: 14px; top: 14px; text-align: right; }
+.b .lv1 small { display: block; font: 700 10px 'Cinzel', serif; letter-spacing: .24em; color: var(--brass); text-transform: uppercase; }
+.b .lv1 b { font: 700 40px/1 'Cinzel', serif; color: var(--brass); text-shadow: 0 2px 0 #000; }
+.b .mid { position: absolute; left: 50%; top: 50%; margin: -32px 0 0 -32px; }
+.b .mid .rays { width: 180px; height: 180px; margin: -90px 0 0 -90px; }
+.b .trail { position: absolute; left: 96px; right: 96px; bottom: 44px; height: 2px; background: repeating-linear-gradient(90deg, var(--c) 0 6px, transparent 6px 12px); opacity: .7; }
+.b .skins { position: absolute; right: 8px; bottom: 14px; display: flex; }
+.b .skins img { width: 48px; height: 48px; image-rendering: pixelated; margin-left: -14px; filter: drop-shadow(0 0 6px var(--c)); }
+.b .lines { margin: 12px 0 0; text-align: center; }
+.b .lines p { margin: 0; }
+.b .lines .big { font: 700 18px 'Alegreya', serif; color: var(--text-h); }
+
+/* ---------- C · Two steps ---------- */
+.c .top { position: relative; display: flex; flex-direction: column; align-items: center; padding: 26px 0 8px; margin: 0 -16px; overflow: hidden; }
+.c .top .embers { z-index: 0; }
+.c .top > * { position: relative; z-index: 1; }
+.c .top .badge { margin-bottom: 14px; }
+.c .ret { display: grid; grid-template-columns: 52px 1fr auto; gap: 10px; align-items: center; margin-top: 12px; padding: 8px 12px 8px 8px; background: #15151f; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #26263a, inset -2px -2px 0 #0b0b12; }
+.c .ret img { width: 52px; height: 52px; image-rendering: pixelated; }
+.c .ret .who { font: 600 14px 'Cinzel', serif; letter-spacing: .12em; color: #b9b9c8; text-transform: uppercase; }
+.c .ret .meta { font: 700 12px 'Alegreya Sans'; color: var(--spent); }
+.c .m-title { margin: 16px 0 4px; text-align: center; font: 600 15px 'Cinzel', serif; letter-spacing: .24em; color: var(--text-h); text-transform: uppercase; }
+.c .picks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.c .pk { position: relative; display: flex; flex-direction: column; align-items: center; padding: 10px 6px 9px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.c .pk img { width: 64px; height: 64px; image-rendering: pixelated; }
+.c .pk .q { width: 64px; height: 64px; display: grid; place-items: center; font: 900 34px 'Cinzel', serif; color: var(--brass); }
+.c .pk b { font: 700 15px 'Alegreya', serif; color: var(--text-h); }
+.c .pk small { font: 700 11px 'Alegreya Sans'; color: var(--dim); letter-spacing: .04em; }
+.c .pk.on { background: linear-gradient(color-mix(in srgb, var(--c) 28%, var(--card)), var(--card)); box-shadow: inset 0 0 0 2px var(--c), inset 2px 2px 0 var(--card-hi); }
+.c .pk.on small { color: var(--c); }
+.c .pk .myth { position: absolute; top: 6px; right: 6px; font: 700 8px 'Cinzel', serif; letter-spacing: .16em; color: #f58a35; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Prestige popup</h1>
+  <p class="lede">What shows when the player taps Prestige: the hero who would retire, the rank and its gains, and a choice. Prestige goes on to pick a new hero at level 1; Cancel closes it and nothing changes. Pick a rank to redraw every option. Names and words are placeholders.</p>
+  <div class="states" id="states"></div>
+  <div id="opts"></div>
+</div>
+
+<script>
+const IC = {
+  crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  swords: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/>',
+  gem: '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+  castle: '<path d="M10 5V3"/><path d="M14 5V3"/><path d="M15 21v-3a3 3 0 0 0-6 0v3"/><path d="M18 3v8"/><path d="M18 5H6"/><path d="M22 11H2"/><path d="M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9"/><path d="M6 3v8"/>',
+  sprout: '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>',
+  chevron: '<path d="m9 18 6-6-6-6"/>',
+};
+const svg = (k, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+const SP = '../../public/sprites/player/';
+const SKINS = [SP + 'skins/warrior-crimson.png', SP + 'skins/mage-dusk.png', SP + 'skins/ranger-moss.png'];
+
+const RANKS = {
+  I: { n: 'I', title: 'Veteran', tier: 'rare', spec: 'Free dungeon', icon: 'castle', line: 'Yours to enter.',
+       hero: { name: 'Aldric', cls: 'Warrior', art: SP + 'warrior.png', lvl: 31, boss: 38 } },
+  III: { n: 'III', title: 'Ascendant', tier: 'epic', spec: 'Free dungeon', icon: 'castle', line: 'Yours to enter.',
+       hero: { name: 'Wren', cls: 'Ranger', art: SP + 'ranger.png', lvl: 52, boss: 70 } },
+  V: { n: 'V', title: 'Mythic', tier: 'relic', spec: 'Mythic skin', skin: true, line: 'For every hero.',
+       hero: { name: 'Isolde', cls: 'Mage', art: SP + 'cleric.png', lvl: 71, boss: 96 } },
+};
+let R = RANKS.I;
+
+const embers = (n = 10) => `<div class="embers">${Array.from({ length: n }, (_, i) => `<i style="left:${6 + ((i * 37) % 88)}%;animation-duration:${3 + (i % 4)}s;animation-delay:${(i * 0.6) % 3}s"></i>`).join('')}</div>`;
+const gains = () => `<div class="gains">
+  <div class="gain">${svg('swords', 'i-phys')}<b>+20%</b><small>damage</small></div>
+  <div class="gain">${svg('heart', 'i-health')}<b>+10%</b><small>max HP</small></div>
+  <div class="gain">${svg('sparkles', 'i-exp')}<b>+5%</b><small>EXP</small></div>
+  <div class="gain">${svg('gem', 'i-gem')}<b>50</b><small>gems</small></div></div>`;
+const special = () => `<div class="special"><span class="sock">${R.skin ? `<img src="${SKINS[0]}" alt="" />` : svg(R.icon)}</span>
+  <div><span class="new">New</span><div class="nm">${R.spec}</div><div class="ln">${R.line}</div></div></div>`;
+const badge = (big = false) => `<div class="badge ${R.tier}"><span class="rays"></span><span class="plate ${big ? 'big' : ''}">${R.n}</span></div>`;
+const plaque = () => `<div class="plaque"><span class="who">${R.hero.name}</span><span class="meta">${R.hero.cls} · Lv ${R.hero.lvl} · Boss ${R.hero.boss}</span></div>`;
+const goBtn = (label) => `<div class="go-wrap ${R.tier}"><button class="go ${R.tier}">${label}${svg('chevron')}</button></div>`;
+const choice = () => `<p class="warn">${R.hero.name} retires. A new hero begins at <b>level 1</b>.</p><div class="choice ${R.tier}"><button class="cancel">Cancel</button><div class="go-wrap ${R.tier}"><button class="go ${R.tier}">${svg("crown")}Prestige</button></div></div>`;
+const phone = (modal) => `<div class="phone">${modal}</div>`;
+
+/* A · The statue: the old hero turned to stone on a pedestal, the rank lands below it */
+function optA() {
+  return phone(`<div class="modal a ${R.tier}">
+    <div class="scene"><div class="glow" style="--gx:50%"></div>${embers(8)}
+      <img class="sprite statue stone" src="${R.hero.art}" alt="" /><span class="pedestal"></span>
+      <span class="stamp">Retired</span>${plaque()}</div>
+    <div class="badge-row">${badge()}</div>
+    <div class="center"><div class="ttl">Prestige ${R.n}</div><div class="rank-name">${R.title}</div></div>
+    ${gains()}${special()}
+    ${choice()}</div>`);
+}
+
+/* B · Passing on: the old hero walks off, grey; the empty place at level 1 waits for the next */
+function optB() {
+  const right = R.skin
+    ? `<div class="skins">${SKINS.map((s) => `<img src="${s}" alt="" />`).join('')}</div>`
+    : `<div class="slot"><span>?</span></div>`;
+  return phone(`<div class="modal b ${R.tier}">
+    <div class="scene"><div class="glow" style="--gx:78%"></div>${embers(8)}
+      <img class="sprite old ghost" src="${R.hero.art}" alt="" />
+      <div class="who-old">${plaque()}</div>
+      <div class="lv1"><small>Level</small><b>1</b></div>
+      <span class="trail"></span>
+      <div class="mid ${R.tier}"><span class="rays" style="position:absolute;left:50%;top:50%"></span><span class="plate">${R.n}</span></div>
+      ${right}</div>
+    <div class="lines"><p class="ttl" style="margin-top:2px">${R.title} ${R.n}</p></div>
+    ${gains()}${special()}
+    ${choice()}</div>`);
+}
+
+/* C · Two steps in one popup: the rank and the retired hero, then the pick right here */
+function optC1() {
+  return phone(`<div class="modal c ${R.tier}">
+    <div class="top ${R.tier}">${embers(12)}${badge(true)}<div class="ttl">Prestige ${R.n}</div><div class="rank-name">${R.title}</div></div>
+    ${gains()}${special()}
+    <div class="ret"><img class="stone" src="${R.hero.art}" alt="" /><div><div class="who">${R.hero.name}</div><div class="meta">${R.hero.cls} · Lv ${R.hero.lvl} · Boss ${R.hero.boss}</div></div><span class="stamp">Retired</span></div>
+    ${choice()}</div>`);
+}
+function optC2() {
+  const arts = R.skin ? SKINS : [SP + 'warrior.png', SP + 'cleric.png', SP + 'ranger.png'];
+  const names = ['Warrior', 'Mage', 'Ranger'];
+  const picks = names.map((n, i) => `<div class="pk ${i === 0 ? 'on' : ''}">${R.skin ? '<span class="myth">Mythic</span>' : ''}<img src="${arts[i]}" alt="" /><b>${n}</b><small>Level 1</small></div>`).join('')
+    + `<div class="pk"><span class="q">?</span><b>Fate</b><small>Level 1</small></div>`;
+  return phone(`<div class="modal c ${R.tier}" style="padding-top:2px">
+    <h3 class="m-title">Choose a hero</h3>
+    <p class="center dim" style="margin:0">${R.title} ${R.n} goes with them.</p>
+    <div class="picks">${picks}</div>
+    ${goBtn('Begin')}</div>`);
+}
+
+const OPTS = [
+  { name: 'A · The statue', note: 'The retired hero stands in stone on a pedestal, with a Retired stamp and a plaque (name, class, level, boss). The rank plate drops in below the scene with spinning rays. Prestige goes to the new-hero screen (the bonfire wheel).', render: () => [optA()] },
+  { name: 'B · Passing on', note: 'The old hero, grey and fading, walks off to the left. On the right is an empty place at level 1 with a "?" for the next hero. The rank glows between them. At Mythic the empty place shows the three Mythic skins instead. Also goes to the new-hero screen.', render: () => [optB()] },
+  { name: 'C · Two steps', note: 'Step one is the choice: a big plate, the gains and the retiring hero as a stamped card. Step two picks the next hero in the popup itself, every one at level 1. At Mythic the picks wear their Mythic skins. This replaces the new-hero screen for prestige.', render: () => [optC1(), optC2()], caps: ['Step 1', 'Step 2'] },
+];
+
+function draw() {
+  document.getElementById('states').innerHTML = Object.keys(RANKS).map((k) => `<button class="${RANKS[k] === R ? 'on' : ''}" data-r="${k}">Rank ${k} · ${RANKS[k].title}</button>`).join('');
+  document.getElementById('opts').innerHTML = OPTS.map((o) => `<section class="opt"><h2>${o.name}</h2><p class="note">${o.note}</p>
+    <div class="row">${o.render().map((p, i) => `<figure>${p}${o.caps ? `<figcaption>${o.caps[i]}</figcaption>` : ''}</figure>`).join('')}</div></section>`).join('');
+}
+document.getElementById('states').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  R = RANKS[b.dataset.r];
+  draw();
+});
+draw();
+</script>
+</body>
+</html>

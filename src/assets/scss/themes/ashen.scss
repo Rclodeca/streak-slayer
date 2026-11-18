@@ -4774,6 +4774,203 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-shadow: 0 1px 0 #000;
   }
 
+  // ---------- Prestige popup (docs/mockups/prestige-popup.html, A · The statue) ----------
+  // The retiring hero in grey stone on a pedestal, at night, the new rank landing
+  // below in its tier colour.
+  .prestige-popup {
+    &.rare {
+      --c: #5f95e6;
+      --d: #1f3c70;
+      --g: rgba(95, 149, 230, 0.5);
+    }
+
+    &.epic {
+      --c: #b57be8;
+      --d: #4f2a7e;
+      --g: rgba(181, 123, 232, 0.5);
+    }
+
+    &.relic {
+      --c: #f58a35;
+      --d: #7a3a0e;
+      --g: rgba(245, 138, 53, 0.55);
+    }
+  }
+
+  .prestige-scene {
+    background: linear-gradient(rgba(10, 10, 20, 0.6), rgba(10, 10, 20, 0.25)), #0e0e19;
+    border-bottom: 3px solid #0e0e19;
+  }
+
+  .prestige-glow {
+    background: radial-gradient(ellipse 45% 70% at 50% 80%, var(--g), transparent 70%);
+  }
+
+  .prestige-embers i {
+    background: var(--c);
+    box-shadow: 0 0 6px var(--c);
+  }
+
+  .prestige-statue {
+    filter: grayscale(1) brightness(1.05) contrast(1.15) drop-shadow(0 0 4px rgba(0, 0, 0, 0.9));
+  }
+
+  .prestige-pedestal {
+    @include pixel-corners(2px);
+    background: linear-gradient(#55566f, #33344a);
+    box-shadow:
+      inset 0 3px 0 #77788f,
+      inset 0 -3px 0 #1d1e2c;
+  }
+
+  .prestige-stamp {
+    padding: 2px 8px;
+    @include engraved(0.625rem, 0.26em);
+    font-weight: 900;
+    color: #c9c3b0;
+    background: rgba(10, 10, 16, 0.8);
+    border: 2px solid #6d6a5f;
+    transform: rotate(-6deg);
+  }
+
+  .prestige-plaque {
+    padding: 5px 12px 6px;
+    background: #0b0c14;
+    @include pixel-corners(2px);
+    box-shadow:
+      inset 2px 2px 0 #3a3a52,
+      inset -2px -2px 0 #09090f;
+  }
+
+  .prestige-plaque .who {
+    @include engraved(0.8125rem, 0.16em);
+    color: #b9b9c8;
+  }
+
+  .prestige-plaque .meta {
+    @include true-sans(0.6875rem, 700);
+    color: var(--spent-text);
+  }
+
+  .prestige-rays {
+    background: repeating-conic-gradient(var(--g) 0 7deg, transparent 7deg 24deg);
+    -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%);
+    mask: radial-gradient(circle, #000 18%, transparent 68%);
+  }
+
+  .prestige-plate {
+    font-size: 1.625rem;
+    color: #fff;
+    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--c) 40%, #0a0c12), #0a0c12 75%);
+    text-shadow:
+      0 0 10px var(--c),
+      0 2px 0 var(--d);
+  }
+
+  .prestige-rank {
+    @include true-sans(0.6875rem, 700);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c);
+  }
+
+  .prestige-title {
+    font: 900 1.5rem/1.1 var(--heading);
+    letter-spacing: 0.1em;
+    color: #fff;
+    text-shadow:
+      0 0 12px var(--c),
+      0 2px 0 #000;
+  }
+
+  .prestige-gains li {
+    background: var(--code-bg);
+    @include pixel-corners(2px);
+    @include bevel(var(--sunk-hi), var(--sunk-lo));
+  }
+
+  .prestige-gains b {
+    @include true-sans(0.95rem, 800);
+    color: var(--text-h);
+  }
+
+  .prestige-gains small {
+    @include true-sans(0.75rem);
+    color: var(--spent-text);
+  }
+
+  .prestige-special {
+    @include pixel-corners(2px);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--c) 24%, var(--card)), var(--card) 70%);
+    box-shadow:
+      inset 2px 2px 0 color-mix(in srgb, var(--c) 60%, var(--card-hi)),
+      inset -2px -2px 0 var(--card-lo);
+  }
+
+  .prestige-special .sock {
+    color: var(--c);
+    background: #0a0c12;
+    @include pixel-corners(2px);
+    box-shadow:
+      inset 2px 2px 0 var(--c),
+      inset -2px -2px 0 var(--d);
+  }
+
+  .prestige-special .new {
+    @include engraved(0.5625rem, 0.2em);
+    color: var(--c);
+  }
+
+  .prestige-special .nm {
+    font: 700 1rem var(--serif);
+    color: var(--text-h);
+  }
+
+  .prestige-special .ln {
+    @include true-sans(0.8125rem);
+    color: var(--text);
+  }
+
+  .prestige-warn {
+    @include true-sans(0.875rem);
+    color: var(--text);
+  }
+
+  .prestige-warn b {
+    color: var(--text-h);
+  }
+
+  .prestige-cancel {
+    @include plain-label($label-lg, 700);
+    color: var(--text-h);
+    background: var(--card);
+    @include pixel-corners(2px);
+    box-shadow:
+      inset 2px 2px 0 var(--card-hi),
+      inset -2px -4px 0 var(--card-lo);
+    @include inset-focus;
+  }
+
+  .prestige-confirm {
+    @include pixel-corners(3px);
+    color: #fff;
+    background: linear-gradient(color-mix(in srgb, var(--c) 85%, #fff), var(--c) 45%, var(--d));
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -4px 0 var(--d);
+    font: 900 0.95rem var(--heading);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 0 var(--d);
+    filter: drop-shadow(0 0 12px var(--g));
+    @include inset-focus;
+  }
+
+  .prestige-confirm:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .ladder-plate.next,
     .ladder-plate.ready {
@@ -4790,6 +4987,18 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
     .prestige-go::after {
       animation: prestige-sweep 2.8s ease-in-out infinite;
+    }
+
+    .prestige-embers i {
+      animation: prestige-rise linear infinite;
+    }
+
+    .prestige-rays {
+      animation: prestige-spin 16s linear infinite;
+    }
+
+    .prestige-plate {
+      animation: prestige-land 0.9s cubic-bezier(0.2, 1.6, 0.4, 1) both;
     }
   }
 
@@ -4922,6 +5131,17 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   100% {
     transform: translateY(-420px);
     opacity: 0;
+  }
+}
+
+@keyframes prestige-land {
+  0% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 

@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { Crown, Lock } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { canPrestige, nextPrestigeRank, PRESTIGE_BONUS_PER_RANK, PRESTIGE_GEMS, PRESTIGE_RANKS, prestigeMark, prestigeRank } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
 import StatIcon from '../ui/StatIcon.vue';
+import PrestigePopup from './PrestigePopup.vue';
 import { ladderSealed, ladderState, PRESTIGE_SPECIAL_LOOK } from './prestigeDisplay';
 
 // The prestige ladder (docs/mockups/prestige-tree.html, A · Crown plinth): what the
 // Talents tab's crown plinth shows in place of a shoot. Five numeral plates climb
 // from I at the foot to V at the top, each with its bar on the left and its special
 // on the right, the trunk lit up to the last rank earned. Under it, the next
-// rank's gains and either the climb to its bar or, at the bar, the Prestige button.
-// Before the first prestige, under its bar, a veil covers it all.
-const emit = defineEmits<{ prestige: [] }>();
+// rank's gains and either the climb to its bar or, at the bar, the Prestige button,
+// which opens the prestige popup to confirm. Before the first prestige, under its
+// bar, a veil covers it all.
+const confirming = ref(false);
 
 const accountStore = useAccountStore();
 const characterStore = useCharacterStore();
@@ -76,13 +78,14 @@ const EMBERS = Array.from({ length: 10 }, (_, i) => ({ left: `${8 + ((i * 37) % 
         </div>
       </div>
       <div class="ladder-act">
-        <button v-if="ready" type="button" class="prestige-go" @click="emit('prestige')"><Crown :size="20" aria-hidden="true" />Prestige</button>
+        <button v-if="ready" type="button" class="prestige-go" @click="confirming = true"><Crown :size="20" aria-hidden="true" />Prestige</button>
         <div v-else class="ladder-prog" role="progressbar" :aria-valuenow="level" :aria-valuemax="next.bar">
           <i :style="{ width: `calc(${progress}% - 6px)` }" />
           <span>Level {{ level }} / {{ next.bar }}</span>
         </div>
       </div>
     </template>
+    <PrestigePopup v-model="confirming" />
   </div>
 </template>
 
