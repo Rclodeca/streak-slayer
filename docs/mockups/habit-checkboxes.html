@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Habit Checkboxes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+:root {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19; --quiet-card: #23233a;
+  --struck-card: #1c1c2a; --struck-hi: #26263d; --struck-lo: #12131c; --struck-face: #2c2d41; --struck-lip: #1f1f2c; --struck-ink: #5a5a68;
+  --phys: #e86154; --magic: #c870d6; --heal: #4ac777; --true: #f1e9d6; --danger: #c8402f; --streak: #8d8475;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: var(--text); font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; padding: 24px 16px 48px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; text-transform: uppercase; }
+.sub { text-align: center; margin: 0 auto 28px; max-width: 620px; font-size: 14.5px; }
+.grid { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+.col { width: 360px; max-width: 100%; }
+.col h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 6px; text-transform: uppercase; text-align: center; }
+.col h2 b { color: var(--brass); margin-right: 8px; }
+.col p.why { margin: 0 0 12px; font-size: 14px; text-align: center; min-height: 58px; }
+.phone { background: var(--bg); border: 2px solid #22233a; padding: 10px 12px 16px; }
+.banner { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; font: 700 15px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--text-h); }
+.banner::before { content: ''; width: 9px; height: 9px; background: var(--brass); transform: rotate(45deg); }
+.grp { display: flex; justify-content: flex-end; font-size: 12px; color: #8a8aa0; margin: 4px 2px 4px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+/* The card */
+.card { position: relative; display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 5px 8px 5px 14px; background: var(--card); clip-path: var(--px3);
+  box-shadow: inset 0 2px 0 var(--card-hi), inset 2px 0 0 var(--card-hi), inset 0 -2px 0 var(--card-lo), inset -2px 0 0 var(--card-lo); border-bottom: 3px solid var(--card-lip); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.card.bad { background: var(--quiet-card); }
+.card.done { background: var(--struck-card); box-shadow: inset 0 2px 0 var(--struck-hi), inset 2px 0 0 var(--struck-hi), inset 0 -2px 0 var(--struck-lo), inset -2px 0 0 var(--struck-lo); }
+.title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.name { font: 700 19px/1.15 'Alegreya', serif; color: var(--text-h); }
+.bad .name { color: var(--text); }
+.done .name { color: var(--struck-ink); }
+.pwr { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #8a8aa0; }
+.pwr i { display: block; width: 46px; height: 4px; background: #191a28; position: relative; }
+.pwr i::after { content: ''; position: absolute; inset: 0; width: var(--p); background: var(--c); }
+.done .pwr i::after { background: var(--struck-ink); }
+.streak { position: absolute; top: 0; right: 0; padding: 1px 6px 2px; font-size: 11px; font-weight: 800; color: #c9c3b4; background: #191a28; }
+.streak::before { content: '🔥'; filter: grayscale(1) brightness(1.3); font-size: 9px; margin-right: 2px; }
+.done .streak { color: var(--struck-ink); }
+
+/* Now: the push key */
+.key { position: relative; width: 76px; height: 40px; flex-shrink: 0; font: 700 14.5px/1 'Alegreya Sans'; color: #fff; }
+.key::before, .key::after { content: ''; position: absolute; left: 0; right: 0; clip-path: var(--px2); }
+.key::before { top: 3px; bottom: 0; background: color-mix(in srgb, var(--c) 36%, #000); }
+.key::after { top: 0; bottom: 3px; background: color-mix(in srgb, var(--c) 88%, #000); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 2px 0 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25); transition: top .07s, bottom .07s; }
+.key span { position: absolute; inset: 0 0 3px; display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 1; text-shadow: 0 1px 0 rgba(0,0,0,.35); transition: transform .07s; }
+.key.light span { color: #1e1c18; text-shadow: none; }
+.card.done .key::before { background: var(--struck-lip); }
+.card.done .key::after { top: 3px; bottom: 0; background: var(--struck-face); box-shadow: none; }
+.card.done .key span { color: var(--struck-ink); text-shadow: none; transform: translateY(3px); }
+.key.give::after { background: color-mix(in srgb, var(--danger) 8%, #212138); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--danger) 70%, #000); }
+.key.give::before { background: color-mix(in srgb, var(--danger) 60%, #000); }
+.key.give span { color: color-mix(in srgb, var(--danger) 72%, #fff); text-shadow: none; font-size: 13.5px; }
+
+/* The check box */
+.box { position: relative; width: 30px; height: 30px; flex-shrink: 0; clip-path: var(--px2); background: #191a28; box-shadow: inset 0 0 0 2px var(--c, var(--moon)), inset 0 3px 0 rgba(0,0,0,.35); display: grid; place-items: center; }
+.box svg { width: 20px; height: 20px; opacity: 0; transform: scale(.6); transition: opacity .12s, transform .12s; }
+.done .box { background: var(--c, var(--moon)); box-shadow: none; }
+.done .box svg { opacity: 1; transform: none; }
+.box.give { --c: var(--danger); }
+.hit { position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; margin: -4px -6px -4px -2px; }
+.plate { display: inline-flex; align-items: center; gap: 3px; font: 800 13px 'Alegreya Sans'; color: var(--c); padding: 3px 6px; background: #191a28; clip-path: var(--px2); }
+.done .plate { color: var(--struck-ink); }
+.dmgline { color: var(--c); font-weight: 800; }
+.done .dmgline { color: var(--struck-ink); }
+.ico { width: 12px; height: 12px; display: inline-block; background: currentColor; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.ico.heal { clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%); }
+.float { position: absolute; right: 10px; top: 50%; font: 800 16px 'Alegreya Sans'; color: var(--c); pointer-events: none; animation: rise .9s ease-out forwards; z-index: 3; text-shadow: 0 1px 0 #000; }
+@keyframes rise { from { opacity: 1; transform: translateY(-50%); } to { opacity: 0; transform: translateY(-160%); } }
+.hint { text-align: center; font-size: 13px; color: #8a8aa0; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h1>Habit checkboxes</h1>
+<p class="sub">The same three habits and one bad habit, four ways. Tap any card to check it off and tap again to undo. Midnight theme, phone width.</p>
+<div class="grid" id="grid"></div>
+
+<script>
+const HABITS = [
+  { name: 'Morning run', c: 'var(--phys)', dmg: '1.2K', pwr: '72%', streak: 6, icon: 'ico' },
+  { name: 'Read 20 pages', c: 'var(--magic)', dmg: '980', pwr: '45%', streak: 3, icon: 'ico' },
+  { name: 'Stretch', c: 'var(--heal)', dmg: '410', pwr: '30%', streak: 0, icon: 'ico heal' },
+];
+const BAD = { name: 'Doomscrolling', dmg: '860' };
+const CHECK = '<svg viewBox="0 0 10 10" shape-rendering="crispEdges"><path fill="#11121b" d="M1 5h2v1h1v1h1V6h1V5h1V4h1V3h1v2H8v1H7v1H6v1H5v1H3V8H2V7H1z"/></svg>';
+const CROSS = '<svg viewBox="0 0 10 10" shape-rendering="crispEdges"><path fill="#11121b" d="M2 2h2v1h1v1h1V3h1V2h2v2H8v1H7v1h1v1h1v2H7V8H6V7H5v1H4v1H2V7h1V6h1V5H3V4H2z"/></svg>';
+
+const pwr = (h) => `<span class="pwr">PWR <i style="--p:${h.pwr}"></i></span>`;
+const streak = (h) => (h.streak ? `<span class="streak">${h.streak}</span>` : '');
+
+const OPTIONS = [
+  {
+    n: 'Now', h: 'Push key', why: 'Today’s card: a pressable key on the right that shows the hit. Reads as an attack.',
+    row: (h) => `${streak(h)}<div class="title"><span class="name">${h.name}</span>${pwr(h)}</div><span class="key ${h.c.includes('true') ? 'light' : ''}"><span><i class="${h.icon}"></i>${h.dmg}</span></span>`,
+    bad: () => `<div class="title"><span class="name">${BAD.name}</span></div><span class="plate" style="--c:var(--phys)"><i class="ico"></i>${BAD.dmg}</span><span class="key give"><span>♥︎− Give in</span></span>`,
+  },
+  {
+    n: 'A', h: 'Box on the right', why: 'A checkbox takes the key’s place. The hit sits beside it as a small number, so the game stays visible but quieter.',
+    row: (h) => `${streak(h)}<div class="title"><span class="name">${h.name}</span>${pwr(h)}</div><span class="plate"><i class="${h.icon}"></i>${h.dmg}</span><span class="hit"><span class="box">${CHECK}</span></span>`,
+    bad: () => `<div class="title"><span class="name">${BAD.name}</span></div><span class="plate" style="--c:var(--phys)"><i class="ico"></i>${BAD.dmg}</span><span class="hit"><span class="box give">${CROSS}</span></span>`,
+  },
+  {
+    n: 'B', h: 'Box on the left', why: 'The classic tracker layout: box first, then the name. The hit moves into the tag line under the name.',
+    row: (h) => `${streak(h)}<span class="hit" style="margin:-4px -2px -4px -8px"><span class="box">${CHECK}</span></span><div class="title"><span class="name">${h.name}</span><span class="pwr">PWR <i style="--p:${h.pwr}"></i><span class="dmgline"><i class="${h.icon}"></i> ${h.dmg}</span></span></div>`,
+    bad: () => `<span class="hit" style="margin:-4px -2px -4px -8px"><span class="box give">${CROSS}</span></span><div class="title"><span class="name">${BAD.name}</span><span class="pwr" style="--c:var(--phys)">If resisted <span class="dmgline"><i class="ico"></i> ${BAD.dmg}</span></span></div>`,
+  },
+  {
+    n: 'C', h: 'Box only', why: 'Plainest: box on the left, no number on the card at all. The hit only shows when you check it, rising off the card.',
+    row: (h) => `${streak(h)}<span class="hit" style="margin:-4px -2px -4px -8px"><span class="box">${CHECK}</span></span><div class="title"><span class="name">${h.name}</span>${pwr(h)}</div>`,
+    bad: () => `<span class="hit" style="margin:-4px -2px -4px -8px"><span class="box give">${CROSS}</span></span><div class="title"><span class="name">${BAD.name}</span></div>`,
+  },
+];
+
+document.getElementById('grid').innerHTML = OPTIONS.map((o, i) => `
+  <div class="col">
+    <h2><b>${o.n}</b>${o.h}</h2>
+    <p class="why">${o.why}</p>
+    <div class="phone">
+      <div class="banner">Habits</div>
+      <div class="grp">Daily</div>
+      <ul>${HABITS.map((h, j) => `<li class="card${j === 2 ? ' done' : ''}" style="--c:${h.c}" data-dmg="${h.dmg}">${o.row(h)}</li>`).join('')}</ul>
+      <div class="banner" style="margin-top:18px">Bad habits</div>
+      <ul><li class="card bad" style="--c:var(--danger)" data-bad="1">${o.bad()}</li></ul>
+      <p class="hint">Tap a card</p>
+    </div>
+  </div>`).join('');
+
+document.querySelectorAll('.card').forEach((card) => {
+  card.addEventListener('click', () => {
+    const done = card.classList.toggle('done');
+    if (done && !card.dataset.bad) {
+      const f = document.createElement('span');
+      f.className = 'float';
+      f.textContent = `−${card.dataset.dmg}`;
+      card.appendChild(f);
+      setTimeout(() => f.remove(), 900);
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Checkbox B</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+:root { --bg: #0b0b12; --text: #d3d4e4; --text-h: #ece8de; --brass: #d2bb85; --line: #22233a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 20px 16px 40px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: var(--text-h); margin: 0 0 6px; text-transform: uppercase; }
+.sub { text-align: center; margin: 0 auto 16px; max-width: 560px; font-size: 14.5px; }
+.bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.bar button { min-height: 44px; padding: 0 16px; font: 700 14px 'Alegreya Sans'; color: var(--text); background: #191a28; border: 2px solid #3f405a; cursor: pointer; }
+.bar button.on { color: #11121b; background: #dfe0f0; border-color: #dfe0f0; }
+.frame { display: block; margin: 0 auto; width: 390px; max-width: 100%; height: 844px; border: 2px solid var(--line); background: #11121b; }
+.notes { max-width: 560px; margin: 18px auto 0; font-size: 14px; }
+.notes li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>Habits · Checkbox B</h1>
+<p class="sub">The real app with sample habits. In B, tap a box to check a habit off (it runs the real strike), and tap the card for its details as usual. Undo is in the menu, like today.</p>
+<div class="bar">
+  <button type="button" id="b" class="on">B · Checkboxes</button>
+  <button type="button" id="now">Now · Push keys</button>
+  <button type="button" id="reset">Reset sample</button>
+</div>
+<div class="bar" id="variants">
+  <button type="button" data-v="v1" class="on">B1 · Under name</button>
+  <button type="button" data-v="v2">B2 · Right column</button>
+  <button type="button" data-v="v3">B3 · Bottom edge</button>
+  <button type="button" data-v="v4">B4 · Side gauge</button>
+</div>
+<p class="sub" id="vnote"></p>
+<iframe class="frame" id="app" title="StreakSlayer"></iframe>
+<ul class="notes">
+  <li><b>Box:</b> pixel box at the card's left edge, rimmed in the habit's damage colour, 44px tap area.</li>
+  <li><b>Checked:</b> it flashes the damage colour, then settles grey with the card, like a struck key does today.</li>
+  <li><b>Damage:</b> moves into the PWR line under the name.</li>
+  <li><b>Bad habits:</b> a red-rimmed box. Checking it means you gave in, and it fills with ✕. The line under the name reads "If resisted" and the damage.</li>
+</ul>
+
+<script>
+const APP = '/streak-slayer/';
+const frame = document.getElementById('app');
+let mode = 'b';
+
+async function seed() {
+  const data = await (await fetch('./habit-checkbox-b.seed.json')).json();
+  localStorage.clear();
+  for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v);
+}
+
+const CSS = `
+html.mock-b .habit-item:not(.reroll-row) { padding-left: 6px !important; gap: 8px !important; }
+html.mock-b .habit-item .strike { display: none !important; }
+html.mock-b .habit-item.bad .meta { display: none !important; }
+.mock-hit { display: none; }
+html.mock-b .mock-hit { position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; margin: -4px -4px -4px 0; padding: 0; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mock-box { position: relative; width: 30px; height: 30px;
+  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  background: color-mix(in srgb, var(--c) 10%, #141523);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 85%, #000), inset 0 4px 0 rgba(0,0,0,.35), inset 0 -2px 0 color-mix(in srgb, var(--c) 30%, #000);
+  display: grid; place-items: center; }
+.mock-box svg { width: 20px; height: 20px; opacity: 0; transform: scale(.5); transition: opacity .12s, transform .12s; }
+.mock-hit:active .mock-box { transform: translateY(1px); }
+.habit-item:is(.struck) .mock-box { background: var(--struck-face); box-shadow: inset 0 0 0 2px var(--struck-lip); }
+.habit-item:is(.struck) .mock-box svg { opacity: 1; transform: none; }
+.habit-item.resting .mock-box { background: var(--resting-face); box-shadow: inset 0 0 0 2px var(--struck-lip); }
+.habit-item.mock-lit .mock-box { animation: mock-land .6s ease-out; }
+@keyframes mock-land { from { background: var(--c); box-shadow: none; } }
+.mock-dmg { display: none; }
+html.mock-b .mock-dmg { display: inline-flex; align-items: center; gap: 3px; font: 800 12.5px/1 var(--sans, 'Alegreya Sans'); font-variant-numeric: lining-nums tabular-nums; color: color-mix(in srgb, var(--c) 80%, #fff); letter-spacing: 0; }
+html.mock-b .habit-item.bad .mock-dmg { color: color-mix(in srgb, var(--dk) 80%, #fff); }
+html.mock-b .mock-dmg .stat-icon { color: inherit !important; }
+html.mock-b .mock-dmg .stat-icon svg { width: 12px; height: 12px; }
+html.mock-b .mock-dmg small { font: 700 11px var(--sans, 'Alegreya Sans'); letter-spacing: .06em; text-transform: uppercase; color: #8a8aa0; margin-right: 3px; }
+html.mock-b .habit-item:is(.struck, .resting) .mock-dmg { color: var(--struck-ink); }
+html.mock-b .habit-item { --pc: color-mix(in srgb, var(--c) 80%, #fff); }
+html.mock-b .habit-item.bad { --pc: color-mix(in srgb, var(--dk) 80%, #fff); }
+html.mock-b .habit-item .power-label { color: var(--pc) !important; }
+html.mock-b .habit-item .power-bar i { background: var(--pc) !important; }
+html.mock-b .habit-item .power-bar { background: color-mix(in srgb, var(--pc) 16%, #11121b) !important; }
+html.mock-b .habit-item:is(.struck, .resting) { --pc: var(--struck-ink); }
+
+/* Variants. The copies sit hidden until a variant asks for them. */
+.mock-right, .mock-edge, .mock-gauge { display: none; }
+html.mock-b:is(.v2, .v3, .v4) .habit-item .tags > .power { display: none !important; }
+html.mock-b.v2 .habit-item .tags > .mock-dmg { display: none !important; }
+
+/* B2: number over the bar, right-aligned in a column at the card's end. */
+html.mock-b.v2 .mock-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; margin-right: 6px; margin-top: 8px; }
+html.mock-b.v2 .mock-right .mock-dmg { font-size: 14px; }
+html.mock-b.v2 .mock-right .power-bar { width: 56px !important; }
+
+/* B3: a full-width strip along the card's bottom edge. */
+html.mock-b.v3 .habit-item { padding-bottom: 9px !important; }
+html.mock-b.v3 .mock-edge { display: block; position: absolute; left: 3px; right: 3px; bottom: 0; height: 4px; background: color-mix(in srgb, var(--pc) 14%, #0e0e19); }
+html.mock-b.v3 .mock-edge i { display: block; height: 100%; background: var(--pc); box-shadow: 0 0 6px color-mix(in srgb, var(--pc) 50%, transparent); }
+
+/* B4: a short upright gauge at the card's right end, filling from the bottom. */
+html.mock-b.v4 .mock-gauge { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; margin: 6px 6px 0 0; }
+html.mock-b.v4 .mock-gauge .g { position: relative; width: 8px; height: 30px; background: color-mix(in srgb, var(--pc) 14%, #11121b); box-shadow: inset 1px 1px 0 rgba(0,0,0,.5), inset -1px -1px 0 rgba(255,255,255,.06); }
+html.mock-b.v4 .mock-gauge .g i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--pc); }
+html.mock-b.v4 .mock-gauge small { font: 800 9px/1 var(--sans, 'Alegreya Sans'); letter-spacing: .08em; color: var(--pc); }
+`;
+
+const CHECK = '<svg viewBox="0 0 10 10" shape-rendering="crispEdges" aria-hidden="true"><path fill="#9a9aae" d="M1 5h2v1h1v1h1V6h1V5h1V4h1V3h1v2H8v1H7v1H6v1H5v1H3V8H2V7H1z"/></svg>';
+const CROSS = '<svg viewBox="0 0 10 10" shape-rendering="crispEdges" aria-hidden="true"><path fill="#c8402f" d="M2 2h2v1h1v1h1V3h1V2h2v2H8v1H7v1h1v1h1v2H7V8H6V7H5v1H4v1H2V7h1V6h1V5H3V4H2z"/></svg>';
+
+function decorate(doc) {
+  doc.querySelectorAll('.habit-item:not(.reroll-row)').forEach((li) => {
+    const strike = li.querySelector('.strike');
+    if (!strike) return;
+    const bad = li.classList.contains('bad');
+    if (!li.querySelector(':scope > .mock-hit')) {
+      const hit = doc.createElement('button');
+      hit.type = 'button';
+      hit.className = 'mock-hit';
+      hit.setAttribute('aria-label', strike.getAttribute('aria-label') || 'Check');
+      hit.innerHTML = `<span class="mock-box"${bad ? ' style="--c: var(--damage-color)"' : ''}>${bad ? CROSS : CHECK}</span>`;
+      hit.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const s = li.querySelector('.strike');
+        if (!s || s.disabled) return;
+        li.classList.remove('mock-lit'); void li.offsetWidth; li.classList.add('mock-lit');
+        setTimeout(() => li.classList.remove('mock-lit'), 650);
+        s.click();
+      });
+      li.insertBefore(hit, li.firstElementChild ? li.querySelector('.title') : null);
+    }
+    const tags = li.querySelector('.tags') || (() => {
+      const t = doc.createElement('span'); t.className = 'tags'; li.querySelector('.title')?.appendChild(t); return t;
+    })();
+    let dmg = tags.querySelector('.mock-dmg');
+    const src = bad ? li.querySelector('.meta .reward-plate') : strike.querySelector('.face');
+    const num = src?.querySelector('b')?.textContent ?? '';
+    const icon = src?.querySelector('.stat-icon')?.outerHTML ?? '';
+    const html = `${bad ? '<small>If resisted</small>' : ''}${icon}<b>${num}</b>`;
+    if (!dmg) { dmg = doc.createElement('span'); dmg.className = 'mock-dmg'; tags.appendChild(dmg); }
+    if (dmg.dataset.k !== html) { dmg.dataset.k = html; dmg.innerHTML = html; }
+    // Copies of the PWR bar and the number for the variants that move them.
+    const fill = li.querySelector('.tags > .power .power-bar i')?.style.width || '0%';
+    let right = li.querySelector(':scope > .mock-right');
+    if (!right) { right = doc.createElement('span'); right.className = 'mock-right'; li.appendChild(right); }
+    const rightHtml = `<span class="mock-dmg">${html}</span><span class="power-bar"><i style="width:${fill}"></i></span>`;
+    if (right.dataset.k !== rightHtml) { right.dataset.k = rightHtml; right.innerHTML = rightHtml; }
+    let edge = li.querySelector(':scope > .mock-edge');
+    if (!edge) { edge = doc.createElement('span'); edge.className = 'mock-edge'; li.appendChild(edge); }
+    const edgeHtml = `<i style="width:${fill}"></i>`;
+    if (edge.dataset.k !== edgeHtml) { edge.dataset.k = edgeHtml; edge.innerHTML = edgeHtml; }
+    let gauge = li.querySelector(':scope > .mock-gauge');
+    if (!gauge) { gauge = doc.createElement('span'); gauge.className = 'mock-gauge'; li.appendChild(gauge); }
+    const gaugeHtml = `<span class="g"><i style="height:${fill}"></i></span><small>PWR</small>`;
+    if (gauge.dataset.k !== gaugeHtml) { gauge.dataset.k = gaugeHtml; gauge.innerHTML = gaugeHtml; }
+    if (bad) li.style.setProperty('--dk', `var(--dmg-${(src?.querySelector('.stat-icon')?.getAttribute('style') || '').match(/--dmg-([a-z]+)/)?.[1] || 'physical'})`);
+  });
+}
+
+function wire() {
+  const doc = frame.contentDocument;
+  if (!doc) return;
+  if (!doc.getElementById('mock-css')) {
+    const st = doc.createElement('style'); st.id = 'mock-css'; st.textContent = CSS; doc.head.appendChild(st);
+  }
+  doc.documentElement.classList.toggle('mock-b', mode === 'b');
+  setVariant(variant);
+  decorate(doc);
+  if (!frame._obs) {
+    let queued = false;
+    frame._obs = new MutationObserver(() => {
+      if (queued) return; queued = true;
+      requestAnimationFrame(() => { queued = false; decorate(doc); });
+    });
+    frame._obs.observe(doc.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+  }
+}
+
+frame.addEventListener('load', () => { frame._obs = null; const tick = setInterval(() => { if (frame.contentDocument?.querySelector('.habit-item')) { clearInterval(tick); wire(); } }, 100); });
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('b').classList.toggle('on', m === 'b');
+  document.getElementById('now').classList.toggle('on', m === 'now');
+  frame.contentDocument?.documentElement.classList.toggle('mock-b', m === 'b');
+}
+const NOTES = {
+  v1: 'PWR label and bar under the name, then the hit. What you saw before.',
+  v2: 'Name stands alone on the left. The hit sits over a short PWR bar at the right end of the card.',
+  v3: 'PWR becomes a strip along the card’s bottom edge, like an EXP bar. No label. The hit stays under the name.',
+  v4: 'A short upright PWR gauge at the right end of the card, filling from the bottom. The hit stays under the name.',
+};
+let variant = 'v1';
+function setVariant(v) {
+  variant = v;
+  document.querySelectorAll('#variants button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
+  document.getElementById('vnote').textContent = NOTES[v];
+  const root = frame.contentDocument?.documentElement;
+  if (root) { root.classList.remove('v1', 'v2', 'v3', 'v4'); root.classList.add(v); }
+}
+document.querySelectorAll('#variants button').forEach((b) => (b.onclick = () => { if (mode !== 'b') setMode('b'); setVariant(b.dataset.v); }));
+document.getElementById('b').onclick = () => setMode('b');
+document.getElementById('now').onclick = () => setMode('now');
+document.getElementById('reset').onclick = async () => { await seed(); frame.src = APP + '?r=' + Date.now(); };
+
+(async () => { await seed(); frame.src = APP; })();
+</script>
+</body>
+</html>

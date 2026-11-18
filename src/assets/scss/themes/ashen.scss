@@ -1510,8 +1510,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // name, the tag and the streak tab are set at their true sizes, without the
   // root's font-size-adjust (which draws Alegreya about 15% larger) or its tracking.
   :is(.skill-list, .resist-list) .habit-item:not(.reroll-row) {
-    padding-top: 5px;
-    padding-bottom: 5px;
+    gap: 8px;
+    padding: 5px 14px 5px 6px;
 
     .title {
       gap: 4px;
@@ -1527,11 +1527,11 @@ $label-lg: 0.95rem; // primary buttons, choice titles
       letter-spacing: 0;
     }
 
-    :is(.power-label, .next-day, .streak) {
+    :is(.next-day, .streak) {
       font-size-adjust: none;
     }
 
-    :is(.power-label, .next-day) {
+    .next-day {
       font-size: 11.25px;
     }
 
@@ -1562,9 +1562,9 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     opacity: 0.45;
   }
 
-  // The line under the name: "PWR" and the rank's bar, the next due day beside
-  // them in the same small spaced caps (docs/mockups/skills-partial.html, Q3).
-  .habit-item :is(.power-label, .next-day) {
+  // The next due day under the name, in small spaced caps
+  // (docs/mockups/skills-partial.html, Q3).
+  .habit-item .next-day {
     font-family: var(--sans);
     font-size: 0.625rem;
     font-weight: 700;
@@ -1574,24 +1574,51 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     font-variant-numeric: lining-nums tabular-nums;
   }
 
+  // The card's right end: the hit over the rank's PWR bar, both in the type
+  // colour, lifted toward white so they read on the card
+  // (docs/mockups/habit-checkbox-b.html, B2).
+  .habit-item {
+    --pc: color-mix(in srgb, var(--c) 80%, #fff);
+  }
+
+  .habit-item .hit {
+    @include plain-label(14px, 800);
+    color: var(--pc);
+    letter-spacing: 0;
+  }
+
+  .habit-item .hit .stat-icon {
+    color: currentColor;
+  }
+
+  .habit-item .hit small {
+    margin-right: 3px;
+    @include plain-label($label-sm, 700);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--struck-ink);
+  }
+
+  .habit-item:is(.struck, .resting) .hit {
+    color: var(--struck-ink);
+  }
+
+  // Given in, a bad habit's reward is lost: struck through.
+  .habit-item.bad.struck .hit b {
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+  }
+
   .habit-item .power {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    display: block;
   }
 
-  .habit-item .power-label {
-    color: $brass;
-  }
-
-  // The bar: a sunk well, filled to the rank. The fill is a window onto one
-  // brass-to-red heat scale painted across the whole bar, so the longer it
-  // gets, the hotter its tip (docs/mockups/skills-pwr-heat.html, B).
+  // The bar: a sunk well, tinted and filled to the rank in the type colour.
   .habit-item .power-bar {
     display: block;
-    width: 72px;
+    width: 56px;
     height: 6px;
-    background: var(--field);
+    background: color-mix(in srgb, var(--pc) 16%, var(--field));
     box-shadow:
       inset 1px 1px 0 var(--sunk-hi),
       inset -1px -1px 0 var(--sunk-lo);
@@ -1600,19 +1627,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item .power-bar i {
     display: block;
     height: 100%;
-    background-image: linear-gradient(90deg, #b39a66 0, #d2bb85 10%, #e9a448 28%, #ec7a35 48%, #e5472c 76%, #ff4a26 100%);
-    background-size: 72px 100%;
-    background-repeat: no-repeat;
+    background: var(--pc);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   .habit-item:is(.struck, .resting) .power {
     opacity: 0.4;
     filter: grayscale(1);
-  }
-
-  .habit-item .meta {
-    gap: 7px;
   }
 
   // The streak: a dark tab sticking off the card's top-right corner.
@@ -1636,31 +1657,6 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .habit-item:is(.struck, .resting) .streak {
     color: var(--struck-ink);
     box-shadow: inset 0 0 0 1px var(--struck-face);
-  }
-
-  // A Resist card's reward: the type and what holding out deals, in a well
-  // sunk into the card (docs/mockups/pixel-resist-reward.html, option 1).
-  .habit-item .reward-plate {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    height: 26px;
-    padding: 0 7px;
-    background: $well;
-    @include pixel-corners(2px);
-    @include bevel(var(--sunk-hi), var(--sunk-lo));
-    @include plain-label($label-sm, 700);
-    color: var(--c);
-  }
-
-  .habit-item:is(.struck, .resting) .reward-plate {
-    color: var(--struck-ink);
-  }
-
-  // Given in, the reward is lost: struck through.
-  .habit-item.struck .reward-plate b {
-    text-decoration: line-through;
-    text-decoration-thickness: 1.5px;
   }
 
   .habit-item .next-day {

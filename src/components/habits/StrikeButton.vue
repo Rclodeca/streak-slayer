@@ -1,21 +1,15 @@
 <script setup lang="ts">
-import { HeartMinus } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { formatCompact } from '../../game-engine';
 import type { DamageType } from '../../game-engine';
-import StatIcon from '../ui/StatIcon.vue';
-import { DAMAGE_TYPE_ICON } from '../ui/statIcons';
 
-// A skill's damage as the button that strikes it: the type's icon and the
-// number on a raised face over a 3px lip (docs/mockups/pixel-done.html,
-// option A). Pressing drops the face onto the lip; struck, it stays down and
-// goes grey until the period ends. Resting, it's flat and can't be pressed.
-// A struck Overdrive skill with charges left stays tappable, haloed. The type
-// colour comes from the row's --c. A bad habit's button carries no number: it
-// says Give in, and what holding out deals sits in the row's reward plate.
+// A skill's check box, at the card's left edge (docs/mockups/habit-checkbox-b.html,
+// B2): a pixel box rimmed in the type colour from the row's --c. Checking it
+// strikes; the box flashes its colour, then settles grey with a check until the
+// period ends. Resting, it's flat and can't be checked. A struck Overdrive skill
+// with charges left stays tappable, haloed. A bad habit's box is rimmed red, and
+// checking it means giving in: it fills with a cross.
 const props = defineProps<{
   damageType: DamageType;
-  damage: number;
   state: 'open' | 'struck' | 'resting';
   resist?: boolean;
   overdrive?: boolean;
@@ -38,174 +32,122 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
     :disabled="disabled"
     @click.stop="emit('strike')"
   >
-    <span v-if="resist" class="face"><HeartMinus :size="15" aria-hidden="true" /><span>Give in</span></span>
-    <span v-else class="face"><StatIcon :name="DAMAGE_TYPE_ICON[damageType]" :size="13" /><b>{{ formatCompact(damage) }}</b></span>
+    <span class="box">
+      <svg v-if="resist" class="mark" viewBox="0 0 10 10" shape-rendering="crispEdges" aria-hidden="true">
+        <path d="M2 2h2v1h1v1h1V3h1V2h2v2H8v1H7v1h1v1h1v2H7V8H6V7H5v1H4v1H2V7h1V6h1V5H3V4H2z" />
+      </svg>
+      <svg v-else class="mark" viewBox="0 0 10 10" shape-rendering="crispEdges" aria-hidden="true">
+        <path d="M1 5h2v1h1v1h1V6h1V5h1V4h1V3h1v2H8v1H7v1H6v1H5v1H3V8H2V7H1z" />
+      </svg>
+    </span>
   </button>
 </template>
 
 <style scoped>
-/* The button is 44px tall for the tap; the face and its lip, 40px, sit in it.
-   The negative margin keeps the card 58px tall. */
+/* The button is 44px for the tap; the 30px box sits in it. The negative
+   margin keeps the card 58px tall. */
 .strike {
-  --lip: 3px;
-  --face: color-mix(in srgb, var(--c) 88%, #000);
-  --base: color-mix(in srgb, var(--c) 36%, #000);
-  --flash: var(--face);
-  --ink: #fff;
-  --ink-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
-  --bevel: inset 0 2px 0 rgba(255, 255, 255, 0.28), inset 2px 0 0 rgba(255, 255, 255, 0.12), inset 0 -2px 0 rgba(0, 0, 0, 0.25),
-    inset -2px 0 0 rgba(0, 0, 0, 0.15);
+  --rim: color-mix(in srgb, var(--c) 85%, #000);
+  --well: color-mix(in srgb, var(--c) 10%, var(--field, #141523));
+  --flash: var(--c);
   position: relative;
   flex: none;
-  display: inline-flex;
-  align-items: center;
+  display: grid;
+  place-items: center;
+  width: 44px;
   height: 44px;
   margin: -2px 0;
   padding: 0;
   background: none;
   border: 0;
   cursor: pointer;
-  font: 700 14.5px/1 var(--sans, system-ui, sans-serif);
-  font-variant-numeric: lining-nums tabular-nums;
   -webkit-tap-highlight-color: transparent;
 }
 
-.face {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  box-sizing: border-box;
-  width: 76px;
-  height: 40px;
-  padding: 0 6px var(--lip);
-  color: var(--ink);
-  text-shadow: var(--ink-shadow);
-}
-
-.face::before,
-.face::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
+/* The box: a sunk well with a type-coloured rim, shaded at the top like a hole. */
+.box {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   clip-path: var(--px2);
-}
-
-/* The lip. */
-.face::before {
-  top: var(--lip);
-  bottom: 0;
-  background: var(--base);
-}
-
-/* The face, with pixel highlights: light top and left, dark bottom and right. */
-.face::after {
-  top: 0;
-  bottom: var(--lip);
-  background: var(--face);
-  box-shadow: var(--bevel);
-  transition:
-    top 0.07s,
-    bottom 0.07s;
-}
-
-.face > * {
-  position: relative;
-  z-index: 1;
+  background: var(--well);
+  box-shadow:
+    inset 0 0 0 2px var(--rim),
+    inset 0 4px 0 rgba(0, 0, 0, 0.35),
+    inset 0 -2px 0 color-mix(in srgb, var(--c) 30%, #000);
   transition: transform 0.07s;
 }
 
-.face b {
-  font-weight: inherit;
+.mark {
+  width: 20px;
+  height: 20px;
+  fill: color-mix(in srgb, var(--struck-ink) 55%, var(--text));
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 0.12s,
+    transform 0.12s;
 }
 
-.face .stat-icon {
-  color: inherit;
+.strike:active .box {
+  transform: translateY(1px);
 }
 
-/* Pressed: the face sits on the lip. */
-.strike:active .face::after,
-.strike:is(.struck, .resting) .face::after {
-  top: var(--lip);
-  bottom: 0;
-}
-
-.strike:active .face > *,
-.strike:is(.struck, .resting) .face > * {
-  transform: translateY(var(--lip));
-}
-
-/* True damage's pale face takes dark text. */
-.strike.open[data-type='trueDamage'] {
-  --ink: var(--on-true-damage);
-  --ink-shadow: none;
-}
-
-/* Resist: the skill key's build with a dark face, a red edge and a red lip
-   (docs/mockups/pixel-give-in-button.html, option D). Given in or resting, it
-   takes the plain grey of a struck skill: edge, lip and words all go. */
+/* A bad habit's box: rimmed red, and its cross stays red once given in. */
 .strike.resist {
+  --rim: color-mix(in srgb, var(--damage-color) 85%, #000);
+  --well: color-mix(in srgb, var(--damage-color) 8%, var(--field, #141523));
   --flash: var(--damage-color);
 }
 
-.strike.resist.open {
-  --face: color-mix(in srgb, var(--damage-color) 8%, #212138);
-  --base: color-mix(in srgb, var(--damage-color) 60%, #000);
-  --bevel: inset 0 0 0 2px color-mix(in srgb, var(--damage-color) 70%, #000);
-  --ink: color-mix(in srgb, var(--damage-color) 72%, var(--tint-to));
-  --ink-shadow: none;
+.strike.resist .mark {
+  fill: color-mix(in srgb, var(--damage-color) 80%, var(--tint-to));
 }
 
-.strike.resist .face {
-  gap: 3px;
-  font-size: 13.5px;
+/* Struck: every trace of colour goes, and the mark shows. */
+.strike.struck .box {
+  background: var(--struck-face);
+  box-shadow: inset 0 0 0 2px var(--struck-lip);
 }
 
-/* Struck: every trace of colour goes. */
-.strike.struck {
-  --face: var(--struck-face);
-  --base: var(--struck-lip);
-  --ink: var(--struck-ink);
-  --ink-shadow: none;
-  --bevel: none;
+.strike.struck .mark {
+  opacity: 1;
+  transform: none;
 }
 
-/* Resting: the same flat grey as struck, with the lip pressed down. */
-.strike.resting {
-  --face: var(--resting-face);
-  --base: var(--struck-lip);
-  --ink: var(--struck-ink);
-  --ink-shadow: none;
-  --bevel: none;
+/* Resting: the same flat grey, empty. */
+.strike.resting .box {
+  background: var(--resting-face);
+  box-shadow: inset 0 0 0 2px var(--struck-lip);
 }
 
-/* A spent or resting button lets the tap fall through to the card, which
+/* A spent or resting box lets the tap fall through to the card, which
    opens the skill's details. */
 .strike:disabled {
   cursor: default;
   pointer-events: none;
 }
 
-/* Landing: the face flashes its type colour (red for Resist) as it goes
-   down, then fades to grey. */
-.strike.lit .face::after {
+/* Landing: the box flashes its type colour (red for a bad habit), then
+   fades to grey. */
+.strike.lit .box {
   animation: strike-land 0.6s ease-out;
 }
 
 @keyframes strike-land {
   from {
     background: var(--flash);
+    box-shadow: none;
   }
 }
 
 /* A struck Overdrive skill with charges left: a slowly breathing ember ring
-   round the pressed face. Only its opacity animates. */
+   round the box. Only its opacity animates. */
 .strike.overdrive-ready::before {
   content: '';
   position: absolute;
-  inset: 3px -4px 1px;
+  inset: 3px;
   clip-path: var(--px2);
   border: 1px solid var(--overdrive-color);
   box-shadow: inset 0 0 6px color-mix(in srgb, var(--overdrive-color) 35%, transparent);
@@ -221,17 +163,17 @@ const disabled = computed(() => props.state === 'resting' || (props.state === 's
 
 .strike:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline-offset: -4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strike.lit .face::after,
+  .strike.lit .box,
   .strike.overdrive-ready::before {
     animation: none;
   }
 
-  .face::after,
-  .face > * {
+  .box,
+  .mark {
     transition: none;
   }
 }

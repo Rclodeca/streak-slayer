@@ -110,22 +110,8 @@ function onStrike() {
   <li class="habit-item" :class="{ bad: habit.isBad, resting: isResting, struck: isCompletedThisPeriod, flare: flareRank > 0, 'has-streak': showStreak }" :data-habit-id="habit.id" :style="{ '--c': damageTypeColor }" @click="$emit('open')">
     <!-- The streak: a tab sticking off the card's top-right corner. -->
     <span v-if="showStreak" class="streak" :title="`${habit.streakCount} streak`"><StatIcon name="streak" :size="10" />{{ habit.streakCount }}</span>
-    <span class="title">
-      <span v-if="hasSigil" class="name">{{ nameHead }}<span class="name-end">{{ nameTail }}<SkillSigil :habit="habit" /></span></span>
-      <span v-else class="name">{{ habit.name }}</span>
-      <span class="tags">
-        <span class="power" role="img" :aria-label="powerLabel"><span class="power-label" aria-hidden="true">PWR</span><span class="power-bar"><i :style="{ width: powerPct }" /></span></span>
-        <span v-if="isFrozen" class="next-day frozen"><StatIcon name="freeze" :size="10" />Frozen</span>
-        <span v-else-if="isResting" class="next-day">{{ nextDayLabel }}</span>
-      </span>
-    </span>
-    <!-- A bad habit's reward, what holding out deals, sunk into the card so it reads as a number to wait for, not a key. -->
-    <span v-if="habit.isBad" class="meta">
-      <span class="reward-plate"><StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" :size="12" /><b>{{ formatCompact(effectiveDamage) }}</b></span>
-    </span>
     <StrikeButton
       :damage-type="habit.damageType"
-      :damage="effectiveDamage"
       :state="strikeState"
       :resist="habit.isBad"
       :overdrive="canOverdrive"
@@ -133,6 +119,19 @@ function onStrike() {
       :label="habit.isBad ? `Give in to ${habit.name}` : canOverdrive ? `Overdrive ${habit.name}` : `Complete ${habit.name}`"
       @strike="onStrike"
     />
+    <span class="title">
+      <span v-if="hasSigil" class="name">{{ nameHead }}<span class="name-end">{{ nameTail }}<SkillSigil :habit="habit" /></span></span>
+      <span v-else class="name">{{ habit.name }}</span>
+      <span v-if="isFrozen || isResting" class="tags">
+        <span v-if="isFrozen" class="next-day frozen"><StatIcon name="freeze" :size="10" />Frozen</span>
+        <span v-else class="next-day">{{ nextDayLabel }}</span>
+      </span>
+    </span>
+    <!-- The hit over the rank's PWR bar, both in the type colour (docs/mockups/habit-checkbox-b.html, B2). A bad habit's number is what holding out deals. -->
+    <span class="end">
+      <span class="hit"><small v-if="habit.isBad">If resisted</small><StatIcon :name="DAMAGE_TYPE_ICON[habit.damageType]" :size="12" /><b>{{ formatCompact(effectiveDamage) }}</b></span>
+      <span class="power" role="img" :aria-label="powerLabel"><span class="power-bar"><i :style="{ width: powerPct }" /></span></span>
+    </span>
     <span v-if="flareRank > 0" class="rank-ghost" aria-hidden="true">Rank {{ rankNumeral(flareRank) }}</span>
   </li>
 </template>
@@ -193,17 +192,25 @@ function onStrike() {
   margin-left: 0.4em;
 }
 
-.meta {
+/* The card's right end: the hit over the rank's PWR bar, clear of the streak tab. */
+.end {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
   flex-shrink: 0;
-  font-size: 0.75rem;
+  margin-top: 8px;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
-/* The rank's power bar and, on a rest day, the next due day. */
+.hit {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* On a rest day, the next due day under the name. */
 .tags {
   display: flex;
   align-items: center;
@@ -300,10 +307,6 @@ function onStrike() {
 @media (max-width: 560px) {
   .habit-item {
     --row-gap: 0.6rem;
-  }
-
-  .meta {
-    gap: 0.5rem;
   }
 }
 </style>

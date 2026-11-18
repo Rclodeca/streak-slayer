@@ -99,14 +99,23 @@ describe('HabitListItem', () => {
     expect(button.attributes('aria-label')).toBe('Complete Read');
   });
 
-  it('shows the damage on the button with its type icon', () => {
+  it('shows the damage with its type icon at the card\'s end, not on the check box', () => {
     const wrapper = mountSkill();
     const habit = useHabitStore().habits[0];
     const damage = habitDamageBreakdown(useCharacterStore().character, habit, useHabitStore().habits, useBossStore().boss, dailyPeriodKey(new Date())).effectiveDamage;
-    const button = wrapper.find('button.strike');
-    expect(button.find('b').text()).toBe(formatCompact(damage));
-    expect(button.findAll('.stat-icon')).toHaveLength(1);
-    expect(wrapper.find('.damage').exists()).toBe(false);
+    const hit = wrapper.find('.end .hit');
+    expect(hit.find('b').text()).toBe(formatCompact(damage));
+    expect(hit.findAll('.stat-icon')).toHaveLength(1);
+    expect(hit.find('small').exists()).toBe(false);
+    expect(wrapper.find('button.strike').text()).toBe('');
+  });
+
+  it('puts the check box before the name', () => {
+    const wrapper = mountSkill();
+    const row = wrapper.find('li.habit-item').element;
+    const box = row.querySelector('button.strike')!;
+    const title = row.querySelector('.title')!;
+    expect(box.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("a resting skill's button is flat and can't be pressed", () => {
@@ -131,26 +140,21 @@ describe('HabitListItem', () => {
     expect(button.attributes('aria-pressed')).toBe('true');
   });
 
-  it("a bad habit's button says Give in, with no number on it", () => {
+  it("a bad habit's check box is labelled Give in, with no number on it", () => {
     const wrapper = mountSkill({ isBad: true });
     const button = wrapper.find('button.strike');
-    expect(button.text()).toBe('Give in');
     expect(button.attributes('aria-label')).toBe('Give in to Read');
-    expect(button.find('b').exists()).toBe(false);
+    expect(button.text()).toBe('');
   });
 
-  it('a bad habit shows what holding out deals in a plate, not on the button', () => {
+  it('a bad habit shows what holding out deals at the card\'s end, If resisted', () => {
     const wrapper = mountSkill({ isBad: true });
     const habit = useHabitStore().habits[0];
     const damage = habitDamageBreakdown(useCharacterStore().character, habit, useHabitStore().habits, useBossStore().boss, dailyPeriodKey(new Date())).effectiveDamage;
-    const plate = wrapper.find('.reward-plate');
-    expect(plate.find('b').text()).toBe(formatCompact(damage));
-    expect(plate.findAll('.stat-icon')).toHaveLength(1);
-  });
-
-  it('a good skill has no reward plate', () => {
-    const wrapper = mountSkill();
-    expect(wrapper.find('.reward-plate').exists()).toBe(false);
+    const hit = wrapper.find('.end .hit');
+    expect(hit.find('small').text()).toBe('If resisted');
+    expect(hit.find('b').text()).toBe(formatCompact(damage));
+    expect(hit.findAll('.stat-icon')).toHaveLength(1);
   });
 
   describe('struck', () => {
@@ -207,9 +211,9 @@ describe('HabitListItem', () => {
       vi.useRealTimers();
     });
 
-    it('shows the rank under the name as a PWR bar filled toward the top rank, a sliver unranked', () => {
+    it('shows the rank at the card\'s end as a PWR bar filled toward the top rank, a sliver unranked', () => {
       const unranked = mountSkill({ rank: 0 });
-      expect(unranked.find('.title .power-label').text()).toBe('PWR');
+      expect(unranked.find('.end .power .power-bar').exists()).toBe(true);
       expect((unranked.find('.power-bar i').element as HTMLElement).style.width).toBe('8%');
       expect(unranked.find('.power').attributes('aria-label')).toBe('Unranked');
       unranked.unmount();
