@@ -194,9 +194,10 @@ export type { SkinDef, SkinKind, SkinSlot } from './skins';
 export { DEFAULT_SCENE_ART, MYTHIC_SKIN_IDS, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinOffered, skinSlot, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 export { prestigeAccount, prestigeRun } from './prestigeRun';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
+export { missWeekKey, settlePerfectWeek } from './perfectWeek';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
-export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';
@@ -290,7 +291,7 @@ export {
 export type { Rng } from './rng';
 export { createRng, pickRandom, pickWeighted, shuffle } from './rng';
 
-export { addDaysToDayKey, dailyPeriodKey, windowStartKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weekDayKeys, weekStartOf, weeklyPeriodKey } from './time';
+export { addDaysToDayKey, dailyPeriodKey, windowStartKey, dayOfWeekIndex, daysBetweenDayKeys, msUntilRollover, periodKeyFor, weekDayKeys, weekKeyOfDayKey, weekStartOf, weeklyPeriodKey } from './time';
 
 export {
   activeBlind,

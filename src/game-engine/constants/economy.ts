@@ -154,6 +154,9 @@ export function purseGold(bossIndex: number): number {
  */
 export const FREEZE = { gemsPerDay: 2, gemsPerWeek: 5, maxDays: 7, maxLeadDays: 30, maxWeeks: 4, maxLeadWeeks: 4 };
 
+/** The perfect week: gems for a calendar week with every due skill checked (see perfectWeek.ts). The one free source that never runs out. */
+export const PERFECT_WEEK_GEMS = 2;
+
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
 export const REVIVE_GEMS = 15;
 

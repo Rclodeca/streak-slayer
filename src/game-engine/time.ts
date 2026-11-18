@@ -137,6 +137,13 @@ export function windowStartKey(dayKey: string, days: number): string {
   return addDaysToDayKey(WINDOW_EPOCH, Math.floor(since / days) * days);
 }
 
+/** The `YYYY-Www` week key (as `weeklyPeriodKey` gives) of day key `dayKey`'s business day. */
+export function weekKeyOfDayKey(dayKey: string): string {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  // 20:00 UTC is midday Pacific, well inside that business day.
+  return weeklyPeriodKey(new Date(Date.UTC(year, month - 1, day, 20)));
+}
+
 /** The Monday that starts `dayKey`'s week (`YYYY-MM-DD`), read off the key itself. */
 export function weekStartOf(dayKey: string): string {
   const [year, month, day] = dayKey.split('-').map(Number);

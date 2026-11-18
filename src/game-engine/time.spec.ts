@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, msUntilRollover, periodKeyFor, weekDayKeys, weeklyPeriodKey } from './time';
+import { addDaysToDayKey, dailyPeriodKey, dayOfWeekIndex, msUntilRollover, periodKeyFor, weekDayKeys, weekKeyOfDayKey, weeklyPeriodKey } from './time';
 
 describe('dailyPeriodKey', () => {
   it('formats a date as YYYY-MM-DD using its Pacific business day', () => {
@@ -131,5 +131,20 @@ describe('weekDayKeys', () => {
   it('follows the 3am rollover: early Monday morning is still last week', () => {
     // Mon 2026-11-16 02:00 PST = 10:00 UTC, still Sunday's business day.
     expect(weekDayKeys(new Date(Date.UTC(2026, 10, 16, 10)))[0]).toBe('2026-11-09');
+  });
+});
+
+describe('weekKeyOfDayKey', () => {
+  it("gives the week key of the day key's business day", () => {
+    expect(weekKeyOfDayKey('2026-11-16')).toBe('2026-W47');
+    expect(weekKeyOfDayKey('2026-11-22')).toBe('2026-W47');
+    expect(weekKeyOfDayKey('2026-11-23')).toBe('2026-W48');
+  });
+
+  it('matches weeklyPeriodKey for the same day', () => {
+    for (const day of ['2026-01-01', '2026-12-31', '2027-01-03', '2027-01-04']) {
+      const [y, m, d] = day.split('-').map(Number);
+      expect(weekKeyOfDayKey(day)).toBe(weeklyPeriodKey(new Date(Date.UTC(y, m - 1, d, 20))));
+    }
   });
 });

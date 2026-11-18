@@ -22,6 +22,9 @@ export interface Account {
   // Free dungeons unlocked by prestige ranks I and III (see prestigeAccount).
   // Recorded now; dungeons themselves come later. Missing = 0.
   freeDungeons?: number;
+  // The week the perfect week is watching, and whether a missed skill already
+  // spoiled it (see perfectWeek.ts). Missing until the first rollover.
+  perfectWeek?: { weekKey: string; spoiled: boolean };
 }
 
 export function createAccount(): Account {
