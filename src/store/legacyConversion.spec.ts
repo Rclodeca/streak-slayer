@@ -7,7 +7,8 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { characterGold, createCharacter, createHabit, createRng, generateBoss, maxEquipSlots, STARTING_GEMS } from '../game-engine';
-import type { Character, ChallengeEntry } from '../game-engine';
+import type { Character } from '../game-engine';
+import type { ChallengeEntry } from '../game-engine/types';
 import { initializeStores } from './index';
 import { CURRENT_SCHEMA_VERSION, STORAGE_KEY } from './plugins/saveState';
 import { BACKUP_KEY } from './preEconomyBackup';
