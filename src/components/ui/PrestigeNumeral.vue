@@ -4,12 +4,13 @@ import type { PrestigeMark } from '../../game-engine';
 // The prestige rank as a roman numeral on an outline plate (docs/mockups/hero-prestige-4.html):
 // a dark plate, its frame and numeral in the rank's rarity colour. Both places it
 // shows (the Hero tab's armory, the fight stage) are night in every theme, so the
-// colours are Moonlit's rarity colours, fixed. `small` is the stage's size.
-defineProps<{ mark: PrestigeMark; small?: boolean }>();
+// colours are Moonlit's rarity colours, fixed. `small` is the stage's size,
+// `large` the Talents tab's prestige ladder (PrestigeLadder).
+defineProps<{ mark: PrestigeMark; small?: boolean; large?: boolean }>();
 </script>
 
 <template>
-  <span class="prestige-numeral" :class="[mark.rarity, { small }]" role="img" :aria-label="`Prestige ${mark.rank}`">{{ mark.numeral }}</span>
+  <span class="prestige-numeral" :class="[mark.rarity, { small, large }]" role="img" :aria-label="`Prestige ${mark.rank}`">{{ mark.numeral }}</span>
 </template>
 
 <style scoped>
@@ -45,6 +46,18 @@ defineProps<{ mark: PrestigeMark; small?: boolean }>();
 .prestige-numeral.relic {
   --tier: #f58a35;
   --tier-dark: #7a3a0e;
+}
+
+.prestige-numeral.large {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+  box-shadow:
+    inset 3px 3px 0 var(--tier),
+    inset -3px -3px 0 var(--tier-dark);
+  clip-path: var(--px3, none);
 }
 
 .prestige-numeral.small {

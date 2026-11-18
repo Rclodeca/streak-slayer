@@ -254,7 +254,7 @@ describe('TalentSection on desktop', () => {
     await wrapper.find('.open-tree').trigger('click');
     expect(q('.talent-tree-view')).not.toBeNull();
     expect(q('.talent-tree-view .cell .nm')?.textContent).toBe('Executioner');
-    expect(document.body.querySelectorAll('.talent-tree-view .pl')).toHaveLength(3);
+    expect(document.body.querySelectorAll('.talent-tree-view .pl')).toHaveLength(4);
     expect(q('.talent-modal-points .gold .count')?.textContent).toBe('250');
   });
 
@@ -277,5 +277,68 @@ describe('TalentSection on desktop', () => {
     await wrapper.vm.$nextTick();
     expect(talentRank(store.character, 'might')).toBe(1);
     expect(store.character.gold).toBe(50);
+  });
+
+});
+
+describe('TalentSection — the prestige ladder', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.body.innerHTML = '';
+    setActivePinia(createPinia());
+    layout(true);
+  });
+
+  const mountSection = () => mount(TalentSection, { attachTo: document.body });
+  const plinth = (wrapper: ReturnType<typeof mount>, name: string) => wrapper.findAll('.pl').find((pl) => pl.text().startsWith(name))!;
+
+  function heroAt(level: number) {
+    const store = useCharacterStore();
+    store.setCharacter({ ...store.character, level, gold: 5000, heroPending: false });
+    useAccountStore().initFromSave({ gems: 0, highestLevel: level }, level);
+    return store;
+  }
+
+  function climber(level: number, rank: number) {
+    heroAt(level);
+    useAccountStore().setPrestige(rank);
+  }
+  const ladder = async (wrapper: ReturnType<typeof mount>) => {
+    await plinth(wrapper, 'Prestige').trigger('click');
+  };
+
+  it('stands as a fourth plinth, and shows five ranks', async () => {
+    climber(44, 2);
+    const wrapper = mountSection();
+    expect(wrapper.findAll('.pl')).toHaveLength(4);
+    await ladder(wrapper);
+    expect(wrapper.findAll('.ladder-node')).toHaveLength(5);
+  });
+
+  it('shows the climb to the next bar, then the Prestige button at it', async () => {
+    climber(44, 2);
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    expect(wrapper.text()).toContain('Next rank');
+    expect(wrapper.text()).toContain('Level 44 / 50');
+    expect(wrapper.find('.prestige-go').exists()).toBe(false);
+
+    useCharacterStore().setCharacter({ ...useCharacterStore().character, level: 50 });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.prestige-go').exists()).toBe(true);
+  });
+
+  it('hides the next rank once Mythic', async () => {
+    climber(58, 5);
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    expect(wrapper.text()).not.toContain('Next rank');
+  });
+
+  it('is veiled before level 30', async () => {
+    climber(22, 0);
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    expect(wrapper.find('.ladder-veil').text()).toContain('Reach level 30');
   });
 });
