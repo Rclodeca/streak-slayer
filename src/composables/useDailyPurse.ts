@@ -7,6 +7,7 @@
 // Noticing and paying are split the same way as the recap: the rollover only
 // notes the day; `claim()` pays the gold and marks the account. A purse shown
 // but never claimed (the app closed first) is noticed again next launch.
+// A perfect week's gems (already paid by the rollover) ride along as a line.
 
 import { computed, ref } from 'vue';
 import { characterGold, purseDue, purseGold, SERVICE_DEFS, serviceTurn } from '../game-engine';
@@ -18,6 +19,7 @@ import { useTabStore } from '../store/tabStore';
 import { useShopNews } from './useShopNews';
 
 const dayKey = ref<string | null>(null);
+const weekGemsPaid = ref(0);
 
 export function useDailyPurse() {
   const accountStore = useAccountStore();
@@ -29,6 +31,7 @@ export function useDailyPurse() {
 
   const due = computed(() => dayKey.value !== null);
   const gold = computed(() => purseGold(bossStore.boss.index));
+  const weekGems = computed(() => weekGemsPaid.value);
 
   /**
    * The service whose turn began today, while the player hasn't seen it in the
@@ -49,10 +52,16 @@ export function useDailyPurse() {
     if (purseDue(accountStore.account, todayKey)) dayKey.value = todayKey;
   }
 
+  /** The rollover paid a perfect week's `gems`: the purse shows them. */
+  function noticeWeek(gems: number): void {
+    weekGemsPaid.value = gems;
+  }
+
   /** Pays the purse into this run and marks the day on the account. */
   function claim(): void {
     const day = dayKey.value;
     dayKey.value = null;
+    weekGemsPaid.value = 0;
     if (day === null || !accountStore.claimPurse(day)) return;
     const character = characterStore.character;
     characterStore.setCharacter({ ...character, gold: characterGold(character) + gold.value });
@@ -65,5 +74,5 @@ export function useDailyPurse() {
     tabStore.selectShopSide('services');
   }
 
-  return { due, gold, newService, notice, claim, claimAndVisitServices };
+  return { due, gold, weekGems, newService, notice, noticeWeek, claim, claimAndVisitServices };
 }

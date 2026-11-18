@@ -90,4 +90,12 @@ describe('useDailyPurse', () => {
     useShopSeenStore().seeServices(TODAY);
     expect(purse.newService.value).toBeNull();
   });
+
+  it("claim clears the week's gems", () => {
+    const purse = useDailyPurse();
+    purse.noticeWeek(2);
+    expect(purse.weekGems.value).toBe(2);
+    purse.claim();
+    expect(purse.weekGems.value).toBe(0);
+  });
 });

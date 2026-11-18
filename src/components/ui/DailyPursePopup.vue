@@ -5,12 +5,14 @@ import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useDailyPurse } from '../../composables/useDailyPurse';
 import { useModalPriority } from '../../composables/useModalPriority';
 import Modal from './Modal.vue';
+import StatIcon from './StatIcon.vue';
 
 // The daily purse (docs/mockups/daily-login.html, option A): the shopkeeper's
 // room across the top, the day's gold in a sunk well, and Claim. On the day a
 // new service begins its turn, it rides along as a card that claims and opens
-// Shop → Services. Shows before the Daily update (useModalPriority).
-const { gold, newService, claim, claimAndVisitServices } = useDailyPurse();
+// Shop → Services. A perfect week's gems (paid already) sit in a smaller well
+// under the gold. Shows before the Daily update (useModalPriority).
+const { gold, weekGems, newService, claim, claimAndVisitServices } = useDailyPurse();
 const { purseVisible } = useModalPriority();
 const baseUrl = import.meta.env.BASE_URL;
 
@@ -34,6 +36,10 @@ const offset = useCenteredArt(strip, ART_W);
         <b>+{{ gold.toLocaleString('en-US') }}</b>
       </p>
       <p class="purse-line">The merchant leaves a purse at your door.</p>
+
+      <p v-if="weekGems" class="purse-week" :aria-label="`Perfect week, ${weekGems} gems`">
+        <StatIcon name="gems" :size="18" /><b>+{{ weekGems }}</b>Perfect week
+      </p>
 
       <button v-if="newService" type="button" class="purse-service" @click="claimAndVisitServices">
         <img :src="`${baseUrl}sprites/services/${newService.id}.png`" alt="" />
@@ -123,6 +129,30 @@ const offset = useCenteredArt(strip, ART_W);
   font-size: 0.875rem;
   text-align: center;
   color: var(--text);
+}
+
+/* The perfect week: a smaller well under the gold. */
+.purse-week {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 8px 0;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--code-bg);
+  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo);
+}
+
+.purse-week b {
+  margin-right: 4px;
+  font-family: var(--heading);
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--icon-gem);
+  text-shadow: 0 1px 0 #000;
 }
 
 /* A lifted card: the service's seal, its name and effect, and a way to it. */

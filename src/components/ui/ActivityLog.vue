@@ -100,7 +100,7 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
           </template>
         </template>
         <template v-else-if="entry.kind === 'gems'">
-          <StatIcon name="gems" class="log-icon" /> <span class="log-gems">+{{ formatCompact(entry.amount) }}</span> gems
+          <StatIcon name="gems" class="log-icon" /> <template v-if="entry.reason === 'perfect-week'">Perfect week </template><span class="log-gems">+{{ formatCompact(entry.amount) }}</span> gems
         </template>
         <template v-else-if="entry.kind === 'vault-bought'">
           <StatIcon name="gems" class="log-icon" /> Bought {{ entry.name }} <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems

@@ -9,12 +9,14 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weekDayKeys } from '../game-engine';
 import type { ChallengeEntry } from '../game-engine';
+import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
 import { useQuestStore } from '../store/questStore';
 import { useCombatActions } from './useCombatActions';
+import { useDailyPurse } from './useDailyPurse';
 import { useDailyRollover } from './useDailyRollover';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useQuestMissGate } from './useQuestMissGate';
@@ -680,5 +682,65 @@ describe('useDailyRollover — a miss before a freeze', () => {
     useDailyRollover(now);
 
     expect(useMissedSkillsGate().misses.value.map((m) => m.habitId)).toEqual([habit.id]);
+  });
+});
+
+describe('useDailyRollover — the perfect week', () => {
+  // Monday 2026-11-23 midday Pacific: the first open of W48, watching W47.
+  const MONDAY = new Date(Date.UTC(2026, 10, 23, 20));
+  const SATURDAY = '2026-11-21';
+  const SUNDAY = '2026-11-22';
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    const accountStore = useAccountStore();
+    accountStore.$patch({ account: { ...accountStore.account, gems: 10, perfectWeek: { weekKey: '2026-W47', spoiled: false } } });
+  });
+
+  afterEach(() => {
+    useMissedSkillsGate().acknowledge();
+    useDailyPurse().claim();
+  });
+
+  function add(name: string, period: 'daily' | 'weekly', isBad: boolean, lastCompletedPeriodKey: string | null, lastCheckedPeriodKey: string, extra = {}) {
+    const habitStore = useHabitStore();
+    const habit = habitStore.addHabit(name, period, 'medium', isBad, createRng());
+    habitStore.updateHabit({ ...habit, lastCompletedPeriodKey, lastCheckedPeriodKey, ...extra });
+  }
+  const gems = () => useAccountStore().account.gems;
+
+  it('pays a perfect week on the first open of the next week', () => {
+    add('Read', 'daily', false, SUNDAY, SUNDAY);
+    useDailyRollover(MONDAY);
+    expect(gems()).toBe(12);
+    expect(useActivityLogStore().entries.find((e) => e.kind === 'gems')).toMatchObject({ kind: 'gems', amount: 2, reason: 'perfect-week' });
+    expect(useDailyPurse().weekGems.value).toBe(2);
+  });
+
+  it('a daily missed on Sunday spoils it', () => {
+    add('Read', 'daily', false, SATURDAY, SUNDAY);
+    useDailyRollover(MONDAY);
+    expect(gems()).toBe(10);
+    expect(useDailyPurse().weekGems.value).toBe(0);
+  });
+
+  it("a frozen Sunday doesn't spoil it", () => {
+    add('Read', 'daily', false, SATURDAY, SUNDAY, { frozenDayKeys: [SUNDAY] });
+    useDailyRollover(MONDAY);
+    expect(gems()).toBe(12);
+  });
+
+  it('a missed weekly spoils it', () => {
+    add('Read', 'daily', false, SUNDAY, SUNDAY);
+    add('Hike', 'weekly', false, '2026-W46', '2026-W47');
+    useDailyRollover(MONDAY);
+    expect(gems()).toBe(10);
+  });
+
+  it("a bad habit given in doesn't spoil it", () => {
+    add('Read', 'daily', false, SUNDAY, SUNDAY);
+    add('Doomscroll', 'daily', true, SUNDAY, SUNDAY);
+    useDailyRollover(MONDAY);
+    expect(gems()).toBe(12);
   });
 });

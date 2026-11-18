@@ -38,8 +38,8 @@ export type ActivityLogEntry =
   | { id: string; kind: 'lifesteal'; amount: number; healedWho: 'player' | 'boss' }
   | { id: string; kind: 'reflect'; amount: number }
   | { id: string; kind: 'boss-defeated'; bossIndex: number; amount?: number; gold?: number }
-  // Gems the account was paid; reason says what for ('level': a level milestone first reached).
-  | { id: string; kind: 'gems'; amount: number; reason: 'level' }
+  // Gems the account was paid; reason says what for ('level': a level milestone first reached; 'perfect-week': a week with every due skill checked).
+  | { id: string; kind: 'gems'; amount: number; reason: 'level' | 'perfect-week' }
   | { id: string; kind: 'revived'; gems: number } // a gem revive on the death screen
   | { id: string; kind: 'fell'; levels: number; gold: number; itemName?: string } // what a death's setback took
   | { id: string; kind: 'prestiged'; rank: number; gems: number } // a prestige, and the gems it paid

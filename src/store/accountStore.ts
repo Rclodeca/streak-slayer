@@ -2,8 +2,8 @@
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, prestigeAccount, recordLevel, spendGems, wearSkin } from '../game-engine';
-import type { Account, SkinDef, SkinSlot } from '../game-engine';
+import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, prestigeAccount, recordLevel, settlePerfectWeek, spendGems, wearSkin } from '../game-engine';
+import type { Account, Habit, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
   state: () => ({
@@ -18,6 +18,13 @@ export const useAccountStore = defineStore('account', {
     /** Pays any level milestones `level` newly reaches; returns the gems paid. */
     recordLevel(level: number): number {
       const { account, gemsPaid } = recordLevel(this.account, level);
+      if (account !== this.account) this.account = account;
+      return gemsPaid;
+    },
+
+    /** Settles the perfect week on a rollover in `nowWeekKey` (see settlePerfectWeek); returns the gems paid. */
+    settlePerfectWeek(nowWeekKey: string, missedWeekKeys: string[], habits: Habit[]): number {
+      const { account, gemsPaid } = settlePerfectWeek(this.account, nowWeekKey, missedWeekKeys, habits);
       if (account !== this.account) this.account = account;
       return gemsPaid;
     },

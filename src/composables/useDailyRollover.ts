@@ -24,8 +24,9 @@
 // Periods a skill's streak freeze covered are passed over the same way. If
 // it only rested since, there's nothing to resolve and it's just stamped.
 
-import { applyDailyRegen, dailyPeriodKey, daysBetweenDayKeys, isDueOn, periodKeyFor } from '../game-engine';
+import { applyDailyRegen, dailyPeriodKey, daysBetweenDayKeys, isDueOn, missWeekKey, periodKeyFor, weeklyPeriodKey } from '../game-engine';
 import type { Habit } from '../game-engine';
+import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
@@ -81,6 +82,8 @@ export function useDailyRollover(now: Date = new Date()): void {
   const { queueMiss, queueReward, hasPending } = useMissedSkillsGate();
   const questStore = useQuestStore();
   const { queueMiss: queueQuestMiss, hasPending: questMissesPending } = useQuestMissGate();
+  // The weeks this rollover's missed skills fell in, for the perfect week.
+  const missedWeeks: string[] = [];
 
   for (const habit of habitStore.habits) {
     const currentPeriodKey = periodKeyFor(habit.period, now);
@@ -94,6 +97,7 @@ export function useDailyRollover(now: Date = new Date()): void {
         queueReward(habit, currentPeriodKey);
       } else {
         queueMiss(habit, currentPeriodKey);
+        missedWeeks.push(missWeekKey(habit, keyToResolve));
       }
       continue; // stamping deferred until the outcome is acknowledged
     }
@@ -102,8 +106,15 @@ export function useDailyRollover(now: Date = new Date()): void {
   }
 
   const todayKey = dailyPeriodKey(now);
+  // The perfect week settles at the turn of a week; its gems ride on the purse.
+  const purse = useDailyPurse();
+  const weekGems = useAccountStore().settlePerfectWeek(weeklyPeriodKey(now), missedWeeks, habitStore.habits);
+  if (weekGems > 0) {
+    useActivityLogStore().addEntry({ kind: 'gems', amount: weekGems, reason: 'perfect-week' });
+    purse.noticeWeek(weekGems);
+  }
   // The day's purse, if it's still to claim: its popup shows before the recap.
-  useDailyPurse().notice(todayKey);
+  purse.notice(todayKey);
 
   // Ember Heart's once-a-day heal (a no-op without it, or if it already ran today).
   const characterStore = useCharacterStore();
