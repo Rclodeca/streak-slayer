@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { FlaskConical, RefreshCw, Swords } from 'lucide-vue-next';
-import { ITEM_CATALOG, TONIC_DEFS, characterGold, wareState } from '../../game-engine';
+import { ITEM_CATALOG, TONIC_DEFS, characterGold, tonicEffect, wareState } from '../../game-engine';
 import type { ShopWare, TonicId } from '../../game-engine';
 import { useShop } from '../../composables/useShop';
 import { useAccountStore } from '../../store/accountStore';
@@ -62,7 +62,7 @@ const potions = computed(() =>
           : state.status === 'full'
             ? 'Full health'
             : undefined;
-    return { ...def, price: state.price, currency: state.currency, buyable: state.status === 'buy', short: state.status === 'short', label };
+    return { ...def, effect: tonicEffect(characterStore.character, def.id), price: state.price, currency: state.currency, buyable: state.status === 'buy', short: state.status === 'short', label };
   }),
 );
 

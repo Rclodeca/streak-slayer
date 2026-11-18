@@ -6,7 +6,9 @@ import { characterGold } from './gold';
 import { addDaysToDayKey } from './time';
 import { ITEM_CATALOG, dropRarityShares } from './items';
 import { createRng } from './rng';
-import { buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
+import { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicEffect, tonicState, wareState } from './shop';
+import { TUNING } from './constants/tuning';
+import { formatCompact } from './format';
 import type { Character, ShopWare } from './types';
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
@@ -318,5 +320,22 @@ describe('a fallen hero', () => {
     expect(buyTonic(c, 'crit', 3, DAY, 0)).toBeNull();
     expect(buyWare(c, c.shop!.wares[0].itemId, 0)).toBeNull();
     expect(restockShop(c, 3, createRng(1))).toBeNull();
+  });
+});
+
+describe('tonicEffect', () => {
+  it('the Health Potion names its heal in HP', () => {
+    const hero = makeCharacter();
+    const heal = (effectiveStat(hero, 'health') * TUNING.DRAUGHT_HEAL_PCT) / 100;
+    expect(tonicEffect(hero, 'draught')).toBe(`Heal ${formatCompact(heal)} HP.`);
+  });
+
+  it('still names it at full health', () => {
+    const hero = makeCharacter();
+    expect(tonicEffect({ ...hero, currentHealth: effectiveStat(hero, 'health') }, 'draught')).toMatch(/^Heal \d[\d.]*K? HP\.$/);
+  });
+
+  it('other potions keep their line', () => {
+    expect(tonicEffect(makeCharacter(), 'crit')).toBe(TONIC_DEFS.find((d) => d.id === 'crit')!.effect);
   });
 });

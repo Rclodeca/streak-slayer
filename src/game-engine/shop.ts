@@ -8,6 +8,7 @@
 
 import { GEM_POTION_PRICES, GEM_WARE_PRICES, POTION_STOCK_DAYS, SHOP_STOCK, restockFee, tonicPrice, warePrice } from './constants/economy';
 import { TUNING } from './constants/tuning';
+import { formatCompact } from './format';
 import { characterGold } from './gold';
 import { DROP_RARITIES, ITEM_CATALOG, availableRelics, blendByLevel, normalizeShares, recordRelicEarned } from './items';
 import type { DropRarity, ItemDef, ItemRarity } from './items';
@@ -160,6 +161,13 @@ export const TONIC_DEFS: readonly { id: TonicId; name: string; effect: string; a
   // Shares the EXP Potion's sprite until it has its own.
   { id: 'double-exp', name: 'Double EXP', effect: `+${pct(TUNING.DOUBLE_EXP_BONUS)}% EXP for ${TUNING.DOUBLE_EXP_DAYS} days.`, art: 'potions/exp' },
 ];
+
+/** A potion's effect line: the Health Potion names its heal in HP, so its rising price reads as a bigger potion. */
+export function tonicEffect(character: Character, id: TonicId): string {
+  const def = TONIC_DEFS.find((d) => d.id === id)!;
+  if (id !== 'draught') return def.effect;
+  return `Heal ${formatCompact((effectiveStat(character, 'health') * TUNING.DRAUGHT_HEAL_PCT) / 100)} HP.`;
+}
 
 /** The two EXP potions share one boost: the one running is the row whose bonus it carries, so the other stays buyable and replaces it. */
 const isDouble = (bonus: number) => bonus === TUNING.DOUBLE_EXP_BONUS;
