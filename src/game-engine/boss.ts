@@ -255,8 +255,10 @@ export function bossNumber(boss: Pick<Boss, 'index' | 'shownIndex'>): number {
 
 /** The boss shown as `shown`, keeping `shownIndex` only when it differs from the power index. */
 export function withBossNumber(boss: Boss, shown: number): Boss {
-  const { shownIndex: _old, ...rest } = boss;
-  return shown === boss.index ? rest : { ...rest, shownIndex: shown };
+  const next = { ...boss };
+  if (shown === boss.index) delete next.shownIndex;
+  else next.shownIndex = shown;
+  return next;
 }
 
 /**

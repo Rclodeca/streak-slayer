@@ -41,7 +41,7 @@ Decided 2026-11-17. When the hero falls (and the player doesn't revive):
 
 - The engine needs a **boss power index** that is separate from the boss number shown. Every boss stat that is made from the index (health, attack, resists, skills, gold, drops, and the shop and service prices priced off boss gold) reads the power index. The shown number reads the boss number.
 - My call, from the user's "boss number unchanged": the hero dies to boss #N at power P. The next boss is a new random boss, still shown as **#N**, made at power **P − 3** (never below 1). After that, each kill raises both by 1, so the gap stays until prestige, and each death widens it by 3.
-- The gem revive on the death screen stays as it is (10 gems, half HP, once per boss).
+- The gem revive on the death screen stays at 10 gems and half HP, and is now open on every fall while the gems cover it, with no once-per-boss limit (the user, 2026-11-17).
 - The death popup's copy ("Your skills keep their power") and the bonfire scenes need a look, because the run no longer ends. Left to the builder, in the house terse style.
 
 ## 4. Prestige
@@ -143,6 +143,7 @@ The dungeons come first so players can try dungeons early.
 
 - **The prestige screen** (a tab, or part of the Talents tab) and **the prestige moment popup**: mock first, in the Pixel-cut (Moonlit) look. Fit the Mythic skin into the reveal.
 - My call: once deaths stop resetting the run, prestige is the only way to start over or change class. So the first build ships the engine and store, plus a **plain temporary Prestige button** on the Talents tab (behind a confirm). The real screen replaces it after the mock round. Nothing goes live until the whole shop plan is pushed anyway.
+- **Done 2026-11-17:** the mock round picked **A · Crown plinth** (`docs/mockups/prestige-tree.html`: a fourth plinth on the Talents tab that opens the ladder) and **A · The statue** (`docs/mockups/prestige-popup.html`: the confirm popup). Both were built in place of the temporary button, along with a featured prestige card on the level-up popup. The Mythic skins use placeholder art until the Pixellab run.
 - **The epitaph list (the user, 2026-11-17):** it records a run at each **prestige**, not at a death. Each entry also shows how many deaths that climb took. "Best boss" uses the boss number shown, which only goes up on kills. The bonfire return scene still keys off whether any runs are saved. The user will rework this page later, so build it plainly.
 - The death popup's new copy, and how the bonfire screen reads now that the run continues.
 - What a stage or level-up shows when prestige opens (a level-up popup unlock line is the obvious place, since `UNLOCK_LEVELS` already lists unlocks).

@@ -11,7 +11,7 @@ Replaces the earlier drafts `2026-11-10-shop.md` and `2026-11-10-monetization-mo
 - **Gold** is the everyday currency. It comes from bosses, it's lost on death, and it buys things for this run plus the early talent tree.
 - **Gems** are the scarce currency. The free supply is finite and tuned exactly. They're kept forever and buy lasting things, revives and a few special items.
 - **Real money** buys content packs (the best deal) and gems (for big spenders).
-- **Death resets the run**, but the talent tree is permanent. Gold that isn't spent before you die is gone, so players turn it into tree nodes. Every run leaves you a little stronger. (This is the Rogue Legacy loop.)
+- **Prestige resets the run** (death is a setback since 2026-11-17, see §6), but the talent tree is permanent. Gold that isn't spent before you die is gone, so players turn it into tree nodes. Every run leaves you a little stronger. (This is the Rogue Legacy loop.)
 - Nothing random is sold. No loot boxes, ever.
 
 ---
@@ -48,7 +48,7 @@ Once a long-time player has earned every free gem, new gems come only from new c
 | Item | Kept? | Notes |
 |---|---|---|
 | Talent tree nodes (higher up) | Kept | Gold + gems, see §5. |
-| Revive | — | One fixed price that never climbs. Maybe one per boss. Offered on the death screen. |
+| Revive | — | One fixed price that never climbs. Offered on the death screen on every fall. |
 | Streak freeze | Kept until used | Set up **in advance** (vacation, sick day), for **one skill** (decided 2026-11-14). Frozen days don't add to the streak. It never saves a streak after a miss. |
 | Hero skins, base hero skins, arena skins | Kept | Cosmetic. |
 | A few rotating rare items | This run | Lost on death. Should come back into the rotation later (open, see §12). |
@@ -108,10 +108,9 @@ General rule for players: gems usually buy lasting things, gold usually buys run
 
 ## 6. Death
 
-**Death resets the run.**
+Replaced 2026-11-17 by the prestige design (`docs/superpowers/specs/2026-11-17-prestige-design.md`). Death is now a setback, not a reset: the hero loses 3 levels, a quarter of the carried gold, 1 random equipped item, and the next boss is 3 back in power (shown as the same number). The full reset that used to happen at death now happens at **prestige**, which the player chooses from level 30. The talent tree, skill ranks, streaks, gems, skins, trials and freezes are kept through both. A revive (gems, fixed price) is offered on the death screen on every fall.
 
-| Lost | Kept |
-|---|---|
+---|---|
 | Gold | Talent tree |
 | Items and relics | Skill ranks and streaks |
 | Level | Gems |
@@ -199,7 +198,7 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - **Relic sources:** dungeons mostly. Since Milestone B the gold shop has one now and then (an epic or relic on 1 day in 3, a relic 1 time in 3 of those). Very rare drops? How many dungeons are needed to cover the 17 relics?
 - **Gem-bought items lost on death:** do they come back into the rotation later?
 - **Gold streak freeze:** decided 2026-11-14: no. The freeze is sold for gems only.
-- **Revive limit:** decided 2026-11-14: one per boss, at a fixed 10 gems.
+- **Revive limit:** decided 2026-11-14: one per boss, at a fixed 10 gems. Changed 2026-11-17: no limit; a revive is open on every fall while the gems cover it.
 - **"Kept" vs "This run" on each item:** how it looks. Visual pass later.
 - **Prices and the gem budget:** not tuned. Needs a rough budget (free gems in, gem costs out) before building. Milestone B's gold prices are multiples of the current boss's gold (common 1×, uncommon 1.5×, rare 2.5×, epic 4×, relic 6×, tonics 1×, restock 0.5× doubling), all in `constants/economy.ts`.
 
