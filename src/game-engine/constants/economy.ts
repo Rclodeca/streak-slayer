@@ -173,7 +173,7 @@ export const PERFECT_WEEK_GEMS = 2;
 export const REVIVE_GEMS = 15;
 
 /** What a death takes (the prestige design §3): levels, a share of carried gold, equipped items, and boss power. */
-export const DEATH_SETBACK = { levels: 3, goldPct: 25, items: 1, bossPower: 3 } as const;
+export const DEATH_SETBACK = { levels: 1, goldPct: 10, items: 1, bossPower: 2 } as const;
 
 /** A skin's gem price by kind (see skins.ts). */
 export const SKIN_PRICES = { hero: 120, home: 90, arena: 90 };

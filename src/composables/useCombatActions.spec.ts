@@ -633,14 +633,14 @@ describe('useCombatActions', () => {
     restart();
 
     expect(isDead.value).toBe(false);
-    expect(characterStore.character.level).toBe(17);
+    expect(characterStore.character.level).toBe(19);
     expect(characterStore.character.name).toBe('Aria');
     expect(characterStore.character.heroPending).toBe(false);
     expect(bossNumber(bossStore.boss)).toBe(shownBefore);
-    expect(bossStore.boss.index).toBe(4);
+    expect(bossStore.boss.index).toBe(5);
     expect(habitStore.habits.map((h) => h.damageType)).toEqual(typesBefore);
     expect(highScoreStore.topRuns).toHaveLength(runsBefore);
-    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'fell', levels: 3, gold: 100, itemName: 'Rusty Hatchet' });
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'fell', levels: 1, gold: 40, itemName: 'Rusty Hatchet' });
   });
 
   it('restart keeps in-progress quests, the slots and the service turn', () => {
@@ -662,7 +662,7 @@ describe('useCombatActions', () => {
     expect(questStore.quests[0].description).toBe('Clean garage');
     expect(characterStore.character.slotUpgrades).toBe(2);
     expect(characterStore.character.serviceTurn).toEqual({ id: 'reroll', startDayKey: '2026-11-01', rerolls: 3 });
-    expect(characterStore.character.gold).toBe(375);
+    expect(characterStore.character.gold).toBe(450);
   });
 
   it('a level-up queues no pick: the level just rises and heals', () => {

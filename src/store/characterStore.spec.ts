@@ -233,6 +233,6 @@ describe('characterStore talents', () => {
     store.resolvePlayerDeathIfDead(generateBoss(5, createRng(1)), createRng(2));
     expect(store.character.talents).toEqual({ might: 3 });
     expect(store.character.talentsUnlocked).toBe(true);
-    expect(store.character.level).toBe(9);
+    expect(store.character.level).toBe(11);
   });
 });

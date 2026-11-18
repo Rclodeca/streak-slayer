@@ -58,14 +58,14 @@ describe('DeathScreen', () => {
   });
 
   describe('the toll', () => {
-    it('shows what the fall takes: three levels, a quarter of the gold, one item', async () => {
+    it('shows what the fall takes: one level, a tenth of the gold, one item', async () => {
       const characterStore = useCharacterStore();
       characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], currentHealth: 0 });
       useBossStore().setBoss({ ...useBossStore().boss, index: 9, shownIndex: 12 });
       mountWith([{ rank: 1, streakCount: 2 }]);
       await toBonfire();
       const chips = [...document.querySelectorAll('.toll .toll-chip')].map((c) => c.textContent!.replace(/\s+/g, ' ').trim());
-      expect(chips).toEqual(['−3 levels', '−100', 'One item']);
+      expect(chips).toEqual(['−1 level', '−40', 'One item']);
       expect(document.querySelector('.toll .toll-chip.gold .stat-icon, .toll .toll-chip.gold svg, .toll .toll-chip.gold img')).not.toBeNull();
       expect(document.querySelector('.meta')!.textContent).toContain('Boss 12');
       expect(document.querySelector('.kept')!.textContent).toBe('Your skills keep their power');

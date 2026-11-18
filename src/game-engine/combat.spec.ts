@@ -1073,9 +1073,9 @@ describe('resolveBossDefeatIfDead', () => {
 });
 
 describe('deathToll', () => {
-  it('takes three levels, a quarter of the gold and one item', () => {
+  it('takes one level, a tenth of the gold and one item', () => {
     const hero = makeCharacter({ level: 20, gold: 401, ownedItemIds: ['rusty-blade', 'steel-sword'], equippedItemIds: ['rusty-blade', 'steel-sword'] });
-    expect(deathToll(hero)).toEqual({ levels: 3, gold: 100, items: 1 });
+    expect(deathToll(hero)).toEqual({ levels: 1, gold: 40, items: 1 });
   });
 
   it('never takes a hero under level 1, or an item they lack', () => {
@@ -1104,13 +1104,13 @@ describe('resolvePlayerDeathIfDead', () => {
     });
   const boss12 = makeBoss({ index: 12, health: 40, maxHealth: 900, difficultyModifier: 1.07 });
 
-  it('takes three levels, a quarter of the gold and one item, and keeps the rest', () => {
+  it('takes one level, a tenth of the gold and one item, and keeps the rest', () => {
     const result = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
     const { character } = result;
     expect(result.died).toBe(true);
-    expect(character.level).toBe(17);
+    expect(character.level).toBe(19);
     expect(character.exp).toBe(0);
-    expect(character.gold).toBe(301);
+    expect(character.gold).toBe(361);
     expect(character.equippedItemIds).toHaveLength(2);
     expect(character.ownedItemIds).toEqual(character.equippedItemIds);
     expect(result.lostItem).toBeDefined();
@@ -1125,9 +1125,9 @@ describe('resolvePlayerDeathIfDead', () => {
     expect(character.slotUpgrades).toBe(2);
   });
 
-  it('sends a boss three back in power, shown as the same number, at full health', () => {
+  it('sends a boss two back in power, shown as the same number, at full health', () => {
     const { boss } = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
-    expect(boss.index).toBe(9);
+    expect(boss.index).toBe(10);
     expect(bossNumber(boss)).toBe(12);
     expect(boss.health).toBe(boss.maxHealth);
     expect(boss.difficultyModifier).toBe(1.07);
@@ -1144,10 +1144,10 @@ describe('resolvePlayerDeathIfDead', () => {
     throw new Error('no seed lost the relic');
   });
 
-  it('a second death widens the gap by three', () => {
+  it('a second death widens the gap by two', () => {
     const first = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
     const second = resolvePlayerDeathIfDead({ ...first.character, currentHealth: 0 }, first.boss, createRng(2));
-    expect(second.boss.index).toBe(6);
+    expect(second.boss.index).toBe(8);
     expect(bossNumber(second.boss)).toBe(12);
     expect(second.character.deaths).toBe(2);
   });

@@ -590,11 +590,11 @@ export function resolveBossDefeatIfDead(
 
 /**
  * No-op unless the character's health has reached 0. When it has, the hero
- * takes the death setback (DEATH_SETBACK, see deathToll): three levels back
- * (never below 1, EXP to 0), a quarter of the carried gold, and one random
+ * takes the death setback (DEATH_SETBACK, see deathToll): one level back
+ * (never below 1, EXP to 0), a tenth of the carried gold, and one random
  * equipped item. Everything else in the run stays: talents, items, slots,
  * enchants, habits and their streaks. The hero rises at full health at the new
- * level. The next boss is a new one, three bosses back in power (never below
+ * level. The next boss is a new one, two bosses back in power (never below
  * 1) but shown as the same number, so the gap stays until prestige and each
  * death widens it. A lost relic leaves earnedRelicIds, so it can be bought
  * again. Rng order: the lost item, then the boss.
