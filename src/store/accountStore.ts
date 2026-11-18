@@ -3,7 +3,7 @@
 
 import { defineStore } from 'pinia';
 import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, prestigeAccount, recordLevel, settlePerfectWeek, spendGems, wearSkin } from '../game-engine';
-import type { Account, Habit, SkinDef, SkinSlot } from '../game-engine';
+import type { Account, Habit, MissSpan, SkinDef, SkinSlot } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
   state: () => ({
@@ -23,8 +23,8 @@ export const useAccountStore = defineStore('account', {
     },
 
     /** Settles the perfect week on a rollover in `nowWeekKey` (see settlePerfectWeek); returns the gems paid. */
-    settlePerfectWeek(nowWeekKey: string, missedWeekKeys: string[], habits: Habit[]): number {
-      const { account, gemsPaid } = settlePerfectWeek(this.account, nowWeekKey, missedWeekKeys, habits);
+    settlePerfectWeek(nowWeekKey: string, misses: MissSpan[], habits: Habit[]): number {
+      const { account, gemsPaid } = settlePerfectWeek(this.account, nowWeekKey, misses, habits);
       if (account !== this.account) this.account = account;
       return gemsPaid;
     },

@@ -23,13 +23,15 @@
 // `overridden` tracks which pending habit IDs the player has flagged (via
 // the popup's checkboxes) as "I actually did this" — `acknowledge()` flips
 // that item's outcome (penalty <-> reward) before resolving it, rather than
-// trusting the rollover's detected outcome blindly.
+// trusting the rollover's detected outcome blindly. A held perfect week
+// (usePerfectWeek) settles here too, with only the misses that stood.
 
 import { computed, ref } from 'vue';
-import type { Difficulty, Habit, Period } from '../game-engine';
+import type { Difficulty, Habit, MissSpan, Period } from '../game-engine';
 import { useCombatActions } from './useCombatActions';
 import { useHabitStore } from '../store/habitStore';
 import { useItemDropQueue } from './useItemDropQueue';
+import { usePerfectWeek } from './usePerfectWeek';
 import { useQuestMissGate } from './useQuestMissGate';
 
 interface PendingOutcome {
@@ -39,6 +41,8 @@ interface PendingOutcome {
   period: Period;
   periodKeyToStamp: string;
   outcome: 'penalty' | 'reward';
+  // A good skill's miss: the weeks it could have fallen in, for the perfect week.
+  missSpan?: MissSpan;
 }
 
 const pending = ref<PendingOutcome[]>([]);
@@ -49,6 +53,7 @@ export function useMissedSkillsGate() {
   const { checkMissedHabit, checkAvoidedHabit, landDoom } = useCombatActions();
   const { enqueueDrops } = useItemDropQueue();
   const { hasPending: questMissesPending } = useQuestMissGate();
+  const perfectWeek = usePerfectWeek();
 
   const misses = computed(() => pending.value.filter((item) => item.outcome === 'penalty'));
   const rewards = computed(() => pending.value.filter((item) => item.outcome === 'reward'));
@@ -72,8 +77,8 @@ export function useMissedSkillsGate() {
     return pending.value.some((item) => item.habitId === habitId);
   }
 
-  /** Records a good-habit miss for `habit`, stamping `periodKeyToStamp` once acknowledged. */
-  function queueMiss(habit: Habit, periodKeyToStamp: string) {
+  /** Records a good-habit miss for `habit`, stamping `periodKeyToStamp` once acknowledged; `missSpan` is the weeks it could have fallen in. */
+  function queueMiss(habit: Habit, periodKeyToStamp: string, missSpan?: MissSpan) {
     if (isPending(habit.id)) return;
     pending.value.push({
       habitId: habit.id,
@@ -82,6 +87,7 @@ export function useMissedSkillsGate() {
       period: habit.period,
       periodKeyToStamp,
       outcome: 'penalty',
+      missSpan,
     });
   }
 
@@ -137,6 +143,8 @@ export function useMissedSkillsGate() {
         habitStore.updateHabit({ ...habit, lastCheckedPeriodKey: item.periodKeyToStamp });
       }
     }
+    // After the outcomes, so a corrected skill reads as done for the week.
+    perfectWeek.release(resolving.flatMap(({ item, effectiveOutcome }) => (effectiveOutcome === 'penalty' && item.missSpan ? [item.missSpan] : [])));
     pending.value = [];
     overridden.value = new Set();
     // Last, so the day's misses and avoided habits land first (and a boss

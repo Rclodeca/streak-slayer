@@ -12,6 +12,7 @@ const good = (lastCompletedPeriodKey: string | null, overrides: Partial<Habit> =
   ...overrides,
 });
 const checked = [good('2026-11-21')]; // a Saturday, in W47
+const miss = (from: string, to = from) => ({ from, to });
 const watching = (weekKey = '2026-W47', spoiled = false): Account => ({ ...createAccount(), gems: 10, perfectWeek: { weekKey, spoiled } });
 
 describe('settlePerfectWeek', () => {
@@ -34,25 +35,31 @@ describe('settlePerfectWeek', () => {
   });
 
   it('a miss during the week spoils it', () => {
-    const missed = settlePerfectWeek(watching(), '2026-W47', ['2026-W47'], checked).account;
+    const missed = settlePerfectWeek(watching(), '2026-W47', [miss('2026-W47')], checked).account;
     expect(missed.perfectWeek).toEqual({ weekKey: '2026-W47', spoiled: true });
     expect(settlePerfectWeek(missed, '2026-W48', [], checked).gemsPaid).toBe(0);
   });
 
   it('a Sunday miss found on Monday spoils the week that ended', () => {
-    const { account, gemsPaid } = settlePerfectWeek(watching(), '2026-W48', ['2026-W47'], checked);
+    const { account, gemsPaid } = settlePerfectWeek(watching(), '2026-W48', [miss('2026-W47')], checked);
     expect(gemsPaid).toBe(0);
     expect(account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: false });
   });
 
   it('a miss found after a gap across the turn spoils the watched week', () => {
-    const { account, gemsPaid } = settlePerfectWeek(watching(), '2026-W48', ['2026-W48'], checked);
+    const { account, gemsPaid } = settlePerfectWeek(watching(), '2026-W48', [miss('2026-W47', '2026-W48')], checked);
     expect(gemsPaid).toBe(0);
     expect(account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: true });
   });
 
+  it('a miss that can only be in the new week leaves the watched week paid', () => {
+    const { account, gemsPaid } = settlePerfectWeek(watching(), '2026-W48', [miss('2026-W48')], checked);
+    expect(gemsPaid).toBe(2);
+    expect(account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: true });
+  });
+
   it('a miss found again from an earlier week leaves the current one alone', () => {
-    const { account } = settlePerfectWeek(watching('2026-W48'), '2026-W48', ['2026-W47'], checked);
+    const { account } = settlePerfectWeek(watching('2026-W48'), '2026-W48', [miss('2026-W47')], checked);
     expect(account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: false });
   });
 

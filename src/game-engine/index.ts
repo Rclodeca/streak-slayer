@@ -195,6 +195,7 @@ export { DEFAULT_SCENE_ART, MYTHIC_SKIN_IDS, SKIN_CATALOG, buySkin, heroArt, sce
 export { prestigeAccount, prestigeRun } from './prestigeRun';
 export { buyFreeze, freezeCost, pruneFrozenDays } from './freeze';
 export { missWeekKey, settlePerfectWeek } from './perfectWeek';
+export type { MissSpan } from './perfectWeek';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
 export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';

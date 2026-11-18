@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weekDayKeys } from '../game-engine';
+import { addDaysToDayKey, createRng, dailyPeriodKey, dayOfWeekIndex, periodKeyFor, weekDayKeys, weekKeyOfDayKey } from '../game-engine';
 import type { ChallengeEntry } from '../game-engine';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -136,6 +136,7 @@ describe('useDailyRollover', () => {
         period: habit.period,
         periodKeyToStamp: currentPeriodKey,
         outcome: 'penalty',
+        missSpan: { from: weekKeyOfDayKey(yesterdayKey), to: weekKeyOfDayKey(yesterdayKey) },
       },
     ]);
   });
@@ -720,8 +721,37 @@ describe('useDailyRollover — the perfect week', () => {
   it('a daily missed on Sunday spoils it', () => {
     add('Read', 'daily', false, SATURDAY, SUNDAY);
     useDailyRollover(MONDAY);
+    useMissedSkillsGate().acknowledge();
     expect(gems()).toBe(10);
+    expect(useAccountStore().account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: false });
     expect(useDailyPurse().weekGems.value).toBe(0);
+  });
+
+  it("'I actually did this' on the miss keeps the week", () => {
+    const habit = useHabitStore().addHabit('Read', 'daily', 'medium', false, createRng());
+    useHabitStore().updateHabit({ ...habit, lastCompletedPeriodKey: SATURDAY, lastCheckedPeriodKey: SUNDAY });
+    useDailyRollover(MONDAY);
+    expect(gems()).toBe(10); // held until the popup is answered
+    useMissedSkillsGate().toggleOverride(habit.id);
+    useMissedSkillsGate().acknowledge();
+    expect(gems()).toBe(12);
+    expect(useActivityLogStore().entries.find((e) => e.kind === 'gems')).toMatchObject({ amount: 2, reason: 'perfect-week' });
+  });
+
+  it("skipping the Monday open keeps last week's gems", () => {
+    add('Read', 'daily', false, SUNDAY, SUNDAY);
+    useDailyRollover(new Date(Date.UTC(2026, 10, 24, 20))); // Tuesday
+    useMissedSkillsGate().acknowledge();
+    expect(gems()).toBe(12);
+    expect(useAccountStore().account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: true });
+  });
+
+  it('closed from Saturday to Thursday: the Sunday it may have missed spoils the week', () => {
+    add('Read', 'daily', false, SATURDAY, SATURDAY);
+    useDailyRollover(new Date(Date.UTC(2026, 10, 26, 20))); // Thursday
+    useMissedSkillsGate().acknowledge();
+    expect(gems()).toBe(10);
+    expect(useAccountStore().account.perfectWeek).toEqual({ weekKey: '2026-W48', spoiled: true });
   });
 
   it("a frozen Sunday doesn't spoil it", () => {
@@ -734,7 +764,9 @@ describe('useDailyRollover — the perfect week', () => {
     add('Read', 'daily', false, SUNDAY, SUNDAY);
     add('Hike', 'weekly', false, '2026-W46', '2026-W47');
     useDailyRollover(MONDAY);
+    useMissedSkillsGate().acknowledge();
     expect(gems()).toBe(10);
+    expect(useAccountStore().account.perfectWeek!.weekKey).toBe('2026-W48');
   });
 
   it("a bad habit given in doesn't spoil it", () => {

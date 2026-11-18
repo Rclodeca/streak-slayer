@@ -25,8 +25,7 @@
 // it only rested since, there's nothing to resolve and it's just stamped.
 
 import { applyDailyRegen, dailyPeriodKey, daysBetweenDayKeys, isDueOn, missWeekKey, periodKeyFor, weeklyPeriodKey } from '../game-engine';
-import type { Habit } from '../game-engine';
-import { useAccountStore } from '../store/accountStore';
+import type { Habit, MissSpan } from '../game-engine';
 import { useActivityLogStore } from '../store/activityLogStore';
 import { useCharacterStore } from '../store/characterStore';
 import { useHabitStore } from '../store/habitStore';
@@ -34,6 +33,7 @@ import { useQuestStore } from '../store/questStore';
 import { useCombatActions } from './useCombatActions';
 import { useDailyPurse } from './useDailyPurse';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
+import { usePerfectWeek } from './usePerfectWeek';
 import { useQuestMissGate } from './useQuestMissGate';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -47,16 +47,17 @@ const LOOK_BACK_DAYS = 14;
  * no earlier than `lastCheckedPeriodKey`. For a plain daily that's yesterday,
  * for a weekly last week, unless they rested. Looking past the rest is what
  * keeps a freeze from hiding a real miss on the day before it when the app
- * stayed closed through it. Undefined when it only rested since.
+ * stayed closed through it. Undefined when it only rested since. `back` is how
+ * many periods before now it lies.
  */
-function periodKeyToResolve(habit: Habit, now: Date): string | undefined {
+function periodToResolve(habit: Habit, now: Date): { key: string; back: number } | undefined {
   if (habit.period === 'weekly') {
     for (let back = 1; back <= 2; back++) {
       const week = new Date(now.getTime() - back * 7 * MS_PER_DAY);
       const weekKey = periodKeyFor('weekly', week);
       // Week keys (YYYY-Www) sort as text.
       if (habit.lastCheckedPeriodKey && weekKey < habit.lastCheckedPeriodKey) return undefined;
-      if (isDueOn(habit, week)) return weekKey;
+      if (isDueOn(habit, week)) return { key: weekKey, back };
     }
     return undefined;
   }
@@ -64,9 +65,40 @@ function periodKeyToResolve(habit: Habit, now: Date): string | undefined {
     const day = new Date(now.getTime() - back * MS_PER_DAY);
     const dayKey = dailyPeriodKey(day);
     if (habit.lastCheckedPeriodKey && daysBetweenDayKeys(habit.lastCheckedPeriodKey, dayKey) < 0) return undefined;
-    if (isDueOn(habit, day)) return dayKey;
+    if (isDueOn(habit, day)) return { key: dayKey, back };
   }
   return undefined;
+}
+
+/** How far before the resolved period missSpan looks for an earlier unseen one: past this it assumes the worst. */
+const SPAN_LOOK_BACK = { daily: LOOK_BACK_DAYS, weekly: 4 } as const;
+
+/**
+ * The weeks a good skill's miss, found at the period `back` periods before
+ * now, could have fallen in. The rollover only resolves the latest due
+ * period, so if the app sat closed an earlier due one may be the miss: any
+ * since the skill was last resolved (`lastCheckedPeriodKey`) and after it was
+ * last done (`lastCompletedPeriodKey`). Past SPAN_LOOK_BACK it reaches back to
+ * the last resolved period.
+ */
+function missSpan(habit: Habit, now: Date, resolved: { key: string; back: number }): MissSpan {
+  const step = habit.period === 'weekly' ? 7 * MS_PER_DAY : MS_PER_DAY;
+  const lastChecked = habit.lastCheckedPeriodKey;
+  const lastDone = habit.lastCompletedPeriodKey;
+  let earliest = resolved.key;
+  let reachedSeen = false;
+  for (let back = resolved.back + 1; back <= resolved.back + SPAN_LOOK_BACK[habit.period]; back++) {
+    const date = new Date(now.getTime() - back * step);
+    const key = periodKeyFor(habit.period, date);
+    // Day keys and week keys both sort as text.
+    if ((lastChecked && key < lastChecked) || (lastDone && key <= lastDone)) {
+      reachedSeen = true;
+      break;
+    }
+    if (isDueOn(habit, date)) earliest = key;
+  }
+  if (!reachedSeen && lastChecked && lastChecked < earliest) earliest = lastChecked;
+  return { from: missWeekKey(habit, earliest), to: missWeekKey(habit, resolved.key) };
 }
 
 /**
@@ -79,25 +111,22 @@ function periodKeyToResolve(habit: Habit, now: Date): string | undefined {
  */
 export function useDailyRollover(now: Date = new Date()): void {
   const habitStore = useHabitStore();
-  const { queueMiss, queueReward, hasPending } = useMissedSkillsGate();
+  const { queueMiss, queueReward, hasPending, misses } = useMissedSkillsGate();
   const questStore = useQuestStore();
   const { queueMiss: queueQuestMiss, hasPending: questMissesPending } = useQuestMissGate();
-  // The weeks this rollover's missed skills fell in, for the perfect week.
-  const missedWeeks: string[] = [];
 
   for (const habit of habitStore.habits) {
     const currentPeriodKey = periodKeyFor(habit.period, now);
     if (habit.lastCheckedPeriodKey === currentPeriodKey) continue; // no boundary crossed
 
-    const keyToResolve = periodKeyToResolve(habit, now);
-    if (keyToResolve !== undefined && habit.lastCompletedPeriodKey !== keyToResolve) {
+    const resolved = periodToResolve(habit, now);
+    if (resolved !== undefined && habit.lastCompletedPeriodKey !== resolved.key) {
       // Not completed in the preceding period: a miss for a good habit, but
       // the win condition (avoided) for a bad one.
       if (habit.isBad) {
         queueReward(habit, currentPeriodKey);
       } else {
-        queueMiss(habit, currentPeriodKey);
-        missedWeeks.push(missWeekKey(habit, keyToResolve));
+        queueMiss(habit, currentPeriodKey, missSpan(habit, now, resolved));
       }
       continue; // stamping deferred until the outcome is acknowledged
     }
@@ -106,12 +135,14 @@ export function useDailyRollover(now: Date = new Date()): void {
   }
 
   const todayKey = dailyPeriodKey(now);
-  // The perfect week settles at the turn of a week; its gems ride on the purse.
+  // The perfect week: settled now, its gems riding on the purse, unless a
+  // skill's miss waits in the popup, whose OK settles it (usePerfectWeek).
   const purse = useDailyPurse();
-  const weekGems = useAccountStore().settlePerfectWeek(weeklyPeriodKey(now), missedWeeks, habitStore.habits);
-  if (weekGems > 0) {
-    useActivityLogStore().addEntry({ kind: 'gems', amount: weekGems, reason: 'perfect-week' });
-    purse.noticeWeek(weekGems);
+  const perfectWeek = usePerfectWeek();
+  if (misses.value.length > 0) perfectWeek.hold(weeklyPeriodKey(now));
+  else {
+    const weekGems = perfectWeek.settle(weeklyPeriodKey(now), []);
+    if (weekGems > 0) purse.noticeWeek(weekGems);
   }
   // The day's purse, if it's still to claim: its popup shows before the recap.
   purse.notice(todayKey);
