@@ -43,6 +43,14 @@ describe('back up before conversion', () => {
     expect(localStorage.getItem(BACKUP_KEY)).toBe(OLD_SAVE);
   });
 
+  it('never replaces a backup that is already there, even when the marker is missing', () => {
+    localStorage.setItem(BACKUP_KEY, OLD_SAVE);
+    localStorage.setItem(SAVE_KEY, '{"converted":true}');
+    expect(backUpBeforeConversion()).toBe('already');
+    expect(localStorage.getItem(BACKUP_KEY)).toBe(OLD_SAVE);
+    expect(localStorage.getItem(CONVERTED_KEY)).toBe('1');
+  });
+
   it('still marks converted and returns backup-failed when the backup write throws', () => {
     const map = new Map<string, string>([[SAVE_KEY, OLD_SAVE]]);
     setStorageBackend({

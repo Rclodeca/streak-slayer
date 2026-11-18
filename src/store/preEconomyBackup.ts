@@ -21,8 +21,9 @@ export type BackupOutcome = 'fresh' | 'already' | 'backed-up' | 'backup-failed';
 export function backUpBeforeConversion(): BackupOutcome {
   if (storage.getItem(CONVERTED_KEY) !== null) return 'already';
   const raw = storage.getItem(SAVE_KEY);
-  let outcome: BackupOutcome = 'fresh';
-  if (raw !== null) {
+  const hasBackup = storage.getItem(BACKUP_KEY) !== null;
+  let outcome: BackupOutcome = hasBackup ? 'already' : 'fresh';
+  if (raw !== null && !hasBackup) {
     try {
       storage.setItem(BACKUP_KEY, raw);
       outcome = 'backed-up';
