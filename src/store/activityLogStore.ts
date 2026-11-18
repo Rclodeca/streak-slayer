@@ -41,6 +41,8 @@ export type ActivityLogEntry =
   // Gems the account was paid; reason says what for ('level': a level milestone first reached).
   | { id: string; kind: 'gems'; amount: number; reason: 'level' }
   | { id: string; kind: 'revived'; gems: number } // a gem revive on the death screen
+  | { id: string; kind: 'fell'; levels: number; gold: number; itemName?: string } // what a death's setback took
+  | { id: string; kind: 'prestiged'; rank: number; gems: number } // a prestige, and the gems it paid
   | { id: string; kind: 'freeze-bought'; habitName: string; fromDayKey: string; count: number; period: Period; gems: number } // count: days, or weeks for a weekly
   | { id: string; kind: 'shop-bought'; name: string; gold: number } // an item or a tonic
   | { id: string; kind: 'shop-restocked'; gold: number }

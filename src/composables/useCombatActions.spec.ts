@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, availableRelics, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, REVIVE_GEMS, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, REVIVE_GEMS, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -21,7 +21,7 @@ import { useBossSkillCard } from './useBossSkillCard';
 import { useCelebration } from './useCelebration';
 import { useCombatActions } from './useCombatActions';
 import { useDeathScreen } from './useDeathScreen';
-import { useFallenHero } from './useFallenHero';
+import { useRetiredHero } from './useRetiredHero';
 import { useHoodedFigure } from './useHoodedFigure';
 import { useItemDropQueue } from './useItemDropQueue';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
@@ -594,30 +594,37 @@ describe('useCombatActions', () => {
     expect(useDeathScreen().isDead.value).toBe(true);
   });
 
-  it('restart resets character/boss/habits and clears the death flag', () => {
+  it('restart takes the death setback and keeps the run going', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
+    const highScoreStore = useHighScoreStore();
     const { checkMissedHabit, restart } = useCombatActions();
     const { isDead } = useDeathScreen();
 
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
-    characterStore.character = { ...characterStore.character, currentHealth: 1 };
-    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3 });
+    characterStore.character = { ...characterStore.character, name: 'Aria', heroPending: false, level: 20, currentHealth: 1, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], gold: 400 };
+    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 100000, magicAttack: 100000, index: 7 });
     checkMissedHabit(habit.id);
     expect(isDead.value).toBe(true);
+    const shownBefore = bossNumber(bossStore.boss);
+    const typesBefore = habitStore.habits.map((h) => h.damageType);
+    const runsBefore = highScoreStore.topRuns.length;
 
     restart();
 
     expect(isDead.value).toBe(false);
-    expect(characterStore.character.level).toBe(1);
-    expect(characterStore.character.exp).toBe(0);
-    expect(characterStore.character.currentHealth).toBe(characterStore.character.starterStats.health);
-    expect(bossStore.boss.index).toBe(1);
-    expect(habitStore.habits).toHaveLength(1); // habit definitions kept, not wiped
+    expect(characterStore.character.level).toBe(17);
+    expect(characterStore.character.name).toBe('Aria');
+    expect(characterStore.character.heroPending).toBe(false);
+    expect(bossNumber(bossStore.boss)).toBe(shownBefore);
+    expect(bossStore.boss.index).toBe(4);
+    expect(habitStore.habits.map((h) => h.damageType)).toEqual(typesBefore);
+    expect(highScoreStore.topRuns).toHaveLength(runsBefore);
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'fell', levels: 3, gold: 100, itemName: 'Rusty Hatchet' });
   });
 
-  it('restart keeps in-progress quests and clears event state', () => {
+  it('restart keeps in-progress quests, the slots and the service turn', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
@@ -634,9 +641,9 @@ describe('useCombatActions', () => {
 
     expect(questStore.quests).toHaveLength(1);
     expect(questStore.quests[0].description).toBe('Clean garage');
-    expect(characterStore.character.slotUpgrades).toBeUndefined();
-    expect(characterStore.character.serviceTurn).toBeUndefined();
-    expect(characterStore.character.gold).toBeUndefined();
+    expect(characterStore.character.slotUpgrades).toBe(2);
+    expect(characterStore.character.serviceTurn).toEqual({ id: 'reroll', startDayKey: '2026-11-01', rerolls: 3 });
+    expect(characterStore.character.gold).toBe(375);
   });
 
   it('a level-up queues no pick: the level just rises and heals', () => {
@@ -653,30 +660,58 @@ describe('useCombatActions', () => {
     expect('pendingEventPicks' in characterStore.character).toBe(false);
   });
 
-  it('restart remembers who fell and where, and the new hero starts unnamed', () => {
-    const habitStore = useHabitStore();
+  it('prestige records the run, pays the rank and starts a new hero', () => {
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
-    const { checkMissedHabit, restart } = useCombatActions();
-    const { fallen, clearFallen } = useFallenHero();
-    clearFallen();
+    const highScoreStore = useHighScoreStore();
+    const accountStore = useAccountStore();
+    const { prestige } = useCombatActions();
+    const { retired, clearRetired } = useRetiredHero();
+    clearRetired();
+    characterStore.character = { ...characterStore.character, name: 'Aria', heroPending: false, level: 30, deaths: 2 };
+    bossStore.setBoss({ ...bossStore.boss, index: 14, shownIndex: 20 });
+    const bossBefore = bossStore.boss;
+    const gemsBefore = accountStore.account.gems;
+    const runsBefore = highScoreStore.topRuns.length;
+    useItemDropQueue().enqueueDrops([availableRelics(characterStore.character)[0]]);
 
-    const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
-    characterStore.character = { ...characterStore.character, name: 'Aria', currentHealth: 1 };
-    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 7 });
-    checkMissedHabit(habit.id);
+    expect(prestige()).toBe(true);
 
-    restart();
-
-    expect(fallen.value).toEqual({ name: 'Aria', bossIndex: 7 });
+    expect(highScoreStore.topRuns).toHaveLength(runsBefore + 1);
+    expect(highScoreStore.topRuns.find((run) => run.heroName === 'Aria')).toMatchObject({ deaths: 2, prestige: 1, bossIndex: bossNumber(bossBefore), level: 30 });
+    expect(accountStore.account.prestige).toBe(1);
+    expect(accountStore.account.gems).toBe(gemsBefore + 50);
     expect(characterStore.character.name).toBeUndefined();
-    clearFallen();
+    expect(characterStore.character.prestige).toBe(1);
+    expect(characterStore.character.level).toBe(1);
+    expect(bossStore.boss.index).toBe(1);
+    expect(retired.value).toEqual({ name: 'Aria', level: 30 });
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'prestiged', rank: 1, gems: 50 });
+    expect(useItemDropQueue().current.value).toBeNull();
+    expect(useCelebration().celebrating.value).toBe(false);
+    clearRetired();
+  });
+
+  it('prestige twice in a row, or below the bar, does nothing', () => {
+    const characterStore = useCharacterStore();
+    const accountStore = useAccountStore();
+    const { prestige } = useCombatActions();
+    characterStore.character = { ...characterStore.character, name: 'Aria', heroPending: false, level: 30 };
+    expect(prestige()).toBe(true);
+    const after = { character: characterStore.character, account: accountStore.account };
+    expect(prestige()).toBe(false);
+    expect(characterStore.character).toBe(after.character);
+    expect(accountStore.account).toBe(after.account);
+
+    characterStore.character = { ...characterStore.character, heroPending: false, name: 'Brand', level: 39 };
+    expect(prestige()).toBe(false);
+    useRetiredHero().clearRetired();
   });
 
   it('beginRun names the hero and gives a new run the picked hero', () => {
     const characterStore = useCharacterStore();
     const { beginRun } = useCombatActions();
-    useFallenHero().recordFallen({ name: 'Aria', bossIndex: 4 });
+    useRetiredHero().recordRetired({ name: 'Aria', level: 30 });
     characterStore.character = createCharacter(createRng(5), 'warrior');
 
     beginRun('Brand', 'ranger');
@@ -684,7 +719,7 @@ describe('useCombatActions', () => {
     expect(characterStore.character.name).toBe('Brand');
     expect(heroClassFor(characterStore.character)).toBe('ranger');
     expect(characterStore.character.heroPending).toBe(false);
-    expect(useFallenHero().fallen.value).toBeNull();
+    expect(useRetiredHero().retired.value).toBeNull();
   });
 
   it('beginRun has the hooded figure open the very first run', () => {
@@ -735,65 +770,59 @@ describe('useCombatActions', () => {
     expect(seen.size).toBeGreaterThan(1);
   });
 
-  it('restart opens quests for the new run only when quests carried over', () => {
-    const habitStore = useHabitStore();
+  it('prestige opens quests for the new run only when quests carried over', () => {
     const characterStore = useCharacterStore();
-    const bossStore = useBossStore();
     const questStore = useQuestStore();
-    const { checkMissedHabit, restart } = useCombatActions();
-    const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
-
-    const dieAndRestart = () => {
-      characterStore.character = { ...characterStore.character, currentHealth: 1 };
-      bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000 });
-      checkMissedHabit(habit.id);
-      restart();
+    const { prestige } = useCombatActions();
+    const climb = () => {
+      characterStore.character = { ...characterStore.character, name: 'Aria', heroPending: false, level: 90 };
+      expect(prestige()).toBe(true);
     };
 
-    dieAndRestart();
+    climb();
     expect(characterStore.character.questsUnlocked).toBe(false);
 
     questStore.addQuest('Clean the garage', 'hard', '2099-01-01');
-    dieAndRestart();
+    climb();
     expect(characterStore.character.questsUnlocked).toBe(true);
-    useFallenHero().clearFallen();
+    useRetiredHero().clearRetired();
   });
 
-  it('restart records the just-ended run into the high-score leaderboard before resetting', () => {
+  it('prestige records the retired run into the high-score leaderboard before resetting', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();
     const bossStore = useBossStore();
     const highScoreStore = useHighScoreStore();
-    const { checkMissedHabit, restart } = useCombatActions();
+    const { prestige } = useCombatActions();
 
     const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
-    characterStore.character = { ...characterStore.character, currentHealth: 1, level: 4, name: 'Aldric' };
-    bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000, index: 3, personality: 'brute4x' });
-    checkMissedHabit(habit.id);
-    const characterAtDeath = characterStore.character;
-    const habitAtDeath = habitStore.habits.find((h) => h.id === habit.id)!;
+    characterStore.character = { ...characterStore.character, level: 31, name: 'Aldric', heroPending: false };
+    bossStore.setBoss({ ...bossStore.boss, index: 3, personality: 'brute4x' });
+    const characterAtEnd = characterStore.character;
+    const habitAtEnd = habitStore.habits.find((h) => h.id === habit.id)!;
 
-    restart();
+    prestige();
 
     expect(highScoreStore.topRuns).toHaveLength(1);
     const run = highScoreStore.topRuns[0];
-    expect(run.bossIndex).toBe(3); // the boss being fought at death, not the post-reset index 1
-    expect(run.level).toBe(4);
+    expect(run.bossIndex).toBe(3); // the boss being fought, not the new run's 1
+    expect(run.level).toBe(31);
     expect(run.habits).toEqual([
       {
         name: 'Exercise',
         period: 'daily',
-        damageType: habitAtDeath.damageType,
+        damageType: habitAtEnd.damageType,
         isBad: false,
-        streakCount: habitAtDeath.streakCount,
-        rank: habitAtDeath.rank ?? 0,
+        streakCount: habitAtEnd.streakCount,
+        rank: habitAtEnd.rank ?? 0,
       },
     ]);
-    expect(run.items).toEqual([]); // no items dropped in this test
+    expect(run.items).toEqual([]);
     expect(run.stats.health).toBeGreaterThan(0);
     expect(run.heroName).toBe('Aldric');
-    expect(run.heroClass).toBe(heroClassFor(characterAtDeath));
-    expect(run.bossPersonality).toBe('brute4x'); // the boss that ended the run
+    expect(run.heroClass).toBe(heroClassFor(characterAtEnd));
+    expect(run.bossPersonality).toBe('brute4x');
+    useRetiredHero().clearRetired();
   });
 
   it('checkOffHabit on a bad habit damages the player (penalty), resets its streak, and stamps completed', () => {
@@ -1071,7 +1100,7 @@ describe('useCombatActions', () => {
 
     restart();
 
-    expect(characterStore.character.level).toBe(1); // sanity: a real reset happened
+    expect(characterStore.character.deaths).toBe(1); // sanity: the setback happened
     expect(questStore.quests).toEqual([quest]); // the pending quest is untouched by the reset
   });
 

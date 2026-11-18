@@ -6,7 +6,7 @@ import { DEFAULT_HERO_NAME, HERO_CLASSES, heroClassFor, MAX_HERO_NAME_LENGTH } f
 import { useCombatActions } from '../../composables/useCombatActions';
 import type { HeroPick } from '../../composables/useCombatActions';
 import type { HeroClass } from '../../game-engine';
-import { useFallenHero } from '../../composables/useFallenHero';
+import { useRetiredHero } from '../../composables/useRetiredHero';
 import { useSkins } from '../../composables/useSkins';
 import { useCharacterStore } from '../../store/characterStore';
 import { HERO_PICK_PLACEMENT } from '../character/heroArt';
@@ -22,7 +22,7 @@ import { spriteUrl } from '../ui/spriteUrl';
 // (an old save named late) just gets its name.
 const characterStore = useCharacterStore();
 const skins = useSkins();
-const { fallen } = useFallenHero();
+const { retired } = useRetiredHero();
 const { beginRun } = useCombatActions();
 
 const name = ref('');
@@ -40,7 +40,7 @@ const SWIPE_PX = 40;
 
 const choosing = computed(() => characterStore.character.heroPending === true);
 // Opens on the hero the run was rolled as: a warrior on the first run, the
-// fallen hero after a death.
+// retired hero's class after a prestige.
 const pick = ref<HeroPick>(heroClassFor(characterStore.character));
 // Fate shows the warrior's shape, darkened.
 const shownClass = computed(() => (pick.value === 'fate' ? 'warrior' : pick.value));
@@ -83,7 +83,7 @@ function begin() {
 
 <template>
   <form class="new-hero" @submit.prevent="begin">
-    <p class="eyebrow">{{ fallen ? 'The fire still burns.' : 'Every habit is a weapon.' }}</p>
+    <p class="eyebrow">{{ retired ? 'The fire still burns.' : 'Every habit is a weapon.' }}</p>
     <h1 class="game-title">StreakSlayer</h1>
 
     <template v-if="choosing">
@@ -123,8 +123,8 @@ function begin() {
     </div>
 
     <div class="oath">
-      <h2 class="oath-title">{{ fallen ? 'A new hero rises' : 'A new hero' }}</h2>
-      <p v-if="fallen" class="fell">{{ fallen.name }} fell to Boss {{ fallen.bossIndex }}. Your habits remain.</p>
+      <h2 class="oath-title">{{ retired ? 'A new hero rises' : 'A new hero' }}</h2>
+      <p v-if="retired" class="fell">{{ retired.name }} retired at level {{ retired.level }}. Your habits remain.</p>
 
       <label class="field">
         <span class="field-label">Name</span>
@@ -133,7 +133,7 @@ function begin() {
 
       <RuleList :rules="RULES" />
 
-      <button type="submit" class="begin primary-button">{{ fallen ? 'Rise' : 'Begin' }}</button>
+      <button type="submit" class="begin primary-button">{{ retired ? 'Rise' : 'Begin' }}</button>
     </div>
   </form>
 </template>

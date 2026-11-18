@@ -65,6 +65,22 @@ describe('ActivityLog — boss defeated', () => {
     useActivityLogStore().addEntry({ kind: 'revived', gems: 10 });
     expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Revived −10 gems');
   });
+
+  it('shows a fall and what it took', () => {
+    useActivityLogStore().addEntry({ kind: 'fell', levels: 3, gold: 100, itemName: 'Ember Blade' });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Fell. −3 levels, −100 gold, Ember Blade lost.');
+  });
+
+  it('shows a fall that took only levels', () => {
+    useActivityLogStore().addEntry({ kind: 'fell', levels: 1, gold: 0 });
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Fell. −1 level.');
+  });
+
+  it('shows a prestige', () => {
+    useActivityLogStore().addEntry({ kind: 'prestiged', rank: 2, gems: 50 });
+    expect(mount(ActivityLog).findAll('li')).toHaveLength(1);
+    expect(mount(ActivityLog).find('li').text().replace(/\s+/g, ' ').trim()).toBe('Prestige II. +50 gems.');
+  });
 });
 
 describe('ActivityLog — boss skills', () => {

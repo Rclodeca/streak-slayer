@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { bossSkillEffectText, formatCompact, formatDayKey } from '../../game-engine';
+import { bossSkillEffectText, formatCompact, formatDayKey, prestigeMark } from '../../game-engine';
 import type { BossSkillId } from '../../game-engine';
 import { useActivityLogStore } from '../../store/activityLogStore';
 import { rankNumeral } from '../habits/habitDisplay';
@@ -11,6 +11,14 @@ import type { StatIconName } from './statIcons';
 defineProps<{ bare?: boolean }>();
 
 const activityLogStore = useActivityLogStore();
+
+/** A death's line: what the setback took, the parts that applied. */
+function fellText(entry: { levels: number; gold: number; itemName?: string }): string {
+  const parts = [`−${entry.levels} level${entry.levels === 1 ? '' : 's'}`];
+  if (entry.gold > 0) parts.push(`−${formatCompact(entry.gold)} gold`);
+  if (entry.itemName) parts.push(`${entry.itemName} lost`);
+  return entry.levels > 0 || parts.length > 1 ? `Fell. ${parts.filter((p) => !p.startsWith('−0 ')).join(', ')}.` : 'Fell.';
+}
 
 // The skills an item can resist (Aegis, Bloodbound, Null Mirror).
 const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }>> = {
@@ -104,6 +112,12 @@ const RESISTED: Partial<Record<BossSkillId, { name: string; icon: StatIconName }
         </template>
         <template v-else-if="entry.kind === 'revived'">
           <StatIcon name="gems" class="log-icon" /> Revived <span class="log-gems">−{{ formatCompact(entry.gems) }}</span> gems
+        </template>
+        <template v-else-if="entry.kind === 'fell'">
+          <StatIcon name="skull" class="log-icon" /> {{ fellText(entry) }}
+        </template>
+        <template v-else-if="entry.kind === 'prestiged'">
+          <StatIcon name="gems" class="log-icon" /> Prestige {{ prestigeMark(entry.rank)?.numeral }}. <span class="log-gems">+{{ formatCompact(entry.gems) }}</span> gems.
         </template>
         <template v-else-if="entry.kind === 'shop-bought'">
           <StatIcon name="gold" class="log-icon" /> Bought {{ entry.name }} <span class="log-gold">−{{ formatCompact(entry.gold) }}</span> gold

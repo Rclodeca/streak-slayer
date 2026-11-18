@@ -37,6 +37,7 @@ import {
   completeHabit,
   createRng,
   dailyPeriodKey,
+  deathToll,
   DEFAULT_HERO_NAME,
   effectiveCritChance,
   effectiveStat,
@@ -57,6 +58,8 @@ import {
   periodKeyFor,
   PERSONALITY_NAME,
   pickRandom,
+  prestigeRank,
+  prestigeRun,
   questOverdueExp,
   questRewardExp,
   questWeekFor,
@@ -64,7 +67,6 @@ import {
   recordQuestCompletion,
   resolveBossDefeatIfDead,
   resolveDoom,
-  resolvePlayerDeathIfDead,
   reviveForGems,
   skillCompletionExp,
   TRIAL_GEMS,
@@ -80,11 +82,13 @@ import { useCharacterStore } from '../store/characterStore';
 import { useDebugClockStore } from '../store/debugClockStore';
 import { useHabitStore } from '../store/habitStore';
 import { useHighScoreStore } from '../store/highScoreStore';
+import type { HighScoreRunInput } from '../store/highScoreStore';
 import { useQuestStore } from '../store/questStore';
+import { useTabStore } from '../store/tabStore';
 import { useCelebration } from './useCelebration';
 import { useLevelUp } from './useLevelUp';
 import { useDeathScreen } from './useDeathScreen';
-import { useFallenHero } from './useFallenHero';
+import { useRetiredHero } from './useRetiredHero';
 import { useHoodedFigure } from './useHoodedFigure';
 import { useBossSkillCard } from './useBossSkillCard';
 import { playHit } from './useHitFeed';
@@ -117,7 +121,7 @@ export function useCombatActions() {
   const debugClockStore = useDebugClockStore();
   const highScoreStore = useHighScoreStore();
   const { triggerDeath, dismiss: dismissDeathScreen } = useDeathScreen();
-  const { recordFallen, clearFallen } = useFallenHero();
+  const { recordRetired, clearRetired } = useRetiredHero();
   const { startScene } = useHoodedFigure();
   const { showReviveNotice } = useReviveNotice();
   const { clear: clearItemDrops } = useItemDropQueue();
@@ -597,78 +601,101 @@ export function useCombatActions() {
     return true;
   }
 
+  /** The run as the high-score list keeps it, read before anything resets it. */
+  function snapshotRun(character: Character, boss: Boss, habits: Habit[]): HighScoreRunInput {
+    return {
+      bossIndex: bossNumber(boss),
+      level: character.level,
+      endedDayKey: dailyPeriodKey(debugClockStore.now()),
+      stats: {
+        physicalDamage: effectiveStat(character, 'physicalDamage'),
+        magicDamage: effectiveStat(character, 'magicDamage'),
+        healing: effectiveStat(character, 'healing'),
+        health: effectiveStat(character, 'health'),
+        trueDamage: effectiveStat(character, 'trueDamage'),
+        critChance: effectiveCritChance(character),
+      },
+      habits: habits.map((h) => ({
+        name: h.name,
+        period: h.period,
+        damageType: h.damageType,
+        isBad: h.isBad,
+        streakCount: h.streakCount,
+        rank: h.rank ?? 0,
+      })),
+      items: character.ownedItemIds.flatMap((id) => {
+        const item = ITEM_CATALOG.find((i) => i.id === id);
+        if (!item) return [];
+        const factor = itemDoubleFactor(character, id);
+        return [
+          {
+            id: item.id,
+            name: item.name,
+            icon: item.icon,
+            equipped: character.equippedItemIds.includes(id),
+            stats: describeItemBonus(item, factor),
+            enchanted: factor > 1,
+          },
+        ];
+      }),
+      heroName: character.name ?? DEFAULT_HERO_NAME,
+      heroClass: heroClassFor(character),
+      bossPersonality: boss.personality,
+      bossArt: bossArt(boss),
+      ...(character.deaths && { deaths: character.deaths }),
+    };
+  }
+
+  /** Drops the beats still queued from the run that just turned (drops, celebrations, the level-up, boss skills). */
+  function clearRunBeats(): void {
+    clearItemDrops();
+    clearCelebration();
+    clearLevelUp();
+    clearBossSkills();
+  }
+
   /**
-   * Performs the actual death reset (fresh character, boss back to index 1,
-   * habits kept with re-rolled damage types) and closes the death screen.
-   * Called once, from the "Restart" button — no-op if somehow not dead.
-   *
-   * Snapshots the just-ended run into the high-score leaderboard first,
-   * reading the character/boss/habits BEFORE `resolvePlayerDeathIfDead`
-   * overwrites them — this is the only place that run's peak state is still
-   * available.
+   * The death screen's "Rise again": takes the death setback (see
+   * resolvePlayerDeathIfDead), logs what it took, and closes the death screen.
+   * The run goes on with the same hero; no-op if somehow not dead.
    */
   function restart(): void {
-    const character = characterStore.character;
-    const bossIndexAtDeath = bossStore.boss.index;
-    const habits = habitStore.habits;
-
-    const deathResult = resolvePlayerDeathIfDead(character, bossStore.boss, rng);
+    const toll = deathToll(characterStore.character);
+    const deathResult = characterStore.resolvePlayerDeathIfDead(bossStore.boss, rng);
     if (deathResult.died) {
-      highScoreStore.recordRunEnd({
-        bossIndex: bossIndexAtDeath,
-        level: character.level,
-        endedDayKey: dailyPeriodKey(debugClockStore.now()),
-        stats: {
-          physicalDamage: effectiveStat(character, 'physicalDamage'),
-          magicDamage: effectiveStat(character, 'magicDamage'),
-          healing: effectiveStat(character, 'healing'),
-          health: effectiveStat(character, 'health'),
-          trueDamage: effectiveStat(character, 'trueDamage'),
-          critChance: effectiveCritChance(character),
-        },
-        habits: habits.map((h) => ({
-          name: h.name,
-          period: h.period,
-          damageType: h.damageType,
-          isBad: h.isBad,
-          streakCount: h.streakCount,
-          rank: h.rank ?? 0,
-        })),
-        items: character.ownedItemIds.flatMap((id) => {
-          const item = ITEM_CATALOG.find((i) => i.id === id);
-          if (!item) return [];
-          const factor = itemDoubleFactor(character, id);
-          return [
-            {
-              id: item.id,
-              name: item.name,
-              icon: item.icon,
-              equipped: character.equippedItemIds.includes(id),
-              stats: describeItemBonus(item, factor),
-              enchanted: factor > 1,
-            },
-          ];
-        }),
-        heroName: character.name ?? DEFAULT_HERO_NAME,
-        heroClass: heroClassFor(character),
-        bossPersonality: bossStore.boss.personality,
-        bossArt: bossArt(bossStore.boss),
-      });
-
-      // The fresh character is unnamed, so the new-hero screen shows next and
-      // reads this to say who fell where.
-      recordFallen({ name: character.name ?? DEFAULT_HERO_NAME, bossIndex: bossIndexAtDeath });
-      // Quests survive a death; if any carried over, the new run starts with
-      // them open (and never shows the level-2 "Quests unlocked" popup).
-      characterStore.setCharacter(questStore.quests.length > 0 ? unlockQuests(deathResult.character) : deathResult.character);
       bossStore.setBoss(deathResult.boss);
-      // Drops and beats from a boss kill on the fatal pass belong to the dead run.
-      clearItemDrops();
-      clearCelebration();
-      clearLevelUp();
-      clearBossSkills();
+      activityLogStore.addEntry({ kind: 'fell', levels: toll.levels, gold: toll.gold, ...(deathResult.lostItem && { itemName: deathResult.lostItem.name }) });
+      // Drops and beats from a boss kill on the fatal pass belong to before the fall.
+      clearRunBeats();
     }
     dismissDeathScreen();
+  }
+
+  /**
+   * Takes the next prestige rank (see prestigeRun): the run is recorded on the
+   * high-score list, the account pays the rank's gems and special, and a new
+   * hero starts at level 1 on the new-hero screen. False, with nothing
+   * changed, unless the hero can prestige now (a second tap finds them on
+   * the new-hero screen, so it does nothing).
+   */
+  function prestige(): boolean {
+    const rank = prestigeRank(accountStore.account);
+    const character = characterStore.character;
+    const result = prestigeRun(character, bossStore.boss, habitStore.habits, rank, rng);
+    if (!result) return false;
+    highScoreStore.recordRunEnd({ ...snapshotRun(character, bossStore.boss, habitStore.habits), prestige: rank + 1 });
+    const gemsBefore = accountStore.account.gems;
+    accountStore.prestige();
+    // Quests survive; if any carried over, the new run starts with them open
+    // (and never shows the level-2 "Quests unlocked" popup).
+    characterStore.setCharacter(questStore.quests.length > 0 ? unlockQuests(result.character) : result.character);
+    bossStore.setBoss(result.boss);
+    habitStore.setHabits(result.habits);
+    recordRetired({ name: character.name ?? DEFAULT_HERO_NAME, level: character.level });
+    activityLogStore.addEntry({ kind: 'prestiged', rank: rank + 1, gems: accountStore.account.gems - gemsBefore });
+    clearRunBeats();
+    useTabStore().tab = 'skills';
+    return true;
   }
 
   /**
@@ -684,7 +711,7 @@ export function useCombatActions() {
     characterStore.setCharacter(chosen.character);
     habitStore.setHabits(chosen.habits);
     characterStore.setName(name);
-    clearFallen();
+    clearRetired();
     startScene(highScoreStore.topRuns.length > 0 ? 'back' : 'intro');
   }
 
@@ -777,6 +804,7 @@ export function useCombatActions() {
     reportChallenge,
     claimChallenge,
     restart,
+    prestige,
     revive,
     raiseDeathIfFallen,
     beginRun,
