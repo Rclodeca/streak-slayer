@@ -71,7 +71,7 @@ export function useShop() {
   }
   const todayKey = computed(today);
   const stock = computed<ShopStock | null>(() => characterStore.character.shop ?? null);
-  const restockPrice = computed(() => restockFee(stock.value?.restocks ?? 0, bossStore.boss.index));
+  const restockPrice = computed(() => restockFee(stock.value?.restocks ?? 0, bossStore.boss.index, characterStore.character.prestige ?? 0));
 
   /** Draws today's stock if the character has none for today (first open, a new day, a new run). */
   function ensureStock(): void {

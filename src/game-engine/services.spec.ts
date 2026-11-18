@@ -33,17 +33,17 @@ const wearing = (n: number) => ({
 const on = (id: ServiceId, rerolls?: number) => ({ serviceTurn: { id, startDayKey: '2026-11-01', ...(rerolls ? { rerolls } : {}) } });
 
 describe('service prices', () => {
-  it('prices climb with each one held', () => {
-    // Boss 10 pays 140 gold.
-    expect(servicePrice('enchant', 0, 10)).toBe(1400);
-    expect(servicePrice('enchant', 1, 10)).toBe(2800);
-    expect(servicePrice('reroll', 0, 10)).toBe(280);
-    expect(servicePrice('reroll', 2, 10)).toBe(630);
+  it('prices climb x2 with each one held', () => {
+    // Boss 10 pays 140 gold; prestige II prices at x1.
+    expect(servicePrice('enchant', 0, 10, 2)).toBe(420);
+    expect(servicePrice('enchant', 1, 10, 2)).toBe(840);
+    expect(servicePrice('reroll', 0, 10, 2)).toBe(280);
+    expect(servicePrice('reroll', 2, 10, 2)).toBe(1120);
   });
 
   it('slots come one at a time, four of them, and then stop', () => {
-    expect([0, 1, 2, 3].map((n) => slotPrice(n, 10))).toEqual([1120, 1400, 1680, 2100]);
-    expect(slotPrice(4, 10)).toBeNull();
+    expect([0, 1, 2, 3].map((n) => slotPrice(n, 10, 2))).toEqual([280, 560, 840, 1120]);
+    expect(slotPrice(4, 10, 2)).toBeNull();
   });
 });
 
@@ -51,7 +51,7 @@ describe('buyReroll', () => {
   it("takes the price, changes only that skill's type and counts it on the turn", () => {
     const habits: Habit[] = [good('Read'), good('Run'), good('Stretch', 'weekly')];
     const result = buyReroll(makeCharacter({ gold: 1000, ...on('reroll') }), habits, habits[1].id, 1, rng)!;
-    expect(result.character.gold).toBe(1000 - 100);
+    expect(result.character.gold).toBe(1000 - 80); // 2 kills × 50 × 0.8
     expect(result.character.serviceTurn?.rerolls).toBe(1);
     expect(result.habits[0]).toEqual(habits[0]);
     expect(result.habits[2]).toEqual(habits[2]);
@@ -68,7 +68,7 @@ describe('buyOverdrive', () => {
   it('sets isOverdrive on the picked skill', () => {
     const habits = [good('Read'), good('Run')];
     const result = buyOverdrive(makeCharacter({ gold: 1000, ...on('overdrive') }), habits, habits[0].id, 1)!;
-    expect(result.character.gold).toBe(1000 - 250);
+    expect(result.character.gold).toBe(1000 - 200);
     expect(result.habits[0].isOverdrive).toBe(true);
     expect(result.habits[1].isOverdrive).toBeFalsy();
   });
@@ -85,7 +85,7 @@ describe('buyEnchant', () => {
   it('adds the item to doubledItemIds', () => {
     const character = makeCharacter({ gold: 5000, ...wearing(2), ...on('enchant') });
     const result = buyEnchant(character, wornItems[0].id, 1)!;
-    expect(result.character.gold).toBe(5000 - 500);
+    expect(result.character.gold).toBe(5000 - 120);
     expect(result.character.doubledItemIds).toEqual([wornItems[0].id]);
     expect(result.item.id).toBe(wornItems[0].id);
   });
@@ -158,7 +158,7 @@ describe('serviceState', () => {
   const habits = [good('Read')];
 
   it('reads buy and short', () => {
-    expect(serviceState(makeCharacter({ gold: 1000 }), habits, 'reroll', 1)).toEqual({ price: 100, status: 'buy', bought: 0 });
+    expect(serviceState(makeCharacter({ gold: 1000 }), habits, 'reroll', 1)).toEqual({ price: 80, status: 'buy', bought: 0 });
     expect(serviceState(makeCharacter({ gold: 10 }), habits, 'reroll', 1).status).toBe('short');
   });
 
@@ -169,6 +169,10 @@ describe('serviceState', () => {
     expect(serviceState(character, habits, 'enchant', 1).status).toBe('none');
   });
 
+  it("prices by the hero's prestige rank", () => {
+    expect(serviceState(makeCharacter({ gold: 100_000, prestige: 3 }), habits, 'slot', 10).price).toBe(slotPrice(0, 10, 3));
+  });
+
   it('reads maxed at 8 slots', () => {
     expect(serviceState(makeCharacter({ gold: 100_000, slotUpgrades: 4 }), habits, 'slot', 1)).toEqual({ price: 0, status: 'maxed', bought: 4 });
   });
@@ -176,7 +180,7 @@ describe('serviceState', () => {
   it('prices by what the hero has now, a reroll by this turn', () => {
     const rich = makeCharacter({ gold: 100_000, ...wearing(3), doubledItemIds: [wornItems[0].id, wornItems[1].id], ...on('reroll', 2) });
     const overdriven = [{ ...good('Read'), isOverdrive: true }, good('Run')];
-    expect(serviceState(rich, habits, 'reroll', 1)).toMatchObject({ price: 225, bought: 2 });
+    expect(serviceState(rich, habits, 'reroll', 1)).toMatchObject({ price: servicePrice('reroll', 2, 1, 0), bought: 2 });
     expect(serviceState(rich, overdriven, 'overdrive', 1).bought).toBe(1);
     expect(serviceState(rich, habits, 'overdrive', 1).bought).toBe(0);
     expect(serviceState(rich, habits, 'enchant', 1).bought).toBe(2);

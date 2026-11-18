@@ -1,7 +1,7 @@
-// Every gold and gem number in one place. The gem numbers are balanced by time
-// (docs/superpowers/specs/2026-11-17-gem-economy-design.md) and its budget rule
-// is pinned in economy.spec.ts; the gold numbers are placeholders until the
-// gold balance.
+// Every gold and gem number in one place, both balanced by time: gems in
+// docs/superpowers/specs/2026-11-17-gem-economy-design.md, gold in
+// docs/superpowers/specs/2026-11-17-gold-economy-design.md. Both budget rules
+// are pinned in economy.spec.ts.
 
 import type { ItemRarity } from '../items';
 
@@ -15,44 +15,58 @@ export function roundPrice(gold: number): number {
   return Math.max(5, Math.round(gold / 5) * 5);
 }
 
+/** Every gold price rises after each prestige: `base` before any, `perRank` more for each rank. Boss gold never drops. */
+export const GOLD_PRICE_FACTOR = { base: 0.8, perRank: 0.1 } as const;
+
+/** The gold price factor at prestige rank `prestige` (0–5, floored and clamped as prestigeRank is): ×0.8 to ×1.3. */
+export function goldPriceFactor(prestige: number): number {
+  const rank = Math.max(0, Math.min(5, Math.floor(prestige)));
+  return Math.round((GOLD_PRICE_FACTOR.base + GOLD_PRICE_FACTOR.perRank * rank) * 100) / 100;
+}
+
+/** A gold price: `bossKills` of the current boss's gold, times the prestige factor, rounded. Every gold price goes through here. */
+export function goldPrice(bossKills: number, bossIndex: number, prestige: number): number {
+  return roundPrice(bossKills * bossGold(bossIndex) * goldPriceFactor(prestige));
+}
+
 /** What a stocked item costs, as boss kills' worth of gold at the current boss: an epic or relic is a few bosses' worth. */
 export const SHOP_PRICE_FACTOR: Record<ItemRarity, number> = { common: 1, uncommon: 1.5, rare: 2.5, epic: 4, relic: 6 };
 
 /** The price of an item of `rarity` stocked while boss `bossIndex` is up. Locked into the stock when it's drawn. */
-export function warePrice(rarity: ItemRarity, bossIndex: number): number {
-  return roundPrice(SHOP_PRICE_FACTOR[rarity] * bossGold(bossIndex));
+export function warePrice(rarity: ItemRarity, bossIndex: number, prestige: number): number {
+  return goldPrice(SHOP_PRICE_FACTOR[rarity], bossIndex, prestige);
 }
 
 /** The fee for the next restock, after `restocksToday` already: half a boss's gold, doubling each time, back to the start with the next day's stock. */
-export function restockFee(restocksToday: number, bossIndex: number): number {
-  return roundPrice(0.5 * bossGold(bossIndex) * 2 ** restocksToday);
+export function restockFee(restocksToday: number, bossIndex: number, prestige: number): number {
+  return goldPrice(0.5 * 2 ** restocksToday, bossIndex, prestige);
 }
 
 /** A tonic's price while boss `bossIndex` is up: one boss kill's gold. Cheap, to be bought again and again. */
-export function tonicPrice(bossIndex: number): number {
-  return roundPrice(bossGold(bossIndex));
+export function tonicPrice(bossIndex: number, prestige: number): number {
+  return goldPrice(1, bossIndex, prestige);
 }
 
-/** The gold services' base price (as boss kills' worth of gold) and how much it climbs for each one held: skills with Overdrive, enchanted worn items, rerolls bought this turn. */
+/** The gold services' base price (as boss kills' worth of gold) and how much it climbs for each one held: skills with Overdrive, enchanted worn items, rerolls bought this turn. Steep, so the last climbs always have somewhere to put their gold. */
 export const SERVICE_PRICES = {
-  reroll: { base: 2, climb: 1.5 },
-  overdrive: { base: 5, climb: 1.5 },
-  enchant: { base: 10, climb: 2 },
+  reroll: { base: 2, climb: 2 },
+  overdrive: { base: 5, climb: 2 },
+  enchant: { base: 3, climb: 2 },
 } as const;
 
 /** The price of a reroll, Overdrive or enchant while boss `bossIndex` is up, with `bought` held (see SERVICE_PRICES). Live, not locked. */
-export function servicePrice(id: keyof typeof SERVICE_PRICES, bought: number, bossIndex: number): number {
+export function servicePrice(id: keyof typeof SERVICE_PRICES, bought: number, bossIndex: number, prestige: number): number {
   const { base, climb } = SERVICE_PRICES[id];
-  return roundPrice(base * bossGold(bossIndex) * climb ** bought);
+  return goldPrice(base * climb ** bought, bossIndex, prestige);
 }
 
 /** Boss kills' worth of gold for each slot bought: the 5th, 6th, 7th and 8th. */
-export const SLOT_PRICE_FACTORS = [8, 10, 12, 15] as const;
+export const SLOT_PRICE_FACTORS = [2, 4, 6, 8] as const;
 
 /** The price of the next slot with `upgrades` bought this run, or null once all 8 are open. */
-export function slotPrice(upgrades: number, bossIndex: number): number | null {
+export function slotPrice(upgrades: number, bossIndex: number, prestige: number): number | null {
   const factor = SLOT_PRICE_FACTORS[upgrades];
-  return factor === undefined ? null : roundPrice(factor * bossGold(bossIndex));
+  return factor === undefined ? null : goldPrice(factor, bossIndex, prestige);
 }
 
 /**
@@ -72,9 +86,12 @@ export const SHOP_STOCK = {
   ] as [number, 'uncommon' | 'rare'][],
 };
 
-/** Cost of the `n`th talent rank bought overall (1-based). Gold is the bulk; gems kick in from rank 4 and climb in bands to 5 from rank 61 (689 for all 163). */
-export function TALENT_COST(n: number): { gold: number; gems: number } {
-  const gold = Math.min(2000, n <= 5 ? 100 * n : 500 + 25 * (n - 5));
+/** Boss kills' worth of gold for every talent rank, whatever came before: gems carry the tree's climb across the account. */
+export const TALENT_RANK_BOSS_KILLS = 0.5;
+
+/** Cost of the `n`th talent rank bought overall (1-based), boss `bossIndex` up. Gold is half a kill; gems kick in from rank 4 and climb in bands to 5 from rank 61 (689 for all 163). */
+export function TALENT_COST(n: number, bossIndex: number, prestige: number): { gold: number; gems: number } {
+  const gold = goldPrice(TALENT_RANK_BOSS_KILLS, bossIndex, prestige);
   const gems = n <= 3 ? 0 : n <= 20 ? 2 : n <= 40 ? 3 : n <= 60 ? 4 : 5;
   return { gold, gems };
 }
@@ -134,13 +151,13 @@ export const POTION_STOCK_DAYS = 3;
 /** The Gold Pouch: `gems` for `bossKills` boss kills' worth of gold, once a day. A poor rate on purpose. */
 export const GOLD_POUCH = { gems: 15, bossKills: 3 };
 
-/** The gold the Gold Pouch pays while boss `bossIndex` is up. */
-export function pouchGold(bossIndex: number): number {
-  return roundPrice(GOLD_POUCH.bossKills * bossGold(bossIndex));
+/** The gold the Gold Pouch pays while boss `bossIndex` is up: it rises with the prestige factor, so a gem buys the same share of the shop on every climb. */
+export function pouchGold(bossIndex: number, prestige: number): number {
+  return goldPrice(GOLD_POUCH.bossKills, bossIndex, prestige);
 }
 
-/** The daily purse: boss kills' worth of gold for the first open of each day. */
-export const DAILY_PURSE_BOSS_KILLS = 0.5;
+/** The daily purse: boss kills' worth of gold for the first open of each day. Small: about a fifth of a climb's gold. */
+export const DAILY_PURSE_BOSS_KILLS = 0.2;
 
 /** The gold the daily purse pays while boss `bossIndex` is up. */
 export function purseGold(bossIndex: number): number {

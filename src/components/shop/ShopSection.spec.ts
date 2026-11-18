@@ -252,7 +252,7 @@ describe('ShopSection', () => {
         useAccountStore().addGems(GOLD_POUCH.gems + 2);
         const wrapper = await open();
         await rowFor(wrapper, 'Gold Pouch').find('.shop-buy').trigger('click');
-        expect(characterStore.character.gold).toBe(100 + pouchGold(useBossStore().boss.index));
+        expect(characterStore.character.gold).toBe(100 + pouchGold(useBossStore().boss.index, 0));
         expect(useAccountStore().account.gems).toBe(2);
       });
     });

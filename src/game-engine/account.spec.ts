@@ -42,9 +42,9 @@ describe('the daily purse', () => {
     expect(purseDue(claimed, '2026-11-18')).toBe(true);
   });
 
-  it('pays half a boss kill of gold, rounded to 5', () => {
-    expect(purseGold(1)).toBe(25);
-    expect(purseGold(6)).toBe(50);
-    expect(purseGold(10)).toBe(70);
+  it('pays a fifth of a boss kill of gold, rounded to 5', () => {
+    expect(purseGold(1)).toBe(10);
+    expect(purseGold(6)).toBe(20);
+    expect(purseGold(10)).toBe(30);
   });
 });

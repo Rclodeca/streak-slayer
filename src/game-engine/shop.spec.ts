@@ -105,9 +105,14 @@ describe('stockShop', () => {
     expect(allWares(stocked).some((ware) => rarityOf(ware) === 'relic')).toBe(false);
   });
 
-  it('gold prices lock at draw time', () => {
+  it('gold prices lock at draw time (a hero with no prestige on the save pays rank 0)', () => {
     const stocked = stockShop(makeCharacter(), 3, DAY, createRng(4));
-    for (const ware of allWares(stocked).filter((w) => w.currency !== 'gems')) expect(ware.price).toBe(warePrice(rarityOf(ware), 3));
+    for (const ware of allWares(stocked).filter((w) => w.currency !== 'gems')) expect(ware.price).toBe(warePrice(rarityOf(ware), 3, 0));
+  });
+
+  it("gold prices follow the hero's prestige rank", () => {
+    const stocked = stockShop(makeCharacter({ prestige: 2 }), 3, DAY, createRng(4));
+    for (const ware of allWares(stocked).filter((w) => w.currency !== 'gems')) expect(ware.price).toBe(warePrice(rarityOf(ware), 3, 2));
   });
 });
 
@@ -177,14 +182,14 @@ describe('restockShop', () => {
   it('restock doubles its fee and resets next day', () => {
     const c = stockShop(makeCharacter({ gold: 10000 }), 5, DAY, createRng(3));
     const first = restockShop(c, 5, createRng(4))!;
-    expect(first.fee).toBe(restockFee(0, 5));
-    expect(first.character.gold).toBe(10000 - restockFee(0, 5));
+    expect(first.fee).toBe(restockFee(0, 5, 0));
+    expect(first.character.gold).toBe(10000 - restockFee(0, 5, 0));
     expect(first.character.shop!.dayKey).toBe(DAY);
     const second = restockShop(first.character, 5, createRng(5))!;
-    expect(second.fee).toBe(restockFee(1, 5));
+    expect(second.fee).toBe(restockFee(1, 5, 0));
     expect(second.character.shop!.restocks).toBe(2);
     const nextDay = stockShop(second.character, 5, '2026-11-14', createRng(6));
-    expect(restockShop(nextDay, 5, createRng(7))!.fee).toBe(restockFee(0, 5));
+    expect(restockShop(nextDay, 5, createRng(7))!.fee).toBe(restockFee(0, 5, 0));
   });
 
   it('restock with too little gold does nothing', () => {
@@ -210,7 +215,7 @@ describe('potions', () => {
     const drunk = buyTonic(c, 'draught', 4, DAY, 0)!;
     expect(drunk.character.currentHealth).toBeCloseTo(c.currentHealth + max * 0.25, 6);
     expect(drunk.healed).toBeCloseTo(max * 0.25, 6);
-    expect(drunk.character.gold).toBe(1000 - tonicPrice(4));
+    expect(drunk.character.gold).toBe(1000 - tonicPrice(4, 0));
     expect(tonicState(drunk.character, 'draught', 4, DAY, 0).status).toBe('out');
     expect(buyTonic(drunk.character, 'draught', 4, DAY, 0)).toBeNull();
     expect(tonicState(drunk.character, 'draught', 4, '2026-11-14', 0).status).toBe('out');
@@ -297,7 +302,8 @@ describe('EXP potions for gems', () => {
   });
 
   it('crit and mending stay on gold', () => {
-    expect(tonicState(c, 'crit', 4, DAY, 0)).toMatchObject({ currency: 'gold', price: tonicPrice(4) });
+    expect(tonicState(c, 'crit', 4, DAY, 0)).toMatchObject({ currency: 'gold', price: tonicPrice(4, 0) });
+    expect(tonicState({ ...c, prestige: 3 }, 'crit', 4, DAY, 0).price).toBe(tonicPrice(4, 3));
     expect(buyTonic(c, 'heal', 4, DAY, 0)!.gemsSpent).toBe(0);
   });
 });

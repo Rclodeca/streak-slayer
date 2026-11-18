@@ -50,7 +50,7 @@ export function enchantTargets(character: Character): ItemDef[] {
 
 /** Whether `id` has anything to work on: a slot step left, or a target to pick. */
 function usable(character: Character, habits: Habit[], id: ServiceId): boolean {
-  if (id === 'slot') return slotPrice(slotUpgradesOf(character), 0) !== null;
+  if (id === 'slot') return slotPrice(slotUpgradesOf(character), 0, 0) !== null;
   const targets = id === 'reroll' ? rerollTargets(habits) : id === 'overdrive' ? overdriveTargets(habits) : enchantTargets(character);
   return targets.length > 0;
 }
@@ -114,11 +114,11 @@ export function serviceState(
 ): { price: number; status: 'buy' | 'short' | 'none' | 'maxed'; bought: number } {
   const bought = heldOf(character, habits, id);
   if (id === 'slot') {
-    const price = slotPrice(bought, bossIndex);
+    const price = slotPrice(bought, bossIndex, character.prestige ?? 0);
     if (price === null) return { price: 0, status: 'maxed', bought };
     return { price, status: characterGold(character) >= price ? 'buy' : 'short', bought };
   }
-  const price = servicePrice(id, bought, bossIndex);
+  const price = servicePrice(id, bought, bossIndex, character.prestige ?? 0);
   if (!usable(character, habits, id)) return { price, status: 'none', bought };
   return { price, status: characterGold(character) >= price ? 'buy' : 'short', bought };
 }

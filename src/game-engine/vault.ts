@@ -16,7 +16,7 @@ export function pouchState(
   bossIndex: number,
   dayKey: string,
 ): { gems: number; gold: number; status: 'buy' | 'short' | 'cooldown' } {
-  const row = { gems: GOLD_POUCH.gems, gold: pouchGold(bossIndex) };
+  const row = { gems: GOLD_POUCH.gems, gold: pouchGold(bossIndex, character.prestige ?? 0) };
   if (character.pouchDayKey === dayKey) return { ...row, status: 'cooldown' };
   return { ...row, status: gems >= GOLD_POUCH.gems ? 'buy' : 'short' };
 }

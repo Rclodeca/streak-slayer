@@ -145,7 +145,7 @@ describe('TalentSection', () => {
       q('.talent-popup .learn')!.click();
       await wrapper.vm.$nextTick();
       expect(talentRank(store.character, 'might')).toBe(1);
-      expect(store.character.gold).toBe(50);
+      expect(store.character.gold).toBe(130);
       expect(q('.talent-popup .plate.now')?.textContent).toContain('Now · 1/3');
       expect(node(wrapper, 'Might').findAll('.pip.lit')).toHaveLength(1);
     });
@@ -177,12 +177,12 @@ describe('TalentSection', () => {
       const learn = q('.talent-popup .learn') as HTMLButtonElement;
       expect(learn.disabled).toBe(false);
       expect(learn.textContent).toContain('Learn');
-      expect(learn.querySelector('.gold .count')?.textContent).toBe('400');
+      expect(learn.querySelector('.gold .count')?.textContent).toBe('20');
       expect(learn.querySelector('.gems .count')?.textContent).toBe('2');
     });
 
     it('greys Learn out and says Not enough when short', async () => {
-      const store = heroAt(9, { might: 3 }, 1000, 0);
+      const store = heroAt(9, { might: 3 }, 1000, 0); // gold enough, gems short
       const wrapper = mountSection();
       await node(wrapper, 'Precision').find('button').trigger('click');
       const learn = q('.talent-popup .learn') as HTMLButtonElement;
@@ -277,7 +277,7 @@ describe('TalentSection on desktop', () => {
     q('.talent-popup .learn')!.click();
     await wrapper.vm.$nextTick();
     expect(talentRank(store.character, 'might')).toBe(1);
-    expect(store.character.gold).toBe(50);
+    expect(store.character.gold).toBe(130);
   });
 
 });

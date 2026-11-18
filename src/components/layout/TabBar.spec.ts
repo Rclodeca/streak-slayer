@@ -65,12 +65,12 @@ describe('TabBar', () => {
 
   it('puts a pip on Talents while the next rank is affordable on an open node, with no number', async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 5, gold: 99 });
+    characterStore.setCharacter({ ...characterStore.character, level: 5, gold: 19 });
     const wrapper = mount(TabBar);
     expect(tab(wrapper, 'talents').classes()).not.toContain('sealed');
     expect(tab(wrapper, 'talents').find('.tab-pip').exists()).toBe(false);
 
-    characterStore.setCharacter({ ...characterStore.character, gold: 100 });
+    characterStore.setCharacter({ ...characterStore.character, gold: 20 }); // half a kill at boss 1, ×0.8
     await wrapper.vm.$nextTick();
     expect(tab(wrapper, 'talents').find('.tab-pip').exists()).toBe(true);
     expect(tab(wrapper, 'talents').find('.tab-count').exists()).toBe(false);

@@ -89,7 +89,7 @@ function drawStock(character: Character, bossIndex: number, dayKey: string, rest
   });
   const gold = [...rest.filter((item) => item.rarity !== gemRarity), ...lower].sort(byRank);
 
-  const goldWare = (item: ItemDef): ShopWare => ({ itemId: item.id, price: warePrice(item.rarity, bossIndex) });
+  const goldWare = (item: ItemDef): ShopWare => ({ itemId: item.id, price: warePrice(item.rarity, bossIndex, character.prestige ?? 0) });
   const gemWare = (item: ItemDef): ShopWare => ({ itemId: item.id, price: GEM_WARE_PRICES[item.rarity as keyof typeof GEM_WARE_PRICES], currency: 'gems' });
   return { dayKey, featured: goldWare(headline), wares: [...gems.map(gemWare), ...gold.map(goldWare)], restocks };
 }
@@ -111,7 +111,7 @@ export function stockShop(character: Character, bossIndex: number, dayKey: strin
 export function restockShop(character: Character, bossIndex: number, rng: Rng): { character: Character; fee: number } | null {
   const shop = character.shop;
   if (!shop || !standing(character)) return null;
-  const fee = restockFee(shop.restocks, bossIndex);
+  const fee = restockFee(shop.restocks, bossIndex, character.prestige ?? 0);
   const gold = characterGold(character);
   if (gold < fee) return null;
   const paid = { ...character, gold: gold - fee };
@@ -203,7 +203,7 @@ export function tonicState(
   gems: number,
 ): { price: number; currency: 'gold' | 'gems'; status: 'buy' | 'short' | 'out' | 'active' | 'full'; daysLeft: number } {
   const inGems = isGemPotion(id);
-  const price = inGems ? GEM_POTION_PRICES[id] : tonicPrice(bossIndex);
+  const price = inGems ? GEM_POTION_PRICES[id] : tonicPrice(bossIndex, character.prestige ?? 0);
   const currency = inGems ? 'gems' : 'gold';
   const afford = (inGems ? gems : characterGold(character)) >= price ? 'buy' : 'short';
   if (potionsSold(character.shop, dayKey).includes(id)) return { price, currency, status: 'out', daysLeft: 0 };

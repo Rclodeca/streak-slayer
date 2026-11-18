@@ -198,7 +198,7 @@ export { missWeekKey, settlePerfectWeek } from './perfectWeek';
 export type { MissSpan } from './perfectWeek';
 export { UNLOCK_LEVELS } from './constants/unlocks';
 export type { UnlockId } from './constants/unlocks';
-export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
+export { DEATH_SETBACK, FREEZE, GOLD_POUCH, PERFECT_WEEK_GEMS, PRESTIGE_GEMS, REVIVE_GEMS, SKIN_PRICES, TRIAL_GEMS, goldPrice, goldPriceFactor, pouchGold, purseGold, restockFee, servicePrice, slotPrice, tonicPrice, warePrice } from './constants/economy';
 
 export { TONIC_DEFS, buyTonic, buyWare, headlineFloor, restockShop, shopRarityShares, stockShop, tonicState, wareState } from './shop';
 export type { TonicId } from './shop';

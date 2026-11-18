@@ -22,13 +22,18 @@ function makeCharacter(overrides: Partial<Character> = {}): Character {
 const DAY = '2026-11-13';
 
 describe('the Gold Pouch', () => {
+  it("pays by the hero's prestige rank, so a gem buys the same share of the shop", () => {
+    expect(pouchState(makeCharacter({ prestige: 4 }), GOLD_POUCH.gems, 10, DAY).gold).toBe(pouchGold(10, 4));
+    expect(pouchGold(10, 4)).toBe(505); // 3 × 140 × 1.2 = 504
+  });
+
   it('pays three kills of gold for its gems, once a day', () => {
     const character = makeCharacter({ gold: 50 });
-    expect(pouchState(character, GOLD_POUCH.gems, 10, DAY)).toEqual({ gems: 15, gold: 420, status: 'buy' });
+    expect(pouchState(character, GOLD_POUCH.gems, 10, DAY)).toEqual({ gems: 15, gold: 335, status: 'buy' }); // 3 × 140 × 0.8
     const result = buyPouch(character, GOLD_POUCH.gems, 10, DAY)!;
-    expect(pouchGold(10)).toBe(420);
-    expect(result).toMatchObject({ gold: 420, gemsSpent: 15 });
-    expect(result.character.gold).toBe(470);
+    expect(pouchGold(10, 0)).toBe(335);
+    expect(result).toMatchObject({ gold: 335, gemsSpent: 15 });
+    expect(result.character.gold).toBe(385);
     expect(pouchState(result.character, 99, 10, DAY).status).toBe('cooldown');
     expect(buyPouch(result.character, 99, 10, DAY)).toBeNull();
     expect(pouchState(result.character, 99, 10, '2026-11-14').status).toBe('buy');

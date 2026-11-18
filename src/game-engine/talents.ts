@@ -33,7 +33,7 @@ export function talentRank(character: Pick<Character, 'talents'>, id: TalentId):
   return character.talents?.[id] ?? 0;
 }
 
-/** Ranks bought across the whole tree; the next one's price follows it (see nextTalentCost). */
+/** Ranks bought across the whole tree; the next one's gems follow it (see nextTalentCost). */
 export function talentRanksBought(character: Pick<Character, 'talents'>): number {
   return TALENT_DEFS.reduce((sum, def) => sum + talentRank(character, def.id), 0);
 }
@@ -43,9 +43,9 @@ export function talentRanksInShoot(character: Pick<Character, 'talents'>, shoot:
   return TALENT_DEFS.filter((def) => def.shoot === shoot).reduce((sum, def) => sum + talentRank(character, def.id), 0);
 }
 
-/** The price of the next rank, whichever node it goes into: it follows how many ranks are already bought. */
-export function nextTalentCost(character: Pick<Character, 'talents'>): { gold: number; gems: number } {
-  return TALENT_COST(talentRanksBought(character) + 1);
+/** The price of the next rank, whichever node it goes into, boss `bossIndex` up: its gems follow how many ranks are already bought, its gold the current boss. */
+export function nextTalentCost(character: Pick<Character, 'talents' | 'prestige'>, bossIndex: number): { gold: number; gems: number } {
+  return TALENT_COST(talentRanksBought(character) + 1, bossIndex, character.prestige ?? 0);
 }
 
 function defFor(id: TalentId): TalentDef | undefined {
@@ -89,10 +89,10 @@ export function talentMaxRank(character: Pick<Character, 'prestige'>, def: Talen
  * cover the next rank. Alive (rounded, as the death check is) because a dead
  * hero's gold is about to be lost, and a reload can leave the death screen down.
  */
-export function canBuyTalent(character: Character, gems: number, id: TalentId): boolean {
+export function canBuyTalent(character: Character, gems: number, id: TalentId, bossIndex: number): boolean {
   const def = defFor(id);
   if (!def) return false;
-  const cost = nextTalentCost(character);
+  const cost = nextTalentCost(character, bossIndex);
   return Math.round(character.currentHealth) > 0
     && talentsOpen(character)
     && isTalentUnlocked(character, id)
@@ -108,9 +108,9 @@ export function canBuyTalent(character: Character, gems: number, id: TalentId): 
  * with a rank (Vigor), so the caller clamps current health to the new max, as
  * equipping an item does.
  */
-export function buyTalent(character: Character, gems: number, id: TalentId): { character: Character; gemsSpent: number } | null {
-  if (!canBuyTalent(character, gems, id)) return null;
-  const cost = nextTalentCost(character);
+export function buyTalent(character: Character, gems: number, id: TalentId, bossIndex: number): { character: Character; gemsSpent: number } | null {
+  if (!canBuyTalent(character, gems, id, bossIndex)) return null;
+  const cost = nextTalentCost(character, bossIndex);
   return {
     character: {
       ...character,

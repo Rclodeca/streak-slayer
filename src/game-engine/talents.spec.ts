@@ -91,9 +91,18 @@ describe('ranks bought', () => {
     expect(talentRanksInShoot(hero, 'support')).toBe(0);
   });
 
-  it('set the price of the next rank', () => {
-    expect(nextTalentCost(makeCharacter())).toEqual(TALENT_COST(1));
-    expect(nextTalentCost(withTalents(makeCharacter(), { might: 3 }))).toEqual(TALENT_COST(4));
+  it('set the gems of the next rank; its gold is half a kill at the current boss', () => {
+    expect(nextTalentCost(makeCharacter(), 10)).toEqual(TALENT_COST(1, 10, 0));
+    expect(nextTalentCost(withTalents(makeCharacter(), { might: 3 }), 10)).toEqual(TALENT_COST(4, 10, 0));
+    expect(nextTalentCost(withTalents(makeCharacter(), { might: 3 }), 10).gold).toBe(nextTalentCost(makeCharacter(), 10).gold);
+  });
+
+  it("price a rank by the hero's prestige rank", () => {
+    expect(nextTalentCost(makeCharacter({ prestige: 3 }), 10)).toEqual(TALENT_COST(1, 10, 3));
+  });
+
+  it("get cheaper when a death sets the boss's power back", () => {
+    expect(nextTalentCost(makeCharacter(), 7).gold).toBeLessThan(nextTalentCost(makeCharacter(), 10).gold);
   });
 });
 
@@ -126,58 +135,58 @@ describe('unlocking nodes', () => {
 });
 
 describe('buying a rank', () => {
-  it('the first rank costs 100 gold', () => {
-    const result = buyTalent(makeCharacter({ gold: 150 }), 0, 'might');
-    expect(result?.character.gold).toBe(50);
+  it('the first rank costs half a kill: 20 gold at boss 1', () => {
+    const result = buyTalent(makeCharacter({ gold: 150 }), 0, 'might', 1);
+    expect(result?.character.gold).toBe(130);
     expect(talentRank(result!.character, 'might')).toBe(1);
     expect(result?.gemsSpent).toBe(0);
   });
 
   it('the fourth rank needs two gems', () => {
     const hero = withTalents(makeCharacter({ gold: 1000 }), { might: 3 });
-    expect(buyTalent(hero, 1, 'precision')).toBeNull();
-    const result = buyTalent(hero, 2, 'precision');
+    expect(buyTalent(hero, 1, 'precision', 1)).toBeNull();
+    const result = buyTalent(hero, 2, 'precision', 1);
     expect(result?.gemsSpent).toBe(2);
-    expect(result?.character.gold).toBe(600);
+    expect(result?.character.gold).toBe(980);
     expect(talentRank(result!.character, 'precision')).toBe(1);
   });
 
   it('short on gold buys nothing', () => {
-    const hero = makeCharacter({ gold: 99 });
-    expect(canBuyTalent(hero, 0, 'might')).toBe(false);
-    expect(buyTalent(hero, 0, 'might')).toBeNull();
+    const hero = makeCharacter({ gold: 19 });
+    expect(canBuyTalent(hero, 0, 'might', 1)).toBe(false);
+    expect(buyTalent(hero, 0, 'might', 1)).toBeNull();
   });
 
   it('levels no longer give anything', () => {
-    expect(canBuyTalent(makeCharacter({ level: 30, gold: 0 }), 5, 'might')).toBe(false);
+    expect(canBuyTalent(makeCharacter({ level: 30, gold: 0 }), 5, 'might', 1)).toBe(false);
   });
 
   it('does not change the hero it was given', () => {
     const hero = makeCharacter({ gold: 500 });
-    buyTalent(hero, 0, 'might');
+    buyTalent(hero, 0, 'might', 1);
     expect(hero.talents).toBeUndefined();
     expect(hero.gold).toBe(500);
   });
 
   it('is refused for a locked node', () => {
-    expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'precision')).toBeNull();
+    expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'precision', 1)).toBeNull();
   });
 
   it('is refused at full ranks', () => {
-    expect(buyTalent(withTalents(makeCharacter({ gold: 5000 }), { might: 3 }), 5, 'might')).toBeNull();
+    expect(buyTalent(withTalents(makeCharacter({ gold: 5000 }), { might: 3 }), 5, 'might', 1)).toBeNull();
   });
 
   it('is refused for an id the tree does not have', () => {
-    expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'nonsense' as TalentId)).toBeNull();
+    expect(buyTalent(makeCharacter({ gold: 500 }), 0, 'nonsense' as TalentId, 1)).toBeNull();
   });
 
   it('is refused while the hero lies dead, so gold due to be lost can’t be spent', () => {
-    expect(canBuyTalent(makeCharacter({ gold: 500, currentHealth: 0 }), 0, 'might')).toBe(false);
-    expect(canBuyTalent(makeCharacter({ gold: 500, currentHealth: 0.3 }), 0, 'might')).toBe(false);
+    expect(canBuyTalent(makeCharacter({ gold: 500, currentHealth: 0 }), 0, 'might', 1)).toBe(false);
+    expect(canBuyTalent(makeCharacter({ gold: 500, currentHealth: 0.3 }), 0, 'might', 1)).toBe(false);
   });
 
   it('is refused before the Talents tab opens', () => {
-    expect(canBuyTalent(makeCharacter({ level: 4, gold: 500 }), 0, 'might')).toBe(false);
+    expect(canBuyTalent(makeCharacter({ level: 4, gold: 500 }), 0, 'might', 1)).toBe(false);
   });
 });
 
@@ -258,8 +267,8 @@ describe('Deeper roots', () => {
 
   it('a full node takes a Deeper roots rank', () => {
     const hero = withTalents(makeCharacter({ gold: 10000 }), { might: 3 });
-    expect(canBuyTalent(hero, 10, 'might')).toBe(false);
-    expect(canBuyTalent({ ...hero, prestige: 2 }, 10, 'might')).toBe(true);
+    expect(canBuyTalent(hero, 10, 'might', 1)).toBe(false);
+    expect(canBuyTalent({ ...hero, prestige: 2 }, 10, 'might', 1)).toBe(true);
   });
 
   it('a top still opens at the base max', () => {

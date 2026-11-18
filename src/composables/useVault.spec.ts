@@ -32,7 +32,7 @@ describe('useVault', () => {
 
   it('the pouch turns gems into gold once a day', () => {
     const { characterStore, vault } = stocked(20);
-    const gold = pouchGold(useBossStore().boss.index);
+    const gold = pouchGold(useBossStore().boss.index, 0);
     expect(vault.pouch.value).toMatchObject({ status: 'buy', gold });
     expect(vault.buyPouch()).toBe(true);
     expect(vault.buyPouch()).toBe(false);
