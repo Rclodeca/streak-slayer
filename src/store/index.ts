@@ -18,6 +18,7 @@ import { setupAccountTracking } from './plugins/accountTracking';
 import { setupHighScoreTracking } from './plugins/highScoreTracking';
 import { setupPersistence } from './plugins/localStoragePersistence';
 import { loadSaveState } from './plugins/saveState';
+import { backUpBeforeConversion } from './preEconomyBackup';
 
 export const pinia = createPinia();
 
@@ -34,6 +35,8 @@ export const pinia = createPinia();
 export function initializeStores(targetPinia: Pinia = getActivePinia() ?? pinia) {
   setActivePinia(targetPinia);
 
+  // Before anything can rewrite the stored save: an old run is copied aside once, as it was.
+  backUpBeforeConversion();
   const saved = loadSaveState();
   const rng = createRng();
 
