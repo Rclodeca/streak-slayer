@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Trial sets, round two</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Round two of the trial sets: option A (ledger cards) refined three ways, in a
+   modal opened from the stage's gift button. Pixel-cut, Midnight. Each phone is
+   live: tap Claim / Claim all, tap a card for its ladder, X closes, gift reopens. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1340px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 820px; }
+.row { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+.opt { width: 390px; max-width: 100%; }
+.opt h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; text-align: center; }
+.opt > p { margin: 0 0 12px; font-size: 14.5px; text-align: center; min-height: 100px; }
+
+.phone {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --moon-solid: #b0b1cb; --brass: #d2bb85; --brass-solid: #c7a560; --on-brass: #231c0c;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19; --gem: #6fd6ea; --coin: #e9b949;
+  --field: #0e0e19; --sunk-hi: #050509; --sunk-lo: #2a2a44;
+  --struck-card: #1d1d30; --struck-hi: #2a2a42; --struck-lo: #121220; --struck-ink: #7c7c94;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  position: relative; width: 390px; max-width: 100%; height: 780px; overflow: hidden; background: var(--bg); color: var(--text);
+  outline: 1px solid #000; border-radius: 4px; display: flex; flex-direction: column;
+}
+.phone svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* The app behind the modal (context only) */
+.head { position: relative; flex: none; height: 232px; overflow: hidden; background: #07080c; border-bottom: 3px solid var(--card-lip); }
+.head .room { position: absolute; left: -21px; bottom: 0; width: 432px; max-width: none; image-rendering: pixelated; }
+.head .hero { position: absolute; left: 44px; bottom: 26px; width: 128px; height: 128px; image-rendering: pixelated; }
+.head .boss { position: absolute; right: 36px; bottom: 26px; width: 128px; height: 128px; image-rendering: pixelated; transform: scaleX(-1); }
+.pl { position: absolute; z-index: 2; background: rgba(7,8,12,.88); clip-path: var(--px2); box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; color: #f0f3f7; }
+.purse { left: 8px; top: 8px; display: flex; gap: 10px; padding: 7px 10px; font: 700 14px 'Alegreya', serif; z-index: 12; }
+.purse span { display: flex; align-items: center; gap: 4px; }
+.purse svg { width: 14px; height: 14px; }
+.purse .g svg { color: var(--coin); } .purse .m svg { color: var(--gem); }
+.btn36 { top: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #dbe2ee; border: 0; cursor: pointer; }
+.btn36.menu { right: 8px; } .btn36.gift { right: 50px; color: var(--moon); }
+.btn36 .cnt { position: absolute; right: 1px; top: 1px; min-width: 16px; height: 16px; padding: 0 3px; background: var(--brass); color: var(--on-brass); font: 800 11px/16px 'Alegreya Sans'; text-align: center; clip-path: var(--px2); }
+.behind { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.behind i { height: 58px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.tabs { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); height: 60px; background: #0e0e19; border-top: 2px solid #232337; }
+.tabs span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 700 10.5px 'Alegreya Sans'; letter-spacing: .04em; color: #8a8aa6; }
+.tabs span.on { color: var(--moon); }
+
+/* The modal: tall panel, a strip of the stage above it, safe areas respected */
+.veil { position: absolute; inset: 0; z-index: 10; background: rgba(4,4,10,.72); transition: opacity .18s; }
+.modal { position: absolute; z-index: 11; left: 8px; right: 8px; top: calc(env(safe-area-inset-top) + 52px); bottom: calc(env(safe-area-inset-bottom) + 8px);
+  display: flex; flex-direction: column; background: #1a1a2e; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #3a3a62, inset -2px -2px 0 #0c0c16; transition: transform .2s, opacity .18s; }
+.phone.closed .veil { opacity: 0; pointer-events: none; }
+.phone.closed .modal { opacity: 0; transform: translateY(24px); pointer-events: none; }
+.m-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 6px 10px 12px; border-bottom: 2px solid #0e0e19; }
+.m-head .medal { width: 38px; height: 38px; display: grid; place-items: center; background: var(--card); color: var(--brass); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.m-head .ttl { flex: 1; font: 600 15px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: #f0f3f7; }
+.m-head .x { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; color: var(--moon); cursor: pointer; }
+.m-body { flex: 1; overflow-y: auto; padding: 12px 12px 18px; display: flex; flex-direction: column; gap: 8px; scrollbar-width: thin; scrollbar-color: #3f405a transparent; }
+.m-body > * { flex-shrink: 0; }
+.sub { font-size: 13.5px; color: #a6a6c4; margin: 0 0 2px; }
+.label { font: 700 11px 'Alegreya Sans'; letter-spacing: .16em; text-transform: uppercase; color: #9a9ab8; margin: 8px 0 0; display: flex; justify-content: space-between; }
+
+/* Shared bits */
+.card { position: relative; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); color: var(--text); }
+.card.ready { box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo), inset 0 0 0 3px color-mix(in srgb, var(--brass) 55%, #000); }
+.card.complete { background: var(--struck-card); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); }
+.card.complete .nm { color: var(--struck-ink); }
+.card.complete .sock { opacity: .45; }
+.sock { position: relative; width: 42px; height: 42px; flex: none; display: grid; place-items: center; color: var(--moon-solid); background: #1c1c33; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #0b0b16, inset -2px -2px 0 var(--card-hi); }
+.sock svg { width: 22px; height: 22px; }
+.nm { font: 700 17px/1.2 'Alegreya', serif; color: var(--text-h); }
+.deed { font-size: 13.5px; line-height: 1.3; color: var(--text); }
+.st { font: 700 11px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
+.well { position: relative; display: block; height: 14px; background: var(--field); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.well i { position: absolute; left: 2px; top: 2px; bottom: 2px; background: var(--brass); box-shadow: inset 0 2px 0 color-mix(in srgb, var(--brass) 60%, #fff), inset 0 -2px 0 var(--brass-solid); }
+.well b { position: absolute; right: 5px; top: 0; bottom: 0; display: flex; align-items: center; font: 800 11px 'Alegreya Sans'; color: var(--text-h); text-shadow: 0 0 3px #000, 0 0 2px #000; }
+.pay { display: inline-flex; align-items: center; gap: 8px; font: 700 15px 'Alegreya', serif; color: var(--brass); white-space: nowrap; }
+.pay span { display: inline-flex; align-items: center; gap: 3px; }
+.pay svg { width: 15px; height: 15px; }
+.pay .m svg { color: var(--gem); } .pay .g svg { color: var(--coin); }
+.claim { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 0; cursor: pointer; background: var(--brass-solid); color: var(--on-brass); clip-path: var(--px2); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 color-mix(in srgb, var(--brass-solid) 55%, #000); font: 800 14px 'Alegreya Sans'; letter-spacing: .04em; white-space: nowrap; }
+.claim:active { transform: translateY(1px); }
+.claim.all { min-height: 40px; padding: 0 12px; font-size: 13px; }
+.pips { display: flex; gap: 3px; }
+.pips i { width: 9px; height: 9px; background: #14142a; box-shadow: inset 1px 1px 0 #050509, inset -1px -1px 0 #34345a; }
+.pips i.done { background: var(--brass); box-shadow: inset 0 -2px 0 var(--brass-solid); }
+.pips i.ready { background: transparent; box-shadow: inset 0 0 0 2px var(--brass); animation: glow 1.2s ease-in-out infinite; }
+@keyframes glow { 50% { opacity: .35; } }
+.fold { color: #7f80a3; transition: transform .15s; display: grid; place-items: center; width: 28px; height: 28px; }
+.open .fold { transform: rotate(180deg); }
+
+.ladder { list-style: none; margin: 10px 0 0; padding: 8px 0 0; display: none; flex-direction: column; border-top: 2px solid #1f1f38; }
+.open .ladder, .ladder.always { display: flex; }
+.ladder li { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 4px 0; }
+.ladder .mk { width: 20px; height: 20px; flex: none; display: grid; place-items: center; color: var(--on-brass); }
+.ladder .mk svg { width: 13px; height: 13px; stroke-width: 3; }
+.ladder li.done .mk { background: var(--brass); clip-path: var(--px2); }
+.ladder li.ready .mk { box-shadow: inset 0 0 0 2px var(--brass); clip-path: var(--px2); }
+.ladder li.now .mk { box-shadow: inset 0 0 0 2px var(--moon); clip-path: var(--px2); }
+.ladder li.todo .mk { box-shadow: inset 0 0 0 2px #3a3a5e; clip-path: var(--px2); }
+.ladder .dd { flex: 1; font-size: 14px; color: var(--text-h); }
+.ladder li.done .dd { color: var(--struck-ink); text-decoration: line-through; text-decoration-color: rgba(223,224,240,.3); }
+.ladder li.todo .dd { color: #a6a6c4; }
+.ladder li.done .pay { opacity: .45; }
+.ladder .pay { font-size: 14px; }
+.ladder .claim { min-height: 36px; padding: 0 10px; font-size: 13px; }
+
+/* A1 · Prize up top */
+.c1 { display: flex; gap: 12px; padding: 10px 12px 12px 10px; cursor: pointer; }
+.c1 .mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.c1 .nmrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.c1 .barrow { display: flex; align-items: center; gap: 6px; }
+.c1 .barrow .well { flex: 1; }
+.c1 .rung { font: 800 11px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: #9a9ab8; }
+.c1 .claimrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* A2 · Grouped: finished sets fold into slim rows */
+.slim { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 12px 6px 8px; cursor: pointer; }
+.slim .sock { width: 32px; height: 32px; }
+.slim .sock svg { width: 17px; height: 17px; }
+.slim .nm { flex: 1; font-size: 15px; }
+.slim .tick { color: var(--brass); opacity: .7; }
+.slim.open { flex-wrap: wrap; }
+.slim .ladder { flex-basis: 100%; }
+
+/* A3 · Next up: the next rung peeks, step sets open as checklists, the socket carries the rung */
+.sock .tag { position: absolute; right: -1px; bottom: -1px; min-width: 18px; height: 14px; padding: 0 3px; background: #0e0e19; color: var(--moon); font: 800 10px/14px 'Alegreya Sans'; text-align: center; }
+.peek { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; color: #8f90b0; }
+.peek .pay { font-size: 12.5px; color: #8f90b0; gap: 6px; }
+.peek .pay svg { width: 12px; height: 12px; }
+
+.toast { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); background: #07080c; color: var(--moon); padding: 8px 14px; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #333c52; font: 700 13px 'Alegreya Sans'; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; z-index: 20; display: flex; gap: 6px; align-items: center; }
+.toast svg { width: 14px; height: 14px; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Trial sets · round two</h1>
+  <p class="lede">Option A refined three ways, in a modal from the stage's gift button: a strip of the stage stays above it, the app dims behind. A player about 20 days in, three rungs waiting. Each phone is live: Claim, Claim all, tap a card for its ladder, X to close and the gift to reopen.</p>
+  <div class="row" id="opts"></div>
+</div>
+<script>
+const S = '../../public/sprites/';
+const I = (p) => `<svg viewBox="0 0 24 24">${p}</svg>`;
+const ICON = {
+  sword: I('<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>'),
+  scroll: I('<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>'),
+  store: I('<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/>'),
+  anvil: I('<path d="M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4"/><path d="M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z"/><path d="M9 12v5"/><path d="M15 12v5"/><path d="M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1"/>'),
+  user: I('<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
+  menu: I('<path d="M4 6h16M4 12h16M4 18h16"/>'),
+  gift: I('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>'),
+  gem: I('<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>'),
+  coin: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9 9.5h4.5a1.75 1.75 0 0 1 0 3.5h-3a1.75 1.75 0 0 0 0 3.5H15"/>'),
+  check: I('<path d="M20 6 9 17l-5-5"/>'),
+  down: I('<path d="m6 9 6 6 6-6"/>'),
+  x: I('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+  footprints: I('<path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/>'),
+  trophy: I('<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>'),
+  flame: I('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'),
+  cal: I('<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>'),
+  list: I('<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>'),
+  shield: I('<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>'),
+  target: I('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+  sparkles: I('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/>'),
+  up: I('<path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/>'),
+  swords: I('<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>'),
+  award: I('<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>'),
+};
+
+const KILL = 152; // boss 15, climb I (x0.8): one boss kill of gold
+const gold = (k) => Math.max(5, Math.round((k * KILL) / 5) * 5);
+const SETS = () => [
+  { id: 'steps', name: 'First steps', icon: 'footprints', kind: 'steps', claimed: 3,
+    rungs: [{ deed: 'Add a good skill', gems: 4, gold: 0.5, done: true }, { deed: 'Add a bad habit', gems: 4, gold: 0.5, done: true }, { deed: 'Add a quest', gems: 4, gold: 0.5, done: true }] },
+  { id: 'bosses', name: 'Bosses slain', icon: 'trophy', count: 14, claimed: 2, deed: (n) => `Slay ${n} boss${n > 1 ? 'es' : ''}`,
+    rungs: [[1, 4, 0.5], [5, 4, 0.5], [10, 5, 0.5], [25, 6, 1], [50, 7], [100, 7], [250, 8]] },
+  { id: 'streak', name: 'Longest streak', icon: 'flame', count: 9, claimed: 2, deed: (n) => `Keep a skill on a ${n}-day streak`,
+    rungs: [[3, 4], [7, 4], [14, 6], [30, 6], [60, 7], [100, 8]] },
+  { id: 'perfect', name: 'Perfect days', icon: 'cal', count: 4, claimed: 2, deed: (n) => n === 1 ? 'Check off every daily skill in a day' : `Have ${n} perfect days`,
+    rungs: [[1, 4], [3, 4], [7, 6], [15, 6], [30, 7]] },
+  { id: 'quests', name: 'Quests completed', icon: 'list', count: 3, claimed: 1, deed: (n) => `Complete ${n} quest${n > 1 ? 's' : ''} on time`,
+    rungs: [[1, 4], [3, 4], [10, 6], [25, 7]] },
+  { id: 'resist', name: 'Bad habits resisted', icon: 'shield', count: 11, claimed: 1, deed: (n) => `Resist ${n} bad habits`,
+    rungs: [[5, 4], [15, 6], [50, 7]] },
+  { id: 'crits', name: 'Crits landed', icon: 'target', count: 25, claimed: 1, deed: (n) => `Land ${n} critical hits`,
+    rungs: [[5, 4], [25, 6], [100, 7]] },
+  { id: 'enchants', name: 'Enchants', icon: 'sparkles', count: 1, claimed: 1, deed: (n) => n === 1 ? 'Enchant an item' : `Enchant ${n} items`,
+    rungs: [[1, 6], [3, 6], [6, 7], [10, 7]] },
+  { id: 'ranks', name: 'Skill ranks raised', icon: 'up', count: 6, claimed: 2, deed: (n) => n === 1 ? "Raise a skill's rank" : `Raise skill ranks ${n} times`,
+    rungs: [[1, 4], [5, 6], [15, 7], [30, 7]] },
+  { id: 'epics', name: 'Epic finds', icon: 'gem', count: 0, claimed: 0, deed: (n) => n === 1 ? 'Find an epic item' : `Find ${n} epic items`,
+    rungs: [[1, 6], [5, 6], [15, 7], ['relic', 7]] },
+  { id: 'untouched', name: 'Untouched kills', icon: 'swords', count: 2, claimed: 1, deed: (n) => n === 1 ? 'Kill a boss that never hurt you' : `Kill ${n} bosses that never hurt you`,
+    rungs: [[1, 4], [5, 6], [15, 7]] },
+  { id: 'feats', name: 'Feats', icon: 'award', kind: 'steps', claimed: 2,
+    rungs: [{ deed: 'Kill a boss with a critical hit', gems: 4, done: true }, { deed: 'Kill a boss with a true damage skill', gems: 4, done: true }, { deed: 'Check off a hard skill before noon', gems: 4, done: false }] },
+].map((s) => s.kind === 'steps' ? s : { ...s, rungs: s.rungs.map(([goal, gems, g]) => ({ goal, gems, gold: g, deed: goal === 'relic' ? 'Find a relic' : s.deed(goal), done: goal !== 'relic' && s.count >= goal })) });
+
+const st = (s, i) => (i < s.claimed ? 'done' : s.rungs[i].done ? 'ready' : 'todo');
+const firstReady = (s) => s.rungs.findIndex((_, i) => st(s, i) === 'ready');
+const firstOpen = (s) => s.rungs.findIndex((_, i) => st(s, i) !== 'done');
+const complete = (s) => s.claimed >= s.rungs.length;
+const isReady = (s) => firstReady(s) >= 0;
+const climbing = (s) => !isReady(s) && !complete(s);
+const order = (sets) => [...sets.filter(isReady), ...sets.filter(climbing), ...sets.filter(complete)];
+
+const pay = (r) => `<span class="pay"><span class="m">${ICON.gem}${r.gems}</span>${r.gold ? `<span class="g">${ICON.coin}${gold(r.gold)}</span>` : ''}</span>`;
+const pips = (s) => `<span class="pips">${s.rungs.map((_, i) => `<i class="${st(s, i)}"></i>`).join('')}</span>`;
+const well = (cur, max) => `<span class="well"><i style="width:calc(${Math.min(1, cur / max) * 100}% - 4px)"></i><b>${Math.min(cur, max)} / ${max}</b></span>`;
+const claimBtn = (s) => `<button type="button" class="claim" data-claim="${s.id}">${ICON.gift}Claim</button>`;
+const sock = (s, tag = '') => `<span class="sock">${ICON[s.icon]}${tag}</span>`;
+const ladder = (s, always = false) => `<ul class="ladder ${always ? 'always' : ''}">${s.rungs.map((r, i) => {
+  let k = st(s, i);
+  if (k === 'todo' && i === firstOpen(s)) k = 'now';
+  // A waiting rung shows its prize here; the card's own Claim pays it.
+  return `<li class="${k}"><span class="mk">${k === 'done' ? ICON.check : ''}</span><span class="dd">${r.deed}</span>${pay(r)}</li>`;
+}).join('')}</ul>`;
+// The rung a card leads with: the one to claim, else the one being climbed.
+const lead = (s) => s.rungs[isReady(s) ? firstReady(s) : firstOpen(s)];
+const progress = (s, r) => s.kind === 'steps' ? '' : r.goal === 'relic' ? '<span class="st">Not yet</span>' : well(s.count, r.goal);
+const rungOf = (s) => `${Math.min(s.rungs.length, (isReady(s) ? firstReady(s) : firstOpen(s)) + 1)} / ${s.rungs.length}`;
+
+// A1 · Prize up top: the prize sits by the name, so the line under it is just the deed and the bar.
+// Claim takes the bar's place. Pips move under the bar, with "Rung 3 of 7".
+function a1(s) {
+  if (complete(s)) return `<div class="card c1 complete" data-set="${s.id}">${sock(s)}<div class="mid"><div class="nmrow"><span class="nm">${s.name}</span><span class="fold">${ICON.down}</span></div><span class="st">All ${s.rungs.length} done</span>${ladder(s)}</div></div>`;
+  const r = lead(s);
+  const body = isReady(s)
+    ? `<div class="claimrow"><span class="deed">${r.deed}</span>${claimBtn(s)}</div>`
+    : `<span class="deed">${r.deed}</span>${progress(s, r)}`;
+  return `<div class="card c1 ${isReady(s) ? 'ready' : ''}" data-set="${s.id}">${sock(s)}<div class="mid">
+    <div class="nmrow"><span class="nm">${s.name}</span>${pay(r)}</div>${body}
+    <div class="barrow">${pips(s)}<span class="rung">Rung ${rungOf(s).replace(' / ', ' of ')}</span><span style="flex:1"></span><span class="fold">${ICON.down}</span></div>${ladder(s)}</div></div>`;
+}
+// A2 · Grouped: Ready / Climbing / Done, with Claim all. Done sets shrink to a slim row.
+function a2slim(s) {
+  return `<div class="card slim complete" data-set="${s.id}">${sock(s)}<span class="nm">${s.name}</span><span class="tick">${ICON.check}</span><span class="fold">${ICON.down}</span>${ladder(s)}</div>`;
+}
+// A3 · Next up: the socket carries the rung (3/7), the next rung peeks under the bar,
+// and the short step sets are open checklists.
+function a3(s) {
+  if (s.kind === 'steps' && !complete(s)) {
+    return `<div class="card c1 ${isReady(s) ? 'ready' : ''}">${sock(s, `<span class="tag">${rungOf(s)}</span>`)}<div class="mid"><div class="nmrow"><span class="nm">${s.name}</span></div>${ladder(s, true)}</div></div>`;
+  }
+  if (complete(s)) return a1(s);
+  const i = isReady(s) ? firstReady(s) : firstOpen(s);
+  const r = s.rungs[i];
+  const next = s.rungs[i + 1];
+  const body = isReady(s)
+    ? `<div class="claimrow"><span class="deed">${r.deed}</span>${claimBtn(s)}</div>`
+    : `<span class="deed">${r.deed}</span>${progress(s, r)}`;
+  const peek = next ? `<div class="peek"><span>Then: ${next.deed.toLowerCase()}</span>${pay(next)}</div>` : '<div class="peek"><span>The last rung</span></div>';
+  return `<div class="card c1 ${isReady(s) ? 'ready' : ''}" data-set="${s.id}">${sock(s, `<span class="tag">${rungOf(s)}</span>`)}<div class="mid">
+    <div class="nmrow"><span class="nm">${s.name}</span>${pay(r)}</div>${body}${peek}${ladder(s)}</div></div>`;
+}
+
+const readyCount = (sets) => sets.filter(isReady).length;
+const claimAll = (sets) => readyCount(sets) > 1 ? `<button type="button" class="claim all" data-claim-all>${ICON.gift}Claim all</button>` : '';
+const OPTIONS = [
+  { name: 'A1 · Prize up top', note: 'The prize moves up beside the name, so every card reads the same: name and prize, the deed, the bar. Claim takes the bar\'s place. Pips sit at the foot with "Rung 3 of 7"; tap the card for the whole ladder.',
+    body: (sets) => order(sets).map(a1).join('') },
+  { name: 'A2 · Grouped', note: 'A1\'s cards sorted under three labels: Ready (with Claim all in the header when two or more wait), Climbing, Done. Finished sets shrink to a slim row with a check; tap one to see its ladder.',
+    body: (sets) => {
+      const g = (t, list, f, extra = '') => list.length ? `<div class="label"><span>${t}</span>${extra}</div>${list.map(f).join('')}` : '';
+      return g('Ready', sets.filter(isReady), a1) + g('Climbing', sets.filter(climbing), a1) + g('Done', sets.filter(complete), a2slim);
+    }, headExtra: claimAll },
+  { name: 'A3 · Next up', note: 'The socket carries the rung (3/7). Under the bar, a quiet line peeks at the next rung and what it pays, so you see what\'s coming without opening it. First steps and Feats, being short, are open checklists.',
+    body: (sets) => order(sets).map(a3).join('') },
+];
+
+const head = () => `<div class="head">
+  <img class="room" src="${S}stage/arena6b.png" alt="" /><img class="hero" src="${S}player/warrior.png" alt="" /><img class="boss" src="${S}bosses/armored.png" alt="" />
+  <span class="pl purse"><span class="g">${ICON.coin}<b data-gold>340</b></span><span class="m">${ICON.gem}<b data-gems>68</b></span></span>
+  <button type="button" class="pl btn36 gift" data-open>${ICON.gift}<span class="cnt" data-cnt>3</span></button>
+  <span class="pl btn36 menu">${ICON.menu}</span></div>`;
+const tabs = () => `<nav class="tabs">${[['Skills', ICON.sword], ['Quests', ICON.scroll], ['Shop', ICON.store], ['Talents', ICON.anvil], ['Hero', ICON.user]].map(([n, i]) => `<span class="${n === 'Skills' ? 'on' : ''}">${i}${n}</span>`).join('')}</nav>`;
+
+const root = document.getElementById('opts');
+for (const o of OPTIONS) {
+  const el = document.createElement('div');
+  el.className = 'opt';
+  el.innerHTML = `<h2>${o.name}</h2><p>${o.note}</p><div class="phone">${head()}<div class="behind">${'<i></i>'.repeat(6)}</div>${tabs()}
+    <div class="veil" data-close></div>
+    <div class="modal" role="dialog" aria-label="Trials"><div class="m-head"><span class="medal">${ICON.gift}</span><span class="ttl">Trials</span><span data-head-extra></span><button type="button" class="x" data-close aria-label="Close">${ICON.x}</button></div><div class="m-body"></div></div>
+    <div class="toast"></div></div>`;
+  root.appendChild(el);
+  wire(el, o);
+}
+
+function wire(el, o) {
+  const sets = SETS();
+  const phone = el.querySelector('.phone');
+  const body = el.querySelector('.m-body');
+  const toast = el.querySelector('.toast');
+  const opened = new Set();
+  let gemsHeld = 68, goldHeld = 340, timer;
+  const say = (g, c) => {
+    toast.innerHTML = `<span style="color:var(--gem);display:flex">${ICON.gem}</span>+${g}${c ? ` <span style="color:var(--coin);display:flex">${ICON.coin}</span>+${c}` : ''}`;
+    toast.classList.add('show'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 1500);
+  };
+  const claim = (s) => { const r = s.rungs[firstReady(s)]; s.claimed += 1; gemsHeld += r.gems; const c = r.gold ? gold(r.gold) : 0; goldHeld += c; return [r.gems, c]; };
+  const paint = () => {
+    const top = body.scrollTop;
+    body.innerHTML = o.body(sets);
+    body.scrollTop = top;
+    opened.forEach((id) => body.querySelector(`[data-set="${id}"]`)?.classList.add('open'));
+    el.querySelector('[data-head-extra]').innerHTML = o.headExtra ? o.headExtra(sets) : '';
+    const waiting = readyCount(sets);
+    const cnt = el.querySelector('[data-cnt]');
+    cnt.textContent = waiting; cnt.style.display = waiting ? '' : 'none';
+    el.querySelector('[data-gems]').textContent = gemsHeld;
+    el.querySelector('[data-gold]').textContent = goldHeld;
+  };
+  el.addEventListener('click', (e) => {
+    if (e.target.closest('[data-claim-all]')) {
+      let g = 0, c = 0;
+      sets.filter(isReady).forEach((s) => { while (isReady(s)) { const [a, b] = claim(s); g += a; c += b; } });
+      say(g, c); return paint();
+    }
+    const btn = e.target.closest('[data-claim]');
+    if (btn) { e.stopPropagation(); const [g, c] = claim(sets.find((x) => x.id === btn.dataset.claim)); say(g, c); return paint(); }
+    if (e.target.closest('[data-close]')) return phone.classList.add('closed');
+    if (e.target.closest('[data-open]')) return phone.classList.remove('closed');
+    const card = e.target.closest('[data-set]');
+    if (card) { const id = card.dataset.set; opened.has(id) ? opened.delete(id) : opened.add(id); card.classList.toggle('open'); }
+  });
+  paint();
+}
+</script>
+</body>
+</html>
