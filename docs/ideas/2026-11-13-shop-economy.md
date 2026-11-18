@@ -200,7 +200,7 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - **Gold streak freeze:** decided 2026-11-14: no. The freeze is sold for gems only.
 - **Revive limit:** decided 2026-11-14: one per boss, at a fixed 10 gems. Changed 2026-11-17: no limit; a revive is open on every fall while the gems cover it.
 - **"Kept" vs "This run" on each item:** how it looks. Visual pass later.
-- **Prices and the gem budget:** not tuned. Needs a rough budget (free gems in, gem costs out) before building. Milestone B's gold prices are multiples of the current boss's gold (common 1×, uncommon 1.5×, rare 2.5×, epic 4×, relic 6×, tonics 1×, restock 0.5× doubling), all in `constants/economy.ts`.
+- **Prices and the gem budget:** gems decided 2026-11-17 in `docs/superpowers/specs/2026-11-17-gem-economy-design.md` (it adds a perfect-week gem drip, so the free supply is no longer strictly finite, and moves the EXP Potion to gems). Gold still not tuned. Needs a rough budget (free gems in, gem costs out) before building. Milestone B's gold prices are multiples of the current boss's gold (common 1×, uncommon 1.5×, rare 2.5×, epic 4×, relic 6×, tonics 1×, restock 0.5× doubling), all in `constants/economy.ts`.
 
 ### Parked ideas
 - **Gold skill.** A rare new habit skill (maybe a 5% roll on a new skill) that earns gold instead of dealing damage or healing. Gold per check would scale with the boss number. Fun, but not planned yet.
