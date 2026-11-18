@@ -4574,7 +4574,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   // (PrestigeNumeral): Veteran rare blue, Ascendant epic purple, Mythic relic
   // orange. A colour class on the ladder, its rungs and the crown sets --c, the
   // tier, --d its dark and --g its glow.
-  :is(.prestige-ladder, .ladder-node, .talent-foot .pl.crown) {
+  :is(.prestige-ladder, .ladder-node, .talent-foot .pl.crown, .level-prestige) {
     &.rare {
       --c: #5f95e6;
       --d: #1f3c70;
@@ -4772,6 +4772,39 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include true-sans(0.75rem, 800);
     color: var(--text-h);
     text-shadow: 0 1px 0 #000;
+  }
+
+  // The level-up popup's prestige card: a lit panel in the next rank's colour.
+  .level-prestige {
+    @include pixel-corners(3px);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--c) 26%, var(--card)), var(--card) 65%);
+    box-shadow:
+      inset 2px 2px 0 color-mix(in srgb, var(--c) 60%, var(--card-hi)),
+      inset -2px -2px 0 var(--card-lo),
+      0 0 18px var(--g);
+  }
+
+  .level-prestige-head {
+    @include engraved(0.625rem, 0.22em);
+    color: var(--c);
+  }
+
+  .level-prestige-rank {
+    font: 900 1.25rem/1.1 var(--heading);
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-shadow:
+      0 0 10px var(--c),
+      0 2px 0 #000;
+  }
+
+  .level-prestige-special {
+    font: 700 0.95rem/1.2 var(--serif);
+    color: var(--text-h);
+  }
+
+  .level-prestige-special svg {
+    color: var(--c);
   }
 
   // ---------- Prestige popup (docs/mockups/prestige-popup.html, A · The statue) ----------

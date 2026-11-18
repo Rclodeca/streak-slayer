@@ -2,17 +2,33 @@
 import { computed, ref } from 'vue';
 import { Crown, ScrollText, Sparkle } from 'lucide-vue-next';
 import type { Component } from 'vue';
-import { effectiveStat, formatCompact, questUnlockPending, talentUnlockPending, UNLOCK_LEVELS } from '../../game-engine';
+import {
+  effectiveStat,
+  formatCompact,
+  nextPrestigeRank,
+  PRESTIGE_BONUS_PER_RANK,
+  PRESTIGE_GEMS,
+  prestigeMark,
+  prestigeOpensBetween,
+  prestigeRank,
+  questUnlockPending,
+  talentUnlockPending,
+  UNLOCK_LEVELS,
+} from '../../game-engine';
 import type { UnlockId } from '../../game-engine';
 import { TUNING } from '../../game-engine/constants/tuning';
 import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useLevelUp } from '../../composables/useLevelUp';
 import { useModalPriority } from '../../composables/useModalPriority';
 import { useSkins } from '../../composables/useSkins';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { HERO_STAGE_CANVAS } from '../character/heroArt';
+import PrestigePopup from '../talents/PrestigePopup.vue';
+import { PRESTIGE_SPECIAL_LOOK } from '../talents/prestigeDisplay';
 import { TALENTS_TAB_ICON } from '../talents/talentDisplay';
 import Modal from './Modal.vue';
+import PrestigeNumeral from './PrestigeNumeral.vue';
 import StatIcon from './StatIcon.vue';
 import { baseSpriteUrl } from './spriteUrl';
 import type { StatIconName } from './statIcons';
@@ -22,6 +38,8 @@ import type { StatIconName } from './statIcons';
 // the heal, and whatever the level opened (UNLOCK_LEVELS), one wide card or
 // two side by side. Its Onward unlocks Quests and Talents, so their own
 // popups only show for a save that reached the level without one of these.
+// A level that reaches the next prestige bar gets its own featured card above
+// the unlocks, in that rank's colour, whose Prestige opens the prestige popup.
 const { current, dismiss } = useLevelUp();
 const { levelUpVisible } = useModalPriority();
 const characterStore = useCharacterStore();
@@ -73,6 +91,22 @@ const unlocks = computed<Unlock[]>(() => {
   return (Object.keys(UNLOCK_LEVELS) as UnlockId[]).flatMap((id) => all[id] ?? []);
 });
 
+const accountStore = useAccountStore();
+const prestigeNews = computed(() => {
+  const news = current.value;
+  const rank = prestigeRank(accountStore.account);
+  if (!news || !prestigeOpensBetween(news.fromLevel, news.toLevel, rank)) return null;
+  const next = nextPrestigeRank(rank)!;
+  return { mark: prestigeMark(next.rank)!, look: PRESTIGE_SPECIAL_LOOK[next.rank] };
+});
+const EMBERS = Array.from({ length: 8 }, (_, i) => ({ left: `${6 + ((i * 37) % 88)}%`, animationDuration: `${3 + (i % 4)}s`, animationDelay: `${(i * 0.6) % 3}s` }));
+const prestigeOpen = ref(false);
+
+function toPrestige() {
+  onward();
+  prestigeOpen.value = true;
+}
+
 function onward() {
   if (unlocks.value.some((unlock) => unlock.id === 'quests')) characterStore.unlockQuests();
   if (unlocks.value.some((unlock) => unlock.id === 'talents')) characterStore.unlockTalents();
@@ -103,6 +137,25 @@ function onward() {
       </ul>
       <p v-if="current.healed > 0" class="level-heal">Healed <span class="gain">+{{ formatCompact(current.healed) }}</span></p>
 
+      <div v-if="prestigeNews" class="level-prestige" :class="prestigeNews.mark.rarity">
+        <span class="ladder-rays" aria-hidden="true" />
+        <span class="ladder-embers" aria-hidden="true"><i v-for="(style, n) in EMBERS" :key="n" :style="style" /></span>
+        <div class="level-prestige-top">
+          <PrestigeNumeral :mark="prestigeNews.mark" large class="ladder-plate ready" />
+          <div>
+            <small class="level-prestige-head">Prestige available</small>
+            <p class="level-prestige-rank">{{ prestigeNews.mark.title }} {{ prestigeNews.mark.numeral }}</p>
+            <p class="level-prestige-special"><component :is="prestigeNews.look.icon" :size="15" aria-hidden="true" />{{ prestigeNews.look.name }}</p>
+          </div>
+        </div>
+        <div class="ladder-gains">
+          <span><StatIcon name="hit" :size="14" /><b>+{{ PRESTIGE_BONUS_PER_RANK.allDamage }}%</b> damage</span>
+          <span><StatIcon name="health" :size="14" /><b>+{{ PRESTIGE_BONUS_PER_RANK.health }}%</b> HP</span>
+          <span><StatIcon name="exp" :size="14" /><b>+{{ PRESTIGE_BONUS_PER_RANK.expGain }}%</b> EXP</span>
+          <span><StatIcon name="gems" :size="14" /><b>{{ PRESTIGE_GEMS }}</b></span>
+        </div>
+        <button type="button" class="prestige-go" @click="toPrestige"><Crown :size="20" aria-hidden="true" />Prestige</button>
+      </div>
       <ul v-if="unlocks.length" class="level-unlocks" :class="{ pair: unlocks.length > 1 }">
         <li v-for="unlock in unlocks" :key="unlock.id" class="level-unlock" :class="unlock.id">
           <span class="unlock-plate" aria-hidden="true"><component :is="unlock.icon" :size="24" :stroke-width="1.75" /></span>
@@ -117,9 +170,93 @@ function onward() {
       <button type="button" class="onward primary-button" @click="onward">Onward</button>
     </div>
   </Modal>
+  <PrestigePopup v-model="prestigeOpen" />
 </template>
 
 <style scoped>
+/* The prestige card: its own wide panel above the unlocks, rays and embers behind. */
+.level-prestige {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.level-prestige > :not(.ladder-rays, .ladder-embers) {
+  position: relative;
+  z-index: 1;
+}
+
+.level-prestige .ladder-rays {
+  position: absolute;
+  top: 38px;
+  left: 38px;
+  width: 140px;
+  height: 140px;
+  margin: -70px 0 0 -70px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.level-prestige .ladder-embers {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.level-prestige .ladder-embers i {
+  position: absolute;
+  bottom: -6px;
+  width: 3px;
+  height: 3px;
+  opacity: 0;
+}
+
+.level-prestige-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.level-prestige-top p {
+  margin: 0;
+}
+
+.level-prestige-special {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.level-prestige .ladder-gains {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+}
+
+.level-prestige .ladder-gains span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.level-prestige .prestige-go {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
 /* The strip runs to the popup's edges and top: past the scroll box's padding
    (1rem 1.25rem) and the empty header's gap below it (0.75rem). */
 .level-strip {

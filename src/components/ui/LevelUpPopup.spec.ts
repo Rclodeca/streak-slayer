@@ -2,8 +2,10 @@
 
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useLevelUp } from '../../composables/useLevelUp';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import LevelUpPopup from './LevelUpPopup.vue';
 
@@ -73,5 +75,46 @@ describe('LevelUpPopup', () => {
     expect(store.character.questsUnlocked).toBe(true);
     expect(store.character.talentsUnlocked).toBe(false);
     expect(q('.level-up')).toBeNull();
+  });
+
+  describe('when prestige opens', () => {
+    function climb(from: number, to: number, rank: number) {
+      reachLevel(to, { heroPending: false, name: 'Aldric' });
+      useAccountStore().setPrestige(rank);
+      useLevelUp().record(from, to, 0);
+      return mount(LevelUpPopup, { attachTo: document.body });
+    }
+
+    it('features the next rank when a level reaches its bar', () => {
+      climb(29, 30, 0);
+      const card = q('.level-prestige')!;
+      expect(card.textContent).toContain('Prestige available');
+      expect(card.textContent).toContain('Veteran I');
+      expect(card.textContent).toContain('+20%');
+      expect(card.textContent).toContain('Free dungeon');
+      expect(card.classList.contains('rare')).toBe(true);
+    });
+
+    it('stays away past the bar', () => {
+      climb(30, 31, 0);
+      expect(q('.level-prestige')).toBeNull();
+    });
+
+    it('names the rank a jump over a bar opens, in its tier colour', () => {
+      climb(38, 41, 1);
+      expect(q('.level-prestige')!.textContent).toContain('Veteran II');
+      document.body.innerHTML = '';
+      useLevelUp().dismiss();
+      climb(49, 50, 2);
+      expect(q('.level-prestige')!.classList.contains('epic')).toBe(true);
+    });
+
+    it('its Prestige closes the level-up and opens the prestige popup', async () => {
+      climb(29, 30, 0);
+      q('.level-prestige .prestige-go')!.click();
+      await nextTick();
+      expect(useLevelUp().current.value).toBeNull();
+      expect(q('.prestige-popup')).not.toBeNull();
+    });
   });
 });
