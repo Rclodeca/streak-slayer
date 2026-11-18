@@ -4640,7 +4640,7 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   .ladder-bar,
   .ladder-line {
     @include true-sans(0.75rem, 800);
-    color: var(--dim);
+    color: var(--spent-text);
     font-variant-numeric: tabular-nums;
   }
 
@@ -4714,13 +4714,13 @@ $label-lg: 0.95rem; // primary buttons, choice titles
 
   .ladder-next {
     @include pixel-corners(2px);
-    background: var(--code-bg, #{$well});
+    background: var(--code-bg);
     @include bevel(var(--sunk-hi), var(--sunk-lo));
   }
 
   .ladder-label {
     @include engraved(0.625rem, 0.2em);
-    color: var(--dim);
+    color: var(--spent-text);
   }
 
   .ladder-gains {
