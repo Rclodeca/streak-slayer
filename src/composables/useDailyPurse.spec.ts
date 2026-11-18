@@ -6,6 +6,7 @@ import { createHabit, createRng, dailyPeriodKey, purseGold } from '../game-engin
 import { useAccountStore } from '../store/accountStore';
 import { useBossStore } from '../store/bossStore';
 import { useCharacterStore } from '../store/characterStore';
+import { useHabitStore } from '../store/habitStore';
 import { useShopSeenStore } from '../store/shopSeenStore';
 import { useTabStore } from '../store/tabStore';
 import { useDailyPurse } from './useDailyPurse';
@@ -21,6 +22,8 @@ describe('useDailyPurse', () => {
     setActivePinia(createPinia());
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
+    // An established player: a first-time one (no habits) gets no purse popup.
+    useHabitStore().setHabits([createHabit('Read', 'daily', 'medium', false, createRng(2))]);
   });
 
   // The purse and the recap are module-scoped, so clear them between tests.
@@ -44,6 +47,17 @@ describe('useDailyPurse', () => {
 
     purse.notice(TODAY);
     expect(purse.due.value).toBe(false);
+  });
+
+  it('skips the popup for a first-time player, marking the day without paying', () => {
+    useHabitStore().setHabits([]);
+    const characterStore = useCharacterStore();
+    characterStore.setCharacter({ ...characterStore.character, gold: 10 });
+    const purse = useDailyPurse();
+    purse.notice(TODAY);
+    expect(purse.due.value).toBe(false);
+    expect(characterStore.character.gold).toBe(10);
+    expect(useAccountStore().account.purseDayKey).toBe(TODAY);
   });
 
   it('shows before the Daily update, which waits for the claim', () => {

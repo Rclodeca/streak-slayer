@@ -47,9 +47,18 @@ export function useDailyPurse() {
     return SERVICE_DEFS.find((def) => def.id === turn.id) ?? null;
   });
 
-  /** The rollover saw `todayKey`: the purse shows if it's still to claim. */
+  /**
+   * The rollover saw `todayKey`: the purse shows if it's still to claim. A
+   * first-time player (no purse yet, no habits) gets no popup over the
+   * tutorial: the day is marked, nothing is paid.
+   */
   function notice(todayKey: string): void {
-    if (purseDue(accountStore.account, todayKey)) dayKey.value = todayKey;
+    if (!purseDue(accountStore.account, todayKey)) return;
+    if (accountStore.account.purseDayKey === undefined && habitStore.habits.length === 0) {
+      accountStore.claimPurse(todayKey);
+      return;
+    }
+    dayKey.value = todayKey;
   }
 
   /** The rollover paid a perfect week's `gems`: the purse shows them. */
