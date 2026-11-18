@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
 import { STORAGE_KEY, useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
-import { STORAGE_KEY as THEME_KEY, useThemeStore } from '../../store/themeStore';
 import AppMenu from './AppMenu.vue';
 
 enableAutoUnmount(afterEach);
@@ -17,29 +16,13 @@ describe('AppMenu', () => {
     setActivePinia(createPinia());
   });
 
-  it('lists the themes and swaps between them, keeping the menu open', async () => {
+  it('has no theme picker while Light is parked', async () => {
     const wrapper = mount(AppMenu, { attachTo: document.body });
     await wrapper.find('.menu-button').trigger('click');
     const panel = document.body.querySelector('.menu-panel')!;
     expect(panel.textContent).toContain('High Scores');
-    expect(panel.textContent).toContain('Theme');
-    const options = () => [...panel.querySelectorAll<HTMLElement>('[role="menuitemradio"]')];
-    expect(options().map((o) => o.textContent?.trim())).toEqual(['System', 'Light', 'Dark']);
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true']);
-
-    options()[1].click(); // Light
-    await wrapper.vm.$nextTick();
-    expect(useThemeStore().theme).toBe('light');
-    expect(localStorage.getItem(THEME_KEY)).toBe('light');
-    expect(document.documentElement.dataset.theme).toBe('light');
-    expect(document.body.querySelector('.menu-panel')).not.toBeNull();
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
-
-    options()[0].click(); // System
-    await wrapper.vm.$nextTick();
-    expect(useThemeStore().preference).toBe('system');
-    expect(localStorage.getItem(THEME_KEY)).toBe('system');
-    expect(options().map((o) => o.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+    expect(panel.textContent).not.toContain('Theme');
+    expect(panel.querySelectorAll('[role="menuitemradio"]')).toHaveLength(0);
   });
 
   it('flips Focus mode from the menu, and closes the menu', async () => {

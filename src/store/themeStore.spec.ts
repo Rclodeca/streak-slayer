@@ -5,7 +5,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { applyTheme, THEME_CHOICES, THEMES, useThemeStore } from './themeStore';
+import { applyTheme, LIGHT_PARKED, THEME_CHOICES, THEMES, useThemeStore } from './themeStore';
 
 const STORAGE_KEY = 'streak-slayer:theme:v1';
 
@@ -25,22 +25,21 @@ describe('themeStore', () => {
     expect(useThemeStore().theme).toBe('moonlit');
   });
 
-  it('calls the themes Dark and Light, and offers System too', () => {
+  it('calls the themes Dark and Light, but offers only Dark while Light is parked', () => {
     expect(THEMES).toEqual([
       { id: 'moonlit', label: 'Dark' },
       { id: 'light', label: 'Light' },
     ]);
-    expect(THEME_CHOICES.map((c) => c.label)).toEqual(['System', 'Light', 'Dark']);
+    expect(LIGHT_PARKED).toBe(true);
+    expect(THEME_CHOICES.map((c) => c.label)).toEqual(['Dark']);
   });
 
-  it('loads a saved Light choice', () => {
-    localStorage.setItem(STORAGE_KEY, 'light');
-    expect(useThemeStore().theme).toBe('light');
-  });
-
-  it.each(['parchment', 'bright'])('loads a saved %s choice as Light', (old) => {
-    localStorage.setItem(STORAGE_KEY, old);
-    expect(useThemeStore().theme).toBe('light');
+  // A tester who saved Light (or System, or a folded-in Light) must land on Dark.
+  it.each(['light', 'system', 'parchment', 'bright'])('loads a saved %s choice as Dark while Light is parked', (saved) => {
+    localStorage.setItem(STORAGE_KEY, saved);
+    const store = useThemeStore();
+    expect(store.preference).toBe('moonlit');
+    expect(store.theme).toBe('moonlit');
   });
 
   it.each(['crypt', 'hellforge', 'minimalist'])('loads a saved %s choice as Moonlit', (old) => {
@@ -55,10 +54,10 @@ describe('themeStore', () => {
 
   it('setTheme persists the choice and stamps it on <html>', () => {
     const store = useThemeStore();
-    store.setTheme('light');
-    expect(store.theme).toBe('light');
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('light');
-    expect(document.documentElement.dataset.theme).toBe('light');
+    store.setTheme('moonlit');
+    expect(store.theme).toBe('moonlit');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('moonlit');
+    expect(document.documentElement.dataset.theme).toBe('moonlit');
   });
 
   it('applyTheme stamps the theme without persisting it', () => {
@@ -67,7 +66,9 @@ describe('themeStore', () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  describe('System', () => {
+  // Light is parked, so System is never loaded from storage; these cover the
+  // machinery for when it returns (LIGHT_PARKED = false).
+  describe.skipIf(LIGHT_PARKED)('System', () => {
     // jsdom has no matchMedia: a stand-in whose answer the test can flip.
     let dark: boolean;
     let listener: (() => void) | undefined;

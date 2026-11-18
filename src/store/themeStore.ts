@@ -20,12 +20,21 @@ export const THEMES: { id: Theme; label: string }[] = [
   { id: 'light', label: 'Light' },
 ];
 
-/** What the menu offers, in order. */
-export const THEME_CHOICES: { id: ThemePreference; label: string }[] = [
-  { id: 'system', label: 'System' },
-  { id: 'light', label: 'Light' },
-  { id: 'moonlit', label: 'Dark' },
-];
+/**
+ * Light is parked until it catches up: it is not offered, and a saved Light
+ * (or System, which can land on Light) loads as Dark. Set this to false to
+ * bring the picker and the Light theme back.
+ */
+export const LIGHT_PARKED = true;
+
+/** What the menu offers, in order. The menu hides the picker when there is only one. */
+export const THEME_CHOICES: { id: ThemePreference; label: string }[] = LIGHT_PARKED
+  ? [{ id: 'moonlit', label: 'Dark' }]
+  : [
+      { id: 'system', label: 'System' },
+      { id: 'light', label: 'Light' },
+      { id: 'moonlit', label: 'Dark' },
+    ];
 
 export const STORAGE_KEY = 'streak-slayer:theme:v1';
 const DEFAULT_PREFERENCE: ThemePreference = 'moonlit';
@@ -34,6 +43,7 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
 function loadPreference(): ThemePreference {
   // A retired theme ('ashen', 'crypt', 'hellforge', 'minimalist') loads as the default.
   // Parchment and Bright were folded into Light.
+  if (LIGHT_PARKED) return DEFAULT_PREFERENCE;
   const saved = storage.getItem(STORAGE_KEY);
   if (saved === 'system') return 'system';
   if (saved === 'parchment' || saved === 'bright') return 'light';
