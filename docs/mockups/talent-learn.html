@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StreakSlayer — Talent Learn key</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The talent node popup's Learn key. Today: a pale silver key holding brass
+   price plates and gold/cyan icons, so the price is hard to read. Three fixes,
+   each shown as it can be bought, short of the price, and full. Pixel-cut, Midnight. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1640px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 820px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+.opt { width: 360px; max-width: 100%; }
+.opt h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; text-align: center; }
+.opt > p { margin: 0 0 12px; font-size: 14.5px; text-align: center; min-height: 80px; }
+.opt.now h2 { color: #8a8aa6; }
+
+.th {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --moon-solid: #b0b1cb; --brass: #d2bb85; --on-brass: #222330;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --gem: #6fd6ea; --coin: #f0c64e; --heal: #4ac777; --stat: #d8cdb5;
+  --field: #12131c; --sunk-hi: #0f1018; --sunk-lo: #2c2c47; --well: rgba(0,0,0,.22); --spent: #686877;
+  --button-fill: #cdcedf; --button-text: #20202e; --button-lip: #828398; --stone-face: #38385c; --stone-lip: #161622;
+  --short: #b65a50;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+.th svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* The popup */
+.modal { background: #1a1a2e; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #3a3a62, inset -2px -2px 0 #0c0c16; padding: 0 16px 18px; color: var(--text); }
+.mh { display: flex; align-items: center; justify-content: space-between; margin: 0 -10px 14px -2px; padding: 10px 0 8px; border-bottom: 2px solid #0e0e19; }
+.mh h3 { margin: 0; font: 600 15px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: #f0f3f7; }
+.mh .x { width: 44px; height: 44px; display: grid; place-items: center; color: var(--moon); }
+.nhead { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+.sock { width: 60px; height: 60px; flex: none; display: grid; place-items: center; color: #e86154; background: #1c1c33; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #0b0b16, inset -2px -2px 0 var(--card-hi); }
+.sock svg { width: 28px; height: 28px; }
+.nm { font: 600 19px/1.2 'Alegreya', serif; color: var(--text-h); }
+.pips { display: inline-flex; gap: 3px; margin-top: 4px; }
+.pip { width: 6px; height: 6px; border: 1.5px solid var(--brass); }
+.pip.lit { background: var(--brass); }
+.rt { display: flex; flex-direction: column; }
+.desc { margin: 0 0 14px; font-size: 15px; color: var(--stat); }
+.plates { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px; }
+.plate { padding: 8px 10px; background: var(--field); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.plate small { display: block; margin-bottom: 2px; font: 600 9.5px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--spent); }
+.plate span { font: 700 16px 'Alegreya Sans'; color: var(--text-h); }
+.plate.next span { color: var(--heal); }
+.plate.next.done span { color: var(--spent); }
+
+/* States strip under each popup */
+.states { display: grid; gap: 8px; margin-top: 10px; padding: 12px; background: #1a1a2e; clip-path: var(--px2); }
+.states small { font: 700 10.5px 'Alegreya Sans'; letter-spacing: .16em; text-transform: uppercase; color: #8a8aa6; }
+
+/* Keys */
+.key { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; padding: 0 14px; clip-path: var(--px2); font: 700 16px 'Alegreya Sans'; letter-spacing: .02em; cursor: pointer; transition: transform .07s; user-select: none; }
+.key:active:not(.off) { transform: translateY(3px); border-bottom-color: transparent !important; }
+.silver { background: var(--button-fill); color: var(--button-text); border-bottom: 3px solid var(--button-lip); box-shadow: inset 0 2px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,0,0,.18); }
+.stone { background: var(--stone-face); color: var(--moon); border-bottom: 3px solid var(--stone-lip); box-shadow: inset 0 2px 0 rgba(255,255,255,.1); }
+.key.off { background: var(--well); color: var(--spent); border-bottom: 3px solid transparent; box-shadow: inset 2px 2px 0 var(--sunk-hi); cursor: default; }
+
+.cur { display: inline-flex; align-items: center; gap: 10px; }
+.cur > span { display: inline-flex; align-items: center; gap: 4px; }
+.cur svg { width: 15px; height: 15px; }
+.g svg { color: var(--coin); } .m svg { color: var(--gem); }
+
+/* Today: brass plates on the silver key */
+.plate-count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; clip-path: var(--px2); background: var(--brass); color: var(--on-brass); font: 800 13px 'Alegreya Sans'; line-height: 1; }
+
+/* A: the Shop's stone buy key; the price as bold serif numbers in each coin's colour */
+.serif { font: 700 16px/1 'Alegreya', serif; }
+.a .g .serif { color: var(--coin); } .a .m .serif { color: var(--gem); }
+.a .verb { letter-spacing: .14em; text-transform: uppercase; font-size: 14px; }
+.a .key.short .serif { color: var(--short); }
+.a .key.short svg { opacity: .55; }
+.a .key.off .serif { color: var(--spent); }
+
+/* B: silver key, the price set into a dark socket on its right end */
+.b .key { justify-content: space-between; padding: 0 5px 0 18px; }
+.b .socket { display: inline-flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px; background: #191a28; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #08080f, inset -2px -2px 0 #3a3a5a; }
+.b .socket .serif { font-size: 15px; } .b .g .serif { color: var(--coin); } .b .m .serif { color: var(--gem); }
+.b .key.off .socket { background: transparent; box-shadow: none; }
+.b .key.short .serif { color: var(--short); }
+.b .key.short svg { opacity: .55; }
+.b .key.off .serif { color: var(--spent); }
+
+/* C: price on its own sunk line above a plain silver key */
+.c .cost { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 12px; height: 40px; background: var(--field); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.c .cost small { font: 600 9.5px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: var(--spent); }
+.c .cost .serif { font-size: 16px; } .c .g .serif { color: var(--coin); } .c .m .serif { color: var(--gem); }
+.c .cost.short .serif { color: var(--short); }
+.c .cost.short small { color: var(--short); }
+.c .stack + .stack { margin-top: 4px; }
+
+.pick { text-align: center; margin: 30px auto 0; max-width: 760px; font-size: 14.5px; }
+.pick b { color: #ece8de; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 8px 14px; background: #2d2c50; color: #f4f4fa; font: 700 14px 'Alegreya Sans'; clip-path: polygon(0 2px,2px 2px,2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px)); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="page th">
+  <h1>TALENT · LEARN KEY</h1>
+  <p class="lede">The node popup's buy key. Each option is shown ready, short of the price, and full. Tap a ready key to learn a rank.</p>
+  <div class="row" id="row"></div>
+  <p class="pick"><b>Recommended: A.</b> It's the same stone key the Shop buys with, so a gold price looks the same everywhere in the game. The coin and gem colours sit on dark stone, where they read best, and a short price turns red the way it does in the Shop.</p>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const I = (p) => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  x: I('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+  sword: I('<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>'),
+  gem: I('<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>'),
+  coin: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9 9.5h4.5a1.75 1.75 0 0 1 0 3.5h-3a1.75 1.75 0 0 0 0 3.5H15"/>'),
+};
+const PRICE = { gold: 1250, gems: 15 };
+const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(n % 1000 ? 1 : 0).replace('.0', '') + 'k' : String(n));
+
+// Price inner bits per style
+const plates = (p) => `<span class="cur"><span class="g">${ICON.coin}<span class="plate-count">${fmt(p.gold)}</span></span><span class="m">${ICON.gem}<span class="plate-count">${p.gems}</span></span></span>`;
+const serif = (p) => `<span class="cur"><span class="g">${ICON.coin}<span class="serif">${fmt(p.gold)}</span></span><span class="m">${ICON.gem}<span class="serif">${p.gems}</span></span></span>`;
+
+const KEY = {
+  now: (s) => s === 'full' ? `<div class="key silver off">Full</div>`
+    : `<div class="key silver${s === 'short' ? ' off' : ''}" data-buy>${s === 'short' ? 'Not enough' : 'Learn'} ${plates(PRICE)}</div>`,
+  a: (s) => s === 'full' ? `<div class="key stone off"><span class="verb">Full</span></div>`
+    : `<div class="key stone${s === 'short' ? ' short' : ''}" ${s === 'ready' ? 'data-buy' : ''}><span class="verb">${s === 'short' ? 'Not enough' : 'Learn'}</span>${serif(PRICE)}</div>`,
+  b: (s) => s === 'full' ? `<div class="key silver off" style="justify-content:center">Full</div>`
+    : `<div class="key silver${s === 'short' ? ' short off' : ''}" ${s === 'ready' ? 'data-buy' : ''}><span>${s === 'short' ? 'Not enough' : 'Learn'}</span><span class="socket">${serif(PRICE)}</span></div>`,
+  c: (s) => s === 'full' ? `<div class="key silver off">Full</div>`
+    : `<div class="stack"><div class="cost${s === 'short' ? ' short' : ''}"><small>${s === 'short' ? 'Not enough' : 'Cost'}</small>${serif(PRICE)}</div><div class="key silver${s === 'short' ? ' off' : ''}" ${s === 'ready' ? 'data-buy' : ''}>Learn</div></div>`,
+};
+
+const OPTS = [
+  { id: 'now', name: 'Today', note: 'Brass plates and gold/cyan icons on a pale key: low contrast, and it clashes with the silver.' },
+  { id: 'a', name: 'A · Stone key', note: "The Shop's buy key: dark stone, LEARN in silver, the price as bold numbers in each coin's own colour. Too dear turns the price red." },
+  { id: 'b', name: 'B · Price socket', note: "Keeps the silver key, but the price sits in a dark socket set into its right end, so the colours stay on dark." },
+  { id: 'c', name: 'C · Cost line', note: 'The price on its own sunk line above a plain silver Learn key. Clearest, but one more row in the popup.' },
+];
+
+function popup(o, rank) {
+  const max = 3;
+  const full = rank >= max;
+  const state = full ? 'full' : 'ready';
+  return `<div class="modal">
+    <div class="mh"><h3>Talent</h3><span class="x">${ICON.x}</span></div>
+    <div class="nhead"><span class="sock">${ICON.sword}</span><div class="rt"><span class="nm">Precision</span><span class="pips">${[1,2,3].map((n) => `<i class="pip${n <= rank ? ' lit' : ''}"></i>`).join('')}</span></div></div>
+    <p class="desc">+3% physical damage per rank.</p>
+    <div class="plates">
+      <div class="plate"><small>Now · ${rank}/${max}</small><span>+${rank * 3}%</span></div>
+      <div class="plate next${full ? ' done' : ''}"><small>Next · ${Math.min(rank + 1, max)}/${max}</small><span>${full ? '—' : '+' + (rank + 1) * 3 + '%'}</span></div>
+    </div>
+    <div class="slot">${KEY[o.id](state)}</div>
+  </div>`;
+}
+
+const row = document.getElementById('row');
+const ranks = {};
+function render() {
+  row.innerHTML = OPTS.map((o) => `<div class="opt ${o.id}" data-opt="${o.id}"><h2>${o.name}</h2><p>${o.note}</p>
+    ${popup(o, ranks[o.id] ?? 1)}
+    <div class="states"><small>Short of the price</small>${KEY[o.id]('short')}<small>Full</small>${KEY[o.id]('full')}</div></div>`).join('');
+}
+render();
+const toast = document.getElementById('toast');
+row.addEventListener('click', (e) => {
+  const k = e.target.closest('.modal [data-buy]');
+  if (!k) return;
+  const id = k.closest('[data-opt]').dataset.opt;
+  ranks[id] = Math.min((ranks[id] ?? 1) + 1, 3);
+  setTimeout(() => { render(); toast.textContent = ranks[id] >= 3 ? 'Full' : `Learned rank ${ranks[id]}`; toast.classList.add('on'); setTimeout(() => toast.classList.remove('on'), 900); }, 90);
+});
+</script>
+</body>
+</html>
