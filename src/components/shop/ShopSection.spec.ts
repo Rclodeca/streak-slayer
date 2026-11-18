@@ -4,7 +4,7 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useItemDropQueue } from '../../composables/useItemDropQueue';
-import { SKIN_CATALOG, addDaysToDayKey, applyCritBoostEffect, createCharacter, createHabit, createRng, dailyPeriodKey, heroArt, ITEM_CATALOG, maxEquipSlots, pouchGold } from '../../game-engine';
+import { SKIN_CATALOG, addDaysToDayKey, applyCritBoostEffect, createCharacter, createHabit, createRng, dailyPeriodKey, heroArt, GOLD_POUCH, ITEM_CATALOG, maxEquipSlots, pouchGold } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -239,9 +239,9 @@ describe('ShopSection', () => {
         wrapper.unmount();
       });
 
-      it('the Gold Pouch adds gold and takes 5 gems', async () => {
+      it("the Gold Pouch adds gold and takes the pouch's gems", async () => {
         const characterStore = hero(100);
-        useAccountStore().addGems(7);
+        useAccountStore().addGems(GOLD_POUCH.gems + 2);
         const wrapper = await open();
         await rowFor(wrapper, 'Gold Pouch').find('.shop-buy').trigger('click');
         expect(characterStore.character.gold).toBe(100 + pouchGold(useBossStore().boss.index));

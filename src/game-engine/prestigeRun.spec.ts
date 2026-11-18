@@ -84,10 +84,10 @@ describe('prestigeRun', () => {
 });
 
 describe('prestigeAccount', () => {
-  it('raises the rank and pays 50 gems', () => {
+  it('raises the rank and pays 80 gems', () => {
     const account = prestigeAccount({ gems: 5, highestLevel: 31 });
     expect(account.prestige).toBe(1);
-    expect(account.gems).toBe(55);
+    expect(account.gems).toBe(85);
     expect(account.highestLevel).toBe(31);
   });
 

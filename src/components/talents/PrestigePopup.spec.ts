@@ -4,7 +4,7 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useRetiredHero } from '../../composables/useRetiredHero';
-import { createCharacter, createRng } from '../../game-engine';
+import { PRESTIGE_GEMS, createCharacter, createRng } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -34,7 +34,7 @@ describe('PrestigePopup', () => {
     hero(31, 0);
     open();
     const t = text();
-    for (const part of ['Aldric', 'Warrior · Lv 31 · Boss 38', 'Retired', 'Prestige I', 'Veteran', '+20%', '+10%', '+5%', '50', 'Free dungeon', 'Aldric retires. A new hero begins at level 1.']) expect(t).toContain(part);
+    for (const part of ['Aldric', 'Warrior · Lv 31 · Boss 38', 'Retired', 'Prestige I', 'Veteran', '+20%', '+10%', '+5%', String(PRESTIGE_GEMS), 'Free dungeon', 'Aldric retires. A new hero begins at level 1.']) expect(t).toContain(part);
     expect(q('.prestige-warn b')!.textContent).toBe('level 1');
   });
 

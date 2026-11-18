@@ -4,7 +4,7 @@ import { createAccount } from './account';
 import { SKIN_PRICES } from './constants/economy';
 import { MYTHIC_SKIN_IDS, SKIN_CATALOG, buySkin, heroArt, sceneArt, skinOffered, skinState, skinsFor, wearSkin, wornSkin } from './skins';
 
-const rich = (overrides: Partial<Account> = {}): Account => ({ ...createAccount(), gems: 100, ...overrides });
+const rich = (overrides: Partial<Account> = {}): Account => ({ ...createAccount(), gems: 300, ...overrides });
 const warriorSkin = SKIN_CATALOG.find((skin) => skin.heroClass === 'warrior')!;
 const mageSkin = SKIN_CATALOG.find((skin) => skin.heroClass === 'cleric')!;
 const arenaSkin = SKIN_CATALOG.find((skin) => skin.kind === 'arena')!;
@@ -33,7 +33,7 @@ describe('buySkin', () => {
   it('spends the gems, owns the skin and wears it', () => {
     const result = buySkin(rich(), warriorSkin.id)!;
     expect(result.skin).toBe(warriorSkin);
-    expect(result.account.gems).toBe(100 - warriorSkin.gems);
+    expect(result.account.gems).toBe(300 - warriorSkin.gems);
     expect(result.account.ownedSkinIds).toEqual([warriorSkin.id]);
     expect(heroArt(result.account, 'warrior')).toBe(warriorSkin.art);
     expect(skinState(result.account, warriorSkin)).toBe('worn');

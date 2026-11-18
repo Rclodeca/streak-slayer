@@ -15,15 +15,15 @@ describe('accountStore', () => {
   it('seeds a save from before accounts with the milestones it already passed', () => {
     const store = useAccountStore();
     store.initFromSave(null, 12);
-    expect(store.account).toEqual({ gems: 2 + 3, highestLevel: 12 });
+    expect(store.account).toEqual({ gems: 4 + 4, highestLevel: 12 });
   });
 
   it('recordLevel returns the gems it paid', () => {
     const store = useAccountStore();
     store.initFromSave(null, 1);
-    expect(store.recordLevel(5)).toBe(2);
+    expect(store.recordLevel(5)).toBe(4);
     expect(store.recordLevel(5)).toBe(0);
-    expect(store.account.gems).toBe(2);
+    expect(store.account.gems).toBe(4);
   });
 
   it('spendGems takes nothing when short', () => {

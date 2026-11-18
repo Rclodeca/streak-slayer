@@ -29,7 +29,7 @@ describe('HomeBase', () => {
     const hero = SKIN_CATALOG.find((skin) => skin.heroClass === 'ranger')!;
     const home = SKIN_CATALOG.find((skin) => skin.kind === 'home')!;
     const accountStore = useAccountStore();
-    accountStore.addGems(100);
+    accountStore.addGems(hero.gems + home.gems);
     accountStore.buySkin(hero.id);
     accountStore.buySkin(home.id);
     const wrapper = mount(HomeBase);

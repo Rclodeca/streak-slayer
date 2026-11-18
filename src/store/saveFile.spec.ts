@@ -172,7 +172,7 @@ describe('the account in a save file', () => {
 
     applySaveFile(file);
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: 2 + 3, highestLevel: 12 });
+    expect(useAccountStore().account).toEqual({ gems: 4 + 4, highestLevel: 12 });
   });
 });
 

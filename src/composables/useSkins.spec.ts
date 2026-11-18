@@ -26,10 +26,10 @@ describe('useSkins', () => {
 
   it('buys a skin with gems, wears it and logs it', () => {
     useCharacterStore().setCharacter(createCharacter(createRng(1), 'cleric'));
-    useAccountStore().addGems(50);
+    useAccountStore().addGems(mageSkin.gems + 10);
     const skins = useSkins();
     expect(skins.buy(mageSkin.id)).toBe(true);
-    expect(useAccountStore().account.gems).toBe(50 - mageSkin.gems);
+    expect(useAccountStore().account.gems).toBe(10);
     expect(skins.heroArt.value).toBe(mageSkin.art);
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'vault-bought', name: mageSkin.name, gems: mageSkin.gems });
   });
@@ -41,7 +41,7 @@ describe('useSkins', () => {
   });
 
   it("follows the run's class: a new class shows that class's worn skin", () => {
-    useAccountStore().addGems(50);
+    useAccountStore().addGems(mageSkin.gems + 10);
     const characterStore = useCharacterStore();
     characterStore.setCharacter(createCharacter(createRng(1), 'cleric'));
     const skins = useSkins();

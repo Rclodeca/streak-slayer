@@ -24,10 +24,10 @@ const DAY = '2026-11-13';
 describe('the Gold Pouch', () => {
   it('pays three kills of gold for its gems, once a day', () => {
     const character = makeCharacter({ gold: 50 });
-    expect(pouchState(character, GOLD_POUCH.gems, 10, DAY)).toEqual({ gems: 5, gold: 420, status: 'buy' });
+    expect(pouchState(character, GOLD_POUCH.gems, 10, DAY)).toEqual({ gems: 15, gold: 420, status: 'buy' });
     const result = buyPouch(character, GOLD_POUCH.gems, 10, DAY)!;
     expect(pouchGold(10)).toBe(420);
-    expect(result).toMatchObject({ gold: 420, gemsSpent: 5 });
+    expect(result).toMatchObject({ gold: 420, gemsSpent: 15 });
     expect(result.character.gold).toBe(470);
     expect(pouchState(result.character, 99, 10, DAY).status).toBe('cooldown');
     expect(buyPouch(result.character, 99, 10, DAY)).toBeNull();

@@ -5,9 +5,9 @@ import { purseGold } from './constants/economy';
 describe('recordLevel', () => {
   it('pays the milestones up to the level reached', () => {
     const { account, gemsPaid } = recordLevel(createAccount(), 10);
-    expect(gemsPaid).toBe(2 + 3);
+    expect(gemsPaid).toBe(4 + 4);
     expect(account.highestLevel).toBe(10);
-    expect(account.gems).toBe(2 + 3);
+    expect(account.gems).toBe(4 + 4);
   });
 
   it('a milestone pays once', () => {
@@ -19,7 +19,7 @@ describe('recordLevel', () => {
   });
 
   it('jumping several milestones pays all of them', () => {
-    expect(recordLevel(createAccount(), 16).gemsPaid).toBe(2 + 3 + 4);
+    expect(recordLevel(createAccount(), 16).gemsPaid).toBe(4 + 4 + 4);
   });
 });
 

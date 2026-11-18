@@ -19,11 +19,11 @@ describe('useTalentPurchase', () => {
   it('takes gold from the character and gems from the account in one go', () => {
     const characterStore = hero({ gold: 1000, talents: { might: 3 } }, 2);
     const purchase = useTalentPurchase();
-    expect(purchase.cost.value).toEqual({ gold: 400, gems: 1 });
+    expect(purchase.cost.value).toEqual({ gold: 400, gems: 2 });
     expect(purchase.buy('precision')).toBe(true);
     expect(characterStore.character.gold).toBe(600);
     expect(talentRank(characterStore.character, 'precision')).toBe(1);
-    expect(useAccountStore().account.gems).toBe(1);
+    expect(useAccountStore().account.gems).toBe(0);
   });
 
   it('buys one rank on a double tap with gold for one', () => {

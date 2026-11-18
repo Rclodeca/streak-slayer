@@ -170,14 +170,14 @@ describe('TalentSection', () => {
     });
 
     it('reads the next rank’s cost on Learn', async () => {
-      heroAt(9, { might: 3 }, 1000, 1);
+      heroAt(9, { might: 3 }, 1000, 2);
       const wrapper = mountSection();
       await node(wrapper, 'Precision').find('button').trigger('click');
       const learn = q('.talent-popup .learn') as HTMLButtonElement;
       expect(learn.disabled).toBe(false);
       expect(learn.textContent).toContain('Learn');
       expect(learn.querySelector('.gold .count')?.textContent).toBe('400');
-      expect(learn.querySelector('.gems .count')?.textContent).toBe('1');
+      expect(learn.querySelector('.gems .count')?.textContent).toBe('2');
     });
 
     it('greys Learn out and says Not enough when short', async () => {

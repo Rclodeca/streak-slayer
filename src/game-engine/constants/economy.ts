@@ -1,5 +1,7 @@
-// Every gold and gem number in one place. Numbers are placeholders until
-// playtested; the spec's budget rule is pinned in economy.spec.ts.
+// Every gold and gem number in one place. The gem numbers are balanced by time
+// (docs/superpowers/specs/2026-11-17-gem-economy-design.md) and its budget rule
+// is pinned in economy.spec.ts; the gold numbers are placeholders until the
+// gold balance.
 
 import type { ItemRarity } from '../items';
 
@@ -70,49 +72,64 @@ export const SHOP_STOCK = {
   ] as [number, 'uncommon' | 'rare'][],
 };
 
-/** Cost of the `n`th talent rank bought overall (1-based). Gold is the bulk; gems are the key that kicks in from rank 4. */
+/** Cost of the `n`th talent rank bought overall (1-based). Gold is the bulk; gems kick in from rank 4 and climb in bands to 5 from rank 61 (689 for all 163). */
 export function TALENT_COST(n: number): { gold: number; gems: number } {
   const gold = Math.min(2000, n <= 5 ? 100 * n : 500 + 25 * (n - 5));
-  const gems = n <= 3 ? 0 : n <= 24 ? 1 : n <= 60 ? 2 : 3;
+  const gems = n <= 3 ? 0 : n <= 20 ? 2 : n <= 40 ? 3 : n <= 60 ? 4 : 5;
   return { gold, gems };
 }
 
-/** Gems paid once per account on first reaching each level. */
+/** Gems paid once per account on first reaching each level: 4 to L20, 8 to L40, then 12 every 5 levels to L70. */
 export const LEVEL_GEM_MILESTONES: readonly { level: number; gems: number }[] = [
-  { level: 5, gems: 2 },
-  { level: 10, gems: 3 },
+  { level: 5, gems: 4 },
+  { level: 10, gems: 4 },
   { level: 15, gems: 4 },
-  { level: 20, gems: 5 },
-  { level: 25, gems: 6 },
-  { level: 30, gems: 7 },
+  { level: 20, gems: 4 },
+  { level: 25, gems: 8 },
+  { level: 30, gems: 8 },
   { level: 35, gems: 8 },
-  { level: 40, gems: 9 },
-  { level: 45, gems: 10 },
-  { level: 50, gems: 10 },
+  { level: 40, gems: 8 },
+  { level: 45, gems: 12 },
+  { level: 50, gems: 12 },
+  { level: 55, gems: 12 },
+  { level: 60, gems: 12 },
+  { level: 65, gems: 12 },
+  { level: 70, gems: 12 },
 ];
 
-/** Gems a finished trial pays when claimed. Flat until the new trial list (milestone B); 17 trials at 12 sit inside the 210 budget. */
+/** Gems a finished trial pays when claimed. Flat until the trial rework; 17 trials at 12 sit inside the 275 budget. */
 export const TRIAL_GEMS = 12;
 
-/** Every free gem an account can earn. `trials` and `dungeonFirstClears` are placeholders until milestones B and F. */
-/** Gems paid at each prestige (placeholder, see the prestige design §4). */
-export const PRESTIGE_GEMS = 50;
+/** The trial rework's shape: many small easy trials early, a few big hard ones late (275 in all). */
+export const TRIAL_GEM_TIERS = {
+  easy: { count: 15, gems: 5 },
+  medium: { count: 10, gems: 10 },
+  hard: { count: 5, gems: 20 },
+} as const;
 
+/** Gems paid at each prestige. */
+export const PRESTIGE_GEMS = 80;
+
+/** The free dungeons (unlocked by prestige), and what each of a dungeon's six bosses pays on its first clear. Dungeons come later. */
+export const FREE_DUNGEONS = 2;
+export const FREE_DUNGEON_BOSS_GEMS = [4, 5, 7, 9, 11, 14] as const;
+
+/** Every one-time free gem an account can earn (the perfect week repeats, so it isn't here). */
 export const FREE_GEM_SOURCES = {
   levels: LEVEL_GEM_MILESTONES.reduce((sum, m) => sum + m.gems, 0),
-  trials: 210,
-  dungeonFirstClears: 0,
+  trials: Object.values(TRIAL_GEM_TIERS).reduce((sum, tier) => sum + tier.count * tier.gems, 0),
+  dungeonFirstClears: FREE_DUNGEONS * FREE_DUNGEON_BOSS_GEMS.reduce((sum, gems) => sum + gems, 0),
   prestige: PRESTIGE_GEMS * 5,
 };
 
 /** What a gem-priced shop item costs, by rarity. Flat, not by boss: gems don't grow with the run. */
-export const GEM_WARE_PRICES = { rare: 5, epic: 10, relic: 15 } as const;
+export const GEM_WARE_PRICES = { rare: 6, epic: 12, relic: 20 } as const;
 
 /** The shop's potions come back every this many days (and with a restock, and after a death): one of each. */
 export const POTION_STOCK_DAYS = 3;
 
 /** The Gold Pouch: `gems` for `bossKills` boss kills' worth of gold, once a day. A poor rate on purpose. */
-export const GOLD_POUCH = { gems: 5, bossKills: 3 };
+export const GOLD_POUCH = { gems: 15, bossKills: 3 };
 
 /** The gold the Gold Pouch pays while boss `bossIndex` is up. */
 export function pouchGold(bossIndex: number): number {
@@ -135,13 +152,10 @@ export function purseGold(bossIndex: number): number {
 export const FREEZE = { gemsPerPeriod: 2, maxDays: 7, maxLeadDays: 30, maxWeeks: 4, maxLeadWeeks: 4 };
 
 /** A revive on the death screen: one fixed price that never climbs, once per boss. */
-export const REVIVE_GEMS = 10;
+export const REVIVE_GEMS = 15;
 
 /** What a death takes (the prestige design §3): levels, a share of carried gold, equipped items, and boss power. */
 export const DEATH_SETBACK = { levels: 3, goldPct: 25, items: 1, bossPower: 3 } as const;
 
-/** Gem prices beyond the tree that the free budget must also cover: one hero skin. */
-export const PLANNED_GEM_SINKS = { skin: 40 };
-
-/** A skin's gem price by kind (placeholders, see skins.ts). */
-export const SKIN_PRICES = { hero: PLANNED_GEM_SINKS.skin, home: 30, arena: 30 };
+/** A skin's gem price by kind (see skins.ts). */
+export const SKIN_PRICES = { hero: 120, home: 90, arena: 90 };

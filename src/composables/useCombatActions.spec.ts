@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, questSlotExp, REVIVE_GEMS, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, TRIAL_GEMS, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -699,13 +699,13 @@ describe('useCombatActions', () => {
     expect(highScoreStore.topRuns).toHaveLength(runsBefore + 1);
     expect(highScoreStore.topRuns.find((run) => run.heroName === 'Aria')).toMatchObject({ deaths: 2, prestige: 1, bossIndex: bossNumber(bossBefore), level: 30 });
     expect(accountStore.account.prestige).toBe(1);
-    expect(accountStore.account.gems).toBe(gemsBefore + 50);
+    expect(accountStore.account.gems).toBe(gemsBefore + PRESTIGE_GEMS);
     expect(characterStore.character.name).toBeUndefined();
     expect(characterStore.character.prestige).toBe(1);
     expect(characterStore.character.level).toBe(1);
     expect(bossStore.boss.index).toBe(1);
     expect(retired.value).toEqual({ name: 'Aria', level: 30 });
-    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'prestiged', rank: 1, gems: 50 });
+    expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'prestiged', rank: 1, gems: PRESTIGE_GEMS });
     expect(useItemDropQueue().current.value).toBeNull();
     expect(useCelebration().celebrating.value).toBe(false);
     clearRetired();

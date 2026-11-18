@@ -133,11 +133,11 @@ describe('buying a rank', () => {
     expect(result?.gemsSpent).toBe(0);
   });
 
-  it('the fourth rank needs a gem', () => {
+  it('the fourth rank needs two gems', () => {
     const hero = withTalents(makeCharacter({ gold: 1000 }), { might: 3 });
-    expect(buyTalent(hero, 0, 'precision')).toBeNull();
-    const result = buyTalent(hero, 1, 'precision');
-    expect(result?.gemsSpent).toBe(1);
+    expect(buyTalent(hero, 1, 'precision')).toBeNull();
+    const result = buyTalent(hero, 2, 'precision');
+    expect(result?.gemsSpent).toBe(2);
     expect(result?.character.gold).toBe(600);
     expect(talentRank(result!.character, 'precision')).toBe(1);
   });
