@@ -6,7 +6,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createCharacter, createRng, heroClassFor } from '../../game-engine';
 import type { HeroClass } from '../../game-engine';
 import { useRetiredHero } from '../../composables/useRetiredHero';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useHighScoreStore } from '../../store/highScoreStore';
 import NewHeroScreen from './NewHeroScreen.vue';
 
 enableAutoUnmount(afterEach);
@@ -27,26 +29,58 @@ describe('NewHeroScreen', () => {
 
   const label = (wrapper: ReturnType<typeof mountAs>) => wrapper.find('.pick-name').text();
 
-  it('keeps a prestiged hero\'s name and asks only for a pick', async () => {
-    useRetiredHero().recordRetired({ name: 'Aldric', level: 31 });
-    const wrapper = mountAs('warrior', { heroPending: true, name: 'Aldric' });
-    expect(wrapper.find('.oath-title').text()).toBe('Aldric rises again');
-    expect(wrapper.find('.fell').text()).toBe('Retired at level 31. Your habits remain.');
-    expect(wrapper.find('.name-input').exists()).toBe(false);
-    expect(wrapper.find('.begin').text()).toBe('Rise');
-    await wrapper.find('.turn-next').trigger('click');
-    await wrapper.find('form').trigger('submit');
-    const { character } = useCharacterStore();
-    expect(character.name).toBe('Aldric');
-    expect(character.heroPending).toBe(false);
-    expect(heroClassFor(character)).toBe('cleric');
-    useRetiredHero().clearRetired();
+  describe('after a prestige', () => {
+    it('leads with the new rank and who retired, keeps the name and asks only for a pick', async () => {
+      useAccountStore().setPrestige(1);
+      useRetiredHero().recordRetired({ name: 'Aldric', level: 31 });
+      const wrapper = mountAs('warrior', { heroPending: true, name: 'Aldric' });
+      expect(wrapper.find('.rank-line').text()).toBe('Prestige I · Veteran');
+      expect(wrapper.find('.retired-line').text()).toBe('Aldric retired at level 31');
+      expect(wrapper.find('.carry').text()).toBe('Choose who carries the name.');
+      expect(wrapper.find('.game-title').exists()).toBe(false);
+      expect(wrapper.find('.rule-list').exists()).toBe(false);
+      expect(wrapper.find('.name-input').exists()).toBe(false);
+      expect(wrapper.findAll('.kept li').map((li) => li.text())).toEqual(['Habits + ranks', 'Talents', 'Challenges']);
+      expect(wrapper.find('.begin').text()).toBe('Begin');
+      await wrapper.find('.turn-next').trigger('click');
+      await wrapper.find('form').trigger('submit');
+      const { character } = useCharacterStore();
+      expect(character.name).toBe('Aldric');
+      expect(character.heroPending).toBe(false);
+      expect(heroClassFor(character)).toBe('cleric');
+      useRetiredHero().clearRetired();
+    });
+
+    it('takes the rank\'s colour', () => {
+      useAccountStore().setPrestige(3);
+      const wrapper = mountAs('warrior', { heroPending: true, name: 'Aldric' });
+      expect(wrapper.find('.new-hero').classes()).toContain('epic');
+      expect(wrapper.find('.rank-line').text()).toBe('Prestige III · Ascendant');
+    });
+
+    it('after a reload, reads who retired off the run the prestige recorded', () => {
+      useRetiredHero().clearRetired();
+      useAccountStore().setPrestige(1);
+      const stats = { physicalDamage: 1, magicDamage: 1, healing: 1, health: 1, trueDamage: 1, critChance: 0 };
+      useHighScoreStore().recordRunEnd({ bossIndex: 9, level: 27, endedDayKey: '2026-01-02', stats, habits: [], items: [], heroName: 'Aldric', heroClass: 'warrior', bossPersonality: 'warlord', bossArt: 0, prestige: 1 });
+      const wrapper = mountAs('warrior', { heroPending: true, name: 'Aldric' });
+      expect(wrapper.find('.retired-line').text()).toBe('Aldric retired at level 27');
+    });
+
+    it('with no record of the retired run, says the hero begins again', () => {
+      useRetiredHero().clearRetired();
+      useAccountStore().setPrestige(1);
+      const wrapper = mountAs('warrior', { heroPending: true, name: 'Aldric' });
+      expect(wrapper.find('.retired-line').text()).toBe('Aldric begins again');
+    });
   });
 
   it('greets a first hero plainly', () => {
     useRetiredHero().clearRetired();
     const wrapper = mountAs('warrior', { heroPending: true });
-    expect(wrapper.find('.fell').exists()).toBe(false);
+    expect(wrapper.find('.rank-line').exists()).toBe(false);
+    expect(wrapper.find('.game-title').exists()).toBe(true);
+    expect(wrapper.find('.rule-list').exists()).toBe(true);
     expect(wrapper.find('.begin').text()).toBe('Begin');
   });
 

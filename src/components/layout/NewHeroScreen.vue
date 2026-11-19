@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { Component } from 'vue';
-import { ChevronLeft, ChevronRight, ChevronsUp, Dices, Sword, Swords, WandSparkles, Zap } from 'lucide-vue-next';
-import { DEFAULT_HERO_NAME, HERO_CLASSES, heroClassFor, MAX_HERO_NAME_LENGTH } from '../../game-engine';
+import { Anvil, ChevronLeft, ChevronRight, ChevronsUp, Dices, Flame, Gift, Sword, Swords, WandSparkles, Zap } from 'lucide-vue-next';
+import { DEFAULT_HERO_NAME, HERO_CLASSES, heroClassFor, MAX_HERO_NAME_LENGTH, prestigeMark, prestigeRank } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
 import type { HeroPick } from '../../composables/useCombatActions';
 import type { HeroClass } from '../../game-engine';
 import { useRetiredHero } from '../../composables/useRetiredHero';
 import { useSkins } from '../../composables/useSkins';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useHighScoreStore } from '../../store/highScoreStore';
 import { HERO_PICK_PLACEMENT } from '../character/heroArt';
 import PlayerSprite from '../character/PlayerSprite.vue';
+import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
 import RuleList from '../ui/RuleList.vue';
 import type { Rule } from '../ui/RuleList.vue';
 import { spriteUrl } from '../ui/spriteUrl';
@@ -42,6 +45,23 @@ const PICK_LOOK: Record<HeroPick, { name: string; icon: Component }> = {
 const SWIPE_PX = 40;
 
 const choosing = computed(() => characterStore.character.heroPending === true);
+// After a prestige (named, and picking a hero) the page leads with the new rank,
+// in its colour, and who retired (docs/mockups/death-prestige-flow.html, A).
+const accountStore = useAccountStore();
+const highScoreStore = useHighScoreStore();
+const mark = computed(() => (named.value && choosing.value ? prestigeMark(prestigeRank(accountStore.account)) : null));
+// Who retired: noted by the prestige this session, else the run it recorded on the board.
+const retiredLine = computed(() => {
+  const rank = prestigeRank(accountStore.account);
+  const run = highScoreStore.topRuns.find((r) => r.prestige === rank);
+  const hero = retired.value ?? (run ? { name: run.heroName ?? DEFAULT_HERO_NAME, level: run.level } : null);
+  return hero ? `${hero.name} retired at level ${hero.level}` : `${characterStore.character.name} begins again`;
+});
+const KEPT: { icon: Component; text: string }[] = [
+  { icon: Flame, text: 'Habits + ranks' },
+  { icon: Anvil, text: 'Talents' },
+  { icon: Gift, text: 'Challenges' },
+];
 // Opens on the hero the run was rolled as: a warrior on the first run, the
 // retired hero's class after a prestige.
 const pick = ref<HeroPick>(heroClassFor(characterStore.character));
@@ -85,9 +105,17 @@ function begin() {
 </script>
 
 <template>
-  <form class="new-hero" @submit.prevent="begin">
-    <p class="eyebrow">{{ retired ? 'The fire still burns.' : 'Every habit is a weapon.' }}</p>
-    <h1 class="game-title">StreakSlayer</h1>
+  <form class="new-hero" :class="mark?.rarity" @submit.prevent="begin">
+    <div v-if="mark" class="rank-head">
+      <PrestigeNumeral :mark="mark" large />
+      <p class="rank-line">Prestige {{ mark.numeral }} · {{ mark.title }}</p>
+      <h1 class="retired-line">{{ retiredLine }}</h1>
+      <p class="carry">Choose who carries the name.</p>
+    </div>
+    <template v-else>
+      <p class="eyebrow">Every habit is a weapon.</p>
+      <h1 class="game-title">StreakSlayer</h1>
+    </template>
 
     <template v-if="choosing">
       <div class="hero-pick" @pointerdown="startSwipe" @pointerup="endSwipe" @pointercancel="cancelSwipe">
@@ -125,9 +153,14 @@ function begin() {
       <PlayerSprite :character="characterStore.character" />
     </div>
 
-    <div class="oath">
+    <div v-if="mark" class="oath">
+      <ul class="kept" aria-label="Carried over">
+        <li v-for="item in KEPT" :key="item.text"><component :is="item.icon" class="kept-icon" :size="14" />{{ item.text }}</li>
+      </ul>
+      <button type="submit" class="begin rank-begin">Begin</button>
+    </div>
+    <div v-else class="oath">
       <h2 class="oath-title">{{ named ? `${characterStore.character.name} rises again` : 'A new hero' }}</h2>
-      <p v-if="retired" class="fell">Retired at level {{ retired.level }}. Your habits remain.</p>
 
       <label v-if="!named" class="field">
         <span class="field-label">Name</span>
@@ -338,12 +371,95 @@ function begin() {
   text-align: center;
 }
 
-.fell {
-  margin: -0.35rem 0 1rem;
+/* After a prestige: the rank leads, in its colour (PrestigeNumeral's fixed
+   tiers), then who retired. */
+.new-hero.rare {
+  --rank: #5f95e6;
+  --rank-dark: #1f3c70;
+}
+
+.new-hero.epic {
+  --rank: #b57be8;
+  --rank-dark: #4f2a7e;
+}
+
+.new-hero.relic {
+  --rank: #f58a35;
+  --rank-dark: #7a3a0e;
+}
+
+.rank-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 3vh;
+}
+
+.rank-head :deep(.prestige-numeral) {
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--rank) 55%, transparent));
+}
+
+.rank-line {
+  margin: 0;
+  color: var(--rank);
+  font: 700 11px 'Cinzel', serif;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+}
+
+.retired-line {
+  margin: 2px 0 0;
+  color: var(--text-h);
+  font: 700 24px/1.15 'Alegreya', Georgia, serif;
+}
+
+.carry {
+  margin: 0;
   color: var(--text);
-  font-size: 0.9rem;
-  font-style: italic;
-  text-align: center;
+  font-size: 14.5px;
+}
+
+.kept {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.kept li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  color: var(--text-h);
+  font: 700 13.5px 'Alegreya Sans', sans-serif;
+  background: var(--code-bg);
+  box-shadow: inset 0 0 0 1px var(--border);
+  clip-path: var(--px2);
+}
+
+.kept-icon {
+  color: var(--brass, var(--accent));
+}
+
+/* Begin in the rank's colour. */
+.rank-begin {
+  min-height: 48px;
+  color: #0f1020;
+  font: 700 15px 'Cinzel', serif;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-transform: uppercase;
+  background: var(--rank);
+  border: 0;
+  border-bottom: 3px solid var(--rank-dark);
+  clip-path: var(--px2);
 }
 
 .field {
