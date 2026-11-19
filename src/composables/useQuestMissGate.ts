@@ -42,10 +42,10 @@ export function useQuestMissGate() {
     overridden.value = next;
   }
 
-  /** Records an overdue quest for the popup. */
+  /** Records an overdue quest for the popup; a quest with no deadline can't miss. */
   function queueMiss(quest: Quest): void {
     // The rollover can run again while the popup is still up; a quest stays overdue until acknowledged.
-    if (pending.value.some((item) => item.questId === quest.id)) return;
+    if (!quest.dueDateKey || pending.value.some((item) => item.questId === quest.id)) return;
     pending.value.push({
       questId: quest.id,
       description: quest.description,

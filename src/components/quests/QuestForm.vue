@@ -8,7 +8,7 @@ import { useDebugClockStore } from '../../store/debugClockStore';
 import StatIcon from '../ui/StatIcon.vue';
 import { TASK_GROUP_ICONS, taskGroupColor } from './taskGroupStyle';
 
-const emit = defineEmits<{ submit: [description: string, difficulty: Difficulty, dueDateKey: string, group?: TaskGroup]; rename: [] }>();
+const emit = defineEmits<{ submit: [description: string, difficulty: Difficulty, dueDateKey: string | undefined, group?: TaskGroup]; rename: [] }>();
 
 const debugClockStore = useDebugClockStore();
 const accountStore = useAccountStore();
@@ -23,6 +23,7 @@ function addDays(key: string, days: number): string {
 
 const description = ref('');
 const difficulty = ref<Difficulty>('easy');
+// Empty = no deadline (the None chip): it never misses and pays half EXP.
 const dueDate = ref(addDays(todayKey.value, 1));
 // Optional: tapping the picked group again clears it.
 const group = ref<TaskGroup | null>(null);
@@ -46,19 +47,19 @@ const dueChips = computed(() => [
 
 const dueLabel = computed(() =>
   dueDate.value
-    ? new Date(`${dueDate.value}T00:00:00Z`).toLocaleDateString(undefined, {
+    ? `Due ${new Date(`${dueDate.value}T00:00:00Z`).toLocaleDateString(undefined, {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
         timeZone: 'UTC',
-      })
-    : '',
+      })}`
+    : 'No deadline',
 );
 
 function onSubmit() {
   const trimmed = description.value.trim();
-  if (!trimmed || !dueDate.value) return;
-  emit('submit', trimmed, difficulty.value, dueDate.value, group.value ?? undefined);
+  if (!trimmed) return;
+  emit('submit', trimmed, difficulty.value, dueDate.value || undefined, group.value ?? undefined);
 }
 </script>
 
@@ -101,9 +102,12 @@ function onSubmit() {
         >
           <span>{{ chip.label }}</span>
         </button>
-        <input v-model="dueDate" class="date-input" type="date" :min="todayKey" required aria-label="Deadline date" />
+        <input v-model="dueDate" class="date-input" type="date" :min="todayKey" aria-label="Deadline date" />
+        <button type="button" class="chip" :class="{ selected: !dueDate }" @click="dueDate = ''">
+          <span>None</span>
+        </button>
       </div>
-      <p v-if="dueLabel" class="due-summary">Due {{ dueLabel }}</p>
+      <p class="due-summary">{{ dueLabel }}</p>
     </fieldset>
 
     <!-- Six fixed group slots the player can rename (docs/mockups/tasks-b-p2.html). -->
@@ -333,7 +337,7 @@ function onSubmit() {
 }
 
 .date-input {
-  grid-column: 1 / -1;
+  grid-column: span 3;
   min-height: 44px;
   padding: 0.35rem 0.7rem;
   background: var(--code-bg);

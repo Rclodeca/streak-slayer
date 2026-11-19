@@ -52,8 +52,10 @@ watch(
   },
 );
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
-// dueDateKey is YYYY-MM-DD, so it compares as text.
-const dueCount = computed(() => questStore.quests.filter((quest) => !quest.doneDayKey && (quest.overdue || quest.dueDateKey <= todayKey.value)).length);
+// dueDateKey is YYYY-MM-DD, so it compares as text; a quest with no deadline is never due.
+const dueCount = computed(
+  () => questStore.quests.filter((quest) => !quest.doneDayKey && (quest.overdue || (!!quest.dueDateKey && quest.dueDateKey <= todayKey.value))).length,
+);
 const skillsLeft = computed(() => {
   const now = debugClockStore.now();
   const sunday = dayOfWeekIndex(now) === 6;

@@ -62,6 +62,7 @@ import {
   pickRandom,
   prestigeRank,
   prestigeRun,
+  questNoDeadlineExp,
   questOverdueExp,
   questRewardExp,
   questWeekFor,
@@ -576,7 +577,7 @@ export function useCombatActions() {
   }
 
   /** Adds a quest stamped with today's day, so Fresh quests and Quest run can tell when it was made. */
-  function addQuest(description: string, difficulty: Difficulty, dueDateKey: string, group?: TaskGroup): Quest {
+  function addQuest(description: string, difficulty: Difficulty, dueDateKey?: string, group?: TaskGroup): Quest {
     const quest = questStore.addQuest(description, difficulty, dueDateKey, dailyPeriodKey(debugClockStore.now()), group);
     reportTrial({ type: 'quest-added', questId: quest.id });
     return quest;
@@ -738,7 +739,8 @@ export function useCombatActions() {
    * Regular: grants the weekly-curve EXP for the next slot (questRewardExp, at
    * the level held right now), bumps this calendar week's completion count,
    * and resolves any level-ups. An overdue quest (its miss already landed)
-   * pays half the next slot's EXP instead and takes no slot.
+   * pays half the next slot's EXP instead and takes no slot. A quest with no
+   * deadline pays half the next slot's EXP and still takes the slot.
    * Either way it logs a quest-completed entry and keeps the quest, checked
    * off for today (the rollover removes it). Returns what was paid out (null
    * for an unknown or already checked id) so the caller can celebrate it.
@@ -753,7 +755,9 @@ export function useCombatActions() {
     const week = questWeekFor(beforeLevelUp.questWeek, weekKey);
     const amount = quest.overdue
       ? questOverdueExp(beforeLevelUp, quest.difficulty, week.completed)
-      : questRewardExp(beforeLevelUp, quest.difficulty, week.completed);
+      : !quest.dueDateKey
+        ? questNoDeadlineExp(beforeLevelUp, quest.difficulty, week.completed)
+        : questRewardExp(beforeLevelUp, quest.difficulty, week.completed);
     const { character } = addExpAndResolveLevelUps(beforeLevelUp, amount, dayKey);
     logLevelUpIfAny(beforeLevelUp, character);
     characterStore.setCharacter(quest.overdue ? character : { ...character, questWeek: recordQuestCompletion(beforeLevelUp.questWeek, weekKey) });

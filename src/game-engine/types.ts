@@ -460,7 +460,7 @@ export interface Quest {
   id: string;
   description: string; // free-text one-time task, player-authored
   difficulty: Difficulty;
-  dueDateKey: string; // YYYY-MM-DD — same format as dailyPeriodKey; required for every quest
+  dueDateKey?: string; // YYYY-MM-DD — same format as dailyPeriodKey; missing = no deadline (never misses, pays half EXP)
   overdue?: boolean; // the due date passed and the miss landed; the quest stays, and pays half EXP if still finished
   doneDayKey?: string; // dailyPeriodKey of the day it was checked off; it stays checked until the day turns, then is removed
   createdDayKey?: string; // dailyPeriodKey of the day it was added; Fresh quests and Quest run read it (undefined on older saves)

@@ -17,21 +17,27 @@ const debugClockStore = useDebugClockStore();
 const PIPS = { easy: 1, medium: 2, hard: 3 };
 
 const dueDate = computed(() =>
-  props.quest
+  props.quest?.dueDateKey
     ? new Date(`${props.quest.dueDateKey}T00:00:00Z`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })
-    : '',
+    : 'None',
 );
 
-const daysLeft = computed(() => (props.quest ? daysBetweenDayKeys(dailyPeriodKey(debugClockStore.now()), props.quest.dueDateKey) : 0));
+const daysLeft = computed(() => (props.quest?.dueDateKey ? daysBetweenDayKeys(dailyPeriodKey(debugClockStore.now()), props.quest.dueDateKey) : 0));
 
 const dueText = computed(() => {
+  if (props.quest && !props.quest.dueDateKey) return '';
   if (props.quest?.overdue || daysLeft.value < 0) return 'Overdue';
   if (daysLeft.value === 0) return 'Today';
   if (daysLeft.value === 1) return 'Tomorrow';
   return `${daysLeft.value} days left`;
 });
 
-const tone = computed(() => (props.quest?.overdue || daysLeft.value <= 0 ? 'urgent' : daysLeft.value <= 2 ? 'soon' : 'calm'));
+const tone = computed(() =>
+  props.quest && !props.quest.dueDateKey ? 'calm' : props.quest?.overdue || daysLeft.value <= 0 ? 'urgent' : daysLeft.value <= 2 ? 'soon' : 'calm',
+);
+
+// Overdue and no-deadline quests both pay half.
+const halfPay = computed(() => !!props.quest && (!!props.quest.overdue || !props.quest.dueDateKey));
 
 // Two-tap confirm, as on a habit: the first tap only asks.
 const confirmingRemove = ref(false);
@@ -61,17 +67,17 @@ function removeQuest() {
           <span class="plate-label">Due</span>
           <span class="due-line" :class="tone">
             <span class="due-date"><Calendar :size="14" />{{ dueDate }}</span>
-            <small>{{ dueText }}</small>
+            <small v-if="dueText">{{ dueText }}</small>
           </span>
         </div>
         <div class="plate">
           <span class="plate-label">Reward</span>
-          <span class="reward" :title="quest.overdue ? 'Half EXP' : 'EXP'">
+          <span class="reward" :title="halfPay ? 'Half EXP' : 'EXP'">
             <StatIcon name="exp" :size="20" />
             <span class="pips">
               <span v-for="n in 3" :key="n" class="pip" :class="{ lit: n <= PIPS[quest.difficulty] }" />
             </span>
-            <small v-if="quest.overdue">Half</small>
+            <small v-if="halfPay">Half</small>
           </span>
         </div>
       </div>

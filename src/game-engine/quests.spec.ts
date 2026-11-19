@@ -9,6 +9,7 @@ import {
   migrateQuestUnlock,
   questRewardExp,
   questOverdueExp,
+  questNoDeadlineExp,
   questsOpen,
   questSlotExp,
   questUnlockPending,
@@ -128,6 +129,14 @@ describe('questOverdueExp', () => {
   });
 });
 
+describe('questNoDeadlineExp', () => {
+  it('pays half the next slot, whatever the difficulty', () => {
+    const character = createCharacter(createRng(1));
+    expect(questNoDeadlineExp(character, 'hard', 0)).toBeCloseTo(questRewardExp(character, 'hard', 0) / 2, 10);
+    expect(questNoDeadlineExp(character, 'easy', 3)).toBeCloseTo(questRewardExp(character, 'easy', 3) / 2, 10);
+  });
+});
+
 describe('createQuest', () => {
   it('builds a Quest with the given fields and a generated id, and no kind or reward', () => {
     const quest = createQuest('Clean garage', 'hard', '2026-02-01');
@@ -142,8 +151,9 @@ describe('createQuest', () => {
     expect('createdDayKey' in createQuest('Clean garage', 'hard', '2026-02-01')).toBe(false);
   });
 
-  it('rejects a quest without a due date', () => {
-    expect(() => createQuest('No date', 'easy', '')).toThrow();
+  it('builds a quest with no deadline when given no due date', () => {
+    expect('dueDateKey' in createQuest('No date', 'easy')).toBe(false);
+    expect('dueDateKey' in createQuest('No date', 'easy', '')).toBe(false);
   });
 
   it('generates different ids for two quests', () => {

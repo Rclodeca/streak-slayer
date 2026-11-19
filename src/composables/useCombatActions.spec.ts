@@ -1013,6 +1013,20 @@ describe('useCombatActions', () => {
     expect(questStore.quests[0]).toMatchObject({ overdue: true, doneDayKey: dailyPeriodKey(useDebugClockStore().now()) });
   });
 
+  it('completeQuest on a quest with no deadline pays half the next slot and takes it', () => {
+    const characterStore = useCharacterStore();
+    const questStore = useQuestStore();
+    const { completeQuest } = useCombatActions();
+    characterStore.character = { ...characterStore.character, level: 20, exp: 0 };
+    const weekKey = weeklyPeriodKey(useDebugClockStore().now());
+    characterStore.character = { ...characterStore.character, questWeek: { weekKey, completed: 2 } };
+
+    const result = completeQuest(questStore.addQuest('Someday', 'medium', undefined).id);
+
+    expect(result).toEqual({ amount: questSlotExp(20, 'medium', 2) / 2 });
+    expect(characterStore.character.questWeek).toEqual({ weekKey, completed: 3 });
+  });
+
   it('an old side quest, once migrated, pays like a regular quest: half EXP and no slot when overdue', () => {
     const characterStore = useCharacterStore();
     const questStore = useQuestStore();

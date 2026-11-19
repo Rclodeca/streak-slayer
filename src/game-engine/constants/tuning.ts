@@ -244,6 +244,8 @@ export const TUNING = {
   QUEST_DIFFICULTY_MULT: { easy: 0.7, medium: 1, hard: 1.3 },
   // Share of a quest's EXP paid when it's finished after its due date (side quests pay this instead of their relic).
   QUEST_OVERDUE_EXP_FRACTION: 0.5,
+  // Share of a quest's EXP paid when it has no deadline: no miss can land, so it pays like an overdue one.
+  QUEST_NO_DEADLINE_EXP_FRACTION: 0.5,
   // Trials (see trials.ts): Feats' Early riser wants a hard skill checked before this hour.
   TRIALS: {
     EARLY_START_HOUR: 12,

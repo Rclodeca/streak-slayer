@@ -327,6 +327,16 @@ describe('useDailyRollover — quests', () => {
     ]);
   });
 
+  it('never queues a miss for a quest with no deadline', () => {
+    const questStore = useQuestStore();
+    questStore.addQuest('Someday', 'medium', undefined);
+
+    useDailyRollover(new Date());
+
+    expect(useQuestMissGate().misses.value).toEqual([]);
+    expect(questStore.quests[0].overdue).toBeUndefined();
+  });
+
   it('does not queue a miss again for a quest already overdue', () => {
     const questStore = useQuestStore();
     const now = new Date();

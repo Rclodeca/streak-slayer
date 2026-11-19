@@ -49,38 +49,42 @@ function openCount(group: TaskGroup | 'all'): number {
   return questStore.quests.filter((q) => !q.doneDayKey && (group === 'all' || q.group === group)).length;
 }
 
-// Soonest due first, checked-off quests stay in place; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
+// Soonest due first, no deadline last, checked-off quests stay in place; dueDateKey is YYYY-MM-DD so it sorts as text, and ties keep their added order.
+const NO_DEADLINE_SORT = '9999-12-31';
 const sortedQuests = computed(() =>
   [...questStore.quests]
     .filter((q) => activeFilter.value === 'all' || q.group === activeFilter.value)
-    .sort((a, b) => a.dueDateKey.localeCompare(b.dueDateKey)),
+    .sort((a, b) => (a.dueDateKey ?? NO_DEADLINE_SORT).localeCompare(b.dueDateKey ?? NO_DEADLINE_SORT)),
 );
 
 const groupName = (group: TaskGroup) => taskGroupName(accountStore.account, group);
 
-function daysLeft(quest: Quest): number {
-  return Math.round((Date.parse(`${quest.dueDateKey}T00:00:00Z`) - Date.parse(`${todayKey.value}T00:00:00Z`)) / MS_PER_DAY);
+function daysLeft(dueDateKey: string): number {
+  return Math.round((Date.parse(`${dueDateKey}T00:00:00Z`) - Date.parse(`${todayKey.value}T00:00:00Z`)) / MS_PER_DAY);
 }
 
 function urgency(quest: Quest): 'urgent' | 'soon' | 'calm' {
   if (quest.doneDayKey) return 'calm';
   if (quest.overdue) return 'urgent';
-  const days = daysLeft(quest);
+  if (!quest.dueDateKey) return 'calm';
+  const days = daysLeft(quest.dueDateKey);
   if (days <= 0) return 'urgent';
   return days <= 2 ? 'soon' : 'calm';
 }
 
+// Empty for a quest with no deadline: its card shows no date.
 function dueText(quest: Quest): string {
   if (quest.doneDayKey) return 'Done';
   if (quest.overdue) return 'Overdue';
-  const days = daysLeft(quest);
+  if (!quest.dueDateKey) return '';
+  const days = daysLeft(quest.dueDateKey);
   if (days < 0) return 'Overdue';
   if (days === 0) return 'Due today';
   if (days === 1) return 'Due tomorrow';
   return `${days} days left`;
 }
 
-function onAdd(description: string, difficulty: Difficulty, dueDateKey: string, group?: TaskGroup) {
+function onAdd(description: string, difficulty: Difficulty, dueDateKey: string | undefined, group?: TaskGroup) {
   addQuest(description, difficulty, dueDateKey, group);
   showAdd.value = false;
 }
@@ -144,9 +148,10 @@ function onCheckOff(quest: Quest) {
             <span class="description">{{ quest.description }}</span>
             <span class="meta">
               <span v-if="quest.group" class="group" :style="{ '--g': taskGroupColor(quest.group) }"
-                ><component :is="TASK_GROUP_ICONS[quest.group]" :size="12" class="group-icon" />{{ groupName(quest.group) }}<span class="sep" aria-hidden="true">·</span></span
+                ><component :is="TASK_GROUP_ICONS[quest.group]" :size="12" class="group-icon" />{{ groupName(quest.group)
+                }}<span v-if="dueText(quest)" class="sep" aria-hidden="true">·</span></span
               >
-              <span class="due">{{ dueText(quest) }}</span>
+              <span v-if="dueText(quest)" class="due">{{ dueText(quest) }}</span>
             </span>
           </button>
         </li>

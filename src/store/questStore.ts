@@ -16,7 +16,7 @@ export const useQuestStore = defineStore('quest', {
     },
 
     /** Creates a new quest via the engine and adds it to the list. */
-    addQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string, group?: TaskGroup): Quest {
+    addQuest(description: string, difficulty: Difficulty, dueDateKey: string | undefined, createdDayKey?: string, group?: TaskGroup): Quest {
       const quest = createQuest(description, difficulty, dueDateKey, createdDayKey, group);
       this.quests.push(quest);
       return quest;

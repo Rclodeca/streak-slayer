@@ -163,10 +163,10 @@ export function useDailyRollover(now: Date = new Date()): void {
     todayKey,
   );
 
-  // A quest checked off on an earlier day leaves with the turn of the day; one already overdue took its hit.
+  // A quest checked off on an earlier day leaves with the turn of the day; one already overdue took its hit, and one with no deadline never misses.
   questStore.clearDone(todayKey);
   for (const quest of questStore.quests) {
-    if (!quest.overdue && !quest.doneDayKey && daysBetweenDayKeys(quest.dueDateKey, todayKey) > 0) {
+    if (quest.dueDateKey && !quest.overdue && !quest.doneDayKey && daysBetweenDayKeys(quest.dueDateKey, todayKey) > 0) {
       queueQuestMiss(quest);
     }
   }

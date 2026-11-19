@@ -88,6 +88,11 @@ export function questOverdueExp(character: Character, difficulty: Difficulty, co
   return questRewardExp(character, difficulty, completedThisWeek) * TUNING.QUEST_OVERDUE_EXP_FRACTION;
 }
 
+/** EXP for finishing a quest with no deadline: the next slot's pay at `QUEST_NO_DEADLINE_EXP_FRACTION`, as it carries no miss. */
+export function questNoDeadlineExp(character: Character, difficulty: Difficulty, completedThisWeek: number): number {
+  return questRewardExp(character, difficulty, completedThisWeek) * TUNING.QUEST_NO_DEADLINE_EXP_FRACTION;
+}
+
 /** The week counter as of `weekKey`: a stale (or missing) counter starts over at 0. */
 export function questWeekFor(questWeek: QuestWeek | undefined, weekKey: string): QuestWeek {
   return questWeek && questWeek.weekKey === weekKey ? questWeek : { weekKey, completed: 0 };
@@ -99,10 +104,10 @@ export function recordQuestCompletion(questWeek: QuestWeek | undefined, weekKey:
   return { weekKey, completed: current.completed + 1 };
 }
 
-/** Builds a new Quest record with a generated id; `createdDayKey` is the day it was added. */
-export function createQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string, group?: TaskGroup): Quest {
-  if (!dueDateKey) throw new Error('A task needs a due date');
-  const quest: Quest = { id: crypto.randomUUID(), description, difficulty, dueDateKey };
+/** Builds a new Quest record with a generated id; no `dueDateKey` = no deadline. `createdDayKey` is the day it was added. */
+export function createQuest(description: string, difficulty: Difficulty, dueDateKey?: string, createdDayKey?: string, group?: TaskGroup): Quest {
+  const quest: Quest = { id: crypto.randomUUID(), description, difficulty };
+  if (dueDateKey) quest.dueDateKey = dueDateKey;
   if (createdDayKey !== undefined) quest.createdDayKey = createdDayKey;
   if (group !== undefined) quest.group = group;
   return quest;
