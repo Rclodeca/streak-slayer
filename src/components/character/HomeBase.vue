@@ -157,7 +157,8 @@ const offset = useCenteredArt(frame, ART_W);
 
 .home-name {
   left: 12px;
-  top: 12px;
+  /* Level with the top of the purse plate beside the menu (.stage-menu's 6px). */
+  top: 6px;
   display: flex;
   align-items: center;
   gap: 8px;
