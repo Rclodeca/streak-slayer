@@ -20,18 +20,26 @@ describe('NewHeroScreen', () => {
     setActivePinia(pinia);
   });
 
-  function mountAs(heroClass: HeroClass, overrides: { heroPending?: boolean } = {}) {
+  function mountAs(heroClass: HeroClass, overrides: { heroPending?: boolean; name?: string } = {}) {
     useCharacterStore().character = { ...createCharacter(createRng(3), heroClass), ...overrides };
     return mount(NewHeroScreen, { global: { plugins: [pinia] } });
   }
 
   const label = (wrapper: ReturnType<typeof mountAs>) => wrapper.find('.pick-name').text();
 
-  it('names the hero who retired', () => {
+  it('keeps a prestiged hero\'s name and asks only for a pick', async () => {
     useRetiredHero().recordRetired({ name: 'Aldric', level: 31 });
-    const wrapper = mountAs('warrior', { heroPending: true });
-    expect(wrapper.find('.fell').text()).toBe('Aldric retired at level 31. Your habits remain.');
+    const wrapper = mountAs('warrior', { heroPending: true, name: 'Aldric' });
+    expect(wrapper.find('.oath-title').text()).toBe('Aldric rises again');
+    expect(wrapper.find('.fell').text()).toBe('Retired at level 31. Your habits remain.');
+    expect(wrapper.find('.name-input').exists()).toBe(false);
     expect(wrapper.find('.begin').text()).toBe('Rise');
+    await wrapper.find('.turn-next').trigger('click');
+    await wrapper.find('form').trigger('submit');
+    const { character } = useCharacterStore();
+    expect(character.name).toBe('Aldric');
+    expect(character.heroPending).toBe(false);
+    expect(heroClassFor(character)).toBe('cleric');
     useRetiredHero().clearRetired();
   });
 

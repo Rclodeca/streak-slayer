@@ -18,6 +18,7 @@ describe('AppShell', () => {
     localStorage.clear();
     setActivePinia(createPinia());
     useCharacterStore().character.name = 'Ash';
+    useCharacterStore().character.heroPending = false;
   });
 
   afterEach(() => {

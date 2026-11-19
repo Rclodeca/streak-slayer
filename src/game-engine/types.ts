@@ -45,9 +45,9 @@ export type Personality =
 
 export interface Character {
   // Chosen on the new-hero screen (NewHeroScreen.vue). Undefined means not
-  // named yet: createCharacter never sets it, so the first launch and every
-  // new run after a death show that screen until the hero is named. A save
-  // from before names existed loads unnamed too, so it gets asked once.
+  // named yet: createCharacter never sets it, so the first launch shows that
+  // screen until the hero is named. A prestige keeps the name (prestigeRun). A
+  // save from before names existed loads unnamed too, so it gets asked once.
   name?: string;
   // True from createCharacter until the hero is picked on the new-hero screen
   // (see chooseHero), then false. A save from before the pick has none: its

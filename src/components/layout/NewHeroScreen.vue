@@ -16,16 +16,19 @@ import type { Rule } from '../ui/RuleList.vue';
 import { spriteUrl } from '../ui/spriteUrl';
 
 // Full-screen greeting shown in place of the dashboard while the hero is
-// unnamed (see Character.name): the very first launch, and every new run after
-// "Start new run". Naming the hero is what dismisses it. A new run also picks
-// its hero here, turning through them by the fire; a run already under way
-// (an old save named late) just gets its name.
+// unnamed (see Character.name) or waiting on a pick: the very first launch,
+// and every run after a prestige. A new run picks its hero here, turning
+// through them by the fire; a prestiged hero keeps its name, so only the first
+// hero is asked for one. A run already under way (an old save named late)
+// just gets its name.
 const characterStore = useCharacterStore();
 const skins = useSkins();
 const { retired } = useRetiredHero();
 const { beginRun } = useCombatActions();
 
 const name = ref('');
+// After a prestige the hero is already named and only picks a new look.
+const named = computed(() => characterStore.character.name !== undefined);
 
 const PICKS: HeroPick[] = [...HERO_CLASSES, 'fate'];
 // The cleric art reads as a mage, so that's its name here.
@@ -77,7 +80,7 @@ const RULES: Rule[] = [
 ];
 
 function begin() {
-  beginRun(name.value, pick.value);
+  beginRun(characterStore.character.name ?? name.value, pick.value);
 }
 </script>
 
@@ -123,17 +126,17 @@ function begin() {
     </div>
 
     <div class="oath">
-      <h2 class="oath-title">{{ retired ? 'A new hero rises' : 'A new hero' }}</h2>
-      <p v-if="retired" class="fell">{{ retired.name }} retired at level {{ retired.level }}. Your habits remain.</p>
+      <h2 class="oath-title">{{ named ? `${characterStore.character.name} rises again` : 'A new hero' }}</h2>
+      <p v-if="retired" class="fell">Retired at level {{ retired.level }}. Your habits remain.</p>
 
-      <label class="field">
+      <label v-if="!named" class="field">
         <span class="field-label">Name</span>
         <input v-model="name" class="name-input" type="text" :maxlength="MAX_HERO_NAME_LENGTH" :placeholder="DEFAULT_HERO_NAME" autocomplete="off" />
       </label>
 
       <RuleList :rules="RULES" />
 
-      <button type="submit" class="begin primary-button">{{ retired ? 'Rise' : 'Begin' }}</button>
+      <button type="submit" class="begin primary-button">{{ named ? 'Rise' : 'Begin' }}</button>
     </div>
   </form>
 </template>

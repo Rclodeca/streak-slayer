@@ -94,7 +94,7 @@ function confirm() {
           <p v-if="look.line" class="ln">{{ look.line }}</p>
         </div>
       </div>
-      <p class="prestige-warn">{{ name }} retires. A new hero begins at <b>level 1</b>.</p>
+      <p class="prestige-warn">{{ name }} begins again at <b>level 1</b>.</p>
       <div class="prestige-choice">
         <button type="button" class="prestige-cancel" @click="close">Cancel</button>
         <button type="button" class="prestige-confirm" :disabled="taken" @click="confirm"><Crown :size="18" aria-hidden="true" />Prestige</button>

@@ -51,7 +51,7 @@ describe('prestigeRun', () => {
     const { character } = result;
     expect(character.level).toBe(1);
     expect(character.heroPending).toBe(true);
-    expect(character.name).toBeUndefined();
+    expect(character.name).toBe(veteran().name);
     expect(heroClassFor(character)).toBe('warrior');
     expect(character.talents).toEqual({ might: 3 });
     expect(character.talentsUnlocked).toBe(true);

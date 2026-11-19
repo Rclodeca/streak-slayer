@@ -65,10 +65,10 @@ const devTools = useDevToolsStore();
 const { displayedBoss } = useCelebration();
 const bossIndex = computed(() => bossNumber(displayedBoss.value ?? bossStore.boss));
 
-// An unnamed hero (first launch, or a new run after a death) gets the
-// full-screen NewHeroScreen instead of the whole shell. The popups live inside
-// the shell, so anything queued meanwhile simply waits until the hero is named.
-const needsName = computed(() => characterStore.character.name === undefined);
+// An unnamed hero (first launch) or one waiting on a pick (after a prestige)
+// gets the full-screen NewHeroScreen instead of the whole shell. The popups live
+// inside the shell, so anything queued meanwhile simply waits until it's done.
+const needsName = computed(() => characterStore.character.name === undefined || characterStore.character.heroPending === true);
 
 // No router in this app — swaps the main content for HighScorePage in place
 // rather than navigating. It's opened from AppMenu and closed with the Back

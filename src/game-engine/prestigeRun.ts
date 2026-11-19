@@ -17,7 +17,7 @@ import type { Boss, Character, Habit } from './types';
 /**
  * Starts the next rank's run, or null unless canPrestige. A fresh character
  * rolled as the current class (the new-hero screen offers it first), keeping
- * talents, trials and every feature already unlocked (Quests, Talents, the Shop's gates), at the new rank and full health.
+ * the hero's name, talents, trials and every feature already unlocked (Quests, Talents, the Shop's gates), at the new rank and full health.
  * The boss sequence restarts at 1. Habits keep their streaks and ranks, with
  * damage types re-rolled and Special/Ult/Overdrive cleared, to be earned again.
  */
@@ -31,6 +31,7 @@ export function prestigeRun(
   if (!canPrestige(character, rank)) return null;
   const kept: Character = {
     ...createCharacter(rng, heroClassFor(character)),
+    name: character.name,
     talents: character.talents,
     questsUnlocked: character.questsUnlocked,
     talentsUnlocked: character.talentsUnlocked,

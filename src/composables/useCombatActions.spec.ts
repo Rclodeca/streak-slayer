@@ -700,7 +700,7 @@ describe('useCombatActions', () => {
     expect(highScoreStore.topRuns.find((run) => run.heroName === 'Aria')).toMatchObject({ deaths: 2, prestige: 1, bossIndex: bossNumber(bossBefore), level: 30 });
     expect(accountStore.account.prestige).toBe(1);
     expect(accountStore.account.gems).toBe(gemsBefore + PRESTIGE_GEMS);
-    expect(characterStore.character.name).toBeUndefined();
+    expect(characterStore.character.name).toBe('Aria');
     expect(characterStore.character.prestige).toBe(1);
     expect(characterStore.character.level).toBe(1);
     expect(bossStore.boss.index).toBe(1);
