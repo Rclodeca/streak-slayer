@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Start and end screens (dev)</title>
+    <style>
+      body { margin: 0; padding: 24px; background: #15161c; color: #d8dae5; font: 15px/1.4 system-ui, sans-serif; }
+      h1 { margin: 0 0 4px; font-size: 22px; }
+      p.lede { margin: 0 0 28px; color: #8c90a4; max-width: 70ch; }
+      h2 { margin: 36px 0 4px; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: #b9a46a; }
+      p.note { margin: 0 0 14px; color: #8c90a4; font-size: 13px; }
+      .row { display: flex; gap: 22px; overflow-x: auto; padding-bottom: 14px; align-items: flex-start; }
+      figure { margin: 0; flex: none; }
+      figcaption { margin-bottom: 8px; font-weight: 600; }
+      figcaption small { display: block; font-weight: 400; color: #8c90a4; font-size: 12px; max-width: 390px; }
+      iframe { width: 390px; height: 900px; border: 1px solid #343748; border-radius: 14px; background: #000; display: block; }
+    </style>
+  </head>
+  <body>
+    <h1>Start and end screens</h1>
+    <p class="lede">The real app components, each seeded into its own frame (390 × 900). Nothing here touches your save. Death, the choice and the revive toast replay by themselves; reload a frame to replay the others.</p>
+
+    <h2>Starting</h2>
+    <p class="note">First launch, in order: name the hero, the figure's opening, then the empty board. After a prestige: the pick wheel, then the figure's return line.</p>
+    <div class="row" id="starts"></div>
+
+    <h2>Dying</h2>
+    <p class="note">The fall opens straight on Revive OR Rise again (with and without gems for a revive). "Rise again" continues the same run with the setback; there is no separate new-run screen after a death.</p>
+    <div class="row" id="deaths"></div>
+
+    <h2>Retiring</h2>
+    <p class="note">Prestige popup at three ranks (it changes with the rank), then the high-score sheet the run lands on.</p>
+    <div class="row" id="retire"></div>
+
+    <script>
+      const groups = {
+        starts: [
+          ['new-hero', '1 · New hero', 'First launch: name + rules. Same screen opens every first run.'],
+          ['intro', '2 · Figure: opening', 'After naming the very first hero. Three lines.'],
+          ['board', '3 · Empty board', 'First habit hints (lit "+ New habit").'],
+          ['pick', '4 · Hero pick (after prestige)', 'Option A: rank first, who retired, the pick, Begin in the rank colour.'],
+          ['back', '5 · Figure: return', 'After picking, once a past run is on the board.'],
+          ['purse', 'Daily purse', 'First open of each day, before the Daily update.'],
+        ],
+        deaths: [
+          ['fire', '1 · Revive OR rise, can revive', 'B2: the dropped item named, −1 level, −20 gold.'],
+          ['fire-short', '1b · Short of gems', 'Get gems opens the Challenges over the screen.'],
+          ['revive', '2 · Revive toast', 'After a gem revive; shows 2.5 s over the board.'],
+        ],
+        retire: [
+          ['prestige-1', 'Prestige I popup', 'Statue, Retired stamp, rank plate, gains.'],
+          ['prestige-3', 'Prestige III popup', ''],
+          ['prestige-5', 'Prestige V popup', 'Mythic skin socket.'],
+          ['sheet', 'High-score sheet', 'The retired run, opened from the wall of the fallen.'],
+        ],
+      };
+      for (const [id, items] of Object.entries(groups)) {
+        const row = document.getElementById(id);
+        for (const [scene, title, sub] of items) {
+          const f = document.createElement('figure');
+          f.innerHTML = `<figcaption>${title}<small>${sub}</small></figcaption><iframe src="screen-frame.html?s=${scene}" title="${title}"></iframe>`;
+          row.append(f);
+        }
+      }
+    </script>
+  </body>
+</html>
