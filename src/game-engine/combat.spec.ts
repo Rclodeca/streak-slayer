@@ -7,7 +7,7 @@ import { availableRelics, ITEM_CATALOG, itemBonusPercent, itemFlatBonus } from '
 import { addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { createRng } from './rng';
 import { rankMultiplier } from './streaks';
-import { createCharacter, heroClassFor, migrateCharacter } from './character';
+import { createCharacter, HERO_CLASSES, heroClassFor, migrateCharacter, STARTER_ITEMS } from './character';
 import {
   activeWoundsEffect,
   bossMissDamage,
@@ -1236,6 +1236,19 @@ describe('chooseHero', () => {
     const result = chooseHero(createCharacter(createRng(3), 'warrior'), habits, 'cleric', createRng(4));
     expect(result.habits.map((h) => [h.id, h.rank, h.streakCount])).toEqual(habits.map((h) => [h.id, h.rank, h.streakCount]));
     expect(result.habits.some((h) => h.damageType !== 'physical')).toBe(true);
+  });
+
+  it('equips one of the picked hero\'s starter items, each of them in turn', () => {
+    for (const heroClass of HERO_CLASSES) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 20; seed++) {
+        const { character } = chooseHero(createCharacter(createRng(3), 'warrior'), [], heroClass, createRng(seed));
+        expect(character.ownedItemIds).toHaveLength(1);
+        expect(character.equippedItemIds).toEqual(character.ownedItemIds);
+        seen.add(character.ownedItemIds[0]);
+      }
+      expect([...seen].sort()).toEqual([...STARTER_ITEMS[heroClass]].sort());
+    }
   });
 
   it('changes nothing for a run not waiting on a pick (a save from before it)', () => {

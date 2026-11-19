@@ -128,6 +128,9 @@ export const LEVEL_GEM_MILESTONES: readonly { level: number; gems: number }[] = 
 /** Gems a new account starts with, so the first revive and gem-priced talent ranks are in reach from day one. */
 export const STARTING_GEMS = 30;
 
+/** Gold every new hero starts with: the first launch and every prestige (createCharacter). */
+export const STARTING_GOLD = 200;
+
 /** Gems paid at each prestige. */
 export const PRESTIGE_GEMS = 80;
 

@@ -1,7 +1,7 @@
 import { applyResist, bossAttackAnchorHealth, bossExpReward, bossNumber, generateBoss, withBossNumber } from './boss';
 import { activeSever, activeSunder, bloodlustActive, frenzyActive, reflectActive, resolveBreakpoints, spendPassedBreakpoints } from './bossSkills';
 import type { FiredBossSkill } from './bossSkills';
-import { createCharacter, heroClassFor } from './character';
+import { createCharacter, heroClassFor, STARTER_ITEMS } from './character';
 import type { HeroClass } from './character';
 import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { bossGold, DEATH_SETBACK, REVIVE_GEMS } from './constants/economy';
@@ -638,8 +638,8 @@ export function resolvePlayerDeathIfDead(
  * run was rolled as keeps everything; another hero re-rolls the physical/magic
  * split and true damage for it, and the skills' damage types too (a ranger
  * rolls true damage more often). Health and healing keep their roll, so boss 1,
- * made against this health, still fits. No-op unless the run is waiting on a
- * pick (Character.heroPending).
+ * made against this health, still fits. The hero starts with one of its
+ * STARTER_ITEMS equipped. No-op unless the run is waiting on a pick (Character.heroPending).
  */
 export function chooseHero(
   character: Character,
@@ -648,7 +648,8 @@ export function chooseHero(
   rng: Rng,
 ): { character: Character; habits: Habit[] } {
   if (!character.heroPending) return { character, habits };
-  const picked = { ...character, heroPending: false };
+  const starter = [pickRandom(STARTER_ITEMS[heroClass], rng)];
+  const picked = { ...character, heroPending: false, ownedItemIds: starter, equippedItemIds: starter };
   if (heroClassFor(character) === heroClass) return { character: picked, habits };
   const { physicalDamage, magicDamage, trueDamage } = createCharacter(rng, heroClass).starterStats;
   return {

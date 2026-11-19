@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createAccount } from './account';
 import { bossNumber, generateBoss } from './boss';
 import { createCharacter, heroClassFor } from './character';
+import { STARTING_GOLD } from './constants/economy';
 import { characterGold } from './gold';
 import { maxEquipSlots } from './items';
 import { prestigeAccount, prestigeRun } from './prestigeRun';
@@ -58,7 +59,7 @@ describe('prestigeRun', () => {
     expect(character.trials).toEqual(trials);
     expect(character.prestige).toBe(1);
     expect(character.deaths).toBeUndefined();
-    expect(characterGold(character)).toBe(0);
+    expect(characterGold(character)).toBe(STARTING_GOLD);
     expect(character.ownedItemIds).toEqual([]);
     expect(character.equippedItemIds).toEqual([]);
     expect(maxEquipSlots(character)).toBe(4);

@@ -158,8 +158,8 @@ export interface Character {
   // gems. Kept through death: createCharacter starts with none, and
   // resolvePlayerDeathIfDead carries these onto the new run's character.
   talents?: Partial<Record<TalentId, number>>;
-  // Gold to spend (see constants/economy.ts). Undefined = 0: a fresh character
-  // (createCharacter, so a death too) never sets it, so a death wipes it.
+  // Gold to spend (see constants/economy.ts). Undefined = 0. A fresh character
+  // (createCharacter: the first launch and every prestige) starts with STARTING_GOLD.
   gold?: number;
   // Today's shop stock (see shop.ts). A fresh character never has one, so a
   // death wipes it and the new run gets a new stock.

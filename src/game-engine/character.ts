@@ -1,4 +1,5 @@
 import { easeBossAttack, rescaleBossToHealthBands } from './boss';
+import { STARTING_GOLD } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { ITEM_CATALOG } from './items';
 import { expCurveLevel, expToNextLevel } from './leveling';
@@ -44,6 +45,7 @@ export function createCharacter(rng: Rng, heroClass?: HeroClass): Character {
     ownedItemIds: [],
     equippedItemIds: [],
     critChance: TUNING.BASE_CRIT_CHANCE,
+    gold: STARTING_GOLD,
     questsUnlocked: false,
     talentsUnlocked: false,
     shopUnlocked: false,
@@ -70,6 +72,13 @@ export type HeroClass = 'warrior' | 'cleric' | 'ranger';
 // In the order the new-hero screen offers them. The cleric art reads as a
 // mage, so it is called Mage on screen.
 export const HERO_CLASSES: readonly HeroClass[] = ['warrior', 'cleric', 'ranger'];
+
+// The items a hero may start with: one, at even odds, equipped when it is picked (chooseHero).
+export const STARTER_ITEMS: Record<HeroClass, readonly string[]> = {
+  warrior: ['rusty-blade', 'steel-sword'],
+  cleric: ['apprentice-wand', 'arcane-staff'],
+  ranger: ['bone-needle', 'assassins-edge'],
+};
 
 // Physical share of the starting physical+magic pool past which a run reads
 // as leaning one way. DAMAGE_SPLIT_RATIOS only rolls 50/50, 60/40 or 70/30
