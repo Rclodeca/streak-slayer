@@ -449,22 +449,22 @@ export interface Habit {
   frozenDayKeys?: string[];
 }
 
+/** One of the six fixed task group slots; the player can rename each (see taskGroups.ts). */
+export type TaskGroup = 'work' | 'home' | 'school' | 'health' | 'errands' | 'other';
+
 export interface Quest {
   id: string;
   description: string; // free-text one-time task, player-authored
   difficulty: Difficulty;
-/** One of the six fixed task group slots; the player can rename each (see taskGroups.ts). */
-export type TaskGroup = 'work' | 'home' | 'school' | 'health' | 'errands' | 'other';
-
   dueDateKey: string; // YYYY-MM-DD — same format as dailyPeriodKey; required for every quest
   overdue?: boolean; // the due date passed and the miss landed; the quest stays, and pays half EXP if still finished
   doneDayKey?: string; // dailyPeriodKey of the day it was checked off; it stays checked until the day turns, then is removed
   createdDayKey?: string; // dailyPeriodKey of the day it was added; Fresh quests and Quest run read it (undefined on older saves)
+  group?: TaskGroup; // the group slot it was filed under, never its name, so a rename keeps it in place; missing = no group
 }
 
 /** Regular-quest completions in one calendar week — see questSlotExp in quests.ts. */
 export interface QuestWeek {
-  group?: TaskGroup; // the group slot it was filed under, never its name, so a rename keeps it in place; missing = no group
   weekKey: string; // weeklyPeriodKey() of the week `completed` counts
   completed: number;
 }

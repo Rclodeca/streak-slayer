@@ -183,8 +183,8 @@ export { characterGold } from './gold';
 
 export type { Account } from './account';
 export { addGems, applyExpCurveToAccount, claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
-export type { PrestigeMark, PrestigeRankDef, PrestigeSpecial } from './prestige';
 export { renameTaskGroup, TASK_GROUP_DEFAULT_NAMES, TASK_GROUP_NAME_MAX, TASK_GROUPS, taskGroupName } from './taskGroups';
+export type { PrestigeMark, PrestigeRankDef, PrestigeSpecial } from './prestige';
 export {
   canPrestige,
   deeperRootsCount,
