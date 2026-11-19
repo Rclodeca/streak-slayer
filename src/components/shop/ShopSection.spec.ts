@@ -31,7 +31,7 @@ describe('ShopSection', () => {
 
   function hero(gold: number, extra = {}) {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 10, gold, ...extra });
+    characterStore.setCharacter({ ...characterStore.character, level: 12, gold, ...extra });
     return characterStore;
   }
 

@@ -127,14 +127,14 @@ export const TALENT_DEFS: readonly TalentDef[] = [
 
   // Support — 29 points, 17 to the top
   { id: 'mending', name: 'Mending', shoot: 'support', kind: 'main', maxRank: 3, bonuses: [percent('healing', 3)], text: '+3% healing' },
-  { id: 'renewal', name: 'Renewal', shoot: 'support', kind: 'main', maxRank: 3, effect: { id: 'levelUpHeal', perRank: 2 }, text: 'Level-ups heal +2% of max HP' },
+  { id: 'renewal', name: 'Renewal', shoot: 'support', kind: 'main', maxRank: 3, effect: { id: 'levelUpHeal', perRank: 1.5 }, text: 'Level-ups heal +1.5% of max HP' },
   { id: 'scavenger', name: 'Scavenger', shoot: 'support', kind: 'offshoot', parent: 'renewal', maxRank: 3, effect: { id: 'extraDrop', perRank: 5 }, text: '+5% chance of one extra item when a boss falls' },
   { id: 'insight', name: 'Insight', shoot: 'support', kind: 'main', maxRank: 3, bonuses: [percent('expGain', 2)], text: '+2% EXP' },
   { id: 'wisdom', name: 'Wisdom', shoot: 'support', kind: 'offshoot', parent: 'insight', maxRank: 2, effect: { id: 'questExp', perRank: 3 }, text: '+3% quest EXP' },
   { id: 'waymark', name: 'Waymark', shoot: 'support', kind: 'offshoot', parent: 'insight', maxRank: 3, effect: { id: 'milestoneExp', perRank: 5 }, text: '+5% EXP from streak milestones' },
   { id: 'mending-2', name: 'Mending II', shoot: 'support', kind: 'main', maxRank: 3, bonuses: [percent('healing', 3)], text: '+3% healing' },
   { id: 'second-wind', name: 'Second Wind', shoot: 'support', kind: 'offshoot', parent: 'mending-2', maxRank: 3, effect: { id: 'bossKillHeal', perRank: 2 }, text: 'Heal +2% of max HP when a boss falls' },
-  { id: 'renewal-2', name: 'Renewal II', shoot: 'support', kind: 'main', maxRank: 3, effect: { id: 'levelUpHeal', perRank: 2 }, text: 'Level-ups heal +2% of max HP' },
+  { id: 'renewal-2', name: 'Renewal II', shoot: 'support', kind: 'main', maxRank: 3, effect: { id: 'levelUpHeal', perRank: 1.5 }, text: 'Level-ups heal +1.5% of max HP' },
   { id: 'leech', name: 'Leech', shoot: 'support', kind: 'main', maxRank: 2, bonuses: [percent('lifesteal', 0.5)], text: '+0.5% lifesteal' },
   { id: 'blessed', name: 'Blessed', shoot: 'support', kind: 'top', maxRank: 1, effect: { id: 'healCrit', perRank: 1 }, text: 'Healing habits can crit, for double healing' },
 ];

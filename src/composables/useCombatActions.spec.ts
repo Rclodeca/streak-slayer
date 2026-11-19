@@ -637,7 +637,7 @@ describe('useCombatActions', () => {
     expect(characterStore.character.name).toBe('Aria');
     expect(characterStore.character.heroPending).toBe(false);
     expect(bossNumber(bossStore.boss)).toBe(shownBefore);
-    expect(bossStore.boss.index).toBe(5);
+    expect(bossStore.boss.index).toBe(4);
     expect(habitStore.habits.map((h) => h.damageType)).toEqual(typesBefore);
     expect(highScoreStore.topRuns).toHaveLength(runsBefore);
     expect(useActivityLogStore().entries[0]).toMatchObject({ kind: 'fell', levels: 1, gold: 40, itemName: 'Rusty Hatchet' });
@@ -1173,7 +1173,7 @@ describe('useCombatActions', () => {
   });
 
   describe('skill and kill EXP', () => {
-    it('checking off the only daily pays a fifth of a level; Overdrive pays none', () => {
+    it('checking off the only daily pays the day\'s share of a level; Overdrive pays none', () => {
       const characterStore = useCharacterStore();
       const bossStore = useBossStore();
       const habitStore = useHabitStore();
@@ -1183,9 +1183,9 @@ describe('useCombatActions', () => {
       habitStore.updateHabit({ ...habitStore.habits[0], isOverdrive: true });
 
       checkOffHabit(habit.id);
-      expect(characterStore.character.exp).toBeCloseTo(expToNextLevel(1) * 0.2, 10);
+      expect(characterStore.character.exp).toBeCloseTo(expToNextLevel(1) * TUNING.DAILY_SKILL_LEVEL_SHARE, 10);
       activateOverdrive(habit.id);
-      expect(characterStore.character.exp).toBeCloseTo(expToNextLevel(1) * 0.2, 10);
+      expect(characterStore.character.exp).toBeCloseTo(expToNextLevel(1) * TUNING.DAILY_SKILL_LEVEL_SHARE, 10);
     });
 
     it('a kill logs the EXP the engine paid at the slayer\'s level', () => {
@@ -1195,13 +1195,16 @@ describe('useCombatActions', () => {
       characterStore.character = { ...characterStore.character, level: 10, exp: 0 };
       bossStore.setBoss({ ...bossStore.boss, health: 0.0001, armor: 0 });
       const habit = addHabit('Gym', 'daily', 'medium', false);
+      // A second daily halves Gym's pay, so the kill can't tip it into a level-up.
+      addHabit('Read', 'daily', 'medium', false);
 
       checkOffHabit(habit.id);
       const entry = useActivityLogStore().entries.find((e) => e.kind === 'boss-defeated');
       const amount = (entry as { amount: number }).amount;
-      expect(amount).toBeGreaterThanOrEqual(expToNextLevel(10) * 0.4 * 0.9);
-      expect(amount).toBeLessThanOrEqual(expToNextLevel(10) * 0.4 * 1.1);
-      expect(characterStore.character.exp).toBeCloseTo(expToNextLevel(10) * 0.2 + amount, 10);
+      expect(amount).toBeGreaterThanOrEqual(expToNextLevel(10) * TUNING.BOSS_KILL_LEVEL_SHARE * 0.9);
+      expect(amount).toBeLessThanOrEqual(expToNextLevel(10) * TUNING.BOSS_KILL_LEVEL_SHARE * 1.1);
+      expect(characterStore.character.level).toBe(10);
+      expect(characterStore.character.exp).toBeCloseTo((expToNextLevel(10) * TUNING.DAILY_SKILL_LEVEL_SHARE) / 2 + amount, 10);
     });
   });
 
@@ -1214,12 +1217,12 @@ describe('useCombatActions', () => {
       return useCombatActions();
     }
 
-    it('a level-up to 4 gives a daily skill the Special and logs it', () => {
-      const { addHabit, checkOffHabit } = readyToLevel(3);
+    it('a level-up to 3 gives a daily skill the Special and logs it', () => {
+      const { addHabit, checkOffHabit } = readyToLevel(2);
       const habit = addHabit('Gym', 'daily', 'medium', false);
       expect(useHabitStore().habits[0].isSpecial).toBeFalsy();
       checkOffHabit(habit.id);
-      expect(useCharacterStore().character.level).toBe(4);
+      expect(useCharacterStore().character.level).toBe(3);
       expect(useHabitStore().habits[0].isSpecial).toBe(true);
       expect(useActivityLogStore().entries.some((e) => e.kind === 'special-assigned' && e.habitName === 'Gym')).toBe(true);
     });

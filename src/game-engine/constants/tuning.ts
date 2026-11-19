@@ -37,13 +37,17 @@ export const TUNING = {
   FULL_POWER_HEAL_SKILLS: 2,
   CROWDED_HEAL_SKILL_FACTOR: 0.5,
   STAT_RANDOMIZATION_PCT: 0.05, // ±5% at character creation
-  LEVEL_STAT_GROWTH_RATE: 0.06, // +6% compounding per level (damage stats)
+  // Levels come 1.6x as fast since the 2026-11-18 EXP curve (good players reach
+  // level 30 around day 30, docs/superpowers/specs/2026-11-18-run-sim-design.md),
+  // so each level grows the hero by the 1.6th root of the old step: about the
+  // same strength by day as before. Was 6% and 9.5%.
+  LEVEL_STAT_GROWTH_RATE: 0.0371, // +3.71% compounding per level (damage stats)
   // Health and healing grow faster than damage, so lifesteal (a share of
   // damage dealt) shrinks against max HP over a run while heal skills keep
   // pace. Boss attacks follow, being sized against level-scaled health.
   // 9.5% puts a level-30 hero near 20k max HP (+20% health items) against a
   // ~230k boss.
-  LEVEL_HEALTH_HEALING_GROWTH_RATE: 0.095,
+  LEVEL_HEALTH_HEALING_GROWTH_RATE: 0.0584,
   // Streak milestones that earn a skill's ranks I-VIII (weeklies count weeks).
   // A rank is permanent: a miss drops the streak to 0, never the rank.
   RANK_MILESTONES: {
@@ -109,13 +113,14 @@ export const TUNING = {
   // HP band. No kill-speed scaling: faster kills already pay more often, and
   // each boss still costs more than the last. The ±10% jitter keeps level-ups
   // from feeling scheduled; the floor keeps the opening kills as they were.
-  BOSS_KILL_LEVEL_SHARE: 0.4,
+  // ×1.6 with the rest of the EXP shares (2026-11-18 curve; was 0.4, 0.2, 0.3).
+  BOSS_KILL_LEVEL_SHARE: 0.64,
   BOSS_KILL_EXP_JITTER_PCT: 0.1,
   BOSS_KILL_MIN_EXP: 33,
   // Each day's due dailies share this fraction of a level, and each week's
   // weeklies this one (see skillCompletionExp). Overdrive uses pay none.
-  DAILY_SKILL_LEVEL_SHARE: 0.2,
-  WEEKLY_SKILL_LEVEL_SHARE: 0.3,
+  DAILY_SKILL_LEVEL_SHARE: 0.32,
+  WEEKLY_SKILL_LEVEL_SHARE: 0.48,
   // Lowered 0.3 -> 0.17, then -> 0.15 in a boss-growth follow-up pass
   // above: a low-completion ("bad") player accumulates far more misses than
   // anyone else, so this specifically stretches their survivable run length
@@ -123,6 +128,11 @@ export const TUNING = {
   // rarely miss) — the 1.205 growth-rate bump alone pulled "bad" down
   // slightly below its target, and this nudge brought it back.
   MISS_DAMAGE_FACTOR: 0.15,
+  // The day's first boss hit lands in full; each later one hits for this share
+  // of the one before (1, 0.75, 0.56, ...), so a bad day costs about four
+  // full hits at most. More habits still means more risk, but a sloppy
+  // player with many habits isn't trapped in a death loop.
+  MISS_DAMAGE_FALLOFF: 0.75,
   // Governs physicalAttack/magicAttack — the stats that hurt the player on
   // a missed habit — via an S-curve (logistic) over boss index instead of
   // the unbounded exponential boss health uses: see
@@ -156,24 +166,28 @@ export const TUNING = {
   // expected level, blended toward the player's real level by
   // BOSS_ATTACK_LEVEL_FOLLOW (0 = ignore the player's level, 1 = always
   // scale to it), so levels above expected shrink each hit as a % of max HP.
-  // Calibrated from the median level at each boss spawn in
-  // SKILLS=8 POOLS=0 KILL_SHARE=0.4 DAILY_EXP=0.2 KILL_FLOOR=33 TABLE=1 node scripts/balance-sim.mjs
+  // Calibrated from the median level at each boss spawn for good and decent
+  // players with 8 habits, repeated until it settled (it feeds back through
+  // the boss's hits):
+  // npm run sim -- --calibrate --players good,decent --habits 8 --days 300 --seeds 40
   // Recompute if kill, skill or milestone EXP, the HP bands or the quest curve change.
   EXPECTED_LEVEL_BY_BOSS_INDEX: [
     [1, 1],
     [5, 4],
-    [10, 7],
-    [15, 11],
-    [20, 15],
-    [25, 20],
-    [30, 25],
-    [40, 38],
-    [50, 49],
+    [10, 10],
+    [15, 16],
+    [20, 23],
+    [25, 31],
+    [30, 40],
+    [40, 64],
+    [50, 89],
+    [60, 112],
   ] as [number, number][],
   BOSS_ATTACK_LEVEL_FOLLOW: 0.5,
   // Unconditional per-level heal (see addExpAndResolveLevelUps) — applied once
   // per level gained in a grant. Sage's Codex and the Renewal talents add to it.
-  LEVEL_UP_HEAL_PCT: 10,
+  // 10% ÷ 1.6, since levels come 1.6x as often (2026-11-18 curve).
+  LEVEL_UP_HEAL_PCT: 6.25,
   // The Crit Potion adds CRIT_BOOST_BONUS to crit chance (crit chance
   // tops out at 100%) for CRIT_BOOST_DAYS days, counting the day it's picked.
   CRIT_BOOST_BONUS: 0.2,
@@ -216,7 +230,7 @@ export const TUNING = {
   // sum to exactly the weekly target.
   QUESTS_PER_WEEK_ON_CURVE: 1,
   // A medium slot-1 quest pays this fraction of expToNextLevel at completion.
-  QUEST_TARGET_LEVEL_FRACTION: 0.15,
+  QUEST_TARGET_LEVEL_FRACTION: 0.24, // ×1.6 with the 2026-11-18 curve (was 0.15)
   // Floor on the weekly target so early quests (where the fraction is tiny) still pay something.
   QUEST_MIN_TARGET_EXP: 10,
   // Percent of the weekly target paid by the 1st, 2nd, ... completion in a
@@ -343,24 +357,27 @@ export const TUNING = {
   },
   // How many items a boss kill drops (always at least one): percent odds of
   // 1, 2 or 3 at a player level, blended linearly between rows; every level
-  // past the last row uses it. Mostly 2 by level 10, 3 never past 10%.
+  // past the last row uses it. Mostly 2 by level 14, 3 never past 10%.
+  // The level-keyed tables here were moved with the 2026-11-18 EXP curve so
+  // each row lands on the same day it did before (levels 5/10/20/30 became
+  // 5/14/29/44; early levels barely moved, since the EXP floors rule there).
   ITEM_DROP_COUNT_ODDS_BY_LEVEL: [
     [1, { 1: 50, 2: 40, 3: 10 }],
-    [10, { 1: 20, 2: 70, 3: 10 }],
+    [14, { 1: 20, 2: 70, 3: 10 }],
   ] as [number, { 1: number; 2: number; 3: number }][],
   ITEM_DROP_MAX_COUNT: 3,
   // Each rarity's percent share of item drops at a player level, blended
   // linearly between rows; every level past the last row uses it. Commons
-  // fade out and stop at 30, epics never get as common as early commons.
+  // fade out and stop at 44, epics never get as common as early commons.
   DROP_RARITY_SHARES_BY_LEVEL: [
     [1, { common: 75, uncommon: 23, rare: 2, epic: 0 }],
     [5, { common: 55, uncommon: 35.5, rare: 9, epic: 0.5 }],
-    [10, { common: 30, uncommon: 43, rare: 25, epic: 2 }],
-    [20, { common: 10, uncommon: 44, rare: 39, epic: 7 }],
-    [30, { common: 0, uncommon: 40, rare: 49, epic: 11 }],
+    [14, { common: 30, uncommon: 43, rare: 25, epic: 2 }],
+    [29, { common: 10, uncommon: 44, rare: 39, epic: 7 }],
+    [44, { common: 0, uncommon: 40, rare: 49, epic: 11 }],
   ] as [number, { common: number; uncommon: number; rare: number; epic: number }][],
   // The shop rolls its items on the drop table, kinder early: these rows
-  // stand in below level 10, where the drop table's own rows take over.
+  // stand in below level 14, where the drop table's own rows take over.
   SHOP_EARLY_RARITY_SHARES: [
     [1, { common: 62, uncommon: 30, rare: 7, epic: 1 }],
     [5, { common: 48, uncommon: 36, rare: 14, epic: 2 }],
@@ -419,7 +436,7 @@ export const TUNING = {
     MOONWELL_MULTIPLIER: 2,
     BANNER_MILESTONE_MULTIPLIER: 2,
     DAWNGUARD_FACTOR: 0.5,
-    SAGES_INSIGHT_LEVEL_UP_HEAL_PCT: 20, // added to the base level-up heal (and Renewal), not a replacement
+    SAGES_INSIGHT_LEVEL_UP_HEAL_PCT: 12, // added to the base level-up heal (and Renewal), not a replacement
     EMBER_HEART_HEAL_PCT: 5,
     SOUL_LANTERN_HEAL_PCT: 30,
     QUILL_EXP_MULTIPLIER: 2,

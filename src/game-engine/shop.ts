@@ -25,7 +25,7 @@ export function standing(character: Character): boolean {
 const RANK: Record<ItemRarity, number> = { common: 0, uncommon: 1, rare: 2, epic: 3, relic: 4 };
 const TIER_BELOW: Partial<Record<ItemRarity, ItemRarity>> = { uncommon: 'common', rare: 'uncommon', epic: 'rare', relic: 'epic' };
 
-/** The shop's rarity shares at `level`, as fractions summing to 1: the drop table, kinder below level 10 (SHOP_EARLY_RARITY_SHARES). */
+/** The shop's rarity shares at `level`, as fractions summing to 1: the drop table, kinder below level 14 (SHOP_EARLY_RARITY_SHARES). */
 export function shopRarityShares(level: number): Record<DropRarity, number> {
   const early = TUNING.SHOP_EARLY_RARITY_SHARES;
   const late = TUNING.DROP_RARITY_SHARES_BY_LEVEL.filter(([rowLevel]) => rowLevel > early[early.length - 1][0]);

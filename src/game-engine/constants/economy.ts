@@ -30,22 +30,32 @@ export function goldPrice(bossKills: number, bossIndex: number, prestige: number
   return roundPrice(bossKills * bossGold(bossIndex) * goldPriceFactor(prestige));
 }
 
-/** What a stocked item costs, as boss kills' worth of gold at the current boss: an epic or relic is a few bosses' worth. */
+/**
+ * Every price a run pays and then loses at prestige (shop items, restocks,
+ * potions, services, slots) is scaled by this. The 2026-11-18 EXP curve
+ * ends a run about 30% sooner, with about 30% less gold, so these came down
+ * to match: a run still affords what it did. Talent ranks, kept through
+ * prestige, aren't scaled; gold per day is about what it was, so the tree
+ * fills at the same pace.
+ */
+export const RUN_PRICE_FACTOR = 0.7;
+
+/** What a stocked item costs, as boss kills' worth of gold at the current boss (before RUN_PRICE_FACTOR): an epic or relic is a few bosses' worth. */
 export const SHOP_PRICE_FACTOR: Record<ItemRarity, number> = { common: 1, uncommon: 1.5, rare: 2.5, epic: 4, relic: 6 };
 
 /** The price of an item of `rarity` stocked while boss `bossIndex` is up. Locked into the stock when it's drawn. */
 export function warePrice(rarity: ItemRarity, bossIndex: number, prestige: number): number {
-  return goldPrice(SHOP_PRICE_FACTOR[rarity], bossIndex, prestige);
+  return goldPrice(SHOP_PRICE_FACTOR[rarity] * RUN_PRICE_FACTOR, bossIndex, prestige);
 }
 
 /** The fee for the next restock, after `restocksToday` already: half a boss's gold, doubling each time, back to the start with the next day's stock. */
 export function restockFee(restocksToday: number, bossIndex: number, prestige: number): number {
-  return goldPrice(0.5 * 2 ** restocksToday, bossIndex, prestige);
+  return goldPrice(0.5 * 2 ** restocksToday * RUN_PRICE_FACTOR, bossIndex, prestige);
 }
 
-/** A tonic's price while boss `bossIndex` is up: one boss kill's gold. Cheap, to be bought again and again. */
+/** A tonic's price while boss `bossIndex` is up: one boss kill's gold (before RUN_PRICE_FACTOR). Cheap, to be bought again and again. */
 export function tonicPrice(bossIndex: number, prestige: number): number {
-  return goldPrice(1, bossIndex, prestige);
+  return goldPrice(RUN_PRICE_FACTOR, bossIndex, prestige);
 }
 
 /** The gold services' base price (as boss kills' worth of gold) and how much it climbs for each one held: skills with Overdrive, enchanted worn items, rerolls bought this turn. Steep, so the last climbs always have somewhere to put their gold. */
@@ -58,7 +68,7 @@ export const SERVICE_PRICES = {
 /** The price of a reroll, Overdrive or enchant while boss `bossIndex` is up, with `bought` held (see SERVICE_PRICES). Live, not locked. */
 export function servicePrice(id: keyof typeof SERVICE_PRICES, bought: number, bossIndex: number, prestige: number): number {
   const { base, climb } = SERVICE_PRICES[id];
-  return goldPrice(base * climb ** bought, bossIndex, prestige);
+  return goldPrice(base * climb ** bought * RUN_PRICE_FACTOR, bossIndex, prestige);
 }
 
 /** Boss kills' worth of gold for each slot bought: the 5th, 6th, 7th and 8th. */
@@ -67,7 +77,7 @@ export const SLOT_PRICE_FACTORS = [2, 4, 6, 8] as const;
 /** The price of the next slot with `upgrades` bought this run, or null once all 8 are open. */
 export function slotPrice(upgrades: number, bossIndex: number, prestige: number): number | null {
   const factor = SLOT_PRICE_FACTORS[upgrades];
-  return factor === undefined ? null : goldPrice(factor, bossIndex, prestige);
+  return factor === undefined ? null : goldPrice(factor * RUN_PRICE_FACTOR, bossIndex, prestige);
 }
 
 /**
@@ -83,7 +93,7 @@ export const SHOP_STOCK = {
   gemCap: 2,
   headlineFloor: [
     [1, 'uncommon'],
-    [10, 'rare'],
+    [14, 'rare'],
   ] as [number, 'uncommon' | 'rare'][],
 };
 
@@ -173,7 +183,7 @@ export const PERFECT_WEEK_GEMS = 2;
 export const REVIVE_GEMS = 15;
 
 /** What a death takes (the prestige design §3): levels, a share of carried gold, equipped items, and boss power. */
-export const DEATH_SETBACK = { levels: 1, goldPct: 10, items: 1, bossPower: 2 } as const;
+export const DEATH_SETBACK = { levels: 1, goldPct: 10, items: 1, bossPower: 3 } as const;
 
 /** A skin's gem price by kind (see skins.ts). */
 export const SKIN_PRICES = { hero: 120, home: 90, arena: 90 };

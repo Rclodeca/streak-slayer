@@ -369,7 +369,7 @@ describe('completeHabit', () => {
   });
 
   it('never reduces currentHealth below 0 from reflect', () => {
-    const character = makeCharacter({ level: 20, currentHealth: 1 });
+    const character = makeCharacter({ level: 40, currentHealth: 1 });
     const habit = makeHabit({ damageType: 'physical' });
     const boss = makeBoss({ armor: 0, health: 1_000_000, reflectDayKey: DAY_KEY });
 
@@ -495,6 +495,38 @@ describe('missHabit', () => {
     expect(first.boss.hurtPlayer).toBe(true);
     const again = missHabit(makeCharacter({ currentHealth: 100000 }), habit, makeBoss({ hurtPlayer: true }), DAY_KEY, noCritRng);
     expect(again.boss.hurtPlayer).toBe(true);
+  });
+
+  it("softens each later hit of the day by a quarter, and starts over the next day", () => {
+    const habit = makeHabit({ difficulty: 'medium' });
+    const boss = makeBoss({ physicalAttack: 1000, magicAttack: 1000 });
+    const full = bossMissDamage(1000);
+    const hits: number[] = [];
+    let character = makeCharacter({ currentHealth: 100000 });
+    for (let i = 0; i < 3; i++) {
+      const result = missHabit(character, habit, boss, DAY_KEY, noCritRng);
+      hits.push(character.currentHealth - result.character.currentHealth);
+      character = result.character;
+    }
+    expect(hits[0]).toBeCloseTo(full, 6);
+    expect(hits[1]).toBeCloseTo(full * 0.75, 6);
+    expect(hits[2]).toBeCloseTo(full * 0.5625, 6);
+    expect(character.bossHitsToday).toEqual({ dayKey: DAY_KEY, count: 3 });
+
+    const nextDay = missHabit(character, habit, boss, '2099-01-02', noCritRng);
+    expect(character.currentHealth - nextDay.character.currentHealth).toBeCloseTo(full, 6);
+    expect(nextDay.character.bossHitsToday).toEqual({ dayKey: '2099-01-02', count: 1 });
+  });
+
+  it('a dodged hit does not soften the next one', () => {
+    const habit = makeHabit({ difficulty: 'medium' });
+    const boss = makeBoss({ physicalAttack: 1000, magicAttack: 1000 });
+    const character = makeCharacter({ currentHealth: 100000, talents: { unbroken: 1 } });
+    const dodged = missHabit(character, habit, boss, DAY_KEY, () => 0.05); // rolls under Unbroken's 10%
+    expect(dodged.dodged).toBe(true);
+    expect(dodged.character.bossHitsToday).toBeUndefined();
+    const landed = missHabit(dodged.character, habit, boss, DAY_KEY, noCritRng);
+    expect(dodged.character.currentHealth - landed.character.currentHealth).toBeCloseTo(bossMissDamage(1000), 6);
   });
 
   // bossMissDamage's doc comment defines it as the damage dealt on a missed
@@ -980,8 +1012,8 @@ describe('resolveBossDefeatIfDead', () => {
     const scripted = [0.5];
     const rng = () => scripted.shift() ?? 0.99;
     const result = resolveBossDefeatIfDead(character, makeBoss({ health: 0 }), rng);
-    expect(result.expReward).toBeCloseTo(104, 10);
-    expect(result.character.exp).toBeCloseTo(104, 10);
+    expect(result.expReward).toBeCloseTo(166.4, 10);
+    expect(result.character.exp).toBeCloseTo(166.4, 10);
     expect(resolveBossDefeatIfDead(character, makeBoss({ health: 1 }), createRng(1)).expReward).toBe(0);
   });
 
@@ -1125,9 +1157,9 @@ describe('resolvePlayerDeathIfDead', () => {
     expect(character.slotUpgrades).toBe(2);
   });
 
-  it('sends a boss two back in power, shown as the same number, at full health', () => {
+  it('sends a boss three back in power, shown as the same number, at full health', () => {
     const { boss } = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
-    expect(boss.index).toBe(10);
+    expect(boss.index).toBe(9);
     expect(bossNumber(boss)).toBe(12);
     expect(boss.health).toBe(boss.maxHealth);
     expect(boss.difficultyModifier).toBe(1.07);
@@ -1144,10 +1176,10 @@ describe('resolvePlayerDeathIfDead', () => {
     throw new Error('no seed lost the relic');
   });
 
-  it('a second death widens the gap by two', () => {
+  it('a second death widens the gap by three', () => {
     const first = resolvePlayerDeathIfDead(fallen(), boss12, createRng(1));
     const second = resolvePlayerDeathIfDead({ ...first.character, currentHealth: 0 }, first.boss, createRng(2));
-    expect(second.boss.index).toBe(8);
+    expect(second.boss.index).toBe(6);
     expect(bossNumber(second.boss)).toBe(12);
     expect(second.character.deaths).toBe(2);
   });
@@ -1537,9 +1569,10 @@ describe('missHabit — item effects', () => {
     const second = missHabit(first.character, makeHabit(), boss, DAY_KEY, forcePhysicalNoCrit);
     const firstDamage = character.currentHealth - first.character.currentHealth;
     const secondDamage = first.character.currentHealth - second.character.currentHealth;
-    expect(firstDamage / secondDamage).toBeCloseTo(E.DAWNGUARD_FACTOR, 10);
+    // The second hit is also the day's second, so the falloff softens it too.
+    expect(firstDamage / secondDamage).toBeCloseTo(E.DAWNGUARD_FACTOR / TUNING.MISS_DAMAGE_FALLOFF, 10);
     const nextDay = missHabit(second.character, makeHabit(), boss, '2026-01-02', forcePhysicalNoCrit);
-    expect((second.character.currentHealth - nextDay.character.currentHealth) / secondDamage).toBeCloseTo(E.DAWNGUARD_FACTOR, 10);
+    expect((second.character.currentHealth - nextDay.character.currentHealth) / secondDamage).toBeCloseTo(E.DAWNGUARD_FACTOR / TUNING.MISS_DAMAGE_FALLOFF, 10);
   });
 });
 

@@ -95,11 +95,11 @@ describe('economy gold sheet', () => {
     expect(warePrice('rare', 10, 2)).toBeGreaterThan(warePrice('rare', 1, 2));
   });
 
-  it("an epic costs a few bosses' worth", () => {
+  it("an epic costs about three bosses' worth (4 × the run price factor)", () => {
     for (const i of [1, 10, 30]) {
       const bosses = warePrice('epic', i, 2) / bossGold(i);
-      expect(bosses).toBeGreaterThanOrEqual(3);
-      expect(bosses).toBeLessThanOrEqual(5);
+      expect(bosses).toBeGreaterThanOrEqual(2.5);
+      expect(bosses).toBeLessThanOrEqual(3.5);
     }
   });
 
@@ -130,11 +130,12 @@ describe('the gold price sheet', () => {
   });
 
   it('slots, services and the climbs follow the spec', () => {
-    expect([0, 1, 2, 3].map((u) => slotPrice(u, 10, 2))).toEqual([280, 560, 840, 1120]);
+    // Each × RUN_PRICE_FACTOR (0.7), rounded to 5.
+    expect([0, 1, 2, 3].map((u) => slotPrice(u, 10, 2))).toEqual([195, 390, 590, 785]);
     expect(slotPrice(4, 10, 2)).toBeNull();
-    expect([0, 1, 2].map((b) => servicePrice('enchant', b, 10, 2))).toEqual([420, 840, 1680]);
-    expect([0, 1].map((b) => servicePrice('reroll', b, 10, 2))).toEqual([280, 560]);
-    expect([0, 1].map((b) => servicePrice('overdrive', b, 10, 2))).toEqual([700, 1400]);
+    expect([0, 1, 2].map((b) => servicePrice('enchant', b, 10, 2))).toEqual([295, 590, 1175]);
+    expect([0, 1].map((b) => servicePrice('reroll', b, 10, 2))).toEqual([195, 390]);
+    expect([0, 1].map((b) => servicePrice('overdrive', b, 10, 2))).toEqual([490, 980]);
   });
 
   it('the Pouch pays more after a prestige; the purse does not', () => {

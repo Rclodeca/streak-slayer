@@ -297,17 +297,17 @@ describe('the level-up heal adds up from its sources', () => {
     return ((result.character.currentHealth - 1) / effectiveStat(result.character, 'health')) * 100;
   };
 
-  it('is 10% of max HP on its own', () => {
-    expect(healedPct(start())).toBeCloseTo(10, 8);
+  it('is the base level-up heal on its own', () => {
+    expect(healedPct(start())).toBeCloseTo(TUNING.LEVEL_UP_HEAL_PCT, 8);
   });
 
-  it('is 30% with Sage’s Codex', () => {
-    expect(healedPct(start({ equippedItemIds: ['sages-codex'], ownedItemIds: ['sages-codex'] }))).toBeCloseTo(30, 8);
+  it('is 12% more with Sage’s Codex', () => {
+    expect(healedPct(start({ equippedItemIds: ['sages-codex'], ownedItemIds: ['sages-codex'] }))).toBeCloseTo(TUNING.LEVEL_UP_HEAL_PCT + TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT, 8);
   });
 
-  it('is 42% with the Codex and both Renewals full', () => {
+  it('is 21% more with the Codex and both Renewals full (9% from the Renewals)', () => {
     const codex = { equippedItemIds: ['sages-codex'], ownedItemIds: ['sages-codex'], talents: { renewal: 3, 'renewal-2': 3 } };
-    expect(healedPct(start(codex))).toBeCloseTo(42, 8);
+    expect(healedPct(start(codex))).toBeCloseTo(TUNING.LEVEL_UP_HEAL_PCT + TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT + 9, 8);
   });
 });
 
@@ -363,25 +363,27 @@ describe('skillCompletionExp', () => {
     };
   }
   // Level 10, so expToNextLevel is 260.
+  const DAY_SHARE = 260 * TUNING.DAILY_SKILL_LEVEL_SHARE;
+  const WEEK_SHARE = 260 * TUNING.WEEKLY_SKILL_LEVEL_SHARE;
   const MONDAY = new Date('2026-10-26T20:00:00Z'); // a Monday in Pacific time, which dayOfWeekIndex reads
   const TUESDAY_INDEX = 1;
 
-  it('splits a day of dailies into 20% of a level', () => {
+  it('splits a day of dailies into the daily share of a level', () => {
     const dailies = Array.from({ length: 8 }, (_, i) => makeHabit({ id: `d${i}` }));
-    expect(skillCompletionExp(10, dailies[0], dailies, MONDAY)).toBeCloseTo(6.5);
+    expect(skillCompletionExp(10, dailies[0], dailies, MONDAY)).toBeCloseTo(DAY_SHARE / 8);
   });
   it('counts only the dailies due that day, plus the skill itself', () => {
     const due = Array.from({ length: 4 }, (_, i) => makeHabit({ id: `d${i}` }));
     const resting = Array.from({ length: 4 }, (_, i) => makeHabit({ id: `r${i}`, days: [TUESDAY_INDEX] }));
-    expect(skillCompletionExp(10, due[0], [...due, ...resting], MONDAY)).toBeCloseTo(13);
-    expect(skillCompletionExp(10, resting[0], [...due, ...resting], MONDAY)).toBeCloseTo(10.4);
-    expect(skillCompletionExp(10, resting[0], resting, MONDAY)).toBeCloseTo(52);
+    expect(skillCompletionExp(10, due[0], [...due, ...resting], MONDAY)).toBeCloseTo(DAY_SHARE / 4);
+    expect(skillCompletionExp(10, resting[0], [...due, ...resting], MONDAY)).toBeCloseTo(DAY_SHARE / 5);
+    expect(skillCompletionExp(10, resting[0], resting, MONDAY)).toBeCloseTo(DAY_SHARE);
   });
-  it('splits a week of weeklies into 30% of a level, apart from the dailies', () => {
+  it('splits a week of weeklies into the weekly share of a level, apart from the dailies', () => {
     const weeklies = Array.from({ length: 3 }, (_, i) => makeHabit({ id: `w${i}`, period: 'weekly' }));
     const daily = makeHabit({ id: 'd' });
-    expect(skillCompletionExp(10, weeklies[0], [daily, ...weeklies], MONDAY)).toBeCloseTo(26);
-    expect(skillCompletionExp(10, daily, [daily, ...weeklies], MONDAY)).toBeCloseTo(52);
+    expect(skillCompletionExp(10, weeklies[0], [daily, ...weeklies], MONDAY)).toBeCloseTo(WEEK_SHARE / 3);
+    expect(skillCompletionExp(10, daily, [daily, ...weeklies], MONDAY)).toBeCloseTo(DAY_SHARE);
   });
 });
 

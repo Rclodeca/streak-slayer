@@ -46,7 +46,7 @@ describe('talentAmount', () => {
     expect(talentAmount(def('weekly-might'), 3)).toBe('+15%');
     expect(talentAmount(def('last-stand'), 2)).toBe('−10%');
     expect(talentAmount(def('scavenger'), 3)).toBe('15%');
-    expect(talentAmount(def('renewal'), 2)).toBe('+4%');
+    expect(talentAmount(def('renewal'), 2)).toBe('+3%');
   });
 
   it('names a single-rank node’s effect once learned', () => {

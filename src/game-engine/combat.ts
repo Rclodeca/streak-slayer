@@ -406,8 +406,9 @@ type BossStrike = {
  * roll (using the boss's crit chance), then cut by the player's armor or
  * magic resist. The boss's own lifesteal% (if any) heals it for a percent of
  * that same damage, capped at its max health. Boss hits never apply
- * Wounds: that's a boss skill now (see bossSkills.ts). `currentDayKey` must
- * be `dailyPeriodKey(now)`.
+ * Wounds: that's a boss skill now (see bossSkills.ts). Each hit already
+ * landed today softens this one by MISS_DAMAGE_FALLOFF (a dodge doesn't
+ * count). `currentDayKey` must be `dailyPeriodKey(now)`.
  */
 function bossStrike(
   character: Character,
@@ -424,9 +425,11 @@ function bossStrike(
   // Unbroken: rolled every strike too. A dodged hit does nothing: no damage, no boss lifesteal or Bloodlust heal, Dawnguard Helm kept, hero not flagged as hurt.
   const dodgeRoll = rng();
   if (dodgeRoll * 100 < dodgeChancePct(character)) return { character, boss, wasCrit: false, attackType, dodged: true };
+  // Each boss hit already landed today softens this one (MISS_DAMAGE_FALLOFF).
+  const hitsToday = character.bossHitsToday?.dayKey === currentDayKey ? character.bossHitsToday.count : 0;
   const damage =
     attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[difficulty] / 1.5) *
-    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1);
+    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1) * TUNING.MISS_DAMAGE_FALLOFF ** hitsToday;
   // Sunder (a boss skill) halves the player's armor and magic resist.
   const sunderFactor = activeSunder(character, currentDayKey) ? TUNING.BOSS_SKILLS.SUNDER_FACTOR : 1;
   const playerResistStat =
@@ -452,7 +455,7 @@ function bossStrike(
   const hitCharacter = dawnguard ? stampEffectDay(character, 'dawnguard', currentDayKey) : character;
 
   return {
-    character: { ...hitCharacter, currentHealth: newHealth },
+    character: { ...hitCharacter, currentHealth: newHealth, bossHitsToday: { dayKey: currentDayKey, count: hitsToday + 1 } },
     boss: newBoss,
     wasCrit,
     attackType,
@@ -594,7 +597,7 @@ export function resolveBossDefeatIfDead(
  * (never below 1, EXP to 0), a tenth of the carried gold, and one random
  * equipped item. Everything else in the run stays: talents, items, slots,
  * enchants, habits and their streaks. The hero rises at full health at the new
- * level. The next boss is a new one, two bosses back in power (never below
+ * level. The next boss is a new one, three bosses back in power (never below
  * 1) but shown as the same number, so the gap stays until prestige and each
  * death widens it. A lost relic leaves earnedRelicIds, so it can be bought
  * again. Rng order: the lost item, then the boss.

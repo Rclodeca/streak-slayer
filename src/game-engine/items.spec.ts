@@ -155,18 +155,18 @@ describe('dropRarityShares', () => {
   it('matches the table at each row', () => {
     expectShares(dropRarityShares(1), [75, 23, 2, 0]);
     expectShares(dropRarityShares(5), [55, 35.5, 9, 0.5]);
-    expectShares(dropRarityShares(10), [30, 43, 25, 2]);
-    expectShares(dropRarityShares(20), [10, 44, 39, 7]);
-    expectShares(dropRarityShares(30), [0, 40, 49, 11]);
+    expectShares(dropRarityShares(14), [30, 43, 25, 2]);
+    expectShares(dropRarityShares(29), [10, 44, 39, 7]);
+    expectShares(dropRarityShares(44), [0, 40, 49, 11]);
   });
 
   it('blends linearly between rows', () => {
-    expectShares(dropRarityShares(15), [20, 43.5, 32, 4.5]);
-    expectShares(dropRarityShares(25), [5, 42, 44, 9]);
+    expectShares(dropRarityShares(21.5), [20, 43.5, 32, 4.5]);
+    expectShares(dropRarityShares(36.5), [5, 42, 44, 9]);
   });
 
-  it('uses the level-30 row for every level past it', () => {
-    expect(dropRarityShares(45)).toEqual(dropRarityShares(30));
+  it('uses the level-44 row for every level past it', () => {
+    expect(dropRarityShares(60)).toEqual(dropRarityShares(44));
   });
 
   it('always sums to 1', () => {
@@ -180,8 +180,8 @@ describe('dropRarityShares', () => {
 
   it("doubles the rare and epic shares for Magpie's Diamond, then scales back to 100%", () => {
     expectShares(dropRarityShares(1, true), [7500 / 102, 2300 / 102, 400 / 102, 0]);
-    expectShares(dropRarityShares(10, true), [3000 / 127, 4300 / 127, 5000 / 127, 400 / 127]);
-    expectShares(dropRarityShares(30, true), [0, 4000 / 160, 9800 / 160, 2200 / 160]);
+    expectShares(dropRarityShares(14, true), [3000 / 127, 4300 / 127, 5000 / 127, 400 / 127]);
+    expectShares(dropRarityShares(44, true), [0, 4000 / 160, 9800 / 160, 2200 / 160]);
   });
 });
 
@@ -246,10 +246,10 @@ describe('describeItemBonus', () => {
 });
 
 describe('itemDropCountOdds', () => {
-  it('is 50/40/10 at level 1 and 20/70/10 from level 10, blended between', () => {
+  it('is 50/40/10 at level 1 and 20/70/10 from level 14, blended between', () => {
     expect(itemDropCountOdds(1)).toEqual({ 1: 50, 2: 40, 3: 10 });
-    expect(itemDropCountOdds(5.5)).toEqual({ 1: 35, 2: 55, 3: 10 });
-    expect(itemDropCountOdds(10)).toEqual({ 1: 20, 2: 70, 3: 10 });
+    expect(itemDropCountOdds(7.5)).toEqual({ 1: 35, 2: 55, 3: 10 });
+    expect(itemDropCountOdds(14)).toEqual({ 1: 20, 2: 70, 3: 10 });
     expect(itemDropCountOdds(40)).toEqual({ 1: 20, 2: 70, 3: 10 });
   });
 });
@@ -319,10 +319,10 @@ describe('rollItemDrops', () => {
     for (const rarity of SHARE_ORDER) expect(Math.abs(counts[rarity] / rolls - shares[rarity]), rarity).toBeLessThan(0.03);
   });
 
-  it('never drops an epic at level 1, or a common from level 30', () => {
+  it('never drops an epic at level 1, or a common from level 44', () => {
     for (let seed = 0; seed < 300; seed++) {
       expect(rollItemDrops(makeCharacter({ level: 1 }), createRng(seed)).some((item) => item.rarity === 'epic')).toBe(false);
-      expect(rollItemDrops(makeCharacter({ level: 30 }), createRng(seed)).some((item) => item.rarity === 'common')).toBe(false);
+      expect(rollItemDrops(makeCharacter({ level: 44 }), createRng(seed)).some((item) => item.rarity === 'common')).toBe(false);
     }
   });
 
@@ -344,7 +344,7 @@ describe('rollItemDrops', () => {
 
   it('drops nothing, and offers nothing, when only 0% rarities are left', () => {
     const allBut = (rarity: string) => ITEM_CATALOG.filter((i) => i.rarity !== rarity).map((i) => i.id);
-    const onlyCommons = makeCharacter({ level: 30, ownedItemIds: allBut('common') });
+    const onlyCommons = makeCharacter({ level: 44, ownedItemIds: allBut('common') });
     const onlyEpics = makeCharacter({ level: 1, ownedItemIds: allBut('epic') });
     for (const character of [onlyCommons, onlyEpics]) {
       expect(rollItemDrops(character, createRng(1))).toEqual([]);
@@ -395,7 +395,7 @@ describe('relics', () => {
     const rareOrEpicShare = (equipped: string[]) => {
       let hits = 0;
       for (let seed = 0; seed < 3000; seed++) {
-        const [item] = rollItemDrops(makeCharacter({ level: 10, equippedItemIds: equipped, ownedItemIds: equipped }), createRng(seed));
+        const [item] = rollItemDrops(makeCharacter({ level: 14, equippedItemIds: equipped, ownedItemIds: equipped }), createRng(seed));
         if (item.rarity === 'epic' || item.rarity === 'rare') hits += 1;
       }
       return hits / 3000;

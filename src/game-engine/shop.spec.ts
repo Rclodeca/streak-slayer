@@ -56,11 +56,11 @@ describe('stockShop', () => {
     }
   });
 
-  it('the headline is at least uncommon below level 10, and at least rare from level 10', () => {
+  it('the headline is at least uncommon below level 14, and at least rare from level 14', () => {
     for (const shop of stocks(1)) expect(RANK[rarityOf(shop.featured!)]).toBeGreaterThanOrEqual(RANK.uncommon);
-    for (const shop of stocks(10)) expect(RANK[rarityOf(shop.featured!)]).toBeGreaterThanOrEqual(RANK.rare);
-    expect(headlineFloor(9)).toBe('uncommon');
-    expect(headlineFloor(10)).toBe('rare');
+    for (const shop of stocks(14)) expect(RANK[rarityOf(shop.featured!)]).toBeGreaterThanOrEqual(RANK.rare);
+    expect(headlineFloor(13)).toBe('uncommon');
+    expect(headlineFloor(14)).toBe('rare');
   });
 
   it("others of a rare-or-better headline's rarity cost gems, at most two, ahead of the gold rows", () => {
@@ -86,10 +86,10 @@ describe('stockShop', () => {
     for (const shop of plain) expect(shop.wares.some((w) => w.currency === 'gems')).toBe(false);
   });
 
-  it('the shop table is kinder than the drop table early, and the same from level 10', () => {
+  it('the shop table is kinder than the drop table early, and the same from level 14', () => {
     expect(shopRarityShares(1).rare).toBeGreaterThan(dropRarityShares(1).rare);
     expect(shopRarityShares(1).epic).toBeGreaterThan(0);
-    expect(shopRarityShares(10)).toEqual(dropRarityShares(10));
+    expect(shopRarityShares(14)).toEqual(dropRarityShares(14));
     expect(shopRarityShares(25)).toEqual(dropRarityShares(25));
   });
 

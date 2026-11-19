@@ -364,16 +364,16 @@ describe('Renewal', () => {
     return { pct: ((grown.character.currentHealth - 1) / max) * 100, levels: grown.levelsGained };
   };
 
-  it('adds 2% of max HP a rank to the level-up heal', () => {
+  it('adds 1.5% of max HP a rank to the level-up heal', () => {
     const base = levelUpHeal(hero()).pct;
     expect(base).toBeCloseTo(TUNING.LEVEL_UP_HEAL_PCT, 8);
-    expect(levelUpHeal(hero({ renewal: 3, 'renewal-2': 3 })).pct).toBeCloseTo(base + 12, 8);
+    expect(levelUpHeal(hero({ renewal: 3, 'renewal-2': 3 })).pct).toBeCloseTo(base + 9, 8);
   });
 
   it('adds up with Sage’s Codex rather than replacing the base', () => {
     const codex = levelUpHeal(hero({}, ['sages-codex'])).pct;
     expect(codex).toBeCloseTo(TUNING.LEVEL_UP_HEAL_PCT + TUNING.ITEM_EFFECTS.SAGES_INSIGHT_LEVEL_UP_HEAL_PCT, 8);
-    expect(levelUpHeal(hero({ renewal: 3, 'renewal-2': 3 }, ['sages-codex'])).pct).toBeCloseTo(codex + 12, 8);
+    expect(levelUpHeal(hero({ renewal: 3, 'renewal-2': 3 }, ['sages-codex'])).pct).toBeCloseTo(codex + 9, 8);
   });
 });
 

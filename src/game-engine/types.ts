@@ -126,6 +126,8 @@ export interface Character {
   undoDayKey?: string;
   // Magic skills used today while Spellweave is equipped (see spellweaveStacks).
   spellweave?: { dayKey: string; count: number };
+  // Boss hits that landed today, so each later one hits softer (TUNING.MISS_DAMAGE_FALLOFF).
+  bossHitsToday?: { dayKey: string; count: number };
   // Crits landed today while Void Longbow is equipped (see critStreakStacks).
   critStreak?: { dayKey: string; count: number };
   // Whether the quests section is open (see questsOpen in quests.ts). A new

@@ -80,9 +80,9 @@ describe('questSlotExp', () => {
     expect(questSlotExp(10, 'hard', 0)).toBeCloseTo(medium * 1.3, 10);
   });
 
-  it('defaults to 15% of expToNextLevel (with a floor) for a medium slot-1 quest', () => {
+  it('defaults to QUEST_TARGET_LEVEL_FRACTION of expToNextLevel (with a floor) for a medium slot-1 quest', () => {
     for (const level of [1, 5, 10, 25]) {
-      expect(questSlotExp(level, 'medium', 0)).toBeCloseTo(Math.max(TUNING.QUEST_MIN_TARGET_EXP, expToNextLevel(level) * 0.15), 10);
+      expect(questSlotExp(level, 'medium', 0)).toBeCloseTo(Math.max(TUNING.QUEST_MIN_TARGET_EXP, expToNextLevel(level) * TUNING.QUEST_TARGET_LEVEL_FRACTION), 10);
     }
   });
 

@@ -73,7 +73,7 @@ describe('WardrobeSection', () => {
 
   it("sends the Shop button to the Shop's Looks side", async () => {
     const characterStore = useCharacterStore();
-    characterStore.setCharacter({ ...characterStore.character, level: 10 });
+    characterStore.setCharacter({ ...characterStore.character, level: 12 });
     const wrapper = mount(WardrobeSection);
     await wrapper.find('.wardrobe-more').trigger('click');
     await flushPromises();
