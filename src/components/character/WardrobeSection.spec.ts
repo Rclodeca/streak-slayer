@@ -3,7 +3,7 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { SKIN_CATALOG, createCharacter, createRng, heroArt, sceneArt } from '../../game-engine';
+import { SKIN_CATALOG, UNLOCK_LEVELS, createCharacter, createRng, heroArt, sceneArt } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
@@ -15,7 +15,7 @@ describe('WardrobeSection', () => {
   beforeEach(() => {
     localStorage.clear();
     setActivePinia(createPinia());
-    useCharacterStore().setCharacter(createCharacter(createRng(1), 'warrior'));
+    useCharacterStore().setCharacter({ ...createCharacter(createRng(1), 'warrior'), looksUnlocked: true });
   });
 
   const warrior = SKIN_CATALOG.filter((skin) => skin.heroClass === 'warrior' && !skin.mythic);
@@ -67,8 +67,12 @@ describe('WardrobeSection', () => {
     expect(tile(wrapper, 'Stone Hall').classes()).toContain('worn');
   });
 
-  it('has no Shop button while Looks is still sealed', () => {
-    expect(mount(WardrobeSection).find('.wardrobe-more').exists()).toBe(false);
+  it('is sealed, with no looks or Shop button, while Looks is still sealed', () => {
+    useCharacterStore().setCharacter(createCharacter(createRng(1), 'warrior'));
+    const wrapper = mount(WardrobeSection);
+    expect(wrapper.find('.lock-text').text()).toBe(`Sealed until level ${UNLOCK_LEVELS.looks}`);
+    expect(wrapper.find('.wardrobe-tile').exists()).toBe(false);
+    expect(wrapper.find('.wardrobe-more').exists()).toBe(false);
   });
 
   it("sends the Shop button to the Shop's Looks side", async () => {

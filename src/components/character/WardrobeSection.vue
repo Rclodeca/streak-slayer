@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ChevronRight, Gem, House, Shirt, Swords, UserRound } from 'lucide-vue-next';
-import { shopGateOpen } from '../../game-engine';
+import { ChevronRight, Gem, House, Lock, Shirt, Swords, UserRound } from 'lucide-vue-next';
+import { shopGateOpen, UNLOCK_LEVELS } from '../../game-engine';
 import { useSkins } from '../../composables/useSkins';
 import { useSkinTiles } from '../../composables/useSkinTiles';
 import type { SkinTile } from '../../composables/useSkinTiles';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
+import SealedNotice from '../quests/SealedNotice.vue';
 import SectionTitle from '../ui/SectionTitle.vue';
 
 // The Hero tab's wardrobe (docs/mockups/wardrobe-inline.html, option A): the
@@ -14,7 +15,7 @@ import SectionTitle from '../ui/SectionTitle.vue';
 // it, so the pinned home base above changes at once. The hero's row is the
 // class being played's (only it shows in the home base). Each slot's default
 // is always owned, so no row is empty. Buying is the Shop's Looks side, one
-// button away once Looks is open. Art is drawn at 1 CSS px per art pixel: heroes their 64px base
+// button away once Looks is open; sealed like Tasks until then. Art is drawn at 1 CSS px per art pixel: heroes their 64px base
 // build, backdrops 216 x 116 scaled to the tile's width, whole.
 const skins = useSkins();
 const { tilesFor, stateOf } = useSkinTiles();
@@ -42,11 +43,13 @@ function shopLooks() {
 </script>
 
 <template>
-  <section id="wardrobe" class="stat-group wardrobe">
+  <section id="wardrobe" class="stat-group wardrobe" :class="{ locked: !looksOpen }">
     <div class="hero-page-header">
-      <SectionTitle title="Wardrobe" :aside="`${lookCount} looks`"><Shirt :size="18" class="section-icon" /></SectionTitle>
+      <SectionTitle v-if="looksOpen" title="Wardrobe" :aside="`${lookCount} looks`"><Shirt :size="18" class="section-icon" /></SectionTitle>
+      <SectionTitle v-else title="Wardrobe"><Lock :size="18" class="section-icon lock-icon" /></SectionTitle>
     </div>
-    <div v-for="group in groups" :key="group.kind" class="wardrobe-group" :class="`wardrobe-${group.kind}`">
+    <SealedNotice v-if="!looksOpen" :level="UNLOCK_LEVELS.looks" />
+    <div v-for="group in looksOpen ? groups : []" :key="group.kind" class="wardrobe-group" :class="`wardrobe-${group.kind}`">
       <h3 class="wardrobe-label"><component :is="group.icon" :size="14" aria-hidden="true" />{{ group.title }}</h3>
       <ul class="wardrobe-tiles" :class="group.kind === 'hero' ? 'heroes' : 'scenes'">
         <li v-for="tile in group.tiles" :key="tile.key">
@@ -65,7 +68,7 @@ function shopLooks() {
       </ul>
     </div>
     <button v-if="looksOpen" type="button" class="primary-button wardrobe-more" @click="shopLooks">
-      <Gem :size="18" class="wardrobe-gem" aria-hidden="true" />More looks in the Shop<ChevronRight :size="18" aria-hidden="true" />
+      <Gem :size="18" class="wardrobe-gem" aria-hidden="true" />Shop more looks<ChevronRight :size="18" aria-hidden="true" />
     </button>
   </section>
 </template>
