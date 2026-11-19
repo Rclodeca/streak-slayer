@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Death + after prestige</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The death setback page (after the hooded cutscene) and the hero pick after a prestige, in Pixel-cut Moonlit. */
+:root {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --muted: #9a9ab4; --moon: #dfe0f0; --brass: #d2bb85; --brass-solid: #b39a66;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19;
+  --field: #12131c; --danger: #e86154; --hp: #a82a20;
+  --gem: #6fd6ea; --coin: #f0c64e; --exp: #d8b46a; --heal: #4ac777;
+  --rare: #5f95e6; --epic: #b57be8; --relic: #f58a35;
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 28px 16px 80px; }
+h1 { text-align: center; font: 600 15px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 8px; max-width: 760px; font-size: 14.5px; color: var(--muted); }
+h2.part { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .24em; color: var(--brass); margin: 52px 0 4px; text-transform: uppercase; }
+.flow { text-align: center; font-size: 13.5px; color: var(--muted); margin: 0 auto 22px; max-width: 760px; }
+.flow b { color: var(--text); }
+.opt { margin: 0 auto 44px; max-width: 1200px; }
+.opt > h3 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.opt > p { text-align: center; margin: 0 auto 14px; font-size: 13.5px; max-width: 640px; }
+.row { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+figure { margin: 0; }
+figcaption { text-align: center; font: 600 10px 'Cinzel', serif; letter-spacing: .2em; color: #8f8b80; margin-top: 8px; text-transform: uppercase; }
+svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -0.13em; }
+img { image-rendering: pixelated; }
+
+.phone { position: relative; width: 360px; height: 740px; max-width: 100%; overflow: hidden; background: var(--bg); border: 2px solid #22233a; display: flex; flex-direction: column; }
+
+/* ---- shared bits ---- */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; padding: 0 16px; border: 0; clip-path: var(--px2); font: 700 16px 'Alegreya Sans'; cursor: pointer; }
+.btn.moon { background: var(--moon); color: #17172a; border-bottom: 3px solid #8e8fae; }
+.btn.ghost { background: #26263f; color: var(--text-h); border-bottom: 3px solid #12121e; }
+.btn.gem { background: #1f4652; color: #e9fbff; border-bottom: 3px solid #0c2229; box-shadow: inset 0 0 0 2px #3f93a6; }
+.btn.gem .price, .btn .price { display: inline-flex; align-items: center; gap: 3px; font-weight: 800; color: var(--gem); }
+.btn[disabled] { opacity: .45; cursor: default; }
+.note { text-align: center; font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.gem-t { color: var(--gem); } .coin-t { color: var(--coin); } .dmg-t { color: var(--danger); } .heal-t { color: var(--heal); }
+.panel { background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); clip-path: var(--px3); }
+.sunk { background: var(--field); box-shadow: inset 0 3px 0 rgba(0,0,0,.35), inset 0 0 0 1px #2c2c47; clip-path: var(--px2); }
+.cap { font: 700 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+
+/* The arena with the boss over the fallen hero. */
+.arena { position: relative; flex: none; height: 232px; overflow: hidden; background: #0e0f17; }
+.arena .bg { position: absolute; left: 50%; bottom: 0; width: 432px; height: 232px; transform: translateX(-50%); filter: brightness(.45) saturate(.6); }
+.arena .boss { position: absolute; right: 40px; bottom: 30px; width: 116px; transform: scaleX(-1); filter: brightness(.9); }
+.arena .fallen { position: absolute; left: 56px; bottom: 28px; width: 84px; transform: rotate(-90deg); filter: grayscale(.85) brightness(.85); z-index: 1; }
+.arena .shade { position: absolute; inset: 0; background: linear-gradient(transparent 40%, var(--bg)); }
+.arena .red { position: absolute; inset: 0; background: radial-gradient(80% 70% at 50% 100%, rgba(168,42,32,.28), transparent 70%); }
+
+/* ===================== DEATH A · the toll ===================== */
+.A .body { flex: 1; display: flex; flex-direction: column; padding: 0 16px 18px; margin-top: -26px; position: relative; }
+.A .fell { margin: 0; text-align: center; font: 700 28px 'Cinzel', serif; letter-spacing: .16em; color: #e46a5a; text-shadow: 0 2px 0 #3a0e0a; }
+.A .by { margin: 2px 0 14px; text-align: center; font-size: 14px; color: var(--muted); }
+.A .toll { padding: 12px 14px; }
+.A .toll ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.A .toll li { display: flex; align-items: center; gap: 10px; font: 700 16px 'Alegreya Sans'; color: var(--text-h); }
+.A .toll li .ic { width: 30px; height: 30px; display: grid; place-items: center; font-size: 17px; flex: none; }
+.A .toll li .val { margin-left: auto; font-weight: 800; font-variant-numeric: tabular-nums; }
+.A .toll li.good { color: var(--muted); font-weight: 500; font-size: 14.5px; border-top: 1px solid #3b3a63; padding-top: 9px; }
+.A .acts { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.A .short-row { display: flex; gap: 8px; }
+.A .short-row .btn { flex: 1; }
+.A .have { display: inline-flex; align-items: center; gap: 3px; font-weight: 800; }
+
+/* ===================== DEATH B · two paths ===================== */
+.B .arena { height: 190px; }
+.B .arena .bg { height: 232px; }
+.B .body { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 14px 18px; margin-top: -40px; position: relative; }
+.B .fell { margin: 0 0 2px; text-align: center; font: 700 24px 'Cinzel', serif; letter-spacing: .16em; color: #e46a5a; text-shadow: 0 2px 0 #3a0e0a; }
+.B .path { padding: 14px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.B .path h4 { margin: 0; display: flex; align-items: center; gap: 8px; font: 700 20px 'Alegreya', serif; color: var(--text-h); }
+.B .path h4 .ic { font-size: 20px; }
+.B .path p { margin: 0; font-size: 14.5px; }
+.B .path.revive { box-shadow: inset 2px 2px 0 #3f93a6, inset -2px -2px 0 #133640; background: #1d3640; }
+.B .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.B .chip { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 9px; font: 800 13.5px 'Alegreya Sans'; color: var(--text-h); background: var(--field); clip-path: var(--px2); box-shadow: inset 0 0 0 1px #3b3a63; }
+.B .chip.good { color: var(--heal); }
+.B .count { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.B .bar { flex: 1; height: 8px; background: var(--field); clip-path: var(--px2); position: relative; }
+.B .bar i { position: absolute; inset: 0 auto 0 0; background: var(--gem); }
+
+/* ===================== DEATH C · on the stage ===================== */
+.C .stage { position: relative; flex: none; height: 300px; overflow: hidden; background: #0e0f17; }
+.C .stage .bg { position: absolute; left: 50%; bottom: 0; width: 560px; height: 300px; transform: translateX(-50%); filter: brightness(.5) saturate(.6); }
+.C .stage .boss { position: absolute; right: 36px; bottom: 40px; width: 124px; transform: scaleX(-1); }
+.C .stage .fallen { position: absolute; left: 56px; bottom: 36px; width: 88px; transform: rotate(-90deg); filter: grayscale(.85) brightness(.85); }
+.C .stage .bossbar { position: absolute; left: 12px; right: 12px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.C .stage .bossbar .nm { font: 700 13px 'Cinzel', serif; letter-spacing: .16em; color: #c9c9dd; }
+.C .stage .bossbar .hp { height: 8px; background: #2a1010; clip-path: var(--px2); }
+.C .stage .bossbar .hp i { display: block; height: 100%; width: 38%; background: var(--hp); }
+.C .stage .fell { position: absolute; left: 0; right: 0; top: 60px; z-index: 1; text-align: center; font: 700 30px 'Cinzel', serif; letter-spacing: .18em; color: #e46a5a; text-shadow: 0 2px 0 #3a0e0a, 0 0 18px rgba(168,42,32,.6); }
+.C .stage .line { position: absolute; left: 0; right: 0; top: 102px; z-index: 1; text-align: center; font: 600 15px 'Alegreya', serif; color: #b9b9cf; }
+.C .board { flex: 1; padding: 12px 14px; opacity: .18; display: flex; flex-direction: column; gap: 7px; }
+.C .board i { display: block; height: 58px; background: var(--card); clip-path: var(--px3); }
+.C .sheet { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 16px 20px; background: #1b1b2e; box-shadow: 0 -3px 0 #2d2c50, 0 -14px 30px rgba(0,0,0,.6); display: flex; flex-direction: column; gap: 12px; }
+.C .sheet .grab { width: 40px; height: 4px; background: #3b3a63; margin: -6px auto 0; }
+.C .sheet .cap { text-align: center; }
+.C .tollrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.C .tollrow div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px; font: 800 15px 'Alegreya Sans'; color: var(--text-h); }
+.C .tollrow div small { font: 500 11.5px 'Alegreya Sans'; color: var(--muted); }
+.C .tollrow .ic { font-size: 16px; }
+.C .pair { display: flex; gap: 8px; }
+.C .pair .btn { flex: 1; }
+
+/* ===================== AFTER PRESTIGE ===================== */
+.P { --rank: var(--rare); }
+.P > .opt { width: 360px; }
+.P .phone { padding: 0 18px 18px; }
+.pick { position: relative; height: 210px; display: flex; align-items: center; justify-content: space-between; }
+.pick .turn { width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); font-size: 26px; background: none; border: 0; }
+.pick .hero { position: absolute; left: 50%; bottom: 22px; width: 128px; transform: translateX(-50%); }
+.pick .glow { position: absolute; left: 50%; bottom: 0; width: 220px; height: 90px; transform: translateX(-50%); background: radial-gradient(50% 50% at 50% 70%, rgba(224,138,60,.32), transparent 70%); }
+.pick .ground { position: absolute; left: 14%; right: 14%; bottom: 18px; height: 3px; background: #2a2a44; }
+.pickname { text-align: center; font: 700 13px 'Cinzel', serif; letter-spacing: .22em; color: var(--text-h); margin: 2px 0 4px; text-transform: uppercase; }
+.pickname .i { color: var(--danger); margin-right: 6px; }
+.dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.dots i { width: 6px; height: 6px; background: #3b3a63; } .dots i.on { background: var(--moon); }
+.plate { width: 54px; height: 54px; display: grid; place-items: center; font: 700 24px 'Cinzel', serif; color: #fff; background: color-mix(in srgb, var(--rank) 30%, #15152a); box-shadow: inset 0 0 0 3px var(--rank), 0 0 26px color-mix(in srgb, var(--rank) 55%, transparent); clip-path: var(--px3); }
+.rankline { font: 700 11px 'Cinzel', serif; letter-spacing: .24em; text-transform: uppercase; color: var(--rank); }
+.btn.rank { background: var(--rank); color: #0f1020; border-bottom: 3px solid color-mix(in srgb, var(--rank) 50%, #000); font-family: 'Cinzel', serif; letter-spacing: .18em; }
+.kept { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.kept span { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; font: 700 13.5px 'Alegreya Sans'; color: var(--text-h); background: var(--field); clip-path: var(--px2); box-shadow: inset 0 0 0 1px #3b3a63; }
+.kept span .i { color: var(--brass); }
+
+/* PA · rank first */
+.PA .top { padding-top: 46px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.PA .top h4 { margin: 2px 0 0; font: 700 24px 'Alegreya', serif; color: var(--text-h); }
+.PA .top p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.PA .ask { text-align: center; margin: 18px 0 0; font: 700 11px 'Cinzel', serif; letter-spacing: .22em; color: var(--muted); text-transform: uppercase; }
+.PA .foot { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+
+/* PB · the statue stays */
+.PB .scene { position: relative; height: 300px; margin: 0 -18px; overflow: hidden; background: radial-gradient(60% 50% at 50% 78%, rgba(224,138,60,.18), transparent 70%), #0e0f17; }
+.PB .statue { position: absolute; left: 20px; bottom: 58px; width: 92px; filter: grayscale(1) brightness(.62) contrast(1.1); }
+.PB .ped { position: absolute; left: 16px; bottom: 34px; width: 100px; height: 26px; background: #3a3a52; box-shadow: inset 0 3px 0 #55556f, inset 0 -3px 0 #22223a; clip-path: var(--px2); }
+.PB .plaque { position: absolute; left: 12px; bottom: 6px; width: 108px; text-align: center; font: 700 12px 'Alegreya', serif; color: #c8c8da; }
+.PB .plaque small { display: block; font: 500 10.5px 'Alegreya Sans'; color: var(--muted); }
+.PB .hero { position: absolute; right: 70px; bottom: 36px; width: 136px; }
+.PB .glow { position: absolute; right: 30px; bottom: 10px; width: 220px; height: 100px; background: radial-gradient(50% 50% at 50% 70%, rgba(224,138,60,.34), transparent 70%); }
+.PB .turn { position: absolute; bottom: 92px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); font-size: 26px; }
+.PB .turn.l { right: 210px; } .PB .turn.r { right: 4px; }
+.PB .eyebrow { position: absolute; left: 0; right: 0; top: 42px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.PB .title { text-align: center; margin: 10px 0 2px; font: 700 24px 'Alegreya', serif; color: var(--text-h); }
+.PB .sub { text-align: center; margin: 0 0 6px; color: var(--muted); font-size: 14.5px; }
+.PB .foot { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+
+/* PC · the ledger */
+.PC .head { padding-top: 40px; display: flex; align-items: center; gap: 14px; }
+.PC .head h4 { margin: 2px 0 0; font: 700 20px 'Alegreya', serif; color: var(--text-h); }
+.PC .head p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.PC .gains { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 16px 0 4px; }
+.PC .gains div { display: flex; flex-direction: column; align-items: center; padding: 7px 2px; font: 800 15px 'Alegreya Sans'; color: var(--text-h); }
+.PC .gains small { font: 500 11px 'Alegreya Sans'; color: var(--muted); }
+.PC .pick { height: 180px; }
+.PC .pick .hero { width: 112px; }
+.PC .lists { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.PC .lists div { padding: 9px 11px; }
+.PC .lists ul { list-style: none; margin: 5px 0 0; padding: 0; font-size: 13.5px; display: flex; flex-direction: column; gap: 2px; color: var(--text-h); }
+.PC .lists .gone li { color: var(--muted); }
+.PC .foot { margin-top: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="gem" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></symbol>
+    <symbol id="coin" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></symbol>
+    <symbol id="down" viewBox="0 0 24 24"><path d="m7 6 5 5 5-5"/><path d="m7 13 5 5 5-5"/></symbol>
+    <symbol id="sword" viewBox="0 0 24 24"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/></symbol>
+    <symbol id="heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+    <symbol id="skull" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></symbol>
+    <symbol id="up" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></symbol>
+    <symbol id="flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+    <symbol id="tree" viewBox="0 0 24 24"><path d="M12 22v-7"/><path d="M9 9a3 3 0 1 1 6 0 3 3 0 0 1 3 3 3 3 0 0 1-3 3H9a3 3 0 0 1-3-3 3 3 0 0 1 3-3z"/></symbol>
+    <symbol id="gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></symbol>
+    <symbol id="lt" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="gt" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="hit" viewBox="0 0 24 24"><path d="m14.5 17.5-11-11V3h3.5l11 11"/><path d="m13 19 6-6"/></symbol>
+    <symbol id="exp" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M6 6l12 12M18 6 6 18"/></symbol>
+  </defs>
+</svg>
+
+<h1>Death + after prestige</h1>
+<p class="lede">Hero Ryan, level 14 warrior, fell to Iron Guardian at boss 6, carrying 200 gold, revive 15 gems. The real numbers: a death takes 1 level (and that level's EXP), 10% of carried gold and one worn item at random, then the next boss is weaker (boss 6 at the strength of boss 3), and you rise at full health. A revive costs 15 gems and keeps everything, at half health.</p>
+
+<h2 class="part">Death</h2>
+<p class="flow"><b>Hooded cutscene</b> ("You died" + his line, as now) → <b>setback page</b> (below). C folds the cutscene into the stage instead.</p>
+
+<!-- ===================== A ===================== -->
+<section class="opt">
+  <h3>A · The toll</h3>
+  <p>One plain list of what rising costs, the weaker boss as the one good line, and two buttons. Short of gems, Revive greys and Get gems sits beside it.</p>
+  <div class="row">
+    <figure>
+      <div class="phone A">
+        <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+        <div class="body">
+          <p class="fell">You fell</p>
+          <p class="by">Iron Guardian · Boss 6</p>
+          <div class="panel toll">
+            <span class="cap">Rising costs</span>
+            <ul>
+              <li><span class="ic sunk dmg-t"><svg class="i"><use href="#down"/></svg></span>Level<span class="val">14 → 13</span></li>
+              <li><span class="ic sunk coin-t"><svg class="i"><use href="#coin"/></svg></span>Gold<span class="val coin-t">−20</span></li>
+              <li><span class="ic sunk"><svg class="i"><use href="#sword"/></svg></span>One worn item<span class="val" style="color:var(--muted);font-weight:500;font-size:13.5px">at random</span></li>
+              <li class="good"><svg class="i heal-t"><use href="#heart"/></svg>Full health. The next boss is weaker.</li>
+            </ul>
+          </div>
+          <div class="acts">
+            <button class="btn gem">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+            <p class="note" style="margin:-4px 0 0">Half health. Nothing lost.</p>
+            <button class="btn ghost">Accept the toll</button>
+          </div>
+        </div>
+      </div>
+      <figcaption>Can revive</figcaption>
+    </figure>
+    <figure>
+      <div class="phone A">
+        <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+        <div class="body">
+          <p class="fell">You fell</p>
+          <p class="by">Iron Guardian · Boss 6</p>
+          <div class="panel toll">
+            <span class="cap">Rising costs</span>
+            <ul>
+              <li><span class="ic sunk dmg-t"><svg class="i"><use href="#down"/></svg></span>Level<span class="val">14 → 13</span></li>
+              <li><span class="ic sunk coin-t"><svg class="i"><use href="#coin"/></svg></span>Gold<span class="val coin-t">−20</span></li>
+              <li><span class="ic sunk"><svg class="i"><use href="#sword"/></svg></span>One worn item<span class="val" style="color:var(--muted);font-weight:500;font-size:13.5px">at random</span></li>
+              <li class="good"><svg class="i heal-t"><use href="#heart"/></svg>Full health. The next boss is weaker.</li>
+            </ul>
+          </div>
+          <div class="acts">
+            <div class="short-row">
+              <button class="btn gem" disabled>Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+              <button class="btn moon">Get gems</button>
+            </div>
+            <p class="note" style="margin:-4px 0 0">You have <span class="have gem-t"><svg class="i"><use href="#gem"/></svg>10</span></p>
+            <button class="btn ghost">Accept the toll</button>
+          </div>
+        </div>
+      </div>
+      <figcaption>Short of gems</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===================== B ===================== -->
+<section class="opt">
+  <h3>B · Two paths</h3>
+  <p>The choice is the page: a Revive card and a Rise card, each saying what it gives and what it costs. Short of gems, the Revive card shows how far off you are and Get gems takes its button.</p>
+  <div class="row">
+    <figure>
+      <div class="phone B">
+        <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+        <div class="body">
+          <p class="fell">You fell</p>
+          <div class="panel path revive">
+            <h4><svg class="i ic gem-t"><use href="#gem"/></svg>Revive</h4>
+            <p>Fight on at half health. Nothing lost.</p>
+            <button class="btn gem">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+          </div>
+          <div class="panel path">
+            <h4><svg class="i ic" style="color:var(--moon)"><use href="#up"/></svg>Rise again</h4>
+            <p>Full health, against a weaker boss.</p>
+            <div class="chips">
+              <span class="chip"><svg class="i dmg-t"><use href="#down"/></svg>1 level</span>
+              <span class="chip"><svg class="i coin-t"><use href="#coin"/></svg>−20</span>
+              <span class="chip"><svg class="i"><use href="#sword"/></svg>1 item</span>
+            </div>
+            <button class="btn ghost">Rise again</button>
+          </div>
+        </div>
+      </div>
+      <figcaption>Can revive</figcaption>
+    </figure>
+    <figure>
+      <div class="phone B">
+        <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+        <div class="body">
+          <p class="fell">You fell</p>
+          <div class="panel path revive">
+            <h4><svg class="i ic gem-t"><use href="#gem"/></svg>Revive</h4>
+            <div class="count"><span class="gem-t" style="font-weight:800">10 / 15</span><span class="bar"><i style="width:66%"></i></span></div>
+            <button class="btn moon">Get gems</button>
+          </div>
+          <div class="panel path">
+            <h4><svg class="i ic" style="color:var(--moon)"><use href="#up"/></svg>Rise again</h4>
+            <p>Full health, against a weaker boss.</p>
+            <div class="chips">
+              <span class="chip"><svg class="i dmg-t"><use href="#down"/></svg>1 level</span>
+              <span class="chip"><svg class="i coin-t"><use href="#coin"/></svg>−20</span>
+              <span class="chip"><svg class="i"><use href="#sword"/></svg>1 item</span>
+            </div>
+            <button class="btn ghost">Rise again</button>
+          </div>
+        </div>
+      </div>
+      <figcaption>Short of gems</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===================== C ===================== -->
+<section class="opt">
+  <h3>C · On the stage</h3>
+  <p>No separate cutscene: the fight stage itself darkens, the boss stands over you, his line runs under "You fell", and a sheet rises from the bottom with the toll and both buttons. It never leaves the game, but it drops the hooded figure from death.</p>
+  <div class="row">
+    <figure>
+      <div class="phone C">
+        <div class="stage">
+          <img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" />
+          <div class="bossbar"><span class="nm">#6 Iron Guardian</span><span class="hp"><i></i></span></div>
+          <img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" />
+          <img class="fallen" src="../../public/sprites/player/warrior.png" alt="" />
+          <p class="fell">You fell</p>
+          <p class="line">Boss six. Further than most.</p>
+        </div>
+        <div class="board"><i></i><i></i><i></i><i></i></div>
+        <div class="sheet">
+          <span class="grab"></span>
+          <span class="cap">Rising costs</span>
+          <div class="tollrow">
+            <div class="sunk"><svg class="i ic dmg-t"><use href="#down"/></svg>Lv 13<small>−1 level</small></div>
+            <div class="sunk"><svg class="i ic coin-t"><use href="#coin"/></svg>−20<small>gold</small></div>
+            <div class="sunk"><svg class="i ic"><use href="#sword"/></svg>1<small>item</small></div>
+            <div class="sunk"><svg class="i ic heal-t"><use href="#heart"/></svg>Full<small>weaker boss</small></div>
+          </div>
+          <div class="pair">
+            <button class="btn ghost">Accept</button>
+            <button class="btn gem">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+          </div>
+          <p class="note" style="margin:-4px 0 0">Revive: half health, nothing lost.</p>
+        </div>
+      </div>
+      <figcaption>Can revive</figcaption>
+    </figure>
+    <figure>
+      <div class="phone C">
+        <div class="stage">
+          <img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" />
+          <div class="bossbar"><span class="nm">#6 Iron Guardian</span><span class="hp"><i></i></span></div>
+          <img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" />
+          <img class="fallen" src="../../public/sprites/player/warrior.png" alt="" />
+          <p class="fell">You fell</p>
+          <p class="line">They always come back.</p>
+        </div>
+        <div class="board"><i></i><i></i><i></i><i></i></div>
+        <div class="sheet">
+          <span class="grab"></span>
+          <span class="cap">Rising costs</span>
+          <div class="tollrow">
+            <div class="sunk"><svg class="i ic dmg-t"><use href="#down"/></svg>Lv 13<small>−1 level</small></div>
+            <div class="sunk"><svg class="i ic coin-t"><use href="#coin"/></svg>−20<small>gold</small></div>
+            <div class="sunk"><svg class="i ic"><use href="#sword"/></svg>1<small>item</small></div>
+            <div class="sunk"><svg class="i ic heal-t"><use href="#heart"/></svg>Full<small>weaker boss</small></div>
+          </div>
+          <div class="pair">
+            <button class="btn ghost">Accept</button>
+            <button class="btn moon">Get gems</button>
+          </div>
+          <p class="note" style="margin:-4px 0 0">Revive costs <span class="gem-t">15</span>. You have <span class="gem-t">10</span>.</p>
+        </div>
+      </div>
+      <figcaption>Short of gems</figcaption>
+    </figure>
+  </div>
+</section>
+
+<h2 class="part">After prestige</h2>
+<p class="flow"><b>Prestige popup</b> (the statue, as now) → <b>hero pick</b> (below) → hooded return line. Shown at Prestige I (rare blue); the page takes the new rank's colour, so III is violet and V ember.</p>
+
+<div class="row P">
+  <!-- PA -->
+  <section class="opt" style="margin:0">
+    <h3>A · Rank first</h3>
+    <p style="min-height:58px">The new rank is the headline, the retirement one plain line, then the pick. Rules dropped: a veteran knows them.</p>
+    <figure>
+      <div class="phone PA">
+        <div class="top">
+          <span class="plate">I</span>
+          <span class="rankline">Prestige I · Veteran</span>
+          <h4>Ryan retired at level 41</h4>
+          <p>Choose who carries the name.</p>
+        </div>
+        <div class="pick">
+          <span class="turn"><svg class="i"><use href="#lt"/></svg></span>
+          <span class="glow"></span><span class="ground"></span>
+          <img class="hero" src="../../public/sprites/player/ranger.png" alt="" />
+          <span class="turn"><svg class="i"><use href="#gt"/></svg></span>
+        </div>
+        <p class="pickname"><svg class="i" style="color:#f0d36a"><use href="#flame"/></svg> Ranger</p>
+        <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+        <div class="foot">
+          <div class="kept"><span><svg class="i"><use href="#flame"/></svg>Habits + ranks</span><span><svg class="i"><use href="#tree"/></svg>Talents</span><span><svg class="i"><use href="#gift"/></svg>Challenges</span></div>
+          <button class="btn rank">Begin</button>
+        </div>
+      </div>
+      <figcaption>Prestige I</figcaption>
+    </figure>
+  </section>
+
+  <!-- PB -->
+  <section class="opt" style="margin:0">
+    <h3>B · The statue stays</h3>
+    <p style="min-height:58px">Picks up straight from the popup: the retired hero stands in stone on the left; the new hero is picked by the fire beside it. One title, one line.</p>
+    <figure>
+      <div class="phone PB">
+        <div class="scene">
+          <div class="eyebrow"><span class="rankline">Prestige I · Veteran</span></div>
+          <img class="statue" src="../../public/sprites/player/warrior.png" alt="" />
+          <span class="ped"></span>
+          <span class="plaque">Ryan<small>Retired · Lv 41</small></span>
+          <span class="glow"></span>
+          <img class="hero" src="../../public/sprites/player/ranger.png" alt="" />
+          <span class="turn l"><svg class="i"><use href="#lt"/></svg></span>
+          <span class="turn r"><svg class="i"><use href="#gt"/></svg></span>
+        </div>
+        <p class="pickname"><svg class="i" style="color:#f0d36a"><use href="#flame"/></svg> Ranger</p>
+        <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+        <p class="title">Ryan rises</p>
+        <p class="sub">A new hero. The same habits.</p>
+        <div class="foot">
+          <button class="btn rank">Rise</button>
+        </div>
+      </div>
+      <figcaption>Prestige I</figcaption>
+    </figure>
+  </section>
+
+  <!-- PC -->
+  <section class="opt" style="margin:0">
+    <h3>C · The ledger</h3>
+    <p style="min-height:58px">Says plainly what changed: the rank's gains, what carries over and what starts again, then the pick. Most information, least ceremony.</p>
+    <figure>
+      <div class="phone PC">
+        <div class="head">
+          <span class="plate">I</span>
+          <div><span class="rankline">Prestige I · Veteran</span><h4>Ryan begins again</h4><p>Retired at level 41</p></div>
+        </div>
+        <div class="gains">
+          <div class="sunk"><svg class="i dmg-t"><use href="#hit"/></svg>+20%<small>damage</small></div>
+          <div class="sunk"><svg class="i dmg-t"><use href="#heart"/></svg>+10%<small>max HP</small></div>
+          <div class="sunk"><svg class="i" style="color:var(--exp)"><use href="#exp"/></svg>+5%<small>EXP</small></div>
+          <div class="sunk"><svg class="i gem-t"><use href="#gem"/></svg>80<small>gems</small></div>
+        </div>
+        <div class="pick">
+          <span class="turn"><svg class="i"><use href="#lt"/></svg></span>
+          <span class="glow"></span><span class="ground"></span>
+          <img class="hero" src="../../public/sprites/player/ranger.png" alt="" />
+          <span class="turn"><svg class="i"><use href="#gt"/></svg></span>
+        </div>
+        <p class="pickname"><svg class="i" style="color:#f0d36a"><use href="#flame"/></svg> Ranger</p>
+        <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+        <div class="lists">
+          <div class="panel"><span class="cap">Kept</span><ul><li>Habits + ranks</li><li>Talents</li><li>Challenges</li></ul></div>
+          <div class="panel gone"><span class="cap">Starts again</span><ul><li>Level 1, boss 1</li><li>Gold + items</li><li>Special + Ult</li></ul></div>
+        </div>
+        <div class="foot"><button class="btn rank">Begin</button></div>
+      </div>
+      <figcaption>Prestige I</figcaption>
+    </figure>
+  </section>
+</div>
+
+</body>
+</html>

@@ -10,7 +10,7 @@ describe('HoodedSpeech', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  const mountLines = (lines: string[], kind: 'intro' | 'death' | 'back' = 'intro') =>
+  const mountLines = (lines: string[], kind: 'intro' | 'back' = 'intro') =>
     mount(HoodedSpeech, { props: { lines, kind, heroArt: 'player/warrior' } });
 
   it('types the line out letter by letter', async () => {
@@ -55,11 +55,5 @@ describe('HoodedSpeech', () => {
     const wrapper = mountLines(['Habits, is it?']);
     expect(wrapper.find('.whole').text()).toBe('Habits, is it?');
     expect(wrapper.find('.line').attributes('aria-hidden')).toBe('true');
-  });
-
-  it('only a death says "You died"', () => {
-    expect(mountLines(['Line'], 'death').find('.died').text()).toBe('You died');
-    expect(mountLines(['Line'], 'intro').find('.died').exists()).toBe(false);
-    expect(mountLines(['Line'], 'back').find('.died').exists()).toBe(false);
   });
 });

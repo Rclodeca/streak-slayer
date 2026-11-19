@@ -33,4 +33,20 @@ describe('useDeathScreen', () => {
     first.triggerDeath();
     expect(second.isDead.value).toBe(true);
   });
+
+  it('triggerPreview opens the screen as a preview, and dismiss ends both', () => {
+    const { isDead, isPreview, triggerPreview, dismiss } = useDeathScreen();
+    triggerPreview();
+    expect(isDead.value).toBe(true);
+    expect(isPreview.value).toBe(true);
+    dismiss();
+    expect(isDead.value).toBe(false);
+    expect(isPreview.value).toBe(false);
+  });
+
+  it('a real death is no preview', () => {
+    const { isPreview, triggerDeath } = useDeathScreen();
+    triggerDeath();
+    expect(isPreview.value).toBe(false);
+  });
 });

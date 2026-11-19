@@ -5,8 +5,8 @@ import { baseSpriteUrl, spriteUrl } from './spriteUrl';
 // The hooded figure's line box (docs/mockups/pixel-hooded-flow.html): his
 // scene fills the screen, his words type out in a box below it. A tap finishes
 // the line being typed, the next tap moves on, and after the last line the
-// scene says `done`. `death` adds the red "You died" and lays the hero down.
-const props = defineProps<{ lines: string[]; kind: 'intro' | 'death' | 'back'; heroArt: string }>();
+// scene says `done`.
+const props = defineProps<{ lines: string[]; kind: 'intro' | 'back'; heroArt: string }>();
 const emit = defineEmits<{ done: [] }>();
 
 const TYPE_MS = 42;
@@ -60,7 +60,6 @@ onBeforeUnmount(stopTyping);
 <template>
   <div class="figure" :class="kind" @click="advance">
     <div class="scene">
-      <p v-if="kind === 'death'" class="died">You died</p>
       <img class="boss" :src="baseSpriteUrl('bosses/hooded')" alt="" draggable="false" />
       <img class="me" :src="spriteUrl(heroArt)" alt="" draggable="false" />
       <div class="floor" />
@@ -105,10 +104,6 @@ onBeforeUnmount(stopTyping);
   background: radial-gradient(50% 40% at 62% 62%, rgba(171, 141, 216, 0.18), transparent 70%);
 }
 
-.death .scene::before {
-  background: radial-gradient(50% 40% at 62% 62%, rgba(212, 87, 74, 0.25), transparent 70%);
-}
-
 /* The art is drawn on whole art pixels: the hero at 1 CSS px each, the figure at 2. */
 .boss,
 .me {
@@ -133,13 +128,6 @@ onBeforeUnmount(stopTyping);
   transform: translateX(-50%);
 }
 
-.death .me {
-  left: 80px;
-  bottom: 4px;
-  transform: translateX(-50%) rotate(-90deg);
-  filter: grayscale(1) brightness(0.45);
-}
-
 @keyframes loom {
   50% {
     transform: translateX(-50%) translateY(-4px);
@@ -152,18 +140,6 @@ onBeforeUnmount(stopTyping);
   height: 34px;
   background: #19192b;
   box-shadow: inset 0 3px 0 #2f2f4e;
-}
-
-.died {
-  position: absolute;
-  inset: calc(64px + env(safe-area-inset-top)) 0 auto;
-  margin: 0;
-  color: var(--damage-color, #d4574a);
-  font: 700 26px 'Cinzel', serif;
-  letter-spacing: 0.2em;
-  text-align: center;
-  text-indent: 0.2em;
-  text-shadow: 0 3px 0 #0f1018;
 }
 
 /* The line box: a silver frame cut with the same pixel corners as the popups. */

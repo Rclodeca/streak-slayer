@@ -189,6 +189,10 @@ export interface Character {
   prestige?: number;
   // Deaths in this climb (since the last prestige); undefined = 0.
   deaths?: number;
+  // The worn item the fall will take, picked when the hero falls (markFallItem)
+  // so the death screen can name it and a reload can't re-roll it. Cleared on
+  // rising or reviving.
+  fallItemId?: string;
   // The last day a bad habit was checked off — Perfect day and Clean slate
   // read it when the day ends.
   lastBadCheckDayKey?: string;

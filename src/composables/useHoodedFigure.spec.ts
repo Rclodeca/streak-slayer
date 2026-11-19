@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { deathLines, INTRO_LINES, returnLines, useHoodedFigure } from './useHoodedFigure';
+import { INTRO_LINES, returnLines, useHoodedFigure } from './useHoodedFigure';
 
 describe('useHoodedFigure', () => {
   afterEach(() => useHoodedFigure().endScene());
@@ -31,37 +31,6 @@ describe('useHoodedFigure', () => {
       const next = returnLines(() => 0)[0];
       expect(next).not.toBe(prior);
       prior = next;
-    }
-  });
-
-  it('never repeats a death line twice running', () => {
-    const run = { level: 14, bossIndex: 9 };
-    let prior = deathLines(run, () => 0)[0];
-    for (let i = 0; i < 20; i++) {
-      const next = deathLines(run, () => 0)[0];
-      expect(next).not.toBe(prior);
-      prior = next;
-    }
-  });
-
-  it('quotes the run in words', () => {
-    const run = { level: 14, bossIndex: 9 };
-    const seen = new Set<string>();
-    for (const roll of [0, 0.4, 0.9]) seen.add(deathLines(run, () => roll)[0]);
-    expect([...seen]).toContain('Fourteen levels… and still you fall.');
-    expect([...seen]).toContain('Boss nine. Further than most.');
-  });
-
-  it('writes compound numbers with a hyphen and singular for level one', () => {
-    expect(deathLines({ level: 21, bossIndex: 1 }, () => 0)[0]).toBe('Twenty-one levels… and still you fall.');
-    expect(deathLines({ level: 1, bossIndex: 1 }, () => 0.01)[0]).toBe('One level… and still you fall.');
-  });
-
-  it('keeps "further than most" for runs that got somewhere', () => {
-    for (let n = 0; n < 12; n++) {
-      for (const roll of [0, 0.5, 0.99]) {
-        expect(deathLines({ level: 2, bossIndex: 2 }, () => roll)[0]).not.toContain('Further than most');
-      }
     }
   });
 });

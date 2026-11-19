@@ -507,7 +507,7 @@ export function reviveState(character: Character, gems: number): 'buy' | 'short'
 export function reviveForGems(character: Character, gems: number): { character: Character; gemsSpent: number } | null {
   if (reviveState(character, gems) !== 'buy') return null;
   return {
-    character: { ...character, currentHealth: effectiveStat(character, 'health') * REVIVE_HEALTH_FRACTION },
+    character: { ...character, fallItemId: undefined, currentHealth: effectiveStat(character, 'health') * REVIVE_HEALTH_FRACTION },
     gemsSpent: REVIVE_GEMS,
   };
 }
@@ -519,6 +519,18 @@ export function deathToll(character: Character): { levels: number; gold: number;
     gold: Math.floor((characterGold(character) * DEATH_SETBACK.goldPct) / 100),
     items: Math.min(DEATH_SETBACK.items, character.equippedItemIds.length),
   };
+}
+
+/**
+ * Picks the worn item a fall will take (Character.fallItemId), at the moment
+ * of the fall, so the death screen can name it before the player chooses. A
+ * pick still worn stands, so a reload names the same item. No-op for a hero
+ * still standing or with nothing worn.
+ */
+export function markFallItem(character: Character, rng: Rng): Character {
+  if (Math.round(character.currentHealth) > 0 || deathToll(character).items === 0) return character;
+  if (character.fallItemId && character.equippedItemIds.includes(character.fallItemId)) return character;
+  return { ...character, fallItemId: pickRandom(character.equippedItemIds, rng) };
 }
 
 /**
@@ -594,13 +606,13 @@ export function resolveBossDefeatIfDead(
 /**
  * No-op unless the character's health has reached 0. When it has, the hero
  * takes the death setback (DEATH_SETBACK, see deathToll): one level back
- * (never below 1, EXP to 0), a tenth of the carried gold, and one random
- * equipped item. Everything else in the run stays: talents, items, slots,
+ * (never below 1, EXP to 0), a tenth of the carried gold, and one equipped
+ * item (the one markFallItem marked at the fall, else a random one). Everything else in the run stays: talents, items, slots,
  * enchants, habits and their streaks. The hero rises at full health at the new
  * level. The next boss is a new one, three bosses back in power (never below
  * 1) but shown as the same number, so the gap stays until prestige and each
  * death widens it. A lost relic leaves earnedRelicIds, so it can be bought
- * again. Rng order: the lost item, then the boss.
+ * again. Rng order: the lost item (when none was marked), then the boss.
  */
 export function resolvePlayerDeathIfDead(
   character: Character,
@@ -613,7 +625,9 @@ export function resolvePlayerDeathIfDead(
   // screen without actually taking the setback.
   if (Math.round(character.currentHealth) > 0) return { character, boss, died: false };
   const toll = deathToll(character);
-  const lostId = toll.items > 0 ? pickRandom(character.equippedItemIds, rng) : undefined;
+  // The item marked at the fall (markFallItem), or one picked now if none was.
+  const marked = character.fallItemId && character.equippedItemIds.includes(character.fallItemId) ? character.fallItemId : undefined;
+  const lostId = toll.items > 0 ? (marked ?? pickRandom(character.equippedItemIds, rng)) : undefined;
   const lostItem = lostId ? ITEM_CATALOG.find((item) => item.id === lostId) : undefined;
   const without = (ids: string[] | undefined) => (lostId && ids?.includes(lostId) ? ids.filter((id) => id !== lostId) : ids);
   const setback: Character = {
@@ -626,6 +640,7 @@ export function resolvePlayerDeathIfDead(
     doubledItemIds: without(character.doubledItemIds),
     earnedRelicIds: without(character.earnedRelicIds),
     deaths: (character.deaths ?? 0) + 1,
+    fallItemId: undefined,
   };
   const risen = { ...setback, currentHealth: effectiveStat(setback, 'health') };
   const power = Math.max(1, boss.index - DEATH_SETBACK.bossPower);

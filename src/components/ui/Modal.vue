@@ -10,8 +10,9 @@ import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 // opens and down as it closes; dragging its grab bar down far enough closes
 // it too (the phone's log, docs/mockups/pixel-tabs-final.html). `tall`: a
 // sheet that rises to just under the top of the screen, leaving a strip of
-// the app above it (the Trials, docs/mockups/trial-sets-2.html).
-const props = withDefaults(defineProps<{ modelValue: boolean; title?: string; dismissible?: boolean; maxWidth?: string; scrollKey?: unknown; sheet?: boolean; tall?: boolean }>(), {
+// the app above it (the Trials, docs/mockups/trial-sets-2.html). `over`: above
+// the full-screen scenes too (the death screen's Get gems opens the Challenges).
+const props = withDefaults(defineProps<{ modelValue: boolean; title?: string; dismissible?: boolean; maxWidth?: string; scrollKey?: unknown; sheet?: boolean; tall?: boolean; over?: boolean }>(), {
   dismissible: true,
   maxWidth: '420px',
 });
@@ -86,7 +87,7 @@ watch(
 <template>
   <Teleport to="body">
     <Transition name="sheet" :css="sheet">
-      <div v-if="modelValue" class="modal-backdrop" :class="{ sheet }" @click="close">
+      <div v-if="modelValue" class="modal-backdrop" :class="{ sheet, over }" @click="close">
         <div
           class="modal-content"
           :class="{ 'has-footer': $slots.footer, sheet, tall: sheet && tall, dragging }"
@@ -123,6 +124,11 @@ watch(
   padding: 1rem;
   z-index: 1000;
   overscroll-behavior: contain;
+}
+
+/* Above the death screen and the hooded scenes (1100). */
+.modal-backdrop.over {
+  z-index: 1200;
 }
 
 .modal-content {

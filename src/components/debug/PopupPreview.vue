@@ -21,7 +21,7 @@ import PrestigePopup from '../talents/PrestigePopup.vue';
 const { showQuestDone } = useQuestDone();
 const { queueMiss } = useQuestMissGate();
 const missedSkills = useMissedSkillsGate();
-const { triggerDeath } = useDeathScreen();
+const { triggerPreview: previewDeath } = useDeathScreen();
 const { celebrateBossKill, celebrateLevelUp } = useCelebration();
 const { showBossSkill } = useBossSkillCard();
 const levelUp = useLevelUp();
@@ -137,7 +137,7 @@ function previewPurse() {
     <button type="button" @click="previewPurse">Preview daily purse (testing)</button>
     <button type="button" @click="previewPurse(); previewDaily()">Preview purse + daily update (testing)</button>
     <button type="button" @click="previewMiss">Preview quest failed (testing)</button>
-    <button type="button" @click="triggerDeath">Preview death screen (testing)</button>
+    <button type="button" @click="previewDeath">Preview death screen (testing)</button>
     <button type="button" @click="previewKill">Preview boss kill (testing)</button>
     <button type="button" @click="previewLevelUp(0)">Preview level up (testing)</button>
     <button type="button" @click="previewLevelUp(1)">Preview level up, 1 unlock (testing)</button>

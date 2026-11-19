@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Death: two paths</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Death setback page, option B (two paths) expanded: five ways to show Revive OR Rise, with the losses spelled out. Pixel-cut Moonlit. */
+:root {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --muted: #9a9ab4; --moon: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19;
+  --field: #12131c; --danger: #e86154; --lost: #ef8a7c;
+  --gem: #6fd6ea; --coin: #f0c64e; --heal: #4ac777;
+  --common: #9d9382; --uncommon: #6cc47f; --rare: #5f95e6; --epic: #b57be8;
+  --rv: #1d3640; --rv-hi: #3f93a6; --rv-lo: #133640;
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 28px 16px 80px; }
+h1 { text-align: center; font: 600 15px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 14px; max-width: 760px; font-size: 14.5px; color: var(--muted); }
+.toggle { display: flex; justify-content: center; gap: 6px; margin: 0 0 30px; }
+.toggle button { min-height: 40px; padding: 0 16px; border: 0; clip-path: var(--px2); background: #26263f; color: var(--text); font: 700 14px 'Alegreya Sans'; cursor: pointer; }
+.toggle button.on { background: var(--moon); color: #17172a; }
+.row { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.opt { width: 360px; max-width: 100%; }
+.opt > h3 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; }
+.opt > p { text-align: center; margin: 0 0 12px; font-size: 13.5px; min-height: 76px; }
+.opt > p em { color: var(--brass); font-style: normal; }
+svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; vertical-align: -0.13em; }
+img { image-rendering: pixelated; }
+
+.phone { position: relative; width: 360px; height: 760px; max-width: 100%; overflow: hidden; background: var(--bg); border: 2px solid #22233a; display: flex; flex-direction: column; }
+
+/* Arena strip: the boss over the fallen hero. */
+.arena { position: relative; flex: none; height: 150px; overflow: hidden; background: #0e0f17; }
+.arena .bg { position: absolute; left: 50%; bottom: -30px; width: 432px; height: 232px; transform: translateX(-50%); filter: brightness(.45) saturate(.6); }
+.arena .boss { position: absolute; right: 44px; bottom: 8px; width: 104px; transform: scaleX(-1); }
+.arena .fallen { position: absolute; left: 60px; bottom: 6px; width: 76px; transform: rotate(-90deg); filter: grayscale(.85) brightness(.85); z-index: 1; }
+.arena .red { position: absolute; inset: 0; background: radial-gradient(80% 70% at 50% 100%, rgba(168,42,32,.28), transparent 70%); }
+.arena .shade { position: absolute; inset: 0; background: linear-gradient(transparent 45%, var(--bg)); }
+.fell { position: relative; margin: -30px 0 10px; text-align: center; font: 700 24px 'Cinzel', serif; letter-spacing: .16em; color: #e46a5a; text-shadow: 0 2px 0 #3a0e0a; z-index: 1; }
+.fell small { display: block; font: 500 13px 'Alegreya Sans'; letter-spacing: 0; color: var(--muted); text-shadow: none; }
+.body { flex: 1; display: flex; flex-direction: column; padding: 0 14px 16px; }
+
+/* Shared pieces */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 46px; padding: 0 14px; border: 0; clip-path: var(--px2); font: 700 16px 'Alegreya Sans'; cursor: pointer; }
+.btn.moon { background: var(--moon); color: #17172a; border-bottom: 3px solid #8e8fae; }
+.btn.ghost { background: #3a3960; color: var(--text-h); border-bottom: 3px solid #12121e; }
+.btn.gem { background: #2c6a7a; color: #effcff; border-bottom: 3px solid #0c2229; }
+.price { display: inline-flex; align-items: center; gap: 3px; font-weight: 800; color: #bff3ff; }
+.panel { background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); clip-path: var(--px3); }
+.panel.revive { background: var(--rv); box-shadow: inset 2px 2px 0 var(--rv-hi), inset -2px -2px 0 var(--rv-lo); }
+.sunk { background: var(--field); box-shadow: inset 0 3px 0 rgba(0,0,0,.35), inset 0 0 0 1px #2c2c47; clip-path: var(--px2); }
+.cap { font: 700 11px 'Cinzel', serif; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.gem-t { color: var(--gem); } .coin-t { color: var(--coin); } .lost-t { color: var(--lost); } .heal-t { color: var(--heal); }
+h4 { margin: 0; display: flex; align-items: center; gap: 8px; font: 700 20px 'Alegreya', serif; color: var(--text-h); }
+.path { padding: 13px 13px 13px; display: flex; flex-direction: column; gap: 10px; }
+.path > p { margin: 0; font-size: 14.5px; }
+
+/* The OR between the choices. */
+.or { display: flex; align-items: center; gap: 10px; margin: 8px 4px; font: 700 13px 'Cinzel', serif; letter-spacing: .3em; color: var(--brass); }
+.or::before, .or::after { content: ''; flex: 1; height: 2px; background: #2f2e4f; }
+
+/* An item icon in its rarity frame. */
+.item { --r: var(--common); position: relative; display: grid; place-items: center; width: 40px; height: 40px; background: color-mix(in srgb, var(--r) 14%, var(--field)); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--r) 75%, #000); clip-path: var(--px2); flex: none; }
+.item img { width: 32px; height: 32px; }
+.item.big { width: 72px; height: 72px; } .item.big img { width: 64px; height: 64px; }
+.item.rare { --r: var(--rare); } .item.epic { --r: var(--epic); } .item.uncommon { --r: var(--uncommon); }
+.item.gone img { filter: grayscale(1) brightness(.5); }
+.item .x { position: absolute; inset: 0; display: grid; place-items: center; color: var(--lost); font-size: 26px; }
+.item.q { color: var(--muted); font: 800 18px 'Alegreya Sans'; }
+
+/* Loss rows (B1, B4, B5) */
+.losses { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.losses li { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+.losses .ic { width: 34px; height: 34px; display: grid; place-items: center; font-size: 17px; flex: none; }
+.losses .what { flex: 1; min-width: 0; display: flex; flex-direction: column; font: 700 15.5px/1.15 'Alegreya Sans'; color: var(--text-h); }
+.losses .what small { font: 500 12.5px 'Alegreya Sans'; color: var(--muted); }
+.losses .amt { font: 800 16px 'Alegreya Sans'; color: var(--lost); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.from { color: var(--muted); font-weight: 600; text-decoration: line-through; text-decoration-color: rgba(239,138,124,.7); margin-right: 4px; }
+
+/* Short of gems: the revive half of each option. */
+body:not(.short) .short-only { display: none !important; }
+body.short .can-only { display: none !important; }
+.have { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.have .bar { flex: 1; height: 8px; background: var(--field); clip-path: var(--px2); position: relative; }
+.have .bar i { position: absolute; inset: 0 auto 0 0; width: 66%; background: var(--gem); }
+
+/* ---- B2: the named item ---- */
+.B2 .drop { display: flex; align-items: center; gap: 12px; }
+.B2 .drop .nm { font: 700 17px/1.15 'Alegreya', serif; color: var(--text-h); }
+.B2 .drop .nm small { display: block; font: 600 12.5px 'Alegreya Sans'; color: var(--epic); }
+.B2 .drop .tag { margin-top: 3px; display: block; font: 800 12px 'Alegreya Sans'; color: var(--lost); }
+.B2 .trio { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.B2 .trio div { padding: 7px 10px; display: flex; flex-direction: column; font: 800 16px 'Alegreya Sans'; color: var(--lost); }
+.B2 .trio small { font: 500 12px 'Alegreya Sans'; color: var(--muted); }
+
+/* ---- B3: side by side ---- */
+.B3 .cols { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: stretch; }
+.B3 .col { padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
+.B3 .col h4 { font-size: 18px; justify-content: center; }
+.B3 .col .tagline { margin: -4px 0 2px; text-align: center; font-size: 12.5px; color: var(--muted); }
+.B3 .stat { display: flex; flex-direction: column; align-items: center; padding: 6px 2px; }
+.B3 .stat b { font: 800 17px 'Alegreya Sans'; color: var(--text-h); font-variant-numeric: tabular-nums; }
+.B3 .stat small { font: 500 11.5px 'Alegreya Sans'; color: var(--muted); }
+.B3 .stat.down b { color: var(--lost); }
+.B3 .col .btn { margin-top: auto; min-height: 44px; font-size: 15px; padding: 0 8px; }
+.B3 .vs { display: grid; place-items: center; }
+.B3 .vs span { width: 30px; height: 30px; display: grid; place-items: center; background: #1b1b2e; box-shadow: inset 0 0 0 2px #3b3a63; clip-path: var(--px2); font: 700 11px 'Cinzel', serif; letter-spacing: .06em; color: var(--brass); }
+
+/* ---- B4: losses first ---- */
+.B4 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.B4 .tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 9px; text-align: center; }
+.B4 .tile .ic { font-size: 22px; height: 40px; display: grid; place-items: center; }
+.B4 .tile b { font: 800 18px 'Alegreya Sans'; color: var(--lost); }
+.B4 .tile small { font: 500 12px/1.2 'Alegreya Sans'; color: var(--muted); }
+.B4 .head { text-align: center; margin: 0 0 8px; }
+.B4 .acts { margin-top: auto; }
+.B4 .sub { text-align: center; margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+/* ---- B5: the hero's own plates ---- */
+.B5 .hero-card { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.B5 .plates { display: flex; gap: 6px; }
+.B5 .plate { flex: 1; padding: 7px 8px; display: flex; flex-direction: column; }
+.B5 .plate small { font: 700 10.5px 'Cinzel', serif; letter-spacing: .16em; color: var(--muted); text-transform: uppercase; }
+.B5 .plate b { font: 800 17px 'Alegreya Sans'; color: var(--text-h); font-variant-numeric: tabular-nums; }
+.B5 .plate .lost-t { margin-left: 2px; }
+.B5 .gear { display: flex; gap: 6px; justify-content: center; }
+.B5 .gear .item { width: 52px; height: 52px; } .B5 .gear .item img { width: 32px; height: 32px; }
+.B5 .dice { text-align: center; margin: -2px 0 0; font-size: 12.5px; color: var(--muted); }
+.B5 .dice b { color: var(--lost); }
+.B5 .pair { display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="gem" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></symbol>
+    <symbol id="coin" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></symbol>
+    <symbol id="down" viewBox="0 0 24 24"><path d="m7 6 5 5 5-5"/><path d="m7 13 5 5 5-5"/></symbol>
+    <symbol id="up" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></symbol>
+    <symbol id="heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+    <symbol id="dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M16 8h.01M8 8h.01M8 16h.01M16 16h.01M12 12h.01"/></symbol>
+    <symbol id="x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="bag" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+  </defs>
+</svg>
+
+<h1>Death: two paths</h1>
+<p class="lede">Ryan, level 14 warrior, fell at boss 6 carrying 200 gold and wearing 4 items. Every option: Revive (15 gems, half health, nothing lost) <b>OR</b> Rise again (full health, a weaker boss), and Rise again spells out its three losses: <b>1 level</b> (14 → 13), <b>20 gold</b> (200 → 180) and <b>1 item dropped</b>.</p>
+<div class="toggle"><button type="button" class="on" data-s="can">Can revive (40 gems)</button><button type="button" data-s="short">Short of gems (10)</button></div>
+
+<div class="row">
+
+  <!-- ===================== B1 ===================== -->
+  <section class="opt">
+    <h3>B1 · Stacked</h3>
+    <p>B as it was, with an OR between the cards. Rise again lists each loss on its own row with the before and after. The dropped item is one of the four you wear, shown as a row of them.</p>
+    <div class="phone">
+      <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+      <p class="fell">You fell<small>Iron Guardian · Boss 6</small></p>
+      <div class="body">
+        <div class="panel path revive">
+          <h4><svg class="i gem-t"><use href="#gem"/></svg>Revive</h4>
+          <p>Fight on at half health. Nothing lost.</p>
+          <button class="btn gem can-only">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+          <div class="have short-only"><span class="gem-t" style="font-weight:800">10 / 15</span><span class="bar"><i></i></span></div>
+          <button class="btn moon short-only">Get gems</button>
+        </div>
+        <div class="or">OR</div>
+        <div class="panel path">
+          <h4><svg class="i" style="color:var(--moon)"><use href="#up"/></svg>Rise again</h4>
+          <ul class="losses">
+            <li><span class="ic sunk lost-t"><svg class="i"><use href="#down"/></svg></span><span class="what">1 level<small>and its EXP</small></span><span class="amt"><span class="from">14</span>13</span></li>
+            <li><span class="ic sunk coin-t"><svg class="i"><use href="#coin"/></svg></span><span class="what">20 gold<small>a tenth of what you carry</small></span><span class="amt"><span class="from">200</span>180</span></li>
+            <li><span class="ic sunk lost-t"><svg class="i"><use href="#dice"/></svg></span><span class="what">1 item dropped<small>one of these, at random</small></span></li>
+          </ul>
+          <div style="display:flex;gap:5px;margin:-2px 0 0 44px">
+            <span class="item epic"><img src="../../public/sprites/items/berserkers-war-axe.png" alt=""></span>
+            <span class="item rare"><img src="../../public/sprites/items/chainmail-hauberk.png" alt=""></span>
+            <span class="item uncommon"><img src="../../public/sprites/items/dawnguard-helm.png" alt=""></span>
+            <span class="item"><img src="../../public/sprites/items/duelists-signet.png" alt=""></span>
+          </div>
+          <button class="btn ghost">Rise again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== B2 ===================== -->
+  <section class="opt B2">
+    <h3>B2 · The item, named</h3>
+    <p>The item is picked at the fall, not on rising, so the page can name it: <em>Berserker's War Axe</em> drops unless you revive. Clearest stake of all. <em>Needs a small rule change</em> (pick the item when you fall).</p>
+    <div class="phone">
+      <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+      <p class="fell">You fell<small>Iron Guardian · Boss 6</small></p>
+      <div class="body">
+        <div class="panel path revive">
+          <h4><svg class="i gem-t"><use href="#gem"/></svg>Revive</h4>
+          <p>Half health. Keep everything.</p>
+          <button class="btn gem can-only">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+          <div class="have short-only"><span class="gem-t" style="font-weight:800">10 / 15</span><span class="bar"><i></i></span></div>
+          <button class="btn moon short-only">Get gems</button>
+        </div>
+        <div class="or">OR</div>
+        <div class="panel path">
+          <h4><svg class="i" style="color:var(--moon)"><use href="#up"/></svg>Rise again</h4>
+          <div class="drop">
+            <span class="item big epic"><img src="../../public/sprites/items/berserkers-war-axe.png" alt=""></span>
+            <div class="nm"><small>Epic</small>Berserker's War Axe<span class="tag">Dropped</span></div>
+          </div>
+          <div class="trio">
+            <div class="sunk"><span><svg class="i"><use href="#down"/></svg> −1 level</span></div>
+            <div class="sunk"><span><svg class="i coin-t"><use href="#coin"/></svg> −20 gold</span></div>
+          </div>
+          <button class="btn ghost">Rise again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== B3 ===================== -->
+  <section class="opt B3">
+    <h3>B3 · Side by side</h3>
+    <p>Two columns with OR between them, the same four lines in each, so the difference reads straight across: level, gold, items, health.</p>
+    <div class="phone">
+      <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+      <p class="fell">You fell<small>Iron Guardian · Boss 6</small></p>
+      <div class="body">
+        <div class="cols">
+          <div class="panel col revive">
+            <h4><svg class="i gem-t"><use href="#gem"/></svg>Revive</h4>
+            <p class="tagline">Nothing lost</p>
+            <div class="stat sunk"><b>Lv 14</b><small>level</small></div>
+            <div class="stat sunk"><b class="coin-t">200</b><small>gold</small></div>
+            <div class="stat sunk"><b>4 items</b><small>worn</small></div>
+            <div class="stat sunk"><b>½</b><small>health</small></div>
+            <button class="btn gem can-only">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+            <button class="btn moon short-only">Get gems</button>
+            <p class="tagline short-only" style="justify-content:center;margin:-2px 0 0"><span class="gem-t">10 / 15</span></p>
+          </div>
+          <div class="vs"><span>OR</span></div>
+          <div class="panel col">
+            <h4><svg class="i" style="color:var(--moon)"><use href="#up"/></svg>Rise</h4>
+            <p class="tagline">Weaker boss</p>
+            <div class="stat sunk down"><b>Lv 13</b><small>−1 level</small></div>
+            <div class="stat sunk down"><b>180</b><small>−20 gold</small></div>
+            <div class="stat sunk down"><b>3 items</b><small>1 dropped</small></div>
+            <div class="stat sunk"><b class="heal-t">Full</b><small>health</small></div>
+            <button class="btn ghost">Rise again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== B4 ===================== -->
+  <section class="opt B4">
+    <h3>B4 · Losses first</h3>
+    <p>The three losses lead, as big tiles. Then the choice is just two buttons with OR between: pay to keep it all, or accept them.</p>
+    <div class="phone">
+      <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+      <p class="fell">You fell<small>Iron Guardian · Boss 6</small></p>
+      <div class="body">
+        <p class="head cap">Rising again costs</p>
+        <div class="tiles">
+          <div class="panel tile"><span class="ic lost-t"><svg class="i"><use href="#down"/></svg></span><b>−1</b><small>level<br>14 → 13</small></div>
+          <div class="panel tile"><span class="ic coin-t"><svg class="i"><use href="#coin"/></svg></span><b>−20</b><small>gold<br>200 → 180</small></div>
+          <div class="panel tile"><span class="ic"><span class="item q" style="width:40px;height:40px"><svg class="i lost-t"><use href="#dice"/></svg></span></span><b>−1</b><small>item<br>at random</small></div>
+        </div>
+        <div class="acts">
+          <button class="btn gem can-only">Revive and keep it all<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+          <p class="sub can-only" style="display:block">At half health.</p>
+          <div class="short-only" style="flex-direction:column;gap:6px">
+            <button class="btn moon">Get gems to revive</button>
+            <p class="sub" style="margin:0">Revive costs <span class="gem-t">15</span>. You have <span class="gem-t">10</span>.</p>
+          </div>
+          <div class="or">OR</div>
+          <button class="btn ghost">Accept and rise</button>
+          <p class="sub">Full health, against a weaker boss.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== B5 ===================== -->
+  <section class="opt B5">
+    <h3>B5 · On your hero</h3>
+    <p>The losses are shown on the hero's own plates and gear: the level and gold plates show the drop, and the four worn items sit in their slots with a die over them, one of them to go.</p>
+    <div class="phone">
+      <div class="arena"><img class="bg" src="../../public/sprites/stage/arena6b.png" alt="" /><span class="red"></span><img class="boss" src="../../public/sprites/bosses/armored/1.png" alt="" /><img class="fallen" src="../../public/sprites/player/warrior.png" alt="" /><span class="shade"></span></div>
+      <p class="fell">You fell<small>Iron Guardian · Boss 6</small></p>
+      <div class="body">
+        <div class="panel hero-card">
+          <span class="cap" style="text-align:center">If you rise again</span>
+          <div class="plates">
+            <div class="plate sunk"><small>Level</small><b><span class="from">14</span><span class="lost-t">13</span></b></div>
+            <div class="plate sunk"><small>Gold</small><b><span class="from">200</span><span class="lost-t">180</span></b></div>
+          </div>
+          <div class="gear">
+            <span class="item epic"><img src="../../public/sprites/items/berserkers-war-axe.png" alt=""></span>
+            <span class="item rare"><img src="../../public/sprites/items/chainmail-hauberk.png" alt=""></span>
+            <span class="item uncommon"><img src="../../public/sprites/items/dawnguard-helm.png" alt=""></span>
+            <span class="item"><img src="../../public/sprites/items/duelists-signet.png" alt=""></span>
+          </div>
+          <p class="dice"><svg class="i lost-t"><use href="#dice"/></svg> <b>One</b> of these is dropped</p>
+        </div>
+        <div class="pair" style="margin-top:auto">
+          <button class="btn gem can-only">Revive<span class="price"><svg class="i"><use href="#gem"/></svg>15</span></button>
+          <p class="can-only" style="display:block;text-align:center;margin:6px 0 0;font-size:13px;color:var(--muted)">Half health. Nothing lost.</p>
+          <div class="short-only" style="flex-direction:column;gap:6px">
+            <button class="btn moon">Get gems</button>
+            <p style="text-align:center;margin:0;font-size:13px;color:var(--muted)">Revive costs <span class="gem-t">15</span>. You have <span class="gem-t">10</span>.</p>
+          </div>
+          <div class="or">OR</div>
+          <button class="btn ghost">Rise again</button>
+          <p style="text-align:center;margin:6px 0 0;font-size:13px;color:var(--muted)">Full health, against a weaker boss.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  document.querySelectorAll('.toggle button').forEach((b) =>
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.toggle button').forEach((o) => o.classList.toggle('on', o === b));
+      document.body.classList.toggle('short', b.dataset.s === 'short');
+    }),
+  );
+</script>
+</body>
+</html>

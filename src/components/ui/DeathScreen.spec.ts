@@ -6,7 +6,7 @@ import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { createRng } from '../../game-engine';
-import type { Character, Habit } from '../../game-engine';
+import type { Habit } from '../../game-engine';
 import { REVIVE_GEMS } from '../../game-engine';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
@@ -40,85 +40,50 @@ describe('DeathScreen', () => {
     return mount(DeathScreen, { global: { plugins: [pinia] }, attachTo: document.body });
   }
 
-  const embers = () => [...document.querySelectorAll('.ember')];
-  const tap = () => (document.querySelector('.figure') as HTMLElement).click();
+  const text = (selector: string) => document.querySelector(selector)?.textContent?.replace(/\s+/g, ' ').trim();
 
-  /** Taps through the hooded figure's line (one tap finishes the typing, the next moves on) to the bonfire. */
-  async function toBonfire() {
-    tap();
-    tap();
+  /** Lets the screen render. */
+  async function toChoice() {
     await nextTick();
   }
 
-  it('opens on the hooded figure, with no bonfire yet', () => {
-    mountWith([{ rank: 2, streakCount: 3 }]);
-    expect(document.querySelector('.died')!.textContent).toBe('You died');
-    expect(document.querySelector('.dlg .whole')!.textContent).not.toBe('');
-    expect(document.querySelector('.fire-stage')).toBeNull();
+  it('opens straight on the choice: you fell, to this boss, with no cutscene', async () => {
+    useBossStore().setBoss({ ...useBossStore().boss, index: 9, shownIndex: 12 });
+    mountWith([]);
+    await toChoice();
+    expect(document.querySelector('.figure')).toBeNull();
+    expect(document.querySelector('.died')).toBeNull();
+    expect(text('.fell')).toBe('You fell');
+    expect(text('.by')).toContain('Boss 12');
   });
 
-  describe('the toll', () => {
-    it('shows what the fall takes: one level, a tenth of the gold, one item', async () => {
+  describe('rising again', () => {
+    it('names the item the fall marked, and the level and gold it takes', async () => {
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], currentHealth: 0 });
-      useBossStore().setBoss({ ...useBossStore().boss, index: 9, shownIndex: 12 });
-      mountWith([{ rank: 1, streakCount: 2 }]);
-      await toBonfire();
-      const chips = [...document.querySelectorAll('.toll .toll-chip')].map((c) => c.textContent!.replace(/\s+/g, ' ').trim());
-      expect(chips).toEqual(['−1 level', '−40', 'One item']);
-      expect(document.querySelector('.toll .toll-chip.gold .stat-icon, .toll .toll-chip.gold svg, .toll .toll-chip.gold img')).not.toBeNull();
-      expect(document.querySelector('.meta')!.textContent).toContain('Boss 12');
-      expect(document.querySelector('.kept')!.textContent).toBe('Your habits keep their power');
-      expect(document.querySelector('.restart-button')!.textContent).toBe('Rise again');
+      characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'], fallItemId: 'rusty-blade', currentHealth: 0 });
+      mountWith([]);
+      await toChoice();
+      expect(text('.drop-name')).toBe('Rusty Hatchet');
+      expect(text('.drop-tag')).toBe('Dropped');
+      expect([...document.querySelectorAll('.losses .loss')].map((li) => li.textContent!.replace(/\s+/g, ' ').trim())).toEqual(['−1 level', '−40 gold']);
+      expect(document.querySelector('.losses .loss .stat-icon')).not.toBeNull();
+      expect(text('.rise-button')).toBe('Rise again');
     });
 
-    it('shows no toll for a level 1 hero with nothing to lose', async () => {
+    it('shows no losses for a level 1 hero with nothing to lose', async () => {
       const characterStore = useCharacterStore();
       characterStore.setCharacter({ ...characterStore.character, level: 1, gold: 0, ownedItemIds: [], equippedItemIds: [], currentHealth: 0 });
       mountWith([]);
-      await toBonfire();
-      expect(document.querySelector('.toll')).toBeNull();
+      await toChoice();
+      expect(document.querySelector('.drop')).toBeNull();
+      expect(document.querySelector('.losses')).toBeNull();
     });
-  });
-
-  it('shows the bonfire once his line is done', async () => {
-    mountWith([{ rank: 2, streakCount: 3 }]);
-    await toBonfire();
-    expect(document.querySelector('.figure')).toBeNull();
-    expect(document.querySelector('.fire-stage')).not.toBeNull();
-    expect(document.querySelector('.kept')!.textContent).toBe('Your habits keep their power');
-  });
-
-  it('shows an ember per ranked or streaking skill, strongest first', async () => {
-    mountWith([
-      { name: 'Low', rank: 1, streakCount: 12 },
-      { name: 'None', rank: 0, streakCount: 0 },
-      { name: 'High', rank: 5, streakCount: 112 },
-      { name: 'Cold', rank: 3, streakCount: 0 },
-    ]);
-    await toBonfire();
-    expect(embers().map((el) => el.querySelector('.n')!.textContent)).toEqual(['High', 'Cold', 'Low']);
-    expect(embers().map((el) => el.querySelectorAll('.rank-pips i').length)).toEqual([5, 3, 1]);
-    expect(embers().map((el) => el.querySelector('.streak')!.textContent!.trim())).toEqual(['112', '—', '12']);
-  });
-
-  it('marks a skill whose streak broke as cold', async () => {
-    mountWith([{ rank: 3, streakCount: 0 }, { rank: 2, streakCount: 9 }]);
-    await toBonfire();
-    expect(embers().map((el) => el.classList.contains('cold'))).toEqual([true, false]);
-  });
-
-  it('drops the kept-skills section when nothing carries over', async () => {
-    mountWith([{ rank: 0, streakCount: 0 }]);
-    await toBonfire();
-    expect(document.querySelector('.kept')).toBeNull();
-    expect(embers()).toHaveLength(0);
   });
 
   it('"Rise again" ends the death screen', async () => {
     mountWith([]);
-    await toBonfire();
-    (document.querySelector('.restart-button') as HTMLElement).click();
+    await toChoice();
+    (document.querySelector('.rise-button') as HTMLElement).click();
     await nextTick();
     expect(useDeathScreen().isDead.value).toBe(false);
     expect(document.querySelector('.death-layer')).toBeNull();
@@ -155,33 +120,60 @@ describe('DeathScreen', () => {
       characterStore.setCharacter({ ...characterStore.character, currentHealth: 0 });
     }
 
-    it('offers the revive at its gem price, and taking it closes the screen', async () => {
+    it('offers the revive at its gem price, OR rising again, and taking it closes the screen', async () => {
       fallWith(REVIVE_GEMS);
       mountWith([]);
-      await toBonfire();
+      await toChoice();
       expect(reviveButton()!.textContent).toContain(String(REVIVE_GEMS));
-      expect(document.querySelector('.revive-note')!.textContent).toBe('Half health.');
+      expect(text('.revive-path .say')).toBe('Fight on at half health. Nothing lost.');
+      expect(text('.or')).toBe('or');
       reviveButton()!.click();
       await nextTick();
       expect(useDeathScreen().isDead.value).toBe(false);
       expect(useAccountStore().account.gems).toBe(0);
     });
 
-    it('is disabled with too few gems', async () => {
-      fallWith(REVIVE_GEMS - 1);
+    it('short of gems, shows how far off and Get gems opens the Challenges over the screen', async () => {
+      fallWith(REVIVE_GEMS - 5);
       mountWith([]);
-      await toBonfire();
-      expect(reviveButton()!.disabled).toBe(true);
+      await toChoice();
+      expect(reviveButton()).toBeNull();
+      expect(text('.gems-held .count')).toBe(`${REVIVE_GEMS - 5} / ${REVIVE_GEMS}`);
+      (document.querySelector('.gems-button') as HTMLElement).click();
+      await nextTick();
+      expect(document.querySelector('.modal-backdrop.over')).not.toBeNull();
+      expect(useDeathScreen().isDead.value).toBe(true);
+    });
+  });
+
+  describe('the preview (testing)', () => {
+    beforeEach(() => {
+      useDeathScreen().dismiss();
+      useDeathScreen().triggerPreview();
     });
 
-    it('stays open after a revive against this boss, with a plain note', async () => {
-      fallWith(99);
+    it('shows a standing hero the page as if fallen: the revive, and a worn item named', async () => {
+      useAccountStore().account.gems = REVIVE_GEMS;
       const characterStore = useCharacterStore();
-      characterStore.setCharacter({ ...characterStore.character, revivedAtBoss: useBossStore().boss.index } as Character);
+      characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'] });
       mountWith([]);
-      await toBonfire();
-      expect(reviveButton()).not.toBeNull();
-      expect(document.querySelector('.revive-note')?.textContent).toBe('Half health.');
+      await nextTick();
+      expect(document.querySelector('.revive-button')).not.toBeNull();
+      expect(text('.drop-name')).toBe('Rusty Hatchet');
+    });
+
+    it('both choices just close it, changing nothing', async () => {
+      useAccountStore().account.gems = REVIVE_GEMS;
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, ownedItemIds: ['rusty-blade'], equippedItemIds: ['rusty-blade'] });
+      const before = { ...characterStore.character };
+      mountWith([]);
+      await nextTick();
+      (document.querySelector('.revive-button') as HTMLElement).click();
+      await nextTick();
+      expect(useDeathScreen().isDead.value).toBe(false);
+      expect(useAccountStore().account.gems).toBe(REVIVE_GEMS);
+      expect(characterStore.character).toEqual(before);
     });
   });
 });

@@ -144,6 +144,7 @@ export {
   overdriveHabit,
   overdriveUsesRemaining,
   deathToll,
+  markFallItem,
   reviveForGems,
   reviveState,
   resolveBossDefeatIfDead,

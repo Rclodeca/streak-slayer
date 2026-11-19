@@ -46,6 +46,7 @@ import {
   grantLevelRewards,
   getTrialSet,
   goldPrice,
+  markFallItem,
   markTrialClaimed,
   HERO_CLASSES,
   heroClassFor,
@@ -440,7 +441,7 @@ export function useCombatActions() {
     // Math.round(currentHealth), so a tiny positive remainder (e.g. 0.3)
     // would otherwise show as "0 HP" without actually triggering death.
     if (Math.round(result.character.currentHealth) <= 0) {
-      triggerDeath();
+      fall();
       return true;
     }
     return false;
@@ -587,7 +588,13 @@ export function useCombatActions() {
    * rising would otherwise sit at 0 HP with no way to revive or rise.
    */
   function raiseDeathIfFallen(): void {
-    if (Math.round(characterStore.character.currentHealth) <= 0) triggerDeath();
+    if (Math.round(characterStore.character.currentHealth) <= 0) fall();
+  }
+
+  /** The hero is down: the item the fall will take is picked now (markFallItem), so the death screen can name it. */
+  function fall(): void {
+    characterStore.setCharacter(markFallItem(characterStore.character, rng));
+    triggerDeath();
   }
 
   /**

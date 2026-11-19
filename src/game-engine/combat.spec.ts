@@ -18,6 +18,7 @@ import {
   expectedMediumDailyDamage,
   habitDamageBreakdown,
   healingMultiplier,
+  markFallItem,
   overdriveHabit,
   overdriveUsesRemaining,
   missHabit,
@@ -1205,6 +1206,46 @@ describe('resolvePlayerDeathIfDead', () => {
 
   it('treats a tiny positive currentHealth that rounds to 0 as dead', () => {
     expect(resolvePlayerDeathIfDead(makeCharacter({ currentHealth: 0.3 }), makeBoss({ index: 7 }), createRng(1)).died).toBe(true);
+  });
+});
+
+describe('markFallItem', () => {
+  const items = ['rusty-blade', 'steel-sword', 'first-blood'];
+  const fallen = (overrides: Partial<Character> = {}) => makeCharacter({ currentHealth: 0, level: 5, ownedItemIds: items, equippedItemIds: items, ...overrides });
+
+  it('picks one worn item at the fall', () => {
+    const marked = markFallItem(fallen(), createRng(1));
+    expect(items).toContain(marked.fallItemId);
+  });
+
+  it('keeps a pick already made, so a reload names the same item', () => {
+    const marked = markFallItem(fallen({ fallItemId: 'steel-sword' }), createRng(1));
+    expect(marked.fallItemId).toBe('steel-sword');
+  });
+
+  it('picks again when the marked item is no longer worn', () => {
+    const marked = markFallItem(fallen({ fallItemId: 'gone-item' }), createRng(1));
+    expect(items).toContain(marked.fallItemId);
+  });
+
+  it('marks nothing for a hero still standing, or wearing nothing', () => {
+    expect(markFallItem(fallen({ currentHealth: 5 }), createRng(1)).fallItemId).toBeUndefined();
+    expect(markFallItem(fallen({ ownedItemIds: [], equippedItemIds: [] }), createRng(1)).fallItemId).toBeUndefined();
+  });
+
+  it('rising takes the marked item, and clears the mark', () => {
+    for (const id of items) {
+      const result = resolvePlayerDeathIfDead(fallen({ fallItemId: id }), makeBoss({ index: 7 }), createRng(1));
+      expect(result.lostItem?.id).toBe(id);
+      expect(result.character.equippedItemIds).not.toContain(id);
+      expect(result.character.fallItemId).toBeUndefined();
+    }
+  });
+
+  it('a revive clears the mark, so the next fall picks afresh', () => {
+    const revived = reviveForGems(fallen({ fallItemId: 'steel-sword' }), REVIVE_GEMS)!;
+    expect(revived.character.fallItemId).toBeUndefined();
+    expect(revived.character.equippedItemIds).toEqual(items);
   });
 });
 
