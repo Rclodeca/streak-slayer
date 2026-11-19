@@ -15,7 +15,8 @@
     "boss-art": "node scripts/boss-art/build.cjs",
     "hero-art": "node scripts/hero-art/build.cjs",
     "service-art": "node scripts/service-art/build.cjs",
-    "item-catalog-page": "vite-node scripts/item-catalog-page.ts -- docs/mockups/item-catalog.html"
+    "item-catalog-page": "vite-node scripts/item-catalog-page.ts -- docs/mockups/item-catalog.html",
+    "sim": "vite-node --config scripts/sim/vite.config.ts scripts/sim/run.ts --"
   },
   "dependencies": {
     "@fontsource/alegreya": "^5.3.0",
