@@ -25,6 +25,16 @@ describe('AppMenu', () => {
     expect(panel.querySelectorAll('[role="menuitemradio"]')).toHaveLength(0);
   });
 
+  it('asks for How to play, and closes the menu', async () => {
+    const wrapper = mount(AppMenu, { attachTo: document.body });
+    await wrapper.find('.menu-button').trigger('click');
+    const item = [...document.body.querySelectorAll('.menu-item')].find((el) => el.textContent?.includes('How to play')) as HTMLElement;
+    item.click();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('how-to-play')).toHaveLength(1);
+    expect(document.body.querySelector('.menu-panel')).toBeNull();
+  });
+
   it('flips Focus mode from the menu, and closes the menu', async () => {
     const wrapper = mount(AppMenu, { attachTo: document.body });
     await wrapper.find('.menu-button').trigger('click');

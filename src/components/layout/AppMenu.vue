@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Check, Download, Focus, Gift, ScrollText, Settings, Trophy, Undo2, Upload } from 'lucide-vue-next';
+import { BookOpen, Check, Download, Focus, Gift, ScrollText, Settings, Trophy, Undo2, Upload } from 'lucide-vue-next';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { exportSaveFile } from '../../composables/useSaveFileTransfer';
 import { useTrialsBadge } from '../../composables/useTrialsBadge';
@@ -13,7 +13,7 @@ import { THEME_CHOICES, useThemeStore } from '../../store/themeStore';
 import type { ThemePreference } from '../../store/themeStore';
 import Modal from '../ui/Modal.vue';
 
-// Top-right menu: Undo, the log, High Scores, Focus mode, save export/import,
+// Top-right menu: Undo, the log, High Scores, How to play, Focus mode, save export/import,
 // and the theme picker (it hides itself if there is only one theme). On a
 // phone, Log opens the log in a popup; wider screens keep it in the side
 // column, and Show log turns it on or off there. Picking a
@@ -27,7 +27,7 @@ import Modal from '../ui/Modal.vue';
 // rides inside the pinned stage, and on a phone the panel was being cut off
 // where the stage's layer ends, so it lives above the whole page instead.
 defineProps<{ trialsItem?: boolean }>();
-const emit = defineEmits<{ 'high-scores': []; log: []; trials: [] }>();
+const emit = defineEmits<{ 'high-scores': []; 'how-to-play': []; log: []; trials: [] }>();
 
 const { claimCount, newTrial } = useTrialsBadge();
 
@@ -78,6 +78,11 @@ function toggleFocus() {
 function openHighScores() {
   open.value = false;
   emit('high-scores');
+}
+
+function openHowToPlay() {
+  open.value = false;
+  emit('how-to-play');
 }
 
 function pickTheme(preference: ThemePreference) {
@@ -190,6 +195,7 @@ onBeforeUnmount(() => {
         <button v-if="isPhone" type="button" class="menu-item" role="menuitem" @click="openLog"><ScrollText :size="15" />Log</button>
         <button v-if="trialsItem" type="button" class="menu-item" role="menuitem" @click="openTrials"><Gift :size="15" />Challenges</button>
         <button type="button" class="menu-item" role="menuitem" @click="openHighScores"><Trophy :size="15" />High Scores</button>
+        <button type="button" class="menu-item" role="menuitem" @click="openHowToPlay"><BookOpen :size="15" />How to play</button>
         <!-- The phone stage only: the desktop banner has no slim strip to switch to. -->
         <button type="button" class="menu-item focus-item" role="menuitemcheckbox" :aria-checked="focusMode.on" @click="toggleFocus">
           <Focus :size="15" />Focus mode<Check :size="15" class="tick focus-tick" :class="{ on: focusMode.on }" />

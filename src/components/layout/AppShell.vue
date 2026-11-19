@@ -20,6 +20,7 @@ import MenuCorner from './MenuCorner.vue';
 import StagePurse from './StagePurse.vue';
 import HabitList from '../habits/HabitList.vue';
 import HighScorePage from '../highscores/HighScorePage.vue';
+import HowToPlayModal from './HowToPlayModal.vue';
 import QuestSection from '../quests/QuestSection.vue';
 import TrialsModal from '../quests/TrialsModal.vue';
 import TalentSection from '../talents/TalentSection.vue';
@@ -79,6 +80,7 @@ const needsName = computed(() => characterStore.character.name === undefined || 
 // the boss's number joins its name (BossPanel). High Scores keeps the bar,
 // with its Back button.
 const showHighScores = ref(false);
+const showHowToPlay = ref(false);
 
 // Phones show one list at a time, picked in the bottom bar (TabBar), each
 // opening at its top; the Hero tab is the hero's details, which wider screens
@@ -125,7 +127,7 @@ watch(
       <span>Boss #{{ bossIndex }}</span>
       <div class="top-actions">
         <button type="button" class="nav-button" @click="showHighScores = false"><ArrowLeft :size="14" />Back</button>
-        <AppMenu @high-scores="showHighScores = true" />
+        <AppMenu @high-scores="showHighScores = true" @how-to-play="showHowToPlay = true" />
       </div>
     </div>
     <DeathScreen />
@@ -142,6 +144,7 @@ watch(
     <QuestUnlockPopup />
     <TalentUnlockPopup />
     <ReviveNotice />
+    <HowToPlayModal v-model="showHowToPlay" />
 
     <HighScorePage v-if="showHighScores" />
     <template v-else>
@@ -155,7 +158,7 @@ watch(
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
         <component :is="topBar">
           <StagePurse v-if="isPhone" :plate="cornerRoom" />
-          <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @log="showLog = true" @trials="showTrials = true" />
+          <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @how-to-play="showHowToPlay = true" @log="showLog = true" @trials="showTrials = true" />
           <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Challenges" @click="showTrials = true">
             <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
             <Gift :size="22" />

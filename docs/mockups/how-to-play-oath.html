@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>How to Play · Oath</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+:root {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --brass: #d2bb85;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --field: #12131c; --damage-color: #c8402f;
+  --icon-exp: #d8b46a; --dmg-physical: #e86154; --dmg-magic: #8f8cf0; --heal: #6cc48a;
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 24px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.sub { text-align: center; margin: 0 auto 24px; max-width: 640px; font-size: 14.5px; }
+.row { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.opt { width: 360px; max-width: 100%; }
+.opt > h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; text-align: center; }
+.opt > p { margin: 0 0 10px; font-size: 13.5px; text-align: center; min-height: 58px; }
+.notes { max-width: 680px; margin: 26px auto 0; font-size: 14px; }
+.notes li { margin: 5px 0; }
+svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* Phone with the game dimmed behind. */
+.phone { position: relative; height: 680px; overflow: hidden; background: var(--bg); border: 2px solid #22233a; }
+.stage { height: 150px; background: linear-gradient(#1c1d33, #2a2950 70%, #1a1a2c); }
+.ghost { height: 58px; margin: 7px 10px 0; background: var(--card); clip-path: var(--px3); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.dim { position: absolute; inset: 0; background: rgba(6,6,12,.74); }
+
+.pop { position: absolute; left: 12px; right: 12px; top: 50%; transform: translateY(-50%); background: #1d1e31; clip-path: var(--px3); box-shadow: inset 2px 2px 0 #3a3b5c, inset -2px -2px 0 #14151f; padding: 20px 18px 14px; display: flex; flex-direction: column; }
+.pop .close { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; display: grid; place-items: center; color: #8a8aa4; font-size: 18px; }
+.pop h3 { margin: 0; text-align: center; font: 700 14px 'Cinzel', serif; letter-spacing: .22em; color: #ece8de; text-transform: uppercase; }
+.eyebrow { margin: 0 0 4px; text-align: center; font: 700 11px 'Alegreya Sans'; letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
+.btn { display: grid; place-items: center; min-height: 46px; margin-top: 18px; background: #dfe0f0; color: #11121b; border-bottom: 3px solid #828398; clip-path: var(--px2); font: 800 15px 'Alegreya Sans'; }
+
+.lines { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 13px; }
+.lines li { display: flex; gap: 12px; align-items: flex-start; }
+.well { flex: none; width: 34px; height: 34px; display: grid; place-items: center; clip-path: var(--px2); background: color-mix(in srgb, var(--c) 14%, #12131c); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 65%, #000); color: var(--c); font-size: 17px; }
+.lines b { display: block; font: 700 17px/1.15 'Alegreya', serif; color: var(--text-h); }
+.lines span { display: block; margin-top: 2px; font-size: 14px; line-height: 1.35; color: #a9a9c2; }
+/* One-liners: title only, centred on the icon. */
+.lines.solo li { align-items: center; }
+.lines.solo b { font-size: 17.5px; }
+
+/* Life -> battle pairs. */
+.pairs { margin: 14px 0 0; display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; }
+.pairs .head { font: 700 11px 'Alegreya Sans'; letter-spacing: .16em; text-transform: uppercase; color: #8a8aa4; padding: 0 0 6px; }
+.pairs .head.r { text-align: left; color: var(--brass); }
+.pairs .l, .pairs .a, .pairs .r { padding: 8px 0; border-top: 1px solid #2c2d46; display: flex; align-items: center; }
+.pairs .l { font: 700 16px/1.15 'Alegreya', serif; color: var(--text-h); padding-right: 6px; }
+.pairs .a { color: #5e5e78; font-size: 15px; padding: 0 6px; }
+.pairs .r { font-size: 14.5px; line-height: 1.25; color: #c9c9de; gap: 7px; }
+.pairs .r svg.i { color: var(--c); font-size: 15px; }
+</style>
+</head>
+<body>
+<h1>HOW TO PLAY · THE OATH</h1>
+<p class="sub">Menu: the plain row after High Scores. Five ways to word the popup. Same six ideas each time, no death line. Each is written so the game and real life line up.</p>
+
+<div class="row" id="opts"></div>
+
+<ul class="notes">
+  <li><b>My pick: 1 · Plain.</b> Every line says what you do and what happens, in everyday words, and the last line ties it all to real life. 3 · Story is close behind if you want more flavour.</li>
+  <li><b>Easy swaps:</b> any option's last line works in any other, and so does the eyebrow.</li>
+  <li><b>Accurate to the game:</b> a bad habit you avoid all day strikes the boss when the day turns; giving in makes the boss strike you. Each day of a streak adds to a habit's hits, and a miss starts the streak over. A task done by its due date pays EXP; a late one hurts.</li>
+</ul>
+
+<script>
+const ICON = {"settings":"<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","undo-2":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","gift":"<path d=\"M12 7v14\"/><path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\"/><path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\"/><rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\"/>","trophy":"<path d=\"M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978\"/><path d=\"M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978\"/><path d=\"M18 9h1.5a1 1 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z\"/><path d=\"M6 9H4.5a1 1 0 0 1 0-5H6\"/>","focus":"<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M3 7V5a2 2 0 0 1 2-2h2\"/><path d=\"M17 3h2a2 2 0 0 1 2 2v2\"/><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\"/><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\"/>","upload":"<path d=\"M12 3v12\"/><path d=\"m17 8-5-5-5 5\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/>","download":"<path d=\"M12 15V3\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><path d=\"m7 10 5 5 5-5\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","book-open":"<path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/>","sword":"<path d=\"m11 19-6-6\"/><path d=\"m5 21-2-2\"/><path d=\"m8 16-4 4\"/><path d=\"M9.5 17.5 21 6V3h-3L6.5 14.5\"/>","store":"<path d=\"M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5\"/><path d=\"M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244\"/><path d=\"M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05\"/>","anvil":"<path d=\"M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4\"/><path d=\"M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z\"/><path d=\"M9 12v5\"/><path d=\"M15 12v5\"/><path d=\"M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1\"/>","user-round":"<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>","shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","skull":"<path d=\"m12.5 17-.5-1-.5 1h1z\"/><path d=\"M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><circle cx=\"9\" cy=\"12\" r=\"1\"/>","heart":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>","coins":"<path d=\"M13.744 17.736a6 6 0 1 1-7.48-7.48\"/><path d=\"M15 6h1v4\"/><path d=\"m6.134 14.768.866-.5 2 3.464\"/><circle cx=\"16\" cy=\"8\" r=\"6\"/>","gem":"<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\"/><path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\"/><path d=\"M2 9h20\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","chevron-down":"<path d=\"m6 9 6 6 6-6\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","circle-question-mark":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"/><path d=\"M12 17h.01\"/>","map":"<path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\"/><path d=\"M15 5.764v15\"/><path d=\"M9 3.236v15\"/>","swords":"<polyline points=\"14.5 17.5 3 6 3 3 6 3 17.5 14.5\"/><line x1=\"13\" x2=\"19\" y1=\"19\" y2=\"13\"/><line x1=\"16\" x2=\"20\" y1=\"16\" y2=\"20\"/><line x1=\"19\" x2=\"21\" y1=\"21\" y2=\"19\"/><polyline points=\"14.5 6.5 18 3 21 3 21 6 17.5 9.5\"/><line x1=\"5\" x2=\"9\" y1=\"14\" y2=\"18\"/><line x1=\"7\" x2=\"4\" y1=\"17\" y2=\"20\"/><line x1=\"3\" x2=\"5\" y1=\"19\" y2=\"21\"/>","heart-crack":"<path d=\"M12.409 5.824c-.702.792-1.15 1.496-1.415 2.166l2.153 2.156a.5.5 0 0 1 0 .707l-2.293 2.293a.5.5 0 0 0 0 .707L12 15\"/><path d=\"M13.508 20.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.677.6.6 0 0 0 .818.001A5.5 5.5 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5z\"/>","sparkles":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>"};
+const ic = (n) => '<svg class="i" viewBox="0 0 24 24">' + ICON[n] + '</svg>';
+const C = { habit: 'var(--dmg-physical)', miss: 'var(--damage-color)', streak: 'var(--brass)', bad: '#9a9ab4', task: 'var(--icon-exp)', grow: 'var(--heal)' };
+const I = { habit: 'sword', miss: 'heart-crack', streak: 'flame', bad: 'shield', task: 'scroll-text', grow: 'sparkles' };
+const KEYS = ['habit', 'miss', 'streak', 'bad', 'task', 'grow'];
+
+const OPTIONS = [
+  {
+    h: '1 · Plain', p: 'Simplest words. A short title saying what you do, then one line saying what happens.',
+    eyebrow: 'Every habit is a weapon', btn: 'To battle',
+    lines: [
+      ['Check off a habit', 'Your hero strikes the boss.'],
+      ['Miss a habit', 'When the day ends, the boss strikes you.'],
+      ['Keep a streak', 'Every day in a row, that habit hits harder. Miss once and it starts over.'],
+      ['Resist bad habits', 'Make it through the day without one and you strike the boss. Give in and it strikes you.'],
+      ['Finish tasks', 'One-time to-dos. Done by the due date, they earn EXP.'],
+      ['Grow stronger', 'Each habit kept and task done makes your hero stronger. Get better in life, get stronger here.'],
+    ],
+  },
+  {
+    h: '2 · Life and battle', p: 'Two columns: what you do in real life, and what it does in the fight. The link to real life is the whole layout.',
+    eyebrow: 'Your life is the fight', btn: 'To battle', pairs: [
+      ['You do a habit', 'You strike the boss', 'habit'],
+      ['You skip it', 'The boss strikes you', 'miss'],
+      ['You keep it up', 'Your strikes grow stronger', 'streak'],
+      ['You resist temptation', 'You strike the boss', 'bad'],
+      ['You give in', 'The boss strikes you', 'miss'],
+      ['You finish a task', 'You earn EXP', 'task'],
+      ['You keep going', 'Your hero levels up', 'grow'],
+    ],
+  },
+  {
+    h: '3 · Story', p: 'The day is the battle. Each title is a small idea about the fight, and the line under it is the plain rule.',
+    eyebrow: 'Every day is a battle', btn: 'To battle',
+    lines: [
+      ['Your habits are your attacks', 'Check one off and your hero strikes the boss.'],
+      ['The boss fights back', 'Any habit still undone when the day ends hits you instead.'],
+      ['Streaks are your edge', 'The longer you keep a habit going, the harder it hits.'],
+      ['Bad habits are traps', 'Get through the day without one and it counts as a strike. Give in and you take the hit.'],
+      ['Tasks are side quests', 'Finish them by their due date for extra EXP.'],
+      ['You level up for real', 'Every real day of effort makes your hero stronger.'],
+    ],
+  },
+  {
+    h: '4 · The Oath', p: 'Heroic orders, like an oath you swear. The most game-like, a little less plain.',
+    eyebrow: 'Swear it, then keep it', btn: 'I swear it',
+    lines: [
+      ['Keep your habits', 'Each one you keep is a blow against the boss.'],
+      ['Leave none undone', 'Each one you skip, the boss pays back when the day ends.'],
+      ['Never break the chain', 'Day after day a habit grows sharper. One miss and it\'s dull again.'],
+      ['Resist temptation', 'Each day you hold out lands a blow. Each time you give in, you bleed.'],
+      ['Finish what you start', 'Tasks pay EXP when they\'re done before their due date.'],
+      ['Rise', 'Your hero grows only as you do.'],
+    ],
+  },
+  {
+    h: '5 · One line each', p: 'No second lines. Six short sentences you can read at a glance.',
+    eyebrow: 'Every habit is a weapon', btn: 'To battle', solo: true,
+    lines: [
+      ['Do a habit, strike the boss.'],
+      ['Skip it, and the boss strikes you.'],
+      ['Keep a streak, and you hit harder.'],
+      ['Resist a bad habit, and you strike. Give in, and you\'re struck.'],
+      ['Finish a task on time for EXP.'],
+      ['Get better in life, get stronger here.'],
+    ],
+  },
+];
+
+const backdrop = '<div class="stage"></div><div class="ghost"></div><div class="ghost"></div><div class="ghost"></div><div class="ghost"></div><div class="ghost"></div><div class="dim"></div>';
+
+document.getElementById('opts').innerHTML = OPTIONS.map((o) => {
+  let body;
+  if (o.pairs) {
+    body = '<div class="pairs"><span class="head">In life</span><span class="head"></span><span class="head r">In battle</span>' +
+      o.pairs.map(([l, r, k]) => '<span class="l">' + l + '</span><span class="a">' + ic('chevron-right') + '</span><span class="r" style="--c:' + C[k] + '">' + ic(I[k]) + r + '</span>').join('') + '</div>';
+  } else {
+    body = '<ul class="lines' + (o.solo ? ' solo' : '') + '">' + o.lines.map(([t, s], k) => '<li style="--c:' + C[KEYS[k]] + '"><span class="well">' + ic(I[KEYS[k]]) + '</span><div><b>' + t + '</b>' + (s ? '<span>' + s + '</span>' : '') + '</div></li>').join('') + '</ul>';
+  }
+  return '<div class="opt"><h2>' + o.h + '</h2><p>' + o.p + '</p><div class="phone">' + backdrop +
+    '<div class="pop"><span class="close">' + ic('x') + '</span><p class="eyebrow">' + o.eyebrow + '</p><h3>How to play</h3>' + body +
+    '<span class="btn">' + o.btn + '</span></div></div></div>';
+}).join('');
+</script>
+</body>
+</html>
