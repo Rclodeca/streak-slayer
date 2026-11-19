@@ -23,13 +23,18 @@ function addDays(key: string, days: number): string {
 
 const description = ref('');
 const difficulty = ref<Difficulty>('easy');
-// Empty = no deadline (the None chip): it never misses and pays half EXP.
-const dueDate = ref(addDays(todayKey.value, 1));
+// Empty = no deadline, the default: it never misses and pays half EXP.
+const dueDate = ref('');
 // Optional: tapping the picked group again clears it.
 const group = ref<TaskGroup | null>(null);
 
 function pickGroup(next: TaskGroup) {
   group.value = group.value === next ? null : next;
+}
+
+// Tapping the picked deadline again clears it, as with groups.
+function pickDue(key: string) {
+  dueDate.value = dueDate.value === key ? '' : key;
 }
 
 const difficultyOptions: { value: Difficulty; label: string; pips: number }[] = [
@@ -98,14 +103,12 @@ function onSubmit() {
           type="button"
           class="chip"
           :class="{ selected: dueDate === chip.key }"
-          @click="dueDate = chip.key"
+          :aria-pressed="dueDate === chip.key"
+          @click="pickDue(chip.key)"
         >
           <span>{{ chip.label }}</span>
         </button>
         <input v-model="dueDate" class="date-input" type="date" :min="todayKey" aria-label="Deadline date" />
-        <button type="button" class="chip" :class="{ selected: !dueDate }" @click="dueDate = ''">
-          <span>None</span>
-        </button>
       </div>
       <p class="due-summary">{{ dueLabel }}</p>
     </fieldset>
@@ -337,7 +340,7 @@ function onSubmit() {
 }
 
 .date-input {
-  grid-column: span 3;
+  grid-column: 1 / -1;
   min-height: 44px;
   padding: 0.35rem 0.7rem;
   background: var(--code-bg);
