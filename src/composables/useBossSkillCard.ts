@@ -1,5 +1,5 @@
 // Small shared (module-scope) queue of fired boss skills — same singleton
-// reasoning as useQuestCompleteQueue: useCombatActions enqueues when a hit
+// reasoning as useItemDropQueue: useCombatActions enqueues when a hit
 // sets one off and BossSkillPopup (mounted once in AppShell) renders it.
 // Purely presentational; the skill already did its work in the engine.
 //

@@ -4,7 +4,7 @@ import { Lock, Plus, ScrollText } from 'lucide-vue-next';
 import { dailyPeriodKey, questsOpen, QUESTS_UNLOCK_LEVEL } from '../../game-engine';
 import type { Difficulty, Quest } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
-import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
+import { useQuestDone } from '../../composables/useQuestDone';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
@@ -21,7 +21,7 @@ const debugClockStore = useDebugClockStore();
 // Sealed until QUESTS_UNLOCK_LEVEL each run, unless quests carried over (see questsOpen).
 const open = computed(() => questsOpen(characterStore.character));
 const { completeQuest, addQuest } = useCombatActions();
-const { enqueue: enqueueCompletion } = useQuestCompleteQueue();
+const { showQuestDone } = useQuestDone();
 
 const PIPS: Record<Difficulty, number> = { easy: 1, medium: 2, hard: 3 };
 const MS_PER_DAY = 86_400_000;
@@ -66,7 +66,7 @@ function onAdd(description: string, difficulty: Difficulty, dueDateKey: string) 
 function onCheckOff(quest: Quest) {
   const result = completeQuest(quest.id);
   if (result && result.amount > 0) {
-    enqueueCompletion({ description: quest.description, difficulty: quest.difficulty, amount: result.amount });
+    showQuestDone({ description: quest.description, amount: result.amount });
   }
 }
 </script>

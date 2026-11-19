@@ -22,7 +22,6 @@ import { useDeathScreen } from './useDeathScreen';
 import { useItemDropQueue } from './useItemDropQueue';
 import { useLevelUp } from './useLevelUp';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
-import { useQuestCompleteQueue } from './useQuestCompleteQueue';
 import { useQuestMissGate } from './useQuestMissGate';
 import { useCharacterStore } from '../store/characterStore';
 import { useDailyPurse } from './useDailyPurse';
@@ -35,7 +34,6 @@ export function useModalPriority() {
   const { hasPending: questMissPending } = useQuestMissGate();
   const characterStore = useCharacterStore();
   const { revealed: enchantRevealed, done: serviceDone } = useServices();
-  const { current: questCompleteCurrent } = useQuestCompleteQueue();
   const { celebrating } = useCelebration();
   const { current: bossSkillCurrent } = useBossSkillCard();
   const { current: levelUpCurrent } = useLevelUp();
@@ -74,7 +72,7 @@ export function useModalPriority() {
       !questMissPending.value,
   );
 
-  /** True when a level-up's popup is waiting and nothing higher-priority (death, item drop, a miss, boss skill, quest complete, a celebration) is. */
+  /** True when a level-up's popup is waiting and nothing higher-priority (death, item drop, a miss, boss skill, a celebration) is. */
   const levelUpVisible = computed(
     () =>
       levelUpCurrent.value !== null &&
@@ -83,8 +81,7 @@ export function useModalPriority() {
       itemDropCurrent.value === null &&
       !dailyAhead.value &&
       !questMissPending.value &&
-      bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null,
+      bossSkillCurrent.value === null,
   );
 
   /**
@@ -100,8 +97,7 @@ export function useModalPriority() {
       itemDropCurrent.value === null &&
       !dailyAhead.value &&
       !questMissPending.value &&
-      bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null,
+      bossSkillCurrent.value === null,
   );
 
   /** True when the "Talents unlocked" popup is due with no level-up popup to carry the news, and nothing higher-priority is up (it follows the quest popup). */
@@ -115,8 +111,7 @@ export function useModalPriority() {
       itemDropCurrent.value === null &&
       !dailyAhead.value &&
       !questMissPending.value &&
-      bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null,
+      bossSkillCurrent.value === null,
   );
 
   /** Nothing above the shop's popups is up: no kill or level-up playing, no death, drop, miss, boss skill, level up or unlock. */
@@ -129,7 +124,6 @@ export function useModalPriority() {
       !dailyAhead.value &&
       !questMissPending.value &&
       bossSkillCurrent.value === null &&
-      questCompleteCurrent.value === null &&
       !questUnlockPending(characterStore.character) &&
       !talentUnlockPending(characterStore.character),
   );
@@ -140,15 +134,6 @@ export function useModalPriority() {
   /** True while a reroll's popup is waiting and nothing higher-priority is up. */
   const serviceDoneVisible = computed(() => serviceDone.value !== null && shopPopupClear.value);
 
-  /** True while a quest-completion celebration is queued — it shows before any level-up popup its EXP triggered. */
-  const questCompleteVisible = computed(
-    () =>
-      questCompleteCurrent.value !== null &&
-      !isDead.value &&
-      !dailyAhead.value &&
-      !questMissPending.value &&
-      bossSkillCurrent.value === null,
-  );
 
-  return { purseVisible, habitMissVisible, bossSkillVisible, questMissVisible, levelUpVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, serviceDoneVisible, questCompleteVisible };
+  return { purseVisible, habitMissVisible, bossSkillVisible, questMissVisible, levelUpVisible, questUnlockVisible, talentUnlockVisible, enchantRevealVisible, serviceDoneVisible };
 }

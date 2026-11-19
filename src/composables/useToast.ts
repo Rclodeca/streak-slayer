@@ -5,10 +5,13 @@
 // was last sent; a new note replaces the one up and restarts its time.
 
 import { ref } from 'vue';
+import type { StatIconName } from '../components/ui/statIcons';
 
 export interface Toast {
   /** A sprite under public/sprites/ (a potion, a service's seal). */
-  art: string;
+  art?: string;
+  /** A stat icon in the art's place (a task's EXP), when there's no sprite. */
+  icon?: StatIconName;
   title: string;
   text: string;
   /** The text's colour and the draining line's, a CSS colour. */

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { TOAST_MS, useToast } from '../../composables/useToast';
+import StatIcon from './StatIcon.vue';
 
 // The foot-of-screen note (useToast): the art, a name and what it did, a line
 // draining along its foot, gone after a few seconds. On phones it sits just
@@ -12,7 +13,8 @@ const baseUrl = import.meta.env.BASE_URL;
   <div class="game-toast-dock" aria-live="polite">
     <Transition name="game-toast">
       <div v-if="current" :key="current.key" class="game-toast" :style="{ '--tone': current.tone, '--toast-ms': `${TOAST_MS}ms` }">
-        <img class="game-toast-art" :src="`${baseUrl}sprites/${current.art}.png`" alt="" />
+        <img v-if="current.art" class="game-toast-art" :src="`${baseUrl}sprites/${current.art}.png`" alt="" />
+        <StatIcon v-else-if="current.icon" class="game-toast-art game-toast-icon" :name="current.icon" :size="28" />
         <div class="game-toast-words">
           <strong class="game-toast-title">{{ current.title }}</strong>
           <span class="game-toast-text">{{ current.text }}</span>
@@ -52,6 +54,12 @@ const baseUrl = import.meta.env.BASE_URL;
   align-items: center;
   gap: 10px;
   padding: 8px 12px 10px 8px;
+}
+
+/* A stat icon stands in the art's square. */
+.game-toast-icon {
+  display: grid;
+  place-items: center;
 }
 
 /* The 32x32 art at 1.5 CSS px per art pixel (3 device px on 2x), like the shop rows' rack size. */

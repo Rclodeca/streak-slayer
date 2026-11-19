@@ -8,7 +8,7 @@ import { useDailyPurse } from '../../composables/useDailyPurse';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { useLevelUp } from '../../composables/useLevelUp';
 import { useMissedSkillsGate } from '../../composables/useMissedSkillsGate';
-import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
+import { useQuestDone } from '../../composables/useQuestDone';
 import { useQuestMissGate } from '../../composables/useQuestMissGate';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
@@ -18,7 +18,7 @@ import { useDebugClockStore } from '../../store/debugClockStore';
 import { useDebugTrialsBadgeStore } from '../../store/debugTrialsBadgeStore';
 import PrestigePopup from '../talents/PrestigePopup.vue';
 
-const { enqueue } = useQuestCompleteQueue();
+const { showQuestDone } = useQuestDone();
 const { queueMiss } = useQuestMissGate();
 const missedSkills = useMissedSkillsGate();
 const { triggerDeath } = useDeathScreen();
@@ -38,7 +38,7 @@ const prestigeOpen = ref(false);
 // a no-op (the resolvers all bail on an unknown id).
 function previewComplete() {
   const quest = createQuest('Clean the garage', 'hard', '2099-01-01');
-  enqueue({ description: quest.description, difficulty: quest.difficulty, amount: 80 });
+  showQuestDone({ description: quest.description, amount: 80 });
 }
 
 function previewMiss() {

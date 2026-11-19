@@ -94,7 +94,7 @@ import { useHoodedFigure } from './useHoodedFigure';
 import { useBossSkillCard } from './useBossSkillCard';
 import { playHit } from './useHitFeed';
 import { useItemDropQueue } from './useItemDropQueue';
-import { useQuestCompleteQueue } from './useQuestCompleteQueue';
+import { useQuestDone } from './useQuestDone';
 import { useReviveNotice } from './useReviveNotice';
 import { useUndoCheck } from './useUndoCheck';
 
@@ -126,7 +126,7 @@ export function useCombatActions() {
   const { startScene } = useHoodedFigure();
   const { showReviveNotice } = useReviveNotice();
   const { clear: clearItemDrops } = useItemDropQueue();
-  const { enqueue: enqueueCompletion } = useQuestCompleteQueue();
+  const { showQuestDone } = useQuestDone();
   const { celebrateBossKill, celebrateLevelUp, clear: clearCelebration } = useCelebration();
   const { record: recordLevelUp, noteReward, dismiss: clearLevelUp } = useLevelUp();
   const { showBossSkill, clear: clearBossSkills } = useBossSkillCard();
@@ -209,7 +209,7 @@ export function useCombatActions() {
 
     const name = `${getTrialSet(setId).name}: ${rung.deed}`;
     activityLogStore.addEntry({ kind: 'challenge-completed', name, amount, gems: rung.gems, ...(gold > 0 && { gold }) });
-    enqueueCompletion({ description: rung.deed, difficulty: 'medium', amount });
+    showQuestDone({ description: rung.deed, amount });
   }
 
   /**

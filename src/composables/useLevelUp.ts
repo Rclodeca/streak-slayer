@@ -1,5 +1,5 @@
 // Small shared (module-scope) record of the level-up popup's news — same
-// singleton reasoning as useQuestCompleteQueue: useCombatActions records a
+// singleton reasoning as useItemDropQueue: useCombatActions records a
 // level-up as it lands and LevelUpPopup (mounted once in AppShell) shows it.
 // Levels gained before the popup is dismissed fold into the one already
 // waiting, so one popup covers them all. Purely presentational; the levels,

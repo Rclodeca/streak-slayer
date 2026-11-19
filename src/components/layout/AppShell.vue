@@ -32,7 +32,6 @@ import HoodedScene from '../ui/HoodedScene.vue';
 import ItemDropPopup from '../ui/ItemDropPopup.vue';
 import DailyPursePopup from '../ui/DailyPursePopup.vue';
 import MissedSkillsPopup from '../ui/MissedSkillsPopup.vue';
-import QuestCompletePopup from '../quests/QuestCompletePopup.vue';
 import QuestMissPopup from '../quests/QuestMissPopup.vue';
 import QuestUnlockPopup from '../quests/QuestUnlockPopup.vue';
 import LevelUpPopup from '../ui/LevelUpPopup.vue';
@@ -139,7 +138,6 @@ watch(
     <GameToast />
     <QuestMissPopup />
     <BossSkillPopup />
-    <QuestCompletePopup />
     <LevelUpPopup />
     <QuestUnlockPopup />
     <TalentUnlockPopup />

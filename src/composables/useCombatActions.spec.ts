@@ -7,7 +7,7 @@
 
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addDaysToDayKey, STARTING_GEMS, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, goldPrice, weeklyPeriodKey } from '../game-engine';
+import { addDaysToDayKey, STARTING_GEMS, availableRelics, bossNumber, createCharacter, createRng, dailyPeriodKey, dayOfWeekIndex, effectiveStat, expToNextLevel, formatCompact, heroClassFor, periodKeyFor, PERSONALITY_NAME, PRESTIGE_GEMS, questSlotExp, REVIVE_GEMS, goldPrice, weeklyPeriodKey } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -26,7 +26,7 @@ import { useHoodedFigure } from './useHoodedFigure';
 import { useItemDropQueue } from './useItemDropQueue';
 import { useMissedSkillsGate } from './useMissedSkillsGate';
 import { useQuestMissGate } from './useQuestMissGate';
-import { useQuestCompleteQueue } from './useQuestCompleteQueue';
+import { useToast } from './useToast';
 import { useUndoCheck } from './useUndoCheck';
 import { setHitPlayer } from './useHitFeed';
 import type { Character, Habit, Quest, TrialEntry, TrialSetId } from '../game-engine';
@@ -1299,8 +1299,7 @@ describe('useCombatActions', () => {
     afterEach(() => {
       const { dismiss, current } = useItemDropQueue();
       while (current.value) dismiss();
-      const completions = useQuestCompleteQueue();
-      while (completions.current.value) completions.dismiss();
+      useToast().dismiss();
     });
 
     it('a live crit counts toward Crits landed', () => {
@@ -1327,7 +1326,7 @@ describe('useCombatActions', () => {
       expect(entryOf('untouched')?.count).toBe(1);
       expect(useAccountStore().account.gems).toBe(STARTING_GEMS);
       expect(useActivityLogStore().entries.find((e) => e.kind === 'challenge-completed')).toBeUndefined();
-      expect(useQuestCompleteQueue().current.value).toBeNull();
+      expect(useToast().current.value).toBeNull();
     });
 
     it("claiming pays the rung's gems, its gold at the current boss, and medium EXP, using no weekly slot, once", () => {
@@ -1349,7 +1348,7 @@ describe('useCombatActions', () => {
       const logged = useActivityLogStore().entries.filter((e) => e.kind === 'challenge-completed');
       expect(logged).toHaveLength(1);
       expect(logged[0]).toMatchObject({ name: 'Bosses slain: Slay a boss', amount: questSlotExp(20, 'medium', 0), gems: 4, gold: goldPrice(0.5, 10, 2) });
-      expect(useQuestCompleteQueue().current.value).toMatchObject({ description: 'Slay a boss', difficulty: 'medium', amount: questSlotExp(20, 'medium', 0) });
+      expect(useToast().current.value).toMatchObject({ icon: 'exp', title: 'Slay a boss', text: `+${formatCompact(questSlotExp(20, 'medium', 0))} EXP` });
     });
 
     it('a rung with no gold pays no gold', () => {

@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { goldPrice, seedTrials, STARTING_GEMS } from '../../game-engine';
 import type { TrialEntry } from '../../game-engine';
-import { useQuestCompleteQueue } from '../../composables/useQuestCompleteQueue';
+import { useToast } from '../../composables/useToast';
 import { useAccountStore } from '../../store/accountStore';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -23,8 +23,7 @@ describe('TrialList', () => {
   });
 
   afterEach(() => {
-    const completions = useQuestCompleteQueue();
-    while (completions.current.value) completions.dismiss();
+    useToast().dismiss();
   });
 
   function give(trials: TrialEntry[] | undefined) {
