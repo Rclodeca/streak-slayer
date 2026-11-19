@@ -13,7 +13,7 @@ import ShopBuyButton from './ShopBuyButton.vue';
 // (greyed, with the shortfall, when too dear). Owned: Wear, unless it's
 // another class's, which is worn the next time that class is played.
 // Current: just Close. A hero is drawn at 3 CSS px per art pixel (its 64px
-// base build at 192px), a backdrop at 2, cropped to the popup around its middle.
+// base build at 192px), a backdrop scaled to the popup's width, whole.
 const props = defineProps<{ modelValue: boolean; tile: SkinTile }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 
@@ -85,12 +85,15 @@ function wear() {
 }
 
 .scene .skin-stage {
-  height: 232px;
+  display: block;
+  height: auto;
 }
 
+/* The whole backdrop, scaled to the popup's width (not cropped). */
 .scene .skin-stage img {
-  width: 432px;
-  height: 232px;
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .skin-stage .skin-word {

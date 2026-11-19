@@ -5,8 +5,8 @@ import StatIcon from '../ui/StatIcon.vue';
 // One look in the Vault (docs/mockups/vault-tab-2.html): its art, its name and
 // one keyword, Current (worn now), Owned, or its price. The whole card is the
 // button; it opens the look's popup, where it's bought or worn. Art is at 1
-// CSS px per art pixel: a hero's 64px base build, or a backdrop cropped to the
-// card around its floor.
+// CSS px per art pixel: a hero's 64px base build, or a backdrop scaled to the
+// card's width, whole.
 defineProps<{ tile: SkinTile; state: SkinTileState; scene?: boolean }>();
 defineEmits<{ pick: [] }>();
 </script>
@@ -54,13 +54,17 @@ defineEmits<{ pick: [] }>();
 }
 
 .scene .skin-art {
+  display: block;
   width: 100%;
-  height: 96px;
+  height: auto;
+  aspect-ratio: 216 / 116;
 }
 
+/* The whole backdrop, scaled to the card's width (not cropped). */
 .scene .skin-art img {
-  width: 216px;
-  height: 116px;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .shop-name {

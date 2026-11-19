@@ -15,7 +15,7 @@ import SectionTitle from '../ui/SectionTitle.vue';
 // class being played's (only it shows in the home base). Each slot's default
 // is always owned, so no row is empty. Buying is the Shop's Looks side, one
 // button away once Looks is open. Art is drawn at 1 CSS px per art pixel: heroes their 64px base
-// build, backdrops 216 x 116 cropped to the tile, never scaled.
+// build, backdrops 216 x 116 scaled to the tile's width, whole.
 const skins = useSkins();
 const { tilesFor, stateOf } = useSkinTiles();
 const tabStore = useTabStore();
@@ -135,16 +135,20 @@ function shopLooks() {
   height: 64px;
 }
 
-/* A backdrop at 1 CSS px per art pixel, cropped to the tile and held to its
-   bottom (a 108-row one shows dark above). */
+/* A backdrop scaled to the tile's width, whole (not cropped), held to its bottom
+   (a 108-row one shows dark above). */
 .scenes .wardrobe-art {
+  display: block;
   width: 100%;
-  height: 116px;
+  aspect-ratio: 216 / 116;
+  position: relative;
 }
 
 .scenes .wardrobe-art img {
-  width: 216px;
-  max-width: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   height: auto;
 }
 
