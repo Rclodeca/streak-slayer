@@ -3,7 +3,7 @@ import { UNLOCK_LEVELS } from './constants/unlocks';
 import { hasItemEffect } from './items';
 import { expToNextLevel } from './leveling';
 import { questExpMultiplier } from './talents';
-import type { Character, Difficulty, Quest, QuestWeek } from './types';
+import type { Character, Difficulty, Quest, QuestWeek, TaskGroup } from './types';
 
 /** The player level at which the quests section opens, once for good. */
 export const QUESTS_UNLOCK_LEVEL = UNLOCK_LEVELS.quests;
@@ -100,10 +100,11 @@ export function recordQuestCompletion(questWeek: QuestWeek | undefined, weekKey:
 }
 
 /** Builds a new Quest record with a generated id; `createdDayKey` is the day it was added. */
-export function createQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string): Quest {
+export function createQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string, group?: TaskGroup): Quest {
   if (!dueDateKey) throw new Error('A task needs a due date');
   const quest: Quest = { id: crypto.randomUUID(), description, difficulty, dueDateKey };
   if (createdDayKey !== undefined) quest.createdDayKey = createdDayKey;
+  if (group !== undefined) quest.group = group;
   return quest;
 }
 

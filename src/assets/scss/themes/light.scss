@@ -138,6 +138,13 @@ $light: ":root[data-theme='light']";
   --rarity-relic: #c4631c;
   --soon-color: #b8741c;
   --overdrive-color: #c4631c;
+  // Task groups, darker so they read on white.
+  --group-work: #3f6fbf;
+  --group-home: #2f8f6a;
+  --group-school: #7a52c2;
+  --group-health: #c0504f;
+  --group-errands: #a8741a;
+  --group-other: #6b7381;
 }
 
 // The night stage: Moonlit's palette, and the tokens

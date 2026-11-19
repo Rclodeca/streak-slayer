@@ -3,7 +3,7 @@
 
 import { defineStore } from 'pinia';
 import { createQuest, migrateQuest } from '../game-engine';
-import type { Difficulty, Quest } from '../game-engine';
+import type { Difficulty, Quest, TaskGroup } from '../game-engine';
 
 export const useQuestStore = defineStore('quest', {
   state: () => ({
@@ -16,8 +16,8 @@ export const useQuestStore = defineStore('quest', {
     },
 
     /** Creates a new quest via the engine and adds it to the list. */
-    addQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string): Quest {
-      const quest = createQuest(description, difficulty, dueDateKey, createdDayKey);
+    addQuest(description: string, difficulty: Difficulty, dueDateKey: string, createdDayKey?: string, group?: TaskGroup): Quest {
+      const quest = createQuest(description, difficulty, dueDateKey, createdDayKey, group);
       this.quests.push(quest);
       return quest;
     },

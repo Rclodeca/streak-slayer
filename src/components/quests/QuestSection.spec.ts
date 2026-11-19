@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { addDaysToDayKey, dailyPeriodKey } from '../../game-engine';
 import type { TrialEntry } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useQuestStore } from '../../store/questStore';
@@ -47,5 +48,35 @@ describe('QuestSection', () => {
     expect(wrapper.find('li.quest-item').text()).toContain('Clean garage');
     expect(wrapper.find('.add-button').exists()).toBe(true);
     expect(wrapper.find('li.trial').exists()).toBe(false);
+  });
+
+  it('shows no group chips until a task has a group, then All plus only the groups in use', async () => {
+    openSection();
+    const wrapper = mountSection();
+    expect(wrapper.find('.group-chips').exists()).toBe(false);
+    const due = addDaysToDayKey(dailyPeriodKey(useDebugClockStore().now()), 2);
+    useQuestStore().addQuest('Essay draft', 'easy', due, undefined, 'school');
+    useAccountStore().renameTaskGroup('school', 'Night class');
+    await wrapper.vm.$nextTick();
+    const chips = wrapper.findAll('.group-chips .group-chip:not(.edit)').map((c) => c.text());
+    expect(chips).toEqual(['All 2', 'Night class 1']);
+    expect(wrapper.text()).toContain('Night class');
+  });
+
+  it('filters the list to the picked group', async () => {
+    openSection();
+    const due = addDaysToDayKey(dailyPeriodKey(useDebugClockStore().now()), 2);
+    useQuestStore().addQuest('Essay draft', 'easy', due, undefined, 'school');
+    const wrapper = mountSection();
+    await wrapper.findAll('.group-chips .group-chip')[1].trigger('click');
+    expect(wrapper.findAll('li.quest-item').map((li) => li.find('.description').text())).toEqual(['Essay draft']);
+  });
+
+  it('checks a task off with the habit box and shows no difficulty pips', async () => {
+    openSection();
+    const wrapper = mountSection();
+    expect(wrapper.find('li.quest-item .pip').exists()).toBe(false);
+    await wrapper.find('li.quest-item .strike').trigger('click');
+    expect(useQuestStore().quests[0].doneDayKey).toBeDefined();
   });
 });

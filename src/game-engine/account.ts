@@ -5,6 +5,7 @@
 import { LEVEL_GEM_MILESTONES, STARTING_GEMS } from './constants/economy';
 import { expCurveLevel } from './leveling';
 import type { SkinSlot } from './skins';
+import type { TaskGroup } from './types';
 
 export interface Account {
   gems: number;
@@ -32,6 +33,9 @@ export interface Account {
   // Whether highestLevel was moved to the 2026-11-18 EXP curve (see
   // applyExpCurveToAccount). A new account starts with it set.
   expCurveApplied?: boolean;
+  // The player's names for the task group slots (see taskGroups.ts). Only
+  // renamed slots are kept; missing = every slot has its default name.
+  taskGroupNames?: Partial<Record<TaskGroup, string>>;
 }
 
 export function createAccount(): Account {

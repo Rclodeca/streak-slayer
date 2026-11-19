@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { dailyPeriodKey } from '../../game-engine';
-import type { Difficulty } from '../../game-engine';
+import { Pencil } from 'lucide-vue-next';
+import { dailyPeriodKey, TASK_GROUPS, taskGroupName } from '../../game-engine';
+import type { Difficulty, TaskGroup } from '../../game-engine';
+import { useAccountStore } from '../../store/accountStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import StatIcon from '../ui/StatIcon.vue';
+import { TASK_GROUP_ICONS, taskGroupColor } from './taskGroupStyle';
 
-const emit = defineEmits<{ submit: [description: string, difficulty: Difficulty, dueDateKey: string] }>();
+const emit = defineEmits<{ submit: [description: string, difficulty: Difficulty, dueDateKey: string, group?: TaskGroup]; rename: [] }>();
 
 const debugClockStore = useDebugClockStore();
+const accountStore = useAccountStore();
 
 const todayKey = computed(() => dailyPeriodKey(debugClockStore.now()));
 
@@ -20,6 +24,12 @@ function addDays(key: string, days: number): string {
 const description = ref('');
 const difficulty = ref<Difficulty>('easy');
 const dueDate = ref(addDays(todayKey.value, 1));
+// Optional: tapping the picked group again clears it.
+const group = ref<TaskGroup | null>(null);
+
+function pickGroup(next: TaskGroup) {
+  group.value = group.value === next ? null : next;
+}
 
 const difficultyOptions: { value: Difficulty; label: string; pips: number }[] = [
   { value: 'easy', label: 'Easy', pips: 1 },
@@ -48,7 +58,7 @@ const dueLabel = computed(() =>
 function onSubmit() {
   const trimmed = description.value.trim();
   if (!trimmed || !dueDate.value) return;
-  emit('submit', trimmed, difficulty.value, dueDate.value);
+  emit('submit', trimmed, difficulty.value, dueDate.value, group.value ?? undefined);
 }
 </script>
 
@@ -94,6 +104,26 @@ function onSubmit() {
         <input v-model="dueDate" class="date-input" type="date" :min="todayKey" required aria-label="Deadline date" />
       </div>
       <p v-if="dueLabel" class="due-summary">Due {{ dueLabel }}</p>
+    </fieldset>
+
+    <!-- Six fixed group slots the player can rename (docs/mockups/tasks-b-p2.html). -->
+    <fieldset class="field">
+      <legend class="field-label">Group</legend>
+      <div class="groups">
+        <button
+          v-for="g in TASK_GROUPS"
+          :key="g"
+          type="button"
+          class="chip group-chip"
+          :class="{ selected: group === g }"
+          :style="{ '--g': taskGroupColor(g) }"
+          :aria-pressed="group === g"
+          @click="pickGroup(g)"
+        >
+          <component :is="TASK_GROUP_ICONS[g]" :size="14" class="group-icon" /><span class="group-name">{{ taskGroupName(accountStore.account, g) }}</span>
+        </button>
+      </div>
+      <button type="button" class="rename-link" @click="emit('rename')"><Pencil :size="13" />Rename groups</button>
     </fieldset>
 
     <button type="submit" class="submit">Add task</button>
@@ -255,6 +285,51 @@ function onSubmit() {
   background: var(--accent-bg);
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.group-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.group-icon {
+  flex: none;
+  color: var(--g);
+}
+
+.group-chip.selected .group-icon {
+  color: color-mix(in srgb, var(--g) 65%, #000);
+}
+
+.group-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rename-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 2px;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .date-input {

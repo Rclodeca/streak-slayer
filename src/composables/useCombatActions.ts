@@ -74,7 +74,7 @@ import {
   unlockQuests,
   weeklyPeriodKey,
 } from '../game-engine';
-import type { Boss, Character, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest, TrialEvent, TrialRung, TrialSetId } from '../game-engine';
+import type { Boss, Character, Difficulty, FiredBossSkill, Habit, HeroClass, ItemDef, Period, Quest, TaskGroup, TrialEvent, TrialRung, TrialSetId } from '../game-engine';
 import { TUNING } from '../game-engine/constants/tuning';
 import { useAccountStore } from '../store/accountStore';
 import { useActivityLogStore } from '../store/activityLogStore';
@@ -575,8 +575,8 @@ export function useCombatActions() {
   }
 
   /** Adds a quest stamped with today's day, so Fresh quests and Quest run can tell when it was made. */
-  function addQuest(description: string, difficulty: Difficulty, dueDateKey: string): Quest {
-    const quest = questStore.addQuest(description, difficulty, dueDateKey, dailyPeriodKey(debugClockStore.now()));
+  function addQuest(description: string, difficulty: Difficulty, dueDateKey: string, group?: TaskGroup): Quest {
+    const quest = questStore.addQuest(description, difficulty, dueDateKey, dailyPeriodKey(debugClockStore.now()), group);
     reportTrial({ type: 'quest-added', questId: quest.id });
     return quest;
   }

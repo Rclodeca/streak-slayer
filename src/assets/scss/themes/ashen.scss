@@ -176,7 +176,7 @@ $well: var(--well);
   }
 }
 
-// A plain square checkbox with pixel-cut corners (quests, the daily update):
+// A plain square checkbox with pixel-cut corners (the daily update):
 // silver while it waits, dim and ticked once done.
 @mixin square-check($size: 20px) {
   appearance: none;
@@ -1323,18 +1323,17 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     color: var(--medal-ink);
   }
 
-  // Add: a ghost plus in the section's colour. The tap area is 44px; the
-  // drawn square is 30px. (docs/mockups/pixel-add-together.html) It is
-  // dropped 1px, and moved 7px right (the tap area's inset around the
-  // square) so the square ends where the Daily/Weekly labels and the cards
-  // end; a transform leaves the header's layout alone.
+  // Add: a stone key with a plus in the section's colour on a dark lip
+  // (docs/mockups/tasks-b-p2.html). 44px wide, so it ends where the cards
+  // end; dropped 1px by a transform, which leaves the header's layout alone.
+  // Pressing drops the face onto the lip.
   .add-button {
-    transform: translate(7px, 1px);
+    transform: translateY(1px);
     display: grid;
     place-items: center;
     flex-shrink: 0;
     width: 44px;
-    height: 44px;
+    height: 39px;
     padding: 0;
     background: none;
     border: 0;
@@ -1344,21 +1343,41 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     &::before {
       content: '';
       grid-area: 1 / 1;
-      width: 30px;
-      height: 30px;
-      background: color-mix(in srgb, var(--spine) 10%, transparent);
-      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--spine) 55%, transparent);
+      align-self: start;
+      box-sizing: border-box;
+      width: 44px;
+      height: 39px;
+      background: var(--stone-face);
+      border-bottom: 3px solid var(--stone-lip);
       @include pixel-corners(2px);
     }
 
+    // Lifted above the face: the face's clip-path paints it over plain content.
     > svg {
+      position: relative;
+      z-index: 1;
       grid-area: 1 / 1;
+      align-self: start;
+      width: 18px;
+      height: 18px;
+      margin-top: 9px;
       stroke-width: 2.6;
     }
 
     &:active::before {
-      background: color-mix(in srgb, var(--spine) 28%, transparent);
+      margin-top: 3px;
+      height: 36px;
+      border-bottom: 0;
     }
+
+    &:active > svg {
+      margin-top: 12px;
+    }
+  }
+
+  // Bad habits' plus stays silver, like Habits', not the section's red.
+  .resist-list .add-button {
+    color: var(--accent);
   }
 
   // What the section is, in a line under its title, in the same quiet grey
@@ -1714,51 +1733,37 @@ $label-lg: 0.95rem; // primary buttons, choice titles
   }
 
   // ---------- Quests ----------
+  // Tasks (docs/mockups/tasks-b-p2.html, B + P2): a habit's card and check
+  // box, the box rimmed in the task's group colour (brass with no group).
+  // Under the name, the group and the due words; chips above filter by group.
 
   .quest-item,
   .quest-item.urgent {
-    gap: 6px;
-    padding: 4px 8px 4px 4px;
-  }
-
-  // The square checkbox on the left, in a 44px tap zone.
-  .quest-item .check-zone {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-  }
-
-  .quest-item .check {
-    @include square-check;
-    @include inset-focus;
+    position: relative;
+    min-height: 58px;
+    gap: 8px;
+    padding: 5px 14px 5px 6px;
   }
 
   .quest-item .body {
     padding: 4px 0;
-    gap: 3px;
+    gap: 4px;
   }
 
+  // At the habit name's true size (see the skill cards above).
   .quest-item .description {
-    @include name-serif;
-    font-size: 1rem;
-    line-height: 1.2;
+    @include name-serif(700);
+    font-size: 19px;
+    line-height: 1.15;
+    font-size-adjust: none;
+    letter-spacing: 0;
     color: var(--card-ink);
   }
 
   .quest-item .meta {
-    gap: 6px;
+    gap: 5px;
     @include plain-label($label-sm, 700);
-  }
-
-  .quest-item .pips {
-    gap: 3px;
-  }
-
-  .quest-item {
-    position: relative;
+    color: var(--text);
   }
 
   // Overdue: the due words burn red.
@@ -1773,12 +1778,8 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     @include bevel(var(--struck-hi), var(--struck-lo));
   }
 
-  .quest-item.done :is(.description, .due) {
+  .quest-item.done :is(.description, .due, .group, .group-icon) {
     color: var(--struck-ink);
-  }
-
-  .quest-item.done .pips {
-    opacity: 0.45;
   }
 
   .quest-item.done .description {
@@ -1786,8 +1787,37 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     text-decoration-color: color-mix(in srgb, var(--moon) 30%, transparent);
   }
 
-  .quest-item .check:disabled {
-    cursor: default;
+  // The group chips: dark pixel chips with the group's icon; the picked one
+  // fills with its colour.
+  .group-chips .group-chip {
+    @include pixel-corners(2px);
+    @include plain-label($label-md, 700);
+    @include inset-focus;
+    background: var(--stone-face);
+    color: var(--text);
+    border: 0;
+    box-shadow: inset 0 0 0 2px var(--card-hi);
+  }
+
+  .group-chips .group-chip b {
+    font-weight: 800;
+    color: var(--struck-ink);
+  }
+
+  // All has no group colour of its own: brass, the Tasks colour.
+  .group-chips .group-chip.on {
+    --g: var(--brass);
+    background: color-mix(in srgb, var(--g) 24%, var(--stone-face));
+    color: var(--text-h);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--g) 70%, #000);
+  }
+
+  .group-chips .group-chip.on b {
+    color: var(--text);
+  }
+
+  .group-chips .group-chip.edit {
+    padding: 0 12px;
   }
 
   // ---------- Trials ----------

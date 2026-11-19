@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Tasks Redesign</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+:root {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --brass: #d2bb85; --brass-solid: #b39a66;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19; --card-ink: #f4f4fa;
+  --struck-card: #1c1c2a; --struck-hi: #26263d; --struck-lo: #12131c; --struck-face: #2c2d41; --struck-lip: #1f1f2c; --struck-ink: #5a5a68;
+  --field: #12131c; --sunk-hi: #0f1018; --sunk-lo: #2c2c47; --damage-color: #c8402f; --soon-color: #d49a46;
+  --icon-exp: #d8b46a; --dmg-physical: #e86154; --spent: #686877;
+  --px3: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 24px 16px 60px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+h3 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 40px 0 6px; text-transform: uppercase; }
+.sub { text-align: center; margin: 0 auto 20px; max-width: 620px; font-size: 14.5px; }
+.row { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.opt { width: 360px; max-width: 100%; }
+.opt > h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; text-align: center; }
+.opt > p { margin: 0 0 10px; font-size: 13.5px; text-align: center; min-height: 56px; }
+.pick { color: var(--brass); }
+.phone { background: var(--bg); border: 2px solid #22233a; padding: 0 10px 16px; }
+.stage { margin: 0 -10px 4px; height: 70px; background: linear-gradient(#1c1d33, #262546); display: flex; align-items: end; justify-content: space-between; padding: 8px 12px; font-size: 12px; color: var(--spent); }
+svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* The section banner: brass medallion + pennant, add button on the right. */
+.banner { display: flex; align-items: center; height: 50px; padding: 0 2px; }
+.banner .medal { width: 30px; height: 30px; display: grid; place-items: center; background: var(--brass-solid); color: #2a2010; clip-path: var(--px2); font-size: 17px; position: relative; z-index: 1; }
+.banner .cloth { height: 24px; display: flex; align-items: center; padding: 0 18px 0 14px; margin-left: -6px; background: color-mix(in srgb, var(--brass) 38%, #15131c); clip-path: polygon(0 0, 100% 0, calc(100% - 9px) 50%, 100% 100%, 0 100%); font: 700 13px 'Cinzel', serif; letter-spacing: .2em; color: #f3ead4; text-transform: uppercase; }
+.banner .add { margin-left: auto; width: 44px; height: 36px; display: grid; place-items: center; background: #38385c; color: var(--brass); border: 0; border-bottom: 3px solid #161622; clip-path: var(--px2); font-size: 18px; cursor: pointer; }
+
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* Card: identical cut and height to a habit card. */
+.card { position: relative; display: flex; align-items: center; gap: 8px; min-height: 58px; padding: 5px 10px 5px 6px; background: var(--card); border-bottom: 3px solid var(--card-lip); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); clip-path: var(--px3); }
+.card .title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.card .name { font: 700 19px/1.15 'Alegreya', serif; color: var(--card-ink); overflow-wrap: anywhere; }
+.card .sub2 { font: 700 12px/1 'Alegreya Sans'; color: #9a9ab4; display: flex; align-items: center; gap: 5px; }
+.card .end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+
+/* The box: the habit box exactly (30px well in a 44px tap), rimmed in --c. */
+.hit { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: -2px 0; padding: 0; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.box { --c: var(--brass); width: 30px; height: 30px; display: grid; place-items: center; clip-path: var(--px2);
+  background: color-mix(in srgb, var(--c) 10%, var(--field));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 85%, #000), inset 0 4px 0 rgba(0,0,0,.35), inset 0 -2px 0 color-mix(in srgb, var(--c) 30%, #000); }
+.box svg { width: 20px; height: 20px; fill: #9a9aae; opacity: 0; transform: scale(.5); transition: opacity .12s, transform .12s; }
+.hit:active .box { transform: translateY(1px); }
+.lit .box { animation: land .6s ease-out; }
+@keyframes land { from { background: var(--c); box-shadow: none; } }
+
+/* EXP on the right, where a habit keeps its damage. */
+.exp { display: inline-flex; align-items: center; gap: 3px; font: 800 14px/1 'Alegreya Sans'; font-variant-numeric: lining-nums tabular-nums; color: var(--icon-exp); }
+.exp svg { width: 12px; height: 12px; }
+
+/* Due words by urgency. */
+.due.soon { color: var(--soon-color); }
+.due.urgent { color: color-mix(in srgb, var(--damage-color) 72%, #fff); }
+
+/* Checked off: struck grey, ticked, stays until the day turns. */
+.card.done { background: var(--struck-card); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); }
+.card.done .box { background: var(--struck-face); box-shadow: inset 0 0 0 2px var(--struck-lip); }
+.card.done .box svg { opacity: 1; transform: none; }
+.card.done :is(.name, .sub2, .due, .exp, .tab, .stub, .stamp) { color: var(--struck-ink) !important; }
+.card.done .name { text-decoration: line-through; text-decoration-color: rgba(223,224,240,.3); }
+.card.done :is(.tab, .stub, .stamp) { box-shadow: inset 0 0 0 1px var(--struck-face) !important; background: var(--struck-card) !important; }
+
+/* ---------- A: due tab on the corner + group headers ---------- */
+.A .card { overflow: visible; }
+.A .card.has-tab { clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 100px) 0, calc(100% - 100px) -12px, 100% -12px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
+.A .tab { position: absolute; top: -9px; right: 8px; height: 18px; display: inline-flex; align-items: center; gap: 3px; padding: 0 6px 0 5px; background: var(--field); clip-path: var(--px2); box-shadow: inset 0 0 0 1px rgb(210 187 133 / .55); font: 800 11.5px/1 'Alegreya Sans'; color: var(--brass); }
+.A .tab svg { width: 10px; height: 10px; }
+.A .tab.soon { color: var(--soon-color); box-shadow: inset 0 0 0 1px rgb(212 154 70 / .7); }
+.A .tab.urgent { color: #ef8a7c; box-shadow: inset 0 0 0 1px rgb(200 64 47 / .8); }
+.A ul { gap: 13px; } .A .ghead + .card { margin-top: 4px; }
+.ghead { display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 4px; font: 700 12px/1 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: #c9c3b2; cursor: pointer; user-select: none; }
+.ghead svg.i { font-size: 15px; color: var(--brass); }
+.ghead .rule { flex: 1; height: 2px; background: #26263d; }
+.ghead .left { font: 700 12px/1 'Alegreya Sans'; letter-spacing: 0; text-transform: none; color: #8a8aa4; }
+.ghead .chev { font-size: 15px; color: #8a8aa4; transition: transform .15s; }
+.ghead.shut .chev { transform: rotate(-90deg); }
+.hidden { display: none !important; }
+
+/* ---------- B: group colour on the box + filter chips ---------- */
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: none; }
+.chip { flex: none; min-height: 36px; display: inline-flex; align-items: center; gap: 5px; padding: 0 11px; background: #1c1c2e; color: #a9a9c2; border: 0; clip-path: var(--px2); box-shadow: inset 0 0 0 2px #2f2f4f; font: 700 13px 'Alegreya Sans'; cursor: pointer; }
+.chip svg.i { font-size: 13px; color: var(--g, var(--brass)); }
+.chip.on { background: color-mix(in srgb, var(--g, var(--brass)) 22%, #1c1c2e); color: #f4f4fa; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--g, var(--brass)) 70%, #000); }
+.chip b { font-weight: 800; color: #8a8aa4; }
+:is(.B, .E) .sub2 svg.i { font-size: 12px; color: var(--g); }
+
+/* ---------- C: notice board (paper cards, folder tabs, due stamp) ---------- */
+.C .folders { display: flex; gap: 2px; margin-bottom: -2px; position: relative; z-index: 1; }
+.C .folder { flex: 1; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; background: #191a28; color: #8a8aa4; border: 0; clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% 100%, 0 100%); font: 700 13px 'Alegreya Sans'; cursor: pointer; }
+.C .folder svg.i { font-size: 14px; }
+.C .folder.on { background: #2a2536; color: #f0e6cc; }
+.C .folder.on svg.i { color: var(--brass); }
+.C .board { background: #2a2536; padding: 10px 8px; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); box-shadow: inset 0 -2px 0 #16141c; }
+.C .card { background: #4a4152; box-shadow: inset 2px 2px 0 #66597a, inset -2px -2px 0 #2a2433; border-bottom-color: #18141d; }
+.C .card .name { color: #fbf3e2; }
+.C .card .sub2 { color: #b9aec0; }
+.C .stamp { flex: none; min-width: 54px; height: 34px; display: grid; place-items: center; padding: 0 6px; clip-path: var(--px2); box-shadow: inset 0 0 0 2px rgb(210 187 133 / .6); background: rgb(0 0 0 / .18); font: 800 11px/1.05 'Alegreya Sans'; letter-spacing: .08em; text-transform: uppercase; color: var(--brass); text-align: center; transform: rotate(-3deg); }
+.C .stamp.soon { color: var(--soon-color); box-shadow: inset 0 0 0 2px rgb(212 154 70 / .75); }
+.C .stamp.urgent { color: #f09484; box-shadow: inset 0 0 0 2px rgb(200 64 47 / .9); }
+.C .card.done { background: #2a2530; box-shadow: none; }
+
+/* ---------- D: calendar stub on the right + group headers ---------- */
+:is(.D, .E) .stub { flex: none; width: 46px; height: 46px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: var(--field); clip-path: var(--px2); box-shadow: inset 0 0 0 1px #3a3a5c, inset 0 3px 0 color-mix(in srgb, var(--u, var(--brass)) 70%, #000); color: var(--u, var(--brass)); margin-right: -4px; }
+:is(.D, .E) .stub b { font: 800 19px/1 'Alegreya Sans'; font-variant-numeric: lining-nums tabular-nums; }
+:is(.D, .E) .stub small { font: 800 9.5px/1 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: #9a9ab4; }
+:is(.D, .E) .stub.soon { --u: var(--soon-color); }
+:is(.D, .E) .stub.urgent { --u: #ef8a7c; }
+
+/* Size check strip */
+.check { width: 360px; max-width: 100%; margin: 0 auto; }
+.lbl { font: 700 11px 'Alegreya Sans'; letter-spacing: .14em; text-transform: uppercase; color: #8a8aa4; margin: 10px 2px 6px; }
+.habit .box { --c: var(--dmg-physical); }
+.pwrl { font: 700 11px 'Cinzel', serif; letter-spacing: .14em; color: color-mix(in srgb, var(--dmg-physical) 80%, #fff); }
+.pbar { display: block; width: 56px; height: 6px; background: color-mix(in srgb, #f0a098 16%, var(--field)); box-shadow: inset 1px 1px 0 var(--sunk-hi), inset -1px -1px 0 var(--sunk-lo); }
+.pbar i { display: block; height: 100%; width: 37%; background: color-mix(in srgb, var(--dmg-physical) 80%, #fff); }
+.hitn { font: 800 14px/1 'Alegreya Sans'; color: color-mix(in srgb, var(--dmg-physical) 80%, #fff); }
+
+/* Group picker strip */
+.pickers { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+.pk { width: 360px; max-width: 100%; background: #1a1b2b; padding: 14px; clip-path: var(--px3); box-shadow: inset 2px 2px 0 #373857, inset -2px -2px 0 #171823; }
+.pk h4 { margin: 0 0 4px; font: 600 12px 'Cinzel', serif; letter-spacing: .18em; color: #ece8de; text-transform: uppercase; }
+.pk p { margin: 0 0 10px; font-size: 13.5px; }
+.pk .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pk .chip { justify-content: center; }
+.pk .ren { margin-top: 10px; display: flex; gap: 6px; align-items: center; font-size: 13px; color: #a9a9c2; }
+.pk .ren input { flex: 1; min-height: 40px; background: rgba(0,0,0,.35); border: 0; clip-path: var(--px2); box-shadow: inset 0 0 0 2px #414163; color: #f4f4fa; font: 600 15px 'Alegreya Sans'; padding: 0 10px; }
+.notes { max-width: 640px; margin: 18px auto 0; font-size: 14px; }
+.notes li { margin: 5px 0; }
+</style>
+</head>
+<body>
+<h1>TASKS · REDESIGN</h1>
+<p class="sub">Same 30px box in a 44px tap as a habit, same card cut and 58px height. Difficulty dots are gone. Tasks get their own identity from brass (the Tasks colour) and how each shows the due date. Tap a box to check it off, tap a group header, chip or folder to try grouping.</p>
+
+<div class="check">
+  <div class="lbl">Size check · a habit, then a task (A)</div>
+  <ul>
+    <li class="card habit"><button class="hit" type="button"><span class="box">CHECK</span></button><span class="title"><span class="name">Morning run</span></span><span class="end"><span class="hitn">412</span><span class="pbar"><i></i></span></span></li>
+  </ul>
+  <ul id="sizeTask" class="A" style="margin-top:14px"></ul>
+</div>
+
+<h3>Options</h3>
+<div class="row" style="margin-top:14px">
+  <div class="opt"><h2>A · Ledger <span class="pick">(my pick)</span></h2><p>Brass box. Due sits in a small tab on the card's corner, like a habit's streak tab. Groups are headers in the list; tap one to fold it.</p><div class="phone A" id="A"></div></div>
+  <div class="opt"><h2>B · Coloured groups</h2><p>The box rim takes the group's colour, the way a habit's box takes its damage type. Chips at the top filter by group. Due words under the name.</p><div class="phone B" id="B"></div></div>
+</div>
+<div class="row" style="margin-top:28px">
+  <div class="opt"><h2>C · Notice board</h2><p>Tasks are notes on a warm board, not slate cards: the most different from habits. Groups are folder tabs. Due is a stamp on the right.</p><div class="phone C" id="C"></div></div>
+  <div class="opt"><h2>D · Calendar stub</h2><p>A tear-off date on the right end (day number, month) lit by urgency, so the due date is the task's signature. Group headers like A.</p><div class="phone D" id="D"></div></div>
+</div>
+<div class="row" style="margin-top:28px">
+  <div class="opt"><h2>E · Stub + coloured groups</h2><p>D's calendar stub on the right, B's group colour on the box and group chips at the top. The group's icon and name sit under the task name with the due words.</p><div class="phone E" id="E"></div></div>
+</div>
+
+<h3>Groups · preset or your own</h3>
+<p class="sub">What the New task popup would show. Every option above works with any of these.</p>
+<div class="pickers">
+  <div class="pk"><h4>P1 · Six presets</h4><p>Fixed names and icons. Simplest. Some players won't fit (no "Kids", "Side project").</p><div class="grid" id="p1"></div></div>
+  <div class="pk"><h4>P2 · Six presets, renamable <span class="pick">(my pick)</span></h4><p>Same six slots and icons; long-press or Edit to rename one. No create or delete, so almost no extra complexity.</p><div class="grid" id="p2"></div><div class="ren"><span>Rename</span><input value="Side project" aria-label="Group name" /></div></div>
+  <div class="pk"><h4>P3 · Make your own</h4><p>Any number of groups, name + icon + colour. Needs create, edit, delete, reorder, and what happens to tasks in a deleted group.</p><div class="grid" id="p3"></div></div>
+</div>
+
+<ul class="notes">
+  <li><b>No group:</b> a task can stay ungrouped; ungrouped tasks sit at the top with no header. With one group in use, headers hide entirely.</li>
+  <li><b>Order:</b> groups in a fixed order, soonest due first inside each, checked-off tasks stay in place until the day turns (as today).</li>
+  <li><b>Overdue</b> burns red in each option; done drops grey and flat like a checked habit.</li>
+</ul>
+
+<script>
+const ICON={"briefcase":"<path d=\"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/><rect width=\"20\" height=\"14\" x=\"2\" y=\"6\" rx=\"2\"/>","house":"<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>","graduation-cap":"<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\"/><path d=\"M22 10v6\"/><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\"/>","heart-pulse":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","shopping-cart":"<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>","sparkles":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>","scroll-text":"<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","calendar":"<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/>","hourglass":"<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\"/><path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/>","chevron-down":"<path d=\"m6 9 6 6 6-6\"/>","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>"};
+const ic = (n, cls = 'i') => '<svg class="' + cls + '" viewBox="0 0 24 24">' + ICON[n] + '</svg>';
+const CHECK = '<svg viewBox="0 0 10 10" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 5h2v1h1v1h1V6h1V5h1V4h1V3h1v2H8v1H7v1H6v1H5v1H3V8H2V7H1z"/></svg>';
+document.querySelectorAll('.box').forEach((b) => { if (b.textContent === 'CHECK') b.innerHTML = CHECK; });
+
+const GROUPS = {
+  work: { name: 'Work', icon: 'briefcase', c: '#7aa2e0' },
+  home: { name: 'Home', icon: 'house', c: '#6cc4a0' },
+  school: { name: 'School', icon: 'graduation-cap', c: '#b58ee0' },
+  health: { name: 'Health', icon: 'heart-pulse', c: '#e08a8a' },
+  errands: { name: 'Errands', icon: 'shopping-cart', c: '#d9b06a' },
+  other: { name: 'Other', icon: 'sparkles', c: '#a9a9c2' },
+};
+// d = days left (-1 overdue), done = checked today
+const TASKS = [
+  { g: 'work', n: 'Send the Q4 budget', d: 0, exp: 60 },
+  { g: 'work', n: 'Review the launch deck', d: 1, exp: 35 },
+  { g: 'work', n: 'Book flights for the offsite', d: 6, exp: 35 },
+  { g: 'home', n: 'Call the dentist', d: -1, exp: 18 },
+  { g: 'home', n: 'Fix the leaky tap', d: 3, exp: 35 },
+  { g: 'home', n: 'Return library books', d: 2, exp: 18, done: true },
+  { g: 'school', n: 'Essay draft: chapter 2', d: 2, exp: 60 },
+  { g: 'school', n: 'Read chapter 7', d: 5, exp: 18 },
+];
+const TODAY = new Date(2026, 10, 19);
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const urg = (t) => t.done ? '' : t.d <= 0 ? 'urgent' : t.d <= 2 ? 'soon' : '';
+const dueText = (t) => t.done ? 'Done' : t.d < 0 ? 'Overdue' : t.d === 0 ? 'Due today' : t.d === 1 ? 'Due tomorrow' : t.d + ' days left';
+const tabText = (t) => t.done ? 'Done' : t.d < 0 ? 'Overdue' : t.d === 0 ? 'Today' : t.d === 1 ? 'Tomorrow' : t.d + ' days';
+const stampText = (t) => t.done ? 'Done' : t.d < 0 ? 'Over&shy;due' : t.d === 0 ? 'Today' : t.d === 1 ? 'Tmrw' : t.d + ' days';
+const expHtml = (t) => '<span class="exp">' + ic('sparkles', '') + '<b>' + t.exp + '</b></span>';
+const hit = (c) => '<button class="hit" type="button" aria-label="Complete"><span class="box"' + (c ? ' style="--c:' + c + '"' : '') + '>' + CHECK + '</span></button>';
+const sorted = (list) => [...list].sort((a, b) => a.d - b.d);
+
+function cardA(t) {
+  return '<li class="card has-tab ' + (t.done ? 'done' : '') + '" data-g="' + t.g + '"><span class="tab ' + urg(t) + '">' + ic('calendar', '') + tabText(t) + '</span>' + hit() +
+    '<span class="title"><span class="name">' + t.n + '</span></span></li>';
+}
+function cardB(t) {
+  const g = GROUPS[t.g];
+  return '<li class="card ' + (t.done ? 'done' : '') + '" data-g="' + t.g + '" style="--g:' + g.c + '">' + hit(g.c) +
+    '<span class="title"><span class="name">' + t.n + '</span><span class="sub2">' + ic(g.icon) + g.name + ' · <span class="due ' + urg(t) + '">' + dueText(t) + '</span></span></span></li>';
+}
+function cardC(t) {
+  return '<li class="card ' + (t.done ? 'done' : '') + '" data-g="' + t.g + '">' + hit() +
+    '<span class="title"><span class="name">' + t.n + '</span></span><span class="stamp ' + urg(t) + '">' + stampText(t) + '</span></li>';
+}
+function cardD(t) {
+  const dt = new Date(TODAY); dt.setDate(dt.getDate() + t.d);
+  return '<li class="card ' + (t.done ? 'done' : '') + '" data-g="' + t.g + '">' + hit() +
+    '<span class="title"><span class="name">' + t.n + '</span><span class="sub2"><span class="due ' + urg(t) + '">' + dueText(t) + '</span></span></span><span class="stub ' + urg(t) + '"><b>' + dt.getDate() + '</b><small>' + MON[dt.getMonth()] + '</small></span></li>';
+}
+const banner = '<div class="stage"><span>Hero</span><span>Boss 12</span></div><div class="banner"><span class="medal">' + ic('scroll-text') + '</span><span class="cloth">Tasks</span><button class="add" type="button" aria-label="Add task">' + ic('plus') + '</button></div>';
+
+function withHeaders(card) {
+  let html = '<ul>';
+  for (const key of ['work', 'home', 'school']) {
+    const list = sorted(TASKS.filter((t) => t.g === key));
+    const left = list.filter((t) => !t.done).length;
+    html += '<li class="ghead" data-key="' + key + '">' + ic(GROUPS[key].icon) + GROUPS[key].name + '<span class="rule"></span><span class="left">' + left + ' left</span>' + ic('chevron-down', 'i chev') + '</li>';
+    html += list.map(card).join('');
+  }
+  return html + '</ul>';
+}
+document.getElementById('A').innerHTML = banner + withHeaders(cardA);
+document.getElementById('D').innerHTML = banner + withHeaders(cardD);
+document.getElementById('sizeTask').innerHTML = cardA(TASKS[1]);
+
+const chipKeys = ['all', 'work', 'home', 'school'];
+const chip = (k) => {
+  const n = k === 'all' ? TASKS.filter((t) => !t.done).length : TASKS.filter((t) => t.g === k && !t.done).length;
+  return '<button class="chip' + (k === 'all' ? ' on' : '') + '" data-k="' + k + '" type="button"' + (k !== 'all' ? ' style="--g:' + GROUPS[k].c + '"' : '') + '>' + (k === 'all' ? 'All' : ic(GROUPS[k].icon) + GROUPS[k].name) + ' <b>' + n + '</b></button>';
+};
+document.getElementById('B').innerHTML = banner + '<div class="chips">' + chipKeys.map(chip).join('') + '</div><ul>' + sorted(TASKS).map(cardB).join('') + '</ul>';
+document.getElementById('C').innerHTML = banner + '<div class="folders">' + chipKeys.map((k) => '<button class="folder' + (k === 'all' ? ' on' : '') + '" data-k="' + k + '" type="button">' + (k === 'all' ? 'All' : ic(GROUPS[k].icon) + GROUPS[k].name) + '</button>').join('') + '</div><div class="board"><ul>' + sorted(TASKS).map(cardC).join('') + '</ul></div>';
+
+function cardE(t) {
+  const g = GROUPS[t.g];
+  const dt = new Date(TODAY); dt.setDate(dt.getDate() + t.d);
+  return '<li class="card ' + (t.done ? 'done' : '') + '" data-g="' + t.g + '" style="--g:' + g.c + '">' + hit(g.c) +
+    '<span class="title"><span class="name">' + t.n + '</span><span class="sub2">' + ic(g.icon) + g.name + ' · <span class="due ' + urg(t) + '">' + dueText(t) + '</span></span></span><span class="stub ' + urg(t) + '"><b>' + dt.getDate() + '</b><small>' + MON[dt.getMonth()] + '</small></span></li>';
+}
+document.getElementById('E').innerHTML = banner + '<div class="chips">' + chipKeys.map(chip).join('') + '</div><ul>' + sorted(TASKS).map(cardE).join('') + '</ul>';
+
+// Folding headers (A, D).
+document.querySelectorAll('.ghead').forEach((h) => h.addEventListener('click', () => {
+  h.classList.toggle('shut');
+  let n = h.nextElementSibling;
+  while (n && !n.classList.contains('ghead')) { n.classList.toggle('hidden', h.classList.contains('shut')); n = n.nextElementSibling; }
+}));
+// Filters (B chips, C folders).
+document.querySelectorAll('.phone').forEach((p) => p.querySelectorAll('.chip, .folder').forEach((b) => b.addEventListener('click', () => {
+  p.querySelectorAll('.chip, .folder').forEach((x) => x.classList.toggle('on', x === b));
+  p.querySelectorAll('li.card').forEach((li) => li.classList.toggle('hidden', b.dataset.k !== 'all' && li.dataset.g !== b.dataset.k));
+})));
+// Check off: flash the box colour, then settle grey.
+document.addEventListener('click', (e) => {
+  const h = e.target.closest('.hit'); if (!h) return;
+  const li = h.closest('.card'); if (li.classList.contains('done')) { li.classList.remove('done'); return; }
+  li.classList.add('lit', 'done'); setTimeout(() => li.classList.remove('lit'), 650);
+});
+
+// Group pickers.
+const pchip = (k, on, label) => '<button class="chip' + (on ? ' on' : '') + '" type="button" style="--g:' + GROUPS[k].c + '">' + ic(GROUPS[k].icon) + (label || GROUPS[k].name) + '</button>';
+const keys = Object.keys(GROUPS);
+document.getElementById('p1').innerHTML = keys.map((k, i) => pchip(k, i === 0)).join('');
+document.getElementById('p2').innerHTML = keys.map((k, i) => pchip(k, i === 5, i === 5 ? 'Side project' : '')).join('');
+document.getElementById('p3').innerHTML = pchip('work', true) + pchip('home', false, 'Kids') + pchip('school', false, 'Band') + '<button class="chip" type="button">' + ic('plus') + 'New</button>';
+document.querySelectorAll('.pk .grid').forEach((g) => g.addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (!c) return; g.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === c)); }));
+</script>
+</body>
+</html>

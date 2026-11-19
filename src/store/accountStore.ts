@@ -2,8 +2,8 @@
 // outlives every run. Saved inside the main save (see plugins/saveState.ts).
 
 import { defineStore } from 'pinia';
-import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, payStartingGems, prestigeAccount, recordLevel, settlePerfectWeek, spendGems, wearSkin } from '../game-engine';
-import type { Account, Habit, MissSpan, SkinDef, SkinSlot } from '../game-engine';
+import { addGems, buySkin, claimPurse, createAccount, MAX_PRESTIGE, payStartingGems, prestigeAccount, recordLevel, renameTaskGroup, settlePerfectWeek, spendGems, wearSkin } from '../game-engine';
+import type { Account, Habit, MissSpan, SkinDef, SkinSlot, TaskGroup } from '../game-engine';
 
 export const useAccountStore = defineStore('account', {
   state: () => ({
@@ -67,6 +67,11 @@ export const useAccountStore = defineStore('account', {
     /** Sets the prestige rank (for now only the testing button; prestiging itself comes later). */
     setPrestige(rank: number) {
       this.account = { ...this.account, prestige: Math.max(0, Math.min(MAX_PRESTIGE, rank)) };
+    },
+
+    /** Renames a task group slot; a blank name puts its default back. */
+    renameTaskGroup(group: TaskGroup, name: string) {
+      this.account = renameTaskGroup(this.account, group, name);
     },
 
     /** Wears an owned skin in `slot`, or the default with null; false if it isn't owned or doesn't fit the slot. */

@@ -126,6 +126,14 @@
   // Ember, not gold: gold is Ashen's own chrome and blended into common.
   --rarity-relic: #f58a35;
   --soon-color: #d49a46;
+  // Task group slots (docs/mockups/tasks-b-p2.html): a task's box, its chip
+  // and its icon. Kept clear of the damage-type hues.
+  --group-work: #7aa2e0;
+  --group-home: #6cc4a0;
+  --group-school: #b58ee0;
+  --group-health: #e08a8a;
+  --group-errands: #d9b06a;
+  --group-other: #a9a9c2;
   --overdrive-color: #e0783a;
 }
 

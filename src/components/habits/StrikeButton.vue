@@ -7,9 +7,10 @@ import type { DamageType } from '../../game-engine';
 // strikes; the box flashes its colour, then settles grey with a check until the
 // period ends. Resting, it's flat and can't be checked. A struck Overdrive skill
 // with charges left stays tappable, haloed. A bad habit's box is rimmed red, and
-// checking it means giving in: it fills with a cross.
+// checking it means giving in: it fills with a cross. Tasks use the same box,
+// rimmed in their group's colour, with no damage type.
 const props = defineProps<{
-  damageType: DamageType;
+  damageType?: DamageType;
   state: 'open' | 'struck' | 'resting';
   resist?: boolean;
   overdrive?: boolean;
