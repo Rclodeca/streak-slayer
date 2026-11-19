@@ -21,7 +21,7 @@ describe('accountStore', () => {
   it('seeds a save from before accounts with the milestones it already passed', () => {
     const store = useAccountStore();
     store.initFromSave(null, 12);
-    expect(store.account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true });
+    expect(store.account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true, expCurveApplied: true });
   });
 
   it('recordLevel returns the gems it paid', () => {

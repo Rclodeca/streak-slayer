@@ -32,6 +32,7 @@ export type {
 export {
   applyBossAttackEase,
   applyDamagePoolRebalance,
+  applyExpCurve,
   applyHealBaseCut,
   applyHealBoost,
   applyHealingRebalance,
@@ -178,7 +179,7 @@ export { TRIAL_GEMS_TOTAL, TRIAL_GOLD_KILLS_TOTAL } from './constants/trials';
 export { characterGold } from './gold';
 
 export type { Account } from './account';
-export { addGems, claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
+export { addGems, applyExpCurveToAccount, claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
 export type { PrestigeMark, PrestigeRankDef, PrestigeSpecial } from './prestige';
 export {
   canPrestige,

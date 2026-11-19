@@ -3,6 +3,7 @@
 // store layer (store/accountStore.ts) saves it.
 
 import { LEVEL_GEM_MILESTONES, STARTING_GEMS } from './constants/economy';
+import { expCurveLevel } from './leveling';
 import type { SkinSlot } from './skins';
 
 export interface Account {
@@ -28,10 +29,19 @@ export interface Account {
   // Whether STARTING_GEMS has been paid. A new account starts with it paid;
   // missing on saves from before it, which payStartingGems pays once.
   startingGemsPaid?: boolean;
+  // Whether highestLevel was moved to the 2026-11-18 EXP curve (see
+  // applyExpCurveToAccount). A new account starts with it set.
+  expCurveApplied?: boolean;
 }
 
 export function createAccount(): Account {
-  return { gems: STARTING_GEMS, highestLevel: 1, startingGemsPaid: true };
+  return { gems: STARTING_GEMS, highestLevel: 1, startingGemsPaid: true, expCurveApplied: true };
+}
+
+/** Moves the account's best level to the 2026-11-18 EXP curve, once, as applyExpCurve moves a run's, so no milestone pays again for a level the move skipped over. */
+export function applyExpCurveToAccount(account: Account): Account {
+  if (account.expCurveApplied) return account;
+  return { ...account, highestLevel: expCurveLevel(account.highestLevel), expCurveApplied: true };
 }
 
 /** Pays STARTING_GEMS, once, to an account from before them. The same account back once paid. */

@@ -9,6 +9,11 @@ import type { Character, CritBoostStatusEffect, ExpBoostStatusEffect, Habit, Hea
 
 export { effectiveStat, itemStatMultiplier, statAtLevel };
 
+/** An old level on the curve before 2026-11-18, as a level on today's (TUNING.ONE_TIME_EXP_CURVE_LEVEL_FACTOR). */
+export function expCurveLevel(level: number): number {
+  return Math.max(1, Math.round(1 + (level - 1) * TUNING.ONE_TIME_EXP_CURVE_LEVEL_FACTOR));
+}
+
 export function expToNextLevel(level: number): number {
   if (level < 5) return 25 * level;
   if (level === 5) return 150;

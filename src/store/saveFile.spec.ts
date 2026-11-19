@@ -143,13 +143,13 @@ describe('the account in a save file', () => {
   it('is carried by the export file and back through an import', () => {
     const rng = createRng(1);
     const character = { ...createCharacter(rng), level: 3 };
-    localStorage.setItem(SAVE_KEY, serializeSaveState({ character, boss: generateBoss(2, rng), habits: [], account: { gems: 9, highestLevel: 30, startingGemsPaid: true } }));
+    localStorage.setItem(SAVE_KEY, serializeSaveState({ character, boss: generateBoss(2, rng), habits: [], account: { gems: 9, highestLevel: 30, startingGemsPaid: true, expCurveApplied: true } }));
     const file = readSaveFile(buildSaveFile())!.file;
     localStorage.clear();
 
     applySaveFile(file);
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: 9, highestLevel: 30, startingGemsPaid: true });
+    expect(useAccountStore().account).toEqual({ gems: 9, highestLevel: 30, startingGemsPaid: true, expCurveApplied: true });
   });
 
   it("carries a skill's frozen days through an export and import", () => {
@@ -172,7 +172,7 @@ describe('the account in a save file', () => {
 
     applySaveFile(file);
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true });
+    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true, expCurveApplied: true });
   });
 });
 

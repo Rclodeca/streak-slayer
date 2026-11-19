@@ -1,6 +1,8 @@
 import { easeBossAttack, rescaleBossToHealthBands } from './boss';
 import { TUNING } from './constants/tuning';
 import { ITEM_CATALOG } from './items';
+import { expCurveLevel, expToNextLevel } from './leveling';
+import { effectiveStat } from './stats';
 import { pickRandom, type Rng } from './rng';
 import type { Boss, Character } from './types';
 
@@ -59,6 +61,7 @@ export function createCharacter(rng: Rng, heroClass?: HeroClass): Character {
     healthGrowthBumpApplied: true,
     healBaseCutApplied: true,
     bossAttackEaseApplied: true,
+    expCurveApplied: true,
   };
 }
 
@@ -324,4 +327,19 @@ export function applyRankRebalance(character: Character, boss: Boss): { characte
 export function applyBossAttackEase(character: Character, boss: Boss): { character: Character; boss: Boss } {
   if (character.bossAttackEaseApplied) return { character, boss };
   return { character: { ...character, bossAttackEaseApplied: true }, boss: easeBossAttack(boss) };
+}
+
+/**
+ * One-time migration for the 2026-11-18 EXP curve: a saved run's level moves
+ * to its place on the new curve (expCurveLevel), so the hero keeps the stats
+ * the old level gave them. The EXP into the level and the share of max health
+ * carry over. A no-op once `expCurveApplied` is set.
+ */
+export function applyExpCurve(character: Character): Character {
+  if (character.expCurveApplied) return character;
+  const level = expCurveLevel(character.level);
+  const share = character.exp / expToNextLevel(character.level);
+  const moved: Character = { ...character, level, exp: share * expToNextLevel(level), expCurveApplied: true };
+  const before = effectiveStat(character, 'health');
+  return { ...moved, currentHealth: before > 0 ? (character.currentHealth / before) * effectiveStat(moved, 'health') : character.currentHealth };
 }

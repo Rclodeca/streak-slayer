@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
+import { applyExpCurveToAccount, claimPurse, createAccount, payStartingGems, purseDue, recordLevel, spendGems } from './account';
 import { purseGold, STARTING_GEMS } from './constants/economy';
 
 describe('starting gems', () => {
@@ -61,5 +61,19 @@ describe('the daily purse', () => {
     expect(purseGold(1)).toBe(10);
     expect(purseGold(6)).toBe(20);
     expect(purseGold(10)).toBe(30);
+  });
+});
+
+describe('applyExpCurveToAccount', () => {
+  it("moves the best level to the new EXP curve once, as a run's level moves", () => {
+    const old = { ...createAccount(), highestLevel: 27, expCurveApplied: undefined };
+    const moved = applyExpCurveToAccount(old);
+    expect(moved.highestLevel).toBe(43);
+    expect(applyExpCurveToAccount(moved)).toBe(moved);
+  });
+
+  it('leaves a new account alone', () => {
+    const account = createAccount();
+    expect(applyExpCurveToAccount(account)).toBe(account);
   });
 });

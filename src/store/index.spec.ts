@@ -271,20 +271,20 @@ describe('the account in a save', () => {
   it('an old v5 save without account loads with the starting gems and pays its past milestones once', () => {
     storeOldSave(12);
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true });
+    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true, expCurveApplied: true });
     vi.advanceTimersByTime(300);
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) as string).account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true });
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) as string).account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true, expCurveApplied: true });
 
     setActivePinia(createPinia());
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true });
+    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4, highestLevel: 12, startingGemsPaid: true, expCurveApplied: true });
   });
 
   it('seeds from the best level in the high-score list when it beats the current run', () => {
     storeOldSave(3);
     localStorage.setItem(RUNS_KEY, JSON.stringify([{ id: 'r1', bossIndex: 9, level: 21, startedDayKey: '2026-10-01', endedDayKey: '2026-10-09', daysLived: 9 }]));
     initializeStores();
-    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4 + 4 + 4, highestLevel: 21, startingGemsPaid: true });
+    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4 + 4 + 4 + 4, highestLevel: 21, startingGemsPaid: true, expCurveApplied: true });
   });
 
   it('copies the account prestige onto a saved character that has none', () => {
@@ -302,7 +302,7 @@ describe('the account in a save', () => {
     storeOldSave(4);
     const { characterStore, activityLogStore } = initializeStores();
     characterStore.setCharacter({ ...characterStore.character, level: 5 });
-    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4, highestLevel: 5, startingGemsPaid: true });
+    expect(useAccountStore().account).toEqual({ gems: STARTING_GEMS + 4, highestLevel: 5, startingGemsPaid: true, expCurveApplied: true });
     expect(activityLogStore.entries.at(-1)).toMatchObject({ kind: 'gems', amount: 4, reason: 'level' });
   });
 });

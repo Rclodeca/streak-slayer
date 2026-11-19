@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyBossAttackEase,
   applyDamagePoolRebalance,
+  applyExpCurve,
   applyHealBaseCut,
   applyHealBoost,
   applyHealingRebalance,
@@ -23,6 +24,7 @@ import type { Character, Personality } from './types';
 import { createRng } from './rng';
 import { easeBossAttack, generateBoss, rescaleBossToHealthBands } from './boss';
 import { TUNING } from './constants/tuning';
+import { effectiveStat, expToNextLevel } from './leveling';
 
 describe('createCharacter', () => {
   it('starts at the per-skill stats: 672 physical + magic and 288 true damage (360 for a ranger), ±5%', () => {
@@ -388,6 +390,44 @@ describe('applyHealthGrowthBump', () => {
     const character = { ...createCharacter(createRng(3)), level: 8, healthGrowthBumpApplied: undefined };
     const once = applyHealthGrowthBump(character);
     expect(applyHealthGrowthBump(once)).toEqual(once);
+  });
+});
+
+describe('applyExpCurve', () => {
+  // A run saved on the curve before 2026-11-18, whose growth per level was 6% (damage) and 9.5% (health).
+  const old = (level: number, overrides: Partial<Character> = {}): Character => ({ ...createCharacter(createRng(4)), level, expCurveApplied: undefined, ...overrides });
+
+  it('moves the level so the hero keeps the health and damage the old level gave them', () => {
+    const character = old(27);
+    const moved = applyExpCurve(character);
+    expect(moved.level).toBe(43); // 1 + 26 × 1.6 = 42.6
+    const oldHealth = character.starterStats.health * 1.095 ** 26;
+    const oldMagic = character.starterStats.magicDamage * 1.06 ** 26;
+    // Within the rounding of the level (about half a level's growth).
+    expect(effectiveStat(moved, 'health') / oldHealth).toBeGreaterThan(0.97);
+    expect(effectiveStat(moved, 'health') / oldHealth).toBeLessThan(1.03);
+    expect(effectiveStat(moved, 'magicDamage') / oldMagic).toBeGreaterThan(0.97);
+    expect(effectiveStat(moved, 'magicDamage') / oldMagic).toBeLessThan(1.03);
+    expect(moved.expCurveApplied).toBe(true);
+  });
+
+  it('carries the share of the level already earned and the share of max health', () => {
+    const character = old(10, { exp: expToNextLevel(10) / 2 });
+    const half = { ...character, currentHealth: effectiveStat(character, 'health') / 2 };
+    const moved = applyExpCurve(half);
+    expect(moved.exp / expToNextLevel(moved.level)).toBeCloseTo(0.5, 10);
+    expect(moved.currentHealth / effectiveStat(moved, 'health')).toBeCloseTo(0.5, 10);
+  });
+
+  it('leaves level 1 at level 1', () => {
+    expect(applyExpCurve(old(1)).level).toBe(1);
+  });
+
+  it('is a no-op on a fresh character, and once applied', () => {
+    const fresh = createCharacter(createRng(5));
+    expect(applyExpCurve(fresh)).toBe(fresh);
+    const once = applyExpCurve(old(20));
+    expect(applyExpCurve(once)).toBe(once);
   });
 });
 

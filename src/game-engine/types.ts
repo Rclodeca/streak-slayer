@@ -107,6 +107,10 @@ export interface Character {
   // applyBossAttackEase still has to rescale the saved boss; createCharacter
   // sets it true.
   bossAttackEaseApplied?: boolean;
+  // Same one-time marker for the 2026-11-18 EXP curve (levels 1.6x as fast,
+  // less growth per level): undefined means applyExpCurve still has to move the
+  // level so the hero keeps the stats it had; createCharacter sets it true.
+  expCurveApplied?: boolean;
   // The equipped items currently enchanted (bought in the Shop, see
   // services.ts); each leaves the list when it's discarded.
   doubledItemIds?: string[];

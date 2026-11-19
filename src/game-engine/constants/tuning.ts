@@ -24,6 +24,10 @@ export const TUNING = {
   // character.ts's applyHealthGrowthBump can scale an in-progress run's
   // currentHealth up with its (level-computed) max health.
   ONE_TIME_OLD_HEALTH_GROWTH_RATE: 0.06,
+  // The 2026-11-18 EXP curve: levels come this many times as fast, and each
+  // level grows the hero by the old step's root, so a saved run's old level L
+  // moves to 1 + (L - 1) × this to keep its stats (see applyExpCurve).
+  ONE_TIME_EXP_CURVE_LEVEL_FACTOR: 1.6,
   // A ranger's (an even physical/magic split, see heroClassFor) starting
   // true damage multiplier.
   RANGER_TRUE_DAMAGE_MULTIPLIER: 1.25,
