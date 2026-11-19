@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Plus, Shield, Sword } from 'lucide-vue-next';
+import { CalendarDays, Plus, Shield, Sun, Sword } from 'lucide-vue-next';
 import { isDueOn, periodKeyFor } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useDeathScreen } from '../../composables/useDeathScreen';
@@ -64,6 +64,26 @@ const resistDailyHabits = computed(() => {
 const resistWeeklyHabits = computed(() =>
   sortByDamageType(badHabits.value.filter((habit) => habit.period === 'weekly')),
 );
+
+// Each list's groups, only the ones with habits in them, each under its own
+// header (docs/mockups/habit-sections.html, option A). Skills count done
+// over due (resting ones aside); Resist has no count, since a check there
+// means giving in.
+function groupsOf(daily: Habit[], weekly: Habit[], counted: boolean) {
+  const now = debugClockStore.now();
+  return [
+    { period: 'daily', label: 'Daily', icon: Sun, habits: daily },
+    { period: 'weekly', label: 'Weekly', icon: CalendarDays, habits: weekly },
+  ]
+    .filter((group) => group.habits.length)
+    .map((group) => {
+      const due = group.habits.filter(dueNow);
+      const done = due.filter((habit) => habit.lastCompletedPeriodKey === periodKeyFor(habit.period, now)).length;
+      return { ...group, count: counted && due.length ? { done, due: due.length } : null };
+    });
+}
+const skillGroups = computed(() => groupsOf(orderedDailyHabits.value, weeklyHabits.value, true));
+const resistGroups = computed(() => groupsOf(resistDailyHabits.value, resistWeeklyHabits.value, false));
 
 // One popup for the whole list, by id, so it stays open when changing a
 // skill's days moves its row down to the resting ones.
@@ -147,20 +167,15 @@ function checkOffFromHint() {
       <p class="section-empty">No habits yet. Tap +.</p>
     </template>
     <template v-else>
-      <div class="habit-group">
-        <div class="habit-group-head">
-          <h3 v-if="orderedDailyHabits.length" class="habit-group-label">Daily</h3>
-        </div>
-        <ul v-if="orderedDailyHabits.length">
-          <HabitListItem v-for="habit in orderedDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
-        </ul>
-        <p v-else class="habit-group-empty">No daily habits yet.</p>
-      </div>
-
-      <div v-if="weeklyHabits.length" class="habit-group">
-        <div class="habit-group-head"><h3 class="habit-group-label">Weekly</h3></div>
+      <div v-for="group in skillGroups" :key="group.period" class="habit-group">
+        <h3 class="habit-group-head">
+          <component :is="group.icon" :size="15" class="habit-group-icon" aria-hidden="true" />
+          <span class="habit-group-label">{{ group.label }}</span>
+          <span class="habit-group-rule" aria-hidden="true" />
+          <span v-if="group.count" class="habit-group-count" :class="{ full: group.count.done === group.count.due }">{{ group.count.done }}/{{ group.count.due }}</span>
+        </h3>
         <ul>
-          <HabitListItem v-for="habit in weeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
+          <HabitListItem v-for="habit in group.habits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
       </div>
     </template>
@@ -175,20 +190,15 @@ function checkOffFromHint() {
       <p class="section-empty">No bad habits yet. Tap +.</p>
     </template>
     <template v-else>
-      <div class="habit-group">
-        <div class="habit-group-head">
-          <h3 v-if="resistDailyHabits.length" class="habit-group-label">Daily</h3>
-        </div>
-        <ul v-if="resistDailyHabits.length">
-          <HabitListItem v-for="habit in resistDailyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
-        </ul>
-        <p v-else class="habit-group-empty">No daily habits yet.</p>
-      </div>
-
-      <div v-if="resistWeeklyHabits.length" class="habit-group">
-        <div class="habit-group-head"><h3 class="habit-group-label">Weekly</h3></div>
+      <div v-for="group in resistGroups" :key="group.period" class="habit-group">
+        <h3 class="habit-group-head">
+          <component :is="group.icon" :size="15" class="habit-group-icon" aria-hidden="true" />
+          <span class="habit-group-label">{{ group.label }}</span>
+          <span class="habit-group-rule" aria-hidden="true" />
+          <span v-if="group.count" class="habit-group-count" :class="{ full: group.count.done === group.count.due }">{{ group.count.done }}/{{ group.count.due }}</span>
+        </h3>
         <ul>
-          <HabitListItem v-for="habit in resistWeeklyHabits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
+          <HabitListItem v-for="habit in group.habits" :key="habit.id" :habit="habit" @open="openHabitId = habit.id" />
         </ul>
       </div>
     </template>
@@ -253,21 +263,17 @@ function checkOffFromHint() {
 
 .habit-group-head {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 7px;
   margin: 0 0 0.3rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text);
 }
 
-.habit-group-label {
-  margin: 0 0 0 auto;
-  font-size: inherit;
-}
-
-.habit-group-empty {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text);
+.habit-group-rule {
+  flex: 1;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.14;
 }
 </style>

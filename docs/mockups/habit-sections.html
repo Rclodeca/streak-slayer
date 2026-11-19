@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Habit sections</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+:root { --bg: #0b0b12; --text: #d3d4e4; --text-h: #ece8de; --line: #22233a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 20px 16px 40px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: var(--text-h); margin: 0 0 6px; text-transform: uppercase; }
+.sub { text-align: center; margin: 0 auto 16px; max-width: 560px; font-size: 14.5px; min-height: 42px; }
+.bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.bar button { min-height: 44px; padding: 0 14px; font: 700 14px 'Alegreya Sans'; color: var(--text); background: #191a28; border: 2px solid #3f405a; cursor: pointer; }
+.bar button.on { color: #11121b; background: #dfe0f0; border-color: #dfe0f0; }
+.frame { display: block; margin: 0 auto; width: 390px; max-width: 100%; height: 844px; border: 2px solid var(--line); background: #11121b; }
+.notes { max-width: 560px; margin: 18px auto 0; font-size: 14px; }
+.notes li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>Habits · Daily and Weekly</h1>
+<p class="sub">The real app with sample habits (two weekly, one weekly bad habit). Pick a header style. Boxes still check off for real, so the counts move.</p>
+<div class="bar" id="variants">
+  <button type="button" data-v="now">Now</button>
+  <button type="button" data-v="a" class="on">A · Rule</button>
+  <button type="button" data-v="b">B · Divider</button>
+  <button type="button" data-v="c">C · Plate</button>
+  <button type="button" data-v="d">D · Tray</button>
+  <button type="button" data-v="e">E · Switch</button>
+</div>
+<div class="bar"><button type="button" id="reset">Reset sample</button></div>
+<p class="sub" id="vnote"></p>
+<iframe class="frame" id="app" title="StreakSlayer"></iframe>
+<ul class="notes">
+  <li><b>Count:</b> done / due in that group. Resting set-day habits don't count.</li>
+  <li><b>Time left:</b> hours to midnight for Daily, days to Monday for Weekly.</li>
+  <li><b>Same in Bad habits:</b> each style applies to both lists.</li>
+</ul>
+
+<script>
+const APP = '/streak-slayer/';
+const frame = document.getElementById('app');
+
+async function seed() {
+  const data = await (await fetch('./habit-sections.seed.json')).json();
+  localStorage.clear();
+  for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v);
+}
+
+const ICON = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  cal: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+  glass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+};
+const ic = (n) => '<svg class="mx-i" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>';
+
+const CSS = `
+.mx-head, .mx-switch { display: none; }
+.mx-i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+html[class*="mx-"]:not(.mx-now) .habit-group-head { display: none !important; }
+html[class*="mx-"]:not(.mx-now) .mx-head { display: flex; }
+.mx-head { align-items: center; gap: 7px; min-height: 30px; margin: 10px 2px 6px; font: 700 12px/1 var(--heading, 'Cinzel'), serif; letter-spacing: .18em; text-transform: uppercase; color: var(--text); }
+.mx-head .mx-i { font-size: 15px; color: var(--brass); }
+.mx-head .rule { flex: 1; height: 2px; background: color-mix(in srgb, var(--text) 14%, transparent); }
+.mx-head .n, .mx-head .t { display: inline-flex; align-items: center; gap: 4px; font: 800 12.5px/1 var(--sans); letter-spacing: 0; text-transform: none; font-variant-numeric: lining-nums tabular-nums; color: var(--spent-text, #8a8aa4); }
+.mx-head .t .mx-i { font-size: 12px; color: inherit; }
+.mx-head .n.full { color: var(--brass); }
+.habit-group:first-of-type .mx-head { margin-top: 4px; }
+
+/* A: icon + caps name, a rule, the count at the end. */
+.mx-a .mx-head .t { display: none; }
+
+/* B: Daily needs no label; Weekly gets a centred divider with space above. */
+.mx-b .mx-head[data-p="daily"] { display: none !important; }
+.mx-b .mx-head[data-p="weekly"] { margin: 22px 2px 10px; justify-content: center; gap: 10px; }
+.mx-b .mx-head .n, .mx-b .mx-head .t { display: none; }
+.mx-b .mx-head .gem { width: 6px; height: 6px; background: var(--brass); transform: rotate(45deg); flex: none; }
+.mx-b .mx-head .rule { max-width: 90px; }
+.mx-head .gem, .mx-head .lab { display: none; }
+.mx-b .mx-head .gem { display: block; }
+
+/* C: a small lifted plate with the name, the time left at the rule's end. */
+.mx-c .mx-head { gap: 0; }
+.mx-c .mx-head .plate { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px 0 8px; background: color-mix(in srgb, var(--brass-solid, #b39a66) 30%, #15131c); clip-path: var(--px2); box-shadow: inset 0 -2px 0 rgba(0,0,0,.4); color: #f3ead4; }
+.mx-c .mx-head .plate .mx-i { color: var(--brass); font-size: 14px; }
+.mx-c .mx-head .rule { margin: 0 8px; }
+.mx-c .mx-head .n { display: none; }
+.mx-head .plate { display: contents; }
+
+/* D: Daily plain under a quiet label; Weekly cards sit in a sunk tray. */
+.mx-d .mx-head[data-p="daily"] .t { display: none; }
+.mx-d .habit-group[data-p="weekly"] { margin-top: 14px; padding: 0 6px 8px; background: rgba(0,0,0,.28); clip-path: var(--px3); box-shadow: inset 2px 2px 0 rgba(0,0,0,.45), inset -2px -2px 0 rgba(255,255,255,.05); }
+.mx-d .habit-group[data-p="weekly"] .mx-head { margin: 0 -6px 6px; padding: 0 10px; min-height: 32px; background: rgba(255,255,255,.04); }
+.mx-d .habit-group[data-p="weekly"] .mx-head .rule { background: none; }
+.mx-d .habit-group[data-p="weekly"] .mx-head .n { display: none; }
+
+/* E: one switch at the top of each list; only the picked group shows. */
+.mx-e .mx-head { display: none !important; }
+.mx-e .mx-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 4px 0 8px; padding: 3px; background: rgba(0,0,0,.3); clip-path: var(--px2); }
+.mx-switch button { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: none; color: var(--spent-text, #8a8aa4); clip-path: var(--px2); font: 700 14px var(--sans); cursor: pointer; }
+.mx-switch button .mx-i { font-size: 14px; }
+.mx-switch button b { font-weight: 800; font-size: 12.5px; opacity: .8; font-variant-numeric: lining-nums tabular-nums; }
+.mx-switch button.on { background: color-mix(in srgb, var(--brass-solid, #b39a66) 30%, #1c1c2e); color: #f4f4fa; }
+.mx-switch button.on .mx-i { color: var(--brass); }
+.mx-e .habit-list[data-show="daily"] .habit-group[data-p="weekly"],
+.mx-e .habit-list[data-show="weekly"] .habit-group[data-p="daily"] { display: none; }
+.mx-e .habit-list:not([data-has-weekly]) .mx-switch { display: none; }
+`;
+
+function timeLeft(p) {
+  const now = new Date();
+  if (p === 'daily') {
+    const end = new Date(now); end.setHours(24, 0, 0, 0);
+    return Math.max(1, Math.ceil((end - now) / 3600000)) + 'h';
+  }
+  const daysToMon = ((8 - now.getDay()) % 7) || 7;
+  return daysToMon + 'd';
+}
+
+function counts(group) {
+  const items = [...group.querySelectorAll('.habit-item:not(.reroll-row)')];
+  const due = items.filter((li) => !li.classList.contains('resting'));
+  return { done: due.filter((li) => li.classList.contains('struck')).length, due: due.length };
+}
+
+function decorate(doc) {
+  doc.querySelectorAll('section.habit-list').forEach((sec) => {
+    const groups = [...sec.querySelectorAll('.habit-group')];
+    groups.forEach((g, i) => {
+      const label = g.querySelector('.habit-group-label')?.textContent.trim().toLowerCase();
+      const p = label === 'weekly' ? 'weekly' : 'daily';
+      if (g.dataset.p !== p) g.dataset.p = p;
+      if (!g.querySelector('.habit-item')) return;
+      const { done, due } = counts(g);
+      const name = p === 'daily' ? 'Daily' : 'Weekly';
+      const html = '<span class="gem"></span><span class="plate">' + ic(p === 'daily' ? 'sun' : 'cal') + name + '</span><span class="rule"></span><span class="gem"></span>' +
+        '<span class="n' + (due && done === due ? ' full' : '') + '">' + done + '/' + due + '</span><span class="t">' + ic('glass') + timeLeft(p) + '</span>';
+      let head = g.querySelector(':scope > .mx-head');
+      if (!head) { head = doc.createElement('div'); head.className = 'mx-head'; g.insertBefore(head, g.firstChild); }
+      if (head.dataset.k !== html) { head.dataset.k = html; head.dataset.p = p; head.innerHTML = html; }
+    });
+    // E: the switch, before the first group.
+    const daily = groups.find((g) => g.dataset.p === 'daily');
+    const weekly = groups.find((g) => g.dataset.p === 'weekly');
+    if (weekly) sec.dataset.hasWeekly = ''; else delete sec.dataset.hasWeekly;
+    if (!sec.dataset.show) sec.dataset.show = 'daily';
+    if (!groups.length) return;
+    const dc = daily ? counts(daily) : { done: 0, due: 0 };
+    const wc = weekly ? counts(weekly) : { done: 0, due: 0 };
+    const sw = '<button type="button" data-s="daily" class="' + (sec.dataset.show === 'daily' ? 'on' : '') + '">' + ic('sun') + 'Daily <b>' + dc.done + '/' + dc.due + '</b></button>' +
+      '<button type="button" data-s="weekly" class="' + (sec.dataset.show === 'weekly' ? 'on' : '') + '">' + ic('cal') + 'Weekly <b>' + wc.done + '/' + wc.due + '</b></button>';
+    let swEl = sec.querySelector('.mx-switch');
+    if (!swEl) {
+      swEl = doc.createElement('div'); swEl.className = 'mx-switch';
+      groups[0].parentNode.insertBefore(swEl, groups[0]);
+      swEl.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-s]'); if (!b) return;
+        e.stopPropagation(); sec.dataset.show = b.dataset.s; decorate(doc);
+      });
+    }
+    if (swEl.dataset.k !== sw) { swEl.dataset.k = sw; swEl.innerHTML = sw; }
+  });
+}
+
+let variant = 'a';
+function wire() {
+  const doc = frame.contentDocument;
+  if (!doc) return;
+  if (!doc.getElementById('mx-css')) {
+    const st = doc.createElement('style'); st.id = 'mx-css'; st.textContent = CSS; doc.head.appendChild(st);
+  }
+  setVariant(variant);
+  decorate(doc);
+  if (!frame._obs) {
+    let queued = false;
+    frame._obs = new MutationObserver(() => {
+      if (queued) return; queued = true;
+      requestAnimationFrame(() => { queued = false; decorate(doc); });
+    });
+    frame._obs.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  }
+}
+frame.addEventListener('load', () => { frame._obs = null; const tick = setInterval(() => { if (frame.contentDocument?.querySelector('.habit-item')) { clearInterval(tick); wire(); } }, 100); });
+
+const NOTES = {
+  now: 'Today: small grey "Daily" / "Weekly" pushed to the right.',
+  a: 'Left-aligned caps name with its icon, a rule across, and done/due at the end. Reads like a chapter mark.',
+  b: 'No Daily label, it is the default. Weekly gets a centred divider with extra space above, so the break is the gap itself.',
+  c: 'The name on a small brass plate (a smaller cousin of the section banner), a rule, and time left at the end.',
+  d: 'Daily stays plain under a quiet label. Weekly cards sit in a sunk tray with its own lip, so they read as a separate, slower set.',
+  e: 'A Daily | Weekly switch at the top of each list with counts. Only one group shows at a time, so the list stays short.',
+};
+function setVariant(v) {
+  variant = v;
+  document.querySelectorAll('#variants button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
+  document.getElementById('vnote').textContent = NOTES[v];
+  const root = frame.contentDocument?.documentElement;
+  if (root) { ['now', 'a', 'b', 'c', 'd', 'e'].forEach((x) => root.classList.remove('mx-' + x)); root.classList.add('mx-' + v); }
+}
+document.querySelectorAll('#variants button').forEach((b) => (b.onclick = () => setVariant(b.dataset.v)));
+document.getElementById('reset').onclick = async () => { await seed(); frame.src = APP + '?r=' + Date.now(); };
+
+(async () => { await seed(); frame.src = APP; })();
+</script>
+</body>
+</html>

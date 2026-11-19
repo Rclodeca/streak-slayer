@@ -1420,35 +1420,44 @@ $label-lg: 0.95rem; // primary buttons, choice titles
     align-items: baseline;
   }
 
-  // Skills and Resist: the caption and each group's name share one line
-  // above its cards, both in the quiet spent grey, with no tick.
-  // (docs/mockups/pixel-group-labels.html)
+  // Skills and Resist: each group opens on its icon and name in caps, a rule
+  // across, and on Skills done/due at the end, brass once all are done.
+  // (docs/mockups/habit-sections.html, option A)
   .habit-group-head {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin: 4px 2px 2px;
-    font-family: var(--sans);
-    color: var(--spent-text);
+    align-items: center;
+    gap: 7px;
+    min-height: 30px;
+    margin: 10px 2px 6px;
+    @include engraved($caps-xs, 0.18em);
+    font-weight: 700;
+    color: var(--text);
   }
 
-  .habit-list-header + .habit-group-head,
   .habit-list-header + .habit-group > .habit-group-head {
-    margin-top: 2px;
+    margin-top: 4px;
   }
 
-  .habit-group-caption {
-    font-size: 0.78rem;
-    font-weight: 600;
+  .habit-group-icon {
+    flex: none;
+    color: var(--brass);
   }
 
   .habit-group-label {
-    margin: 0 0 0 auto;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0;
-    text-transform: none;
     white-space: nowrap;
+  }
+
+  .habit-group-count {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--spent-text);
+
+    &.full {
+      color: var(--brass);
+    }
   }
 
   :is(.habit-list, .quest-section) ul {

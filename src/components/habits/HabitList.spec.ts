@@ -74,7 +74,7 @@ describe('HabitList', () => {
     addDaily();
     const wrapper = mountList();
     expect(wrapper.find('.resist-list').exists()).toBe(true);
-    expect(wrapper.find('.resist-list .habit-group-caption').exists()).toBe(false);
+    expect(wrapper.find('.resist-list .habit-group-head').exists()).toBe(false);
     expect(wrapper.find('.resist-list .section-empty').text()).toContain('No bad habits yet');
     expect(wrapper.find('.resist-list .habit-item').exists()).toBe(false);
   });
@@ -104,6 +104,17 @@ describe('HabitList', () => {
     }));
     expect(groups.map((g) => g.label)).toEqual(['Daily', 'Weekly']);
     expect(groups.map((g) => g.names)).toEqual([['Doomscroll', 'Snacking'], ['Takeout']]);
+  });
+
+  it('heads only the periods that have habits, Skills with done over due', () => {
+    const habitStore = useHabitStore();
+    habitStore.addHabit('Gym', 'weekly', 'hard', false, createRng(1));
+    habitStore.addHabit('Takeout', 'weekly', 'medium', true, createRng(2));
+    const wrapper = mountList();
+    expect(wrapper.findAll('.skill-list .habit-group-label').map((el) => el.text())).toEqual(['Weekly']);
+    expect(wrapper.find('.skill-list .habit-group-count').text()).toBe('0/1');
+    expect(wrapper.findAll('.resist-list .habit-group-label').map((el) => el.text())).toEqual(['Weekly']);
+    expect(wrapper.find('.resist-list .habit-group-count').exists()).toBe(false);
   });
 
   it('a habit resting today stays in Daily after the due ones, greyed, with its next due day', () => {
