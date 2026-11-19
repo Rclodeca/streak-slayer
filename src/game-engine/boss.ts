@@ -434,14 +434,16 @@ export function generateBoss(
   const attackMultiplier = hybrid ? hybrid.attackMultiplier : ATTACK_MULTIPLIER[personality as SinglePersonality] ?? 1;
   const physicalMultiplier = emphasizedStat === 'physicalAttack' ? attackMultiplier : 1;
   const magicMultiplier = emphasizedStat === 'magicAttack' ? attackMultiplier : 1;
+  // The floor goes on after the multiplier, so it only lifts weak attacks.
+  const minAttack = (TUNING.MISS_DAMAGE_MIN_PCT_OF_MAX_HP * baseMaxHealth) / TUNING.MISS_DAMAGE_FACTOR;
 
   const boss: Boss = {
     index,
     personality,
     maxHealth: health,
     health,
-    physicalAttack: targetAttack * attackJitter() * physicalMultiplier,
-    magicAttack: targetAttack * attackJitter() * magicMultiplier,
+    physicalAttack: Math.max(minAttack, targetAttack * attackJitter() * physicalMultiplier),
+    magicAttack: Math.max(minAttack, targetAttack * attackJitter() * magicMultiplier),
     armor: jitteredResistStat(index, resistTierFor('armor'), rng),
     magicResist: jitteredResistStat(index, resistTierFor('magicResist'), rng),
     lifestealPct,

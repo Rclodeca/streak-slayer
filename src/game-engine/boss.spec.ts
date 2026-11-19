@@ -234,6 +234,49 @@ const FORCED_ROLL_FOR = (() => {
   return rolls as Record<Personality, number>;
 })();
 
+// The 15% minimum hit lifts every boss-1 attack, so tests of the raw
+// multipliers at index 1 run with it off.
+function withMinHitPct<T>(pct: number, fn: () => T): T {
+  const original = TUNING.MISS_DAMAGE_MIN_PCT_OF_MAX_HP;
+  (TUNING as { MISS_DAMAGE_MIN_PCT_OF_MAX_HP: number }).MISS_DAMAGE_MIN_PCT_OF_MAX_HP = pct;
+  try {
+    return fn();
+  } finally {
+    (TUNING as { MISS_DAMAGE_MIN_PCT_OF_MAX_HP: number }).MISS_DAMAGE_MIN_PCT_OF_MAX_HP = original;
+  }
+}
+
+describe('generateBoss minimum hit', () => {
+  const minAttack = (TUNING.MISS_DAMAGE_MIN_PCT_OF_MAX_HP * TUNING.BASE_STATS.health) / TUNING.MISS_DAMAGE_FACTOR;
+
+  it("lifts a balanced boss-1 boss's attacks to the minimum hit", () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const boss = generateBoss(1, forcedPersonalityRng(FORCED_ROLL_FOR.balanced, seed), 1);
+      expect(boss.physicalAttack).toBeCloseTo(minAttack, 8);
+      expect(boss.magicAttack).toBeCloseTo(minAttack, 8);
+    }
+  });
+
+  it("goes on after the multiplier: a 5x brute's boss-1 attack is already past it and unchanged", () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const floored = generateBoss(1, forcedPersonalityRng(FORCED_ROLL_FOR.brute5x, seed), 1);
+      const raw = withMinHitPct(0, () => generateBoss(1, forcedPersonalityRng(FORCED_ROLL_FOR.brute5x, seed), 1));
+      expect(floored.physicalAttack).toBeGreaterThan(minAttack);
+      expect(floored.physicalAttack).toBe(raw.physicalAttack);
+      expect(floored.magicAttack).toBeCloseTo(minAttack, 8);
+    }
+  });
+
+  it('leaves a late boss on the curve, where it is already past the minimum', () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const anchor = bossAttackAnchorHealth(20, TUNING.BASE_STATS.health, expectedLevelForBossIndex(20));
+      const floored = generateBoss(20, createRng(seed), 1, anchor);
+      const raw = withMinHitPct(0, () => generateBoss(20, createRng(seed), 1, anchor));
+      expect(floored).toEqual(raw);
+    }
+  });
+});
+
 describe('generateBoss', () => {
   it('always spawns with maxHealth === health (jitter rolled once, reused)', () => {
     for (let seed = 0; seed < 50; seed++) {
@@ -321,8 +364,8 @@ describe('generateBoss', () => {
         // the base weights, which only match the effective weights (see
         // personalityWeightsForIndex) at index 1, before the rarity ramp
         // shifts them.
-        emphasizedTotal += generateBoss(1, emphasizedRng, 1)[stat];
-        balancedTotal += generateBoss(1, balancedRng, 1)[stat];
+        emphasizedTotal += withMinHitPct(0, () => generateBoss(1, emphasizedRng, 1))[stat];
+        balancedTotal += withMinHitPct(0, () => generateBoss(1, balancedRng, 1))[stat];
       }
       const emphasizedAvg = emphasizedTotal / iterations;
       const balancedAvg = balancedTotal / iterations;
@@ -362,8 +405,8 @@ describe('generateBoss', () => {
         // Forced at index 1 for the same reason as the emphasized-stat test
         // above — FORCED_ROLL_FOR only lines up with the effective weights
         // before the rarity ramp kicks in.
-        lowerTotal += generateBoss(1, lowerRng, 1)[stat];
-        higherTotal += generateBoss(1, higherRng, 1)[stat];
+        lowerTotal += withMinHitPct(0, () => generateBoss(1, lowerRng, 1))[stat];
+        higherTotal += withMinHitPct(0, () => generateBoss(1, higherRng, 1))[stat];
       }
       expect(higherTotal / iterations).toBeGreaterThan(lowerTotal / iterations);
     },
@@ -602,8 +645,9 @@ describe('generateBoss — hidden attack lean', () => {
     // when Reflect left the roll order, the boss health/attack curves eased, and
     // health moved to growth bands (a float-rounding change only, at boss 5),
     // and again when the random boss crit roll left the generator. The art
-    // image is rolled after the lean, so it's set aside here too.
-    const { physicalShare, art, ...rest } = generateBoss(5, createRng(42));
+    // image is rolled after the lean, so it's set aside here too. The minimum
+    // hit is off, since it would lift both attacks and hide a shifted roll.
+    const { physicalShare, art, ...rest } = withMinHitPct(0, () => generateBoss(5, createRng(42)));
     expect(physicalShare).toBeDefined();
     expect(art).toBeDefined();
     expect(rest).toEqual({

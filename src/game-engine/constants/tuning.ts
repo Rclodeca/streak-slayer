@@ -168,6 +168,10 @@ export const TUNING = {
   MISS_DAMAGE_CURVE_EARLY_PCT: 0.05,
   MISS_DAMAGE_CURVE_TARGET_INDEX: 50,
   MISS_DAMAGE_CURVE_TARGET_PCT: 0.6,
+  // Each boss attack, after its brute/arcane multiplier, is at least this
+  // share of the same base max health the curve uses (0 = off). Lifts bosses
+  // 1-13, where the curve alone (5% at boss 1) let misses go unfelt.
+  MISS_DAMAGE_MIN_PCT_OF_MAX_HP: 0.15,
   // [boss index, player level] control points for the level an average
   // player has when that boss spawns (linear between points, extrapolated
   // past the last). Boss attacks are sized against the health of this
