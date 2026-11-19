@@ -106,6 +106,11 @@ Rejected art is kept in each run's `rejected/` folder.
 
 85x85 canvas, hero sheet, one run per batch of 3-4 types, 15 generations per run. Ideas for later families: demons, vampires, treants, krakens, mimics.
 
+### Hooded figure (to do, low priority)
+
+- The hooded figure (`public/sprites/bosses/hooded`, his scenes in `HoodedSpeech.vue`) is still the old painted art. Queue Pixellab runs for him in the new native-pixel style (hero sheet as style anchor), sized like the bosses. Noted 2026-11-19.
+- Not settled that his cutscenes are the right approach for the opening and return at all ("decent though"). Decide that before spending on art.
+
 ## Items
 
 - **Size:** 32x32 at 2 CSS px per art pixel = a 64 CSS px icon (today 63), 4 device px on 2x and 6 on 3x. Today's 40 grid would be finer than the new heroes. 32 only looked distorted before because it shrank big painted art; native 32 art won't.
