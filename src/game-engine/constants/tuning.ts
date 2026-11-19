@@ -253,9 +253,12 @@ export const TUNING = {
   // cleric (the mage) the reverse; healing and true damage stay as they are.
   WARRIOR_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.44, magic: 0.32, healing: 0.12, trueDamage: 0.12 },
   CLERIC_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.32, magic: 0.44, healing: 0.12, trueDamage: 0.12 },
-  // A ranger rolls true damage twice as often, taken equally from physical
-  // and magic.
-  RANGER_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.32, magic: 0.32, healing: 0.12, trueDamage: 0.24 },
+  // A ranger rolls true damage two and a half times as often, taken equally
+  // from physical and magic.
+  RANGER_HABIT_DAMAGE_TYPE_WEIGHTS: { physical: 0.29, magic: 0.29, healing: 0.12, trueDamage: 0.3 },
+  // Each hero's preferred skill type: one of a run's first two skills is
+  // always this type (see preferredRequired).
+  CLASS_PREFERRED_DAMAGE_TYPE: { warrior: 'physical', cleric: 'magic', ranger: 'trueDamage' },
   // At most this share of skills (rounded up) can roll healing — on new rolls
   // only (see healingAllowed).
   HEAL_SKILL_CAP_SHARE: 0.25,

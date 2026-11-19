@@ -77,6 +77,7 @@ export {
   difficultyFactor,
   healingAllowed,
   healingRequired,
+  preferredRequired,
   isDueOn,
   isFrozenOn,
   migrateHabitDamageType,

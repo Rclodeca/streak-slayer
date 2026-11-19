@@ -49,11 +49,22 @@ export function healingRequired(otherHabits: Habit[]): boolean {
 }
 
 /**
+ * The type the next skill must roll so one of a hero's first two skills is
+ * its preferred type: there is exactly one skill in `otherHabits` and it
+ * isn't that type. Undefined otherwise, or with no `heroClass`.
+ */
+export function preferredRequired(otherHabits: Habit[], heroClass?: HeroClass): DamageType | undefined {
+  if (!heroClass || otherHabits.length !== 1) return undefined;
+  const preferred = TUNING.CLASS_PREFERRED_DAMAGE_TYPE[heroClass] as DamageType;
+  return otherHabits[0].damageType === preferred ? undefined : preferred;
+}
+
+/**
  * `isFirstHabit` limits the damage type to physical, magic or true damage; pass it only
  * when the player has no habits yet. `excludeHealing` keeps it off healing
  * (see healingAllowed) and `forceHealing` makes it healing (see
- * healingRequired). `heroClass` picks the roll odds (see
- * classDamageTypeWeights).
+ * healingRequired). `forceType` makes it that type (see preferredRequired).
+ * `heroClass` picks the roll odds (see classDamageTypeWeights).
  */
 export function createHabit(
   name: string,
@@ -66,6 +77,7 @@ export function createHabit(
   excludeHealing = false,
   heroClass?: HeroClass,
   forceHealing = false,
+  forceType?: DamageType,
 ): Habit {
   const dueDays = period === 'daily' ? normalizeDays(days) : undefined;
   return {
@@ -73,7 +85,7 @@ export function createHabit(
     name,
     period,
     difficulty,
-    damageType: forceHealing ? 'healing' : pickWeighted<DamageType>(damageTypeWeights(isFirstHabit, excludeHealing, heroClass), rng),
+    damageType: forceHealing ? 'healing' : forceType ?? pickWeighted<DamageType>(damageTypeWeights(isFirstHabit, excludeHealing, heroClass), rng),
     isBad,
     streakCount: 0,
     rank: 0,
@@ -116,8 +128,8 @@ export function nextDueDay(days: number[], today: number): number {
 /**
  * Re-rolls a habit's damage type; with `excludeCurrent`, the result is
  * guaranteed to differ from the current type, with `excludeHealing` it's
- * never healing, and with `forceHealing` it's always healing. `heroClass`
- * picks the roll odds.
+ * never healing, with `forceHealing` it's always healing, and with
+ * `forceType` it's always that type. `heroClass` picks the roll odds.
  */
 export function rerollDamageType(
   habit: Habit,
@@ -126,8 +138,10 @@ export function rerollDamageType(
   excludeHealing = false,
   heroClass?: HeroClass,
   forceHealing = false,
+  forceType?: DamageType,
 ): Habit {
   if (forceHealing) return { ...habit, damageType: 'healing' };
+  if (forceType) return { ...habit, damageType: forceType };
   const weights: Record<string, number> = { ...classDamageTypeWeights(heroClass) };
   if (excludeCurrent) delete weights[habit.damageType];
   if (excludeHealing) delete weights.healing;
@@ -141,12 +155,13 @@ export function rerollDamageType(
  * Re-rolls every habit's damage type in order (a run reset) at `heroClass`'s
  * odds, keeping healing out once the habits rerolled so far fill the cap for
  * `habits.length`, and forcing it on the GUARANTEED_HEAL_SKILL-th if none
- * before it healed. Order, ranks and streaks are kept.
+ * before it healed, and the second skill is forced to the hero's preferred type
+ * when the first isn't (see preferredRequired). Order, ranks and streaks are kept.
  */
 export function rerollAllDamageTypes(habits: Habit[], rng: Rng, heroClass?: HeroClass): Habit[] {
   const rerolled: Habit[] = [];
   for (const habit of habits) {
-    rerolled.push(rerollDamageType(habit, rng, false, !healingAllowed(rerolled, habits.length), heroClass, healingRequired(rerolled)));
+    rerolled.push(rerollDamageType(habit, rng, false, !healingAllowed(rerolled, habits.length), heroClass, healingRequired(rerolled), preferredRequired(rerolled, heroClass)));
   }
   return rerolled;
 }

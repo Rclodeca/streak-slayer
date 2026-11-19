@@ -11,6 +11,7 @@ import {
   normalizeDays,
   removalLocked,
   rerollAllDamageTypes,
+  preferredRequired,
   rerollDamageType,
 } from './habits';
 import { createRng } from './rng';
@@ -75,7 +76,7 @@ describe('createHabit', () => {
     expect(Object.keys(counts)).not.toContain('expGain');
   });
 
-  it('rolls true damage about twice as often for a ranger, 32/32/12/24', () => {
+  it('rolls true damage two and a half times as often for a ranger, 29/29/12/30', () => {
     const rng = createRng(123);
     const counts: Record<string, number> = { physical: 0, magic: 0, healing: 0, trueDamage: 0 };
     const iterations = 4000;
@@ -83,11 +84,11 @@ describe('createHabit', () => {
       const habit = createHabit('H', 'daily', 'easy', false, rng, undefined, false, false, 'ranger');
       counts[habit.damageType] += 1;
     }
-    expect(counts.physical / iterations).toBeCloseTo(0.32, 1);
-    expect(counts.magic / iterations).toBeCloseTo(0.32, 1);
+    expect(counts.physical / iterations).toBeCloseTo(0.29, 1);
+    expect(counts.magic / iterations).toBeCloseTo(0.29, 1);
     expect(counts.healing / iterations).toBeCloseTo(0.12, 1);
-    expect(counts.trueDamage / iterations).toBeGreaterThan(0.2);
-    expect(counts.trueDamage / iterations).toBeLessThan(0.28);
+    expect(counts.trueDamage / iterations).toBeGreaterThan(0.27);
+    expect(counts.trueDamage / iterations).toBeLessThan(0.33);
   });
 
   it('never picks healing for a first habit, and splits physical, magic and true damage by their odds', () => {
@@ -263,6 +264,25 @@ describe('heal-skill cap', () => {
     expect(healingRequired(others(3))).toBe(true);
     expect(healingRequired(others(7))).toBe(true);
     expect(healingRequired([...heals(1), ...others(5)])).toBe(false);
+  });
+
+  it('requires the hero\'s preferred type on the second skill unless the first already is one', () => {
+    const first = (damageType: Habit['damageType']) => [makeHabit({ damageType })];
+    expect(preferredRequired([], 'ranger')).toBeUndefined();
+    expect(preferredRequired(first('physical'), 'ranger')).toBe('trueDamage');
+    expect(preferredRequired(first('trueDamage'), 'ranger')).toBeUndefined();
+    expect(preferredRequired(first('magic'), 'warrior')).toBe('physical');
+    expect(preferredRequired(first('physical'), 'cleric')).toBe('magic');
+    expect(preferredRequired(first('physical'), undefined)).toBeUndefined();
+    expect(preferredRequired([...first('physical'), ...first('physical')], 'ranger')).toBeUndefined();
+  });
+
+  it('rerolls a loadout so one of the first two skills is the hero\'s preferred type', () => {
+    const habits = Array.from({ length: 6 }, (_, i) => makeHabit({ id: `h${i}` }));
+    for (let seed = 1; seed <= 200; seed++) {
+      const out = rerollAllDamageTypes(habits, createRng(seed), 'ranger');
+      expect(out.slice(0, 2).some((h) => h.damageType === 'trueDamage')).toBe(true);
+    }
   });
 
   it('forces healing when asked', () => {
