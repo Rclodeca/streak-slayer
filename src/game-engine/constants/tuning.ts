@@ -31,10 +31,12 @@ export const TUNING = {
   // A ranger's (an even physical/magic split, see heroClassFor) starting
   // true damage multiplier.
   RANGER_TRUE_DAMAGE_MULTIPLIER: 1.25,
-  // Crowding: the FULL_POWER_SKILLS oldest skills hit in full; the next ones
-  // hit for these factors, the last for every later one (see crowdingFactor).
-  FULL_POWER_SKILLS: 15,
-  CROWDED_SKILL_FACTORS: [0.7, 0.5, 0.35, 0.25],
+  // The daily ceiling on skill uses (see dailyCheckFactor): the day's first
+  // FULL_POWER_CHECKS hit in full, the next ones fade evenly so the
+  // LAST_PAID_CHECK-th is the last to do anything, and every use past it
+  // hits for 0 and pays no EXP — so piling on skills can't race a run.
+  FULL_POWER_CHECKS: 15,
+  LAST_PAID_CHECK: 30,
   // Healing skills crowd on their own: the FULL_POWER_HEAL_SKILLS oldest
   // (daily or weekly) heal in full, every later one at CROWDED_HEAL_SKILL_FACTOR,
   // so how many heal skills a run rolled matters less than how high they rank.
@@ -137,6 +139,8 @@ export const TUNING = {
   // full hits at most. More habits still means more risk, but a sloppy
   // player with many habits isn't trapped in a death loop.
   MISS_DAMAGE_FALLOFF: 0.75,
+  // ...but never below this share of a full hit, so a pile of missed skills still hurts.
+  MISS_DAMAGE_FLOOR: 0.1,
   // Governs physicalAttack/magicAttack — the stats that hurt the player on
   // a missed habit — via an S-curve (logistic) over boss index instead of
   // the unbounded exponential boss health uses: see

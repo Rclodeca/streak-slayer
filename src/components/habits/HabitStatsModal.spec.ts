@@ -7,6 +7,7 @@ import { defineComponent, h, nextTick } from 'vue';
 import { createRng, dailyPeriodKey, dayOfWeekIndex } from '../../game-engine';
 import type { Habit, Period } from '../../game-engine';
 import { useCombatActions } from '../../composables/useCombatActions';
+import { useCharacterStore } from '../../store/characterStore';
 import { useDebugClockStore } from '../../store/debugClockStore';
 import { useHabitStore } from '../../store/habitStore';
 import HabitStatsModal from './HabitStatsModal.vue';
@@ -156,13 +157,14 @@ describe('HabitStatsModal', () => {
       expect(sumRow('Rank')?.querySelector('dd')?.textContent).toBe('×3.0');
     });
 
-    it('marks the 16th skill\'s Base crowded, and not the first\'s', () => {
-      const habitStore = useHabitStore();
-      for (let i = 0; i < 16; i++) habitStore.addHabit(`S${i}`, 'daily', 'medium', false, createRng(i + 1));
-      const first = mountPopup(0);
+    it("marks Base crowded once today's uses pass the 15th", () => {
+      useHabitStore().addHabit('S', 'daily', 'medium', false, createRng(1));
+      const fresh = mountPopup(0);
       expect(sumRow('Base')?.textContent).not.toContain('crowded');
-      first.unmount();
-      mountPopup(15);
+      fresh.unmount();
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, checksToday: { dayKey: dailyPeriodKey(useDebugClockStore().now()), count: 15 } });
+      mountPopup(0);
       expect(sumRow('Base')?.querySelector('small.crowded')?.textContent).toBe('crowded');
     });
   });

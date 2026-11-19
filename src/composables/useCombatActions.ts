@@ -32,6 +32,8 @@ import {
   bossArt,
   bossNumber,
   characterGold,
+  checkPaysExp,
+  checksOn,
   applyTrialEvent,
   chooseHero,
   claimableTrials,
@@ -353,8 +355,8 @@ export function useCombatActions() {
     if (rankedUp) reportTrial({ type: 'rank-up' });
     if (stampPeriodKey && !habit.isBad) reportTrial({ type: 'habit-checked', habit, hour: debugClockStore.now().getHours() });
 
-    // Overdrive uses pay no skill EXP (and no milestone, see completeHabit).
-    const skillExp = options.isOverdriveUse
+    // Overdrive uses pay no skill EXP (and no milestone, see completeHabit), nor do uses past the daily ceiling.
+    const skillExp = options.isOverdriveUse || !checkPaysExp(checksOn(result.character, currentDayKey))
       ? 0
       : skillCompletionExp(characterStore.character.level, habit, habitStore.habits, debugClockStore.now());
     const expGained = result.milestoneExp + skillExp;

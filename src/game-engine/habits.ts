@@ -3,7 +3,7 @@ import { TUNING } from './constants/tuning';
 import type { HeroClass } from './character';
 import { pickWeighted, type Rng } from './rng';
 import { dailyPeriodKey, dayOfWeekIndex, weekDayKeys } from './time';
-import type { DamageType, Difficulty, Habit, Period } from './types';
+import type { Character, DamageType, Difficulty, Habit, Period } from './types';
 
 /**
  * What a brand-new player's first habit can roll: healing has nothing to heal
@@ -196,29 +196,47 @@ export function difficultyFactor(difficulty: Difficulty): number {
 }
 
 /**
- * Crowding by creation order: the FULL_POWER_SKILLS oldest skills hit in
- * full, later ones by CROWDED_SKILL_FACTORS (the last factor for every one
- * past the end). A healing skill past the FULL_POWER_HEAL_SKILLS oldest
- * healing ones is also cut to CROWDED_HEAL_SKILL_FACTOR. A habit not in
- * `allHabits` counts as the next one added.
+ * Healing crowds on its own: a healing skill past the FULL_POWER_HEAL_SKILLS
+ * oldest healing ones heals at CROWDED_HEAL_SKILL_FACTOR. Every other skill
+ * is 1. A habit not in `allHabits` counts as the next one added.
  */
 export function crowdingFactor(habit: Habit, allHabits: Habit[]): number {
+  if (habit.damageType !== 'healing') return 1;
   const found = allHabits.findIndex((h) => h.id === habit.id);
   const index = found === -1 ? allHabits.length : found;
   const olderHeals = allHabits.slice(0, index).filter((h) => h.damageType === 'healing').length;
-  const healFactor = habit.damageType === 'healing' && olderHeals >= TUNING.FULL_POWER_HEAL_SKILLS ? TUNING.CROWDED_HEAL_SKILL_FACTOR : 1;
-  if (index < TUNING.FULL_POWER_SKILLS) return healFactor;
-  const factors = TUNING.CROWDED_SKILL_FACTORS;
-  return factors[Math.min(index - TUNING.FULL_POWER_SKILLS, factors.length - 1)] * healFactor;
+  return olderHeals >= TUNING.FULL_POWER_HEAL_SKILLS ? TUNING.CROWDED_HEAL_SKILL_FACTOR : 1;
+}
+
+/** How many skill uses already landed on `dayKey` (see Character.checksToday). */
+export function checksOn(character: Character, dayKey: string): number {
+  return character.checksToday?.dayKey === dayKey ? character.checksToday.count : 0;
+}
+
+/**
+ * The daily ceiling: the day's first FULL_POWER_CHECKS skill uses hit in
+ * full, the next ones fade evenly down to the LAST_PAID_CHECK-th, and every
+ * use past it hits for 0. `checkNumber` counts from 1.
+ */
+export function dailyCheckFactor(checkNumber: number): number {
+  if (checkNumber <= TUNING.FULL_POWER_CHECKS) return 1;
+  const fadeSteps = TUNING.LAST_PAID_CHECK + 1 - TUNING.FULL_POWER_CHECKS;
+  return Math.max(0, (TUNING.LAST_PAID_CHECK + 1 - checkNumber) / fadeSteps);
+}
+
+/** Whether the `checkNumber`-th skill use of the day still pays EXP: none past LAST_PAID_CHECK. */
+export function checkPaysExp(checkNumber: number): boolean {
+  return checkNumber <= TUNING.LAST_PAID_CHECK;
 }
 
 /**
  * What a skill hits for before items, rank, streak and bonuses: its type's
- * full stat, weighted by difficulty and crowding. No pools — adding a skill
- * never changes another skill's number, unless it's crowded past the 15th
- * (or, for healing, past the second healing skill).
+ * full stat, weighted by difficulty, healing crowding and the daily ceiling
+ * for the `checkNumber`-th use today (1 = full). No pools — adding a skill
+ * never changes another skill's number, unless it's a healing skill past
+ * the second.
  * Computed fresh every time; never stored on the Habit.
  */
-export function skillBaseDamage(habit: Habit, allHabits: Habit[], statValue: number): number {
-  return statValue * difficultyFactor(habit.difficulty) * crowdingFactor(habit, allHabits);
+export function skillBaseDamage(habit: Habit, allHabits: Habit[], statValue: number, checkNumber = 1): number {
+  return statValue * difficultyFactor(habit.difficulty) * crowdingFactor(habit, allHabits) * dailyCheckFactor(checkNumber);
 }

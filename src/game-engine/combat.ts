@@ -7,7 +7,7 @@ import { DIFFICULTY_WEIGHT } from './constants/difficulty';
 import { bossGold, DEATH_SETBACK, REVIVE_GEMS } from './constants/economy';
 import { TUNING } from './constants/tuning';
 import { characterGold } from './gold';
-import { crowdingFactor, rerollAllDamageTypes, skillBaseDamage } from './habits';
+import { checksOn, crowdingFactor, dailyCheckFactor, rerollAllDamageTypes, skillBaseDamage } from './habits';
 import { activeHealBoost, addExpAndResolveLevelUps, effectiveCritChance, effectiveStat, itemStatMultiplier, statAtLevel } from './leveling';
 import { bumpCritStreak, bumpSpellweave, critMultiplierFor, effectDamageMultiplier, effectUsedToday, hasItemEffect, isForcedCrit, stampEffectDay, starfallReady } from './itemEffects';
 import { ITEM_CATALOG, itemBonusPercent, itemFlatBonus, rollItemDrops, rollScavengerDrop } from './items';
@@ -93,9 +93,9 @@ export function healingMultiplier(character: Character, currentDayKey: string): 
 }
 
 export type HabitDamageBreakdown = {
-  /** The type's full stat × difficulty × crowding (see skillBaseDamage) — before items, streak, weekly bonus, or Special/Ult. */
+  /** The type's full stat × difficulty × crowding × the daily ceiling (see skillBaseDamage) — before items, streak, weekly bonus, or Special/Ult. */
   baseDamage: number;
-  /** True when the skill is past the FULL_POWER_SKILLS oldest, so its base is cut. */
+  /** True when its base is cut: a healing skill past the second, or (with a day key) today's uses past FULL_POWER_CHECKS. */
   crowded: boolean;
   itemMultiplier: number;
   /** RANK_BONUS per rank (HEAL_RANK_BONUS for healing), e.g. 5 for +500%. */
@@ -120,8 +120,8 @@ export type HabitDamageBreakdown = {
  * than just the final number. Uses `habit.streakCount` as-is (this is a
  * preview of the *current* state, not a simulation of the streak bump that
  * completing it would cause). Pass the boss and today's key to include
- * conditional item effects (Giantslayer, Moonwell, ...); without them the
- * effect multiplier is 1.
+ * conditional item effects (Giantslayer, Moonwell, ...) and the daily
+ * ceiling for the next use today; without them both are 1.
  */
 export function habitDamageBreakdown(
   character: Character,
@@ -132,7 +132,8 @@ export function habitDamageBreakdown(
 ): HabitDamageBreakdown {
   const statField = DAMAGE_TYPE_STARTER_STAT[habit.damageType];
   const rawStat = statAtLevel(character.starterStats[statField], character.level, statField) + itemFlatBonus(character, statField);
-  const baseDamage = skillBaseDamage(habit, allHabits, rawStat);
+  const checkNumber = currentDayKey ? checksOn(character, currentDayKey) + 1 : 1;
+  const baseDamage = skillBaseDamage(habit, allHabits, rawStat, checkNumber);
   const itemMultiplier = itemStatMultiplier(character, statField);
   const rankMult = rankMultiplier(habit);
   const weeklyMult = weeklyBonusMultiplier(habit.period) * weeklyMightMultiplier(character, habit);
@@ -140,7 +141,7 @@ export function habitDamageBreakdown(
   const effectMultiplier = boss && currentDayKey ? effectDamageMultiplier(character, habit, boss, currentDayKey) : 1;
   return {
     baseDamage,
-    crowded: crowdingFactor(habit, allHabits) < 1,
+    crowded: crowdingFactor(habit, allHabits) * dailyCheckFactor(checkNumber) < 1,
     itemMultiplier,
     rankBonus: rankBonus(habit),
     streakBonus: streakBonus(habit),
@@ -241,7 +242,9 @@ function resolveCompletion(
   const isOverdriveUse = options.isOverdriveUse ?? false;
   const statField = DAMAGE_TYPE_STARTER_STAT[habit.damageType];
   const rawStat = statAtLevel(character.starterStats[statField], character.level, statField) + itemFlatBonus(character, statField);
-  const baseDamage = skillBaseDamage(habit, allHabits, rawStat);
+  // Every use today counts toward the daily ceiling (see dailyCheckFactor).
+  const checkNumber = checksOn(character, currentDayKey) + 1;
+  const baseDamage = skillBaseDamage(habit, allHabits, rawStat, checkNumber);
   const itemMultiplier = itemStatMultiplier(character, statField);
   // An Overdrive activation is an extra use of an already-checked-off habit:
   // it doesn't touch the streak or grant milestone EXP again, and never
@@ -260,7 +263,7 @@ function resolveCompletion(
   const effectMultiplier = effectDamageMultiplier(character, habit, boss, currentDayKey);
   const amount = baseDamage * itemMultiplier * multiplier * weeklyMult * bonusMultiplier * overdriveFactor * effectMultiplier;
   // Counts a magic use toward Spellweave's stacks for the rest of today (no-op otherwise).
-  const wovenCharacter = bumpSpellweave(character, habit, currentDayKey);
+  const wovenCharacter = { ...bumpSpellweave(character, habit, currentDayKey), checksToday: { dayKey: currentDayKey, count: checkNumber } };
 
   if (habit.damageType === 'healing') {
     const maxHealth = effectiveStat(character, 'health');
@@ -407,8 +410,8 @@ type BossStrike = {
  * magic resist. The boss's own lifesteal% (if any) heals it for a percent of
  * that same damage, capped at its max health. Boss hits never apply
  * Wounds: that's a boss skill now (see bossSkills.ts). Each hit already
- * landed today softens this one by MISS_DAMAGE_FALLOFF (a dodge doesn't
- * count). `currentDayKey` must be `dailyPeriodKey(now)`.
+ * landed today softens this one by MISS_DAMAGE_FALLOFF, never below
+ * MISS_DAMAGE_FLOOR (a dodge doesn't count). `currentDayKey` must be `dailyPeriodKey(now)`.
  */
 function bossStrike(
   character: Character,
@@ -425,11 +428,11 @@ function bossStrike(
   // Unbroken: rolled every strike too. A dodged hit does nothing: no damage, no boss lifesteal or Bloodlust heal, Dawnguard Helm kept, hero not flagged as hurt.
   const dodgeRoll = rng();
   if (dodgeRoll * 100 < dodgeChancePct(character)) return { character, boss, wasCrit: false, attackType, dodged: true };
-  // Each boss hit already landed today softens this one (MISS_DAMAGE_FALLOFF).
+  // Each boss hit already landed today softens this one (MISS_DAMAGE_FALLOFF), down to MISS_DAMAGE_FLOOR.
   const hitsToday = character.bossHitsToday?.dayKey === currentDayKey ? character.bossHitsToday.count : 0;
   const damage =
     attack * TUNING.MISS_DAMAGE_FACTOR * (DIFFICULTY_WEIGHT[difficulty] / 1.5) *
-    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1) * TUNING.MISS_DAMAGE_FALLOFF ** hitsToday;
+    (wasCrit ? TUNING.CRIT_MULTIPLIER : 1) * Math.max(TUNING.MISS_DAMAGE_FLOOR, TUNING.MISS_DAMAGE_FALLOFF ** hitsToday);
   // Sunder (a boss skill) halves the player's armor and magic resist.
   const sunderFactor = activeSunder(character, currentDayKey) ? TUNING.BOSS_SKILLS.SUNDER_FACTOR : 1;
   const playerResistStat =

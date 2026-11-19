@@ -197,30 +197,37 @@ describe('completeHabit', () => {
     expect(completeHabit(character, gym, [plain, gym], boss, DAY_KEY, noCritRng).damageDealt).toBeCloseTo(plainHit!, 10);
   });
 
-  it('crowds the 16th skill to 0.7x without changing the first', () => {
-    const character = makeCharacter();
-    const habits = Array.from({ length: 16 }, (_, i) => makeHabit({ id: `h${i}` }));
-    const boss = makeBoss({ armor: 0, health: 1000 });
+  it("fades the day's uses past the 15th and stops them after the 30th, starting over the next day", () => {
+    const habit = makeHabit();
+    const boss = makeBoss({ armor: 0, health: 1e9 });
+    const hits: number[] = [];
+    let character = makeCharacter();
+    for (let i = 0; i < 31; i++) {
+      const result = completeHabit(character, habit, [habit], boss, DAY_KEY, noCritRng);
+      hits.push(result.damageDealt!);
+      character = result.character;
+    }
+    expect(hits[14]).toBeCloseTo(hits[0], 10);
+    expect(hits[15]).toBeCloseTo(hits[0] * (15 / 16), 10);
+    expect(hits[29]).toBeCloseTo(hits[0] / 16, 10);
+    expect(hits[30]).toBe(0);
+    expect(character.checksToday).toEqual({ dayKey: DAY_KEY, count: 31 });
+    expect(habitDamageBreakdown(character, habit, [habit], boss, DAY_KEY).crowded).toBe(true);
+    expect(habitDamageBreakdown(character, habit, [habit], boss, '2099-01-02').crowded).toBe(false);
 
-    const first = completeHabit(character, habits[0], habits, boss, DAY_KEY, noCritRng).damageDealt!;
-    const sixteenth = completeHabit(character, habits[15], habits, boss, DAY_KEY, noCritRng).damageDealt!;
-    expect(sixteenth).toBeCloseTo(first * 0.7, 10);
-    expect(habitDamageBreakdown(character, habits[15], habits).crowded).toBe(true);
-    expect(habitDamageBreakdown(character, habits[0], habits).crowded).toBe(false);
-    expect(habitDamageBreakdown(character, habits[0], habits).effectiveDamage).toBeCloseTo(
-      habitDamageBreakdown(character, habits[0], habits.slice(0, 15)).effectiveDamage,
-      10,
-    );
+    const nextDay = completeHabit(character, habit, [habit], boss, '2099-01-02', noCritRng);
+    expect(nextDay.damageDealt).toBeCloseTo(hits[0], 10);
+    expect(nextDay.character.checksToday).toEqual({ dayKey: '2099-01-02', count: 1 });
   });
 
-  it('a crowded healing skill heals 0.7x a full one', () => {
-    const character = makeCharacter({ currentHealth: 1 });
-    const habits = Array.from({ length: 16 }, (_, i) => makeHabit({ id: `h${i}`, damageType: i === 0 || i === 15 ? 'healing' : 'physical' }));
+  it("a heal as the day's 16th use heals 15/16 of a full one", () => {
+    const habit = makeHabit({ damageType: 'healing' });
     const boss = makeBoss();
 
-    const full = completeHabit(character, habits[0], habits, boss, DAY_KEY, noCritRng).character.currentHealth - 1;
-    const crowded = completeHabit(character, habits[15], habits, boss, DAY_KEY, noCritRng).character.currentHealth - 1;
-    expect(crowded).toBeCloseTo(full * 0.7, 10);
+    const full = completeHabit(makeCharacter({ currentHealth: 1 }), habit, [habit], boss, DAY_KEY, noCritRng).character.currentHealth - 1;
+    const late = makeCharacter({ currentHealth: 1, checksToday: { dayKey: DAY_KEY, count: 15 } });
+    const faded = completeHabit(late, habit, [habit], boss, DAY_KEY, noCritRng).character.currentHealth - 1;
+    expect(faded).toBeCloseTo(full * (15 / 16), 10);
   });
 
   it('deals more damage when an item bonus is equipped for that damage type', () => {
@@ -517,6 +524,14 @@ describe('missHabit', () => {
     const nextDay = missHabit(character, habit, boss, '2099-01-02', noCritRng);
     expect(character.currentHealth - nextDay.character.currentHealth).toBeCloseTo(full, 6);
     expect(nextDay.character.bossHitsToday).toEqual({ dayKey: '2099-01-02', count: 1 });
+  });
+
+  it('never softens a hit below a tenth of a full one', () => {
+    const habit = makeHabit({ difficulty: 'medium' });
+    const boss = makeBoss({ physicalAttack: 1000, magicAttack: 1000 });
+    const character = makeCharacter({ currentHealth: 100000, bossHitsToday: { dayKey: DAY_KEY, count: 20 } });
+    const result = missHabit(character, habit, boss, DAY_KEY, noCritRng);
+    expect(character.currentHealth - result.character.currentHealth).toBeCloseTo(bossMissDamage(1000) * 0.1, 6);
   });
 
   it('a dodged hit does not soften the next one', () => {

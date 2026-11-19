@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkPaysExp,
+  checksOn,
   createHabit,
   crowdingFactor,
+  dailyCheckFactor,
   difficultyFactor,
   healingAllowed,
   healingRequired,
@@ -15,7 +18,7 @@ import {
   rerollDamageType,
 } from './habits';
 import { createRng } from './rng';
-import type { Habit } from './types';
+import type { Character, Habit } from './types';
 
 function makeHabit(overrides: Partial<Habit> = {}): Habit {
   return {
@@ -150,10 +153,9 @@ describe('per-skill base damage', () => {
     expect(difficultyFactor('medium')).toBe(1);
     expect(difficultyFactor('hard')).toBeCloseTo(4 / 3);
   });
-  it('crowds only the newest skills past 15', () => {
-    const habits = Array.from({ length: 20 }, (_, i) => makeHabit({ id: `h${i}` }));
-    expect(habits.map((h) => crowdingFactor(h, habits))).toEqual([...Array(15).fill(1), 0.7, 0.5, 0.35, 0.25, 0.25]);
-    expect(crowdingFactor(makeHabit({ id: 'new' }), habits.slice(0, 15))).toBe(0.7);
+  it('never crowds a non-healing skill, however many there are', () => {
+    const habits = Array.from({ length: 40 }, (_, i) => makeHabit({ id: `h${i}` }));
+    expect(habits.every((h) => crowdingFactor(h, habits) === 1)).toBe(true);
   });
   it('heals past the second healing skill (daily or weekly) at half power', () => {
     const habits = [
@@ -167,11 +169,24 @@ describe('per-skill base damage', () => {
     expect(crowdingFactor(makeHabit({ id: 'new', damageType: 'healing' }), habits.slice(0, 3))).toBe(0.5);
     expect(crowdingFactor(habits[3], habits.filter((h) => h.id !== 'a'))).toBe(1);
   });
-  it('deleting one of the 15 oldest moves the 16th up to full power', () => {
-    const habits = Array.from({ length: 16 }, (_, i) => makeHabit({ id: `h${i}` }));
-    const after = habits.filter((h) => h.id !== 'h3');
-    expect(crowdingFactor(habits[15], after)).toBe(1);
-    expect(after.slice(0, 14).map((h) => crowdingFactor(h, after))).toEqual(Array(14).fill(1));
+});
+
+describe('daily check ceiling', () => {
+  it('hits in full for the first 15 uses, fades through the 30th, then hits for 0', () => {
+    expect([1, 15].map(dailyCheckFactor)).toEqual([1, 1]);
+    expect(dailyCheckFactor(16)).toBeCloseTo(15 / 16);
+    expect(dailyCheckFactor(30)).toBeCloseTo(1 / 16);
+    expect([31, 100].map(dailyCheckFactor)).toEqual([0, 0]);
+  });
+  it('pays EXP through the 30th use only', () => {
+    expect(checkPaysExp(30)).toBe(true);
+    expect(checkPaysExp(31)).toBe(false);
+  });
+  it("counts only today's uses", () => {
+    const character = { checksToday: { dayKey: '2099-01-01', count: 7 } } as Character;
+    expect(checksOn(character, '2099-01-01')).toBe(7);
+    expect(checksOn(character, '2099-01-02')).toBe(0);
+    expect(checksOn({} as Character, '2099-01-01')).toBe(0);
   });
 });
 

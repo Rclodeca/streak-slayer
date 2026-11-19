@@ -73,8 +73,11 @@ export {
 } from './leveling';
 
 export {
+  checkPaysExp,
+  checksOn,
   createHabit,
   crowdingFactor,
+  dailyCheckFactor,
   difficultyFactor,
   healingAllowed,
   healingRequired,
