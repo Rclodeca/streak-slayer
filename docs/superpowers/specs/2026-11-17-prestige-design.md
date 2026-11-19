@@ -53,10 +53,10 @@ Prestige is **optional**. The next rank opens once the hero's **current** level 
 | Rank | Title | Bar |
 |---|---|---|
 | I | Veteran | Level 30 |
-| II | Veteran | Level 40 |
-| III | Ascendant | Level 50 |
-| IV | Ascendant | Level 60 |
-| V | Mythic | Level 70 |
+| II | Veteran | Level 45 |
+| III | Ascendant | Level 60 |
+| IV | Ascendant | Level 75 |
+| V | Mythic | Level 90 |
 
 The bar uses the current level, not the best level ever reached. A death that drops the hero back under the bar closes prestige again until they climb back. There is no level cap. After rank V, the hero keeps climbing until the boss curve stops them.
 
@@ -128,14 +128,14 @@ The dungeons come first so players can try dungeons early.
 | **Flat stats + gems + one special per rank** | Easy to read, and each rank still has a highlight | **Yes** |
 | A separate prestige multiplier | Avoids items and talents watering it down, but adds a rule that exists nowhere else | No (the user: same as every other % bonus) |
 | Hidden boss buffs per rank | Stops the game getting easy, but takes back the reward and makes the numbers lie | No (the boss curve already outgrows fixed bonuses: past boss 51 each boss has 9% more HP, so +20% buys about 2 bosses) |
-| Prestige bar at 50 every time | Simple, but the first climb is the hardest and later climbs get easier | No; the bar rises 30 to 70 instead |
+| Prestige bar at 50 every time | Simple, but the first climb is the hardest and later climbs get easier | No; the bar rises 30 to 90 instead |
 
 ## 7. Decided by the user
 
 - 5 linear ranks. Each gives +20% all damage, +10% max HP, +5% EXP and 50 gems, plus one special.
 - The specials, in order: dungeon, Deeper roots, dungeon, Deeper roots II, Mythic skin.
 - The % bonuses stack like every other % bonus.
-- The bars are levels 30, 40, 50, 60 and 70.
+- The bars are levels 30, 45, 60, 75 and 90 (raised from 30–70 with the 1.6× EXP curve, 2026-11-18).
 - Death stings: −3 levels, 25% of gold, 1 item, and boss power 3 back. No perk softens it.
 - No hidden boss buffs.
 

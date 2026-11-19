@@ -58,7 +58,7 @@ describe('PrestigePopup', () => {
   });
 
   it('at V shows the Mythic skin in the socket', () => {
-    hero(70, 4);
+    hero(90, 4);
     open();
     expect(text()).toContain('Mythic skin');
     expect(q('.prestige-special .sock img')).not.toBeNull();

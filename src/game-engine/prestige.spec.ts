@@ -46,11 +46,11 @@ describe('prestigeMark', () => {
 });
 
 describe('prestige ranks', () => {
-  it('opens at 30, 40, 50, 60, 70 and stops after V', () => {
-    expect(PRESTIGE_RANKS.map((r) => r.bar)).toEqual([30, 40, 50, 60, 70]);
+  it('opens at 30, 45, 60, 75, 90 and stops after V', () => {
+    expect(PRESTIGE_RANKS.map((r) => r.bar)).toEqual([30, 45, 60, 75, 90]);
     expect(PRESTIGE_RANKS.map((r) => r.special)).toEqual(['dungeon', 'deeper-roots', 'dungeon', 'deeper-roots', 'mythic-skin']);
     expect(nextPrestigeRank(0)?.bar).toBe(30);
-    expect(nextPrestigeRank(4)?.bar).toBe(70);
+    expect(nextPrestigeRank(4)?.bar).toBe(90);
     expect(nextPrestigeRank(5)).toBeNull();
   });
   it('adds 20/10/5 percent per rank and nothing else', () => {
@@ -70,8 +70,8 @@ describe('prestige ranks', () => {
     const at = (level: number, extra = {}) => ({ ...createCharacter(createRng(1)), heroPending: false, level, ...extra });
     expect(canPrestige(at(29), 0)).toBe(false);
     expect(canPrestige(at(30), 0)).toBe(true);
-    expect(canPrestige(at(39), 1)).toBe(false);
-    expect(canPrestige(at(40), 1)).toBe(true);
+    expect(canPrestige(at(44), 1)).toBe(false);
+    expect(canPrestige(at(45), 1)).toBe(true);
     expect(canPrestige(at(90), 5)).toBe(false);
     expect(canPrestige(at(30, { currentHealth: 0 }), 0)).toBe(false);
     expect(canPrestige(at(30, { heroPending: true }), 0)).toBe(false);
@@ -79,7 +79,7 @@ describe('prestige ranks', () => {
   it('says when a level-up crosses the next bar', () => {
     expect(prestigeOpensBetween(29, 30, 0)).toBe(true);
     expect(prestigeOpensBetween(30, 31, 0)).toBe(false);
-    expect(prestigeOpensBetween(38, 41, 1)).toBe(true);
+    expect(prestigeOpensBetween(43, 46, 1)).toBe(true);
     expect(prestigeOpensBetween(69, 72, 5)).toBe(false);
   });
   it('counts Deeper roots at II and IV', () => {

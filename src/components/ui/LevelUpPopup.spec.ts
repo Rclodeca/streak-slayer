@@ -113,11 +113,11 @@ describe('LevelUpPopup', () => {
     });
 
     it('names the rank a jump over a bar opens, in its tier colour', () => {
-      climb(38, 41, 1);
+      climb(43, 46, 1);
       expect(q('.level-prestige')!.textContent).toContain('Veteran II');
       document.body.innerHTML = '';
       useLevelUp().dismiss();
-      climb(49, 50, 2);
+      climb(59, 60, 2);
       expect(q('.level-prestige')!.classList.contains('epic')).toBe(true);
     });
 

@@ -312,7 +312,7 @@ describe('TalentSection — the prestige ladder', () => {
     climber(44, 2);
     const wrapper = mountSection();
     expect(wrapper.findAll('.pl')).toHaveLength(3);
-    expect(wrapper.find('.talent-band .prestige-crest').text()).toContain('Lv 44 / 50');
+    expect(wrapper.find('.talent-band .prestige-crest').text()).toContain('Lv 44 / 60');
   });
 
   it('opens its own page from the crest, in place of the tree, with five ranks', async () => {
@@ -364,10 +364,10 @@ describe('TalentSection — the prestige ladder', () => {
     const wrapper = mountSection();
     await ladder(wrapper);
     expect(wrapper.text()).toContain('Next rank');
-    expect(wrapper.text()).toContain('Level 44 / 50');
+    expect(wrapper.text()).toContain('Level 44 / 60');
     expect(wrapper.find('.prestige-go').exists()).toBe(false);
 
-    useCharacterStore().setCharacter({ ...useCharacterStore().character, level: 50 });
+    useCharacterStore().setCharacter({ ...useCharacterStore().character, level: 60 });
     await wrapper.vm.$nextTick();
     expect(wrapper.find('.prestige-go').exists()).toBe(true);
   });

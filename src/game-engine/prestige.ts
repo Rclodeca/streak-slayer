@@ -43,10 +43,10 @@ export interface PrestigeRankDef {
 /** Rank n opens once the hero's current level reaches its bar (docs/superpowers/specs/2026-11-17-prestige-design.md §4). */
 export const PRESTIGE_RANKS: readonly PrestigeRankDef[] = [
   { rank: 1, bar: 30, special: 'dungeon' },
-  { rank: 2, bar: 40, special: 'deeper-roots' },
-  { rank: 3, bar: 50, special: 'dungeon' },
-  { rank: 4, bar: 60, special: 'deeper-roots' },
-  { rank: 5, bar: 70, special: 'mythic-skin' },
+  { rank: 2, bar: 45, special: 'deeper-roots' },
+  { rank: 3, bar: 60, special: 'dungeon' },
+  { rank: 4, bar: 75, special: 'deeper-roots' },
+  { rank: 5, bar: 90, special: 'mythic-skin' },
 ];
 
 /** What every rank adds, summed with items and talents in itemBonusPercent. */
