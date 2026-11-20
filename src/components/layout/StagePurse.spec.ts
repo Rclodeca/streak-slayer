@@ -19,12 +19,17 @@ describe('StagePurse', () => {
 
   it('shows the gold and gems on one plate, in full', () => {
     const wrapper = mount(StagePurse);
-    const counts = wrapper.findAll('.purse-plate .purse-count').map((c) => c.text());
+    // The gems' count ends with the + key, which isn't part of the number.
+    const counts = wrapper.findAll('.purse-plate .purse-count').map((c) => c.text().replace(/\s*\+$/, ''));
     expect(counts).toEqual(['1,540', '94']);
     expect(wrapper.find('.purse-plate').attributes('aria-label')).toBe('1,540 gold, 94 gems');
   });
 
-  it('shows no plate where there is no room (the Focus strip)', () => {
-    expect(mount(StagePurse, { props: { plate: false } }).find('.purse-plate').exists()).toBe(false);
+  it('the + asks for gems', async () => {
+    const wrapper = mount(StagePurse);
+    const plus = wrapper.find('button.purse-plus');
+    expect(plus.attributes('aria-label')).toBe('Get gems');
+    await plus.trigger('click');
+    expect(wrapper.emitted('get-gems')).toHaveLength(1);
   });
 });

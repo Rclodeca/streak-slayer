@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { ArrowLeft, Gift } from 'lucide-vue-next';
+import { ArrowLeft, Gem, Gift } from 'lucide-vue-next';
 import { bossNumber } from '../../game-engine';
 import AppMenu from './AppMenu.vue';
 import TabBar from './TabBar.vue';
@@ -101,8 +101,9 @@ const topBar = computed(() => {
   if (isPhone.value && tabStore.tab === 'talents') return MenuCorner;
   return FightStage;
 });
-// The Trials button under the menu and the purse beside it, where there's room: not on
-// the Focus strip; the menu lists Trials instead, and the purse only shows its gains.
+// The Trials and gem buttons under the menu and the purse hung from the top-left, where
+// there's room: not on the Focus strip, where the menu lists Trials instead and there's
+// no purse. The Hero tab has no purse of its own up there (its name plate carries it).
 // Talents, the Hero and Shop tabs have no stage, so always have room. Wider screens
 // have no button: the menu lists Trials there too.
 const cornerRoom = computed(
@@ -157,7 +158,6 @@ watch(
       <PopupPreview v-if="isDev && devTools.on" />
       <div class="layout" :class="{ 'talents-full': isPhone && tabStore.tab === 'talents' }">
         <component :is="topBar">
-          <StagePurse v-if="isPhone" :plate="cornerRoom" />
           <AppMenu :trials-item="trialsInMenu" @high-scores="showHighScores = true" @how-to-play="showHowToPlay = true" @log="showLog = true" @trials="showTrials = true" />
           <button v-if="cornerRoom" type="button" class="stage-trials" aria-label="Challenges" @click="showTrials = true">
             <Gift class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
@@ -165,7 +165,12 @@ watch(
             <span v-if="claimCount" class="trials-count" aria-label="Ready to claim"><span>{{ claimCount }}</span></span>
             <span v-else-if="newTrial" class="trials-pip" role="img" aria-label="New" />
           </button>
+          <button v-if="cornerRoom" type="button" class="stage-trials stage-gems" aria-label="Gems" @click="showTrials = true">
+            <Gem class="icon-rim" :size="22" :stroke-width="4.5" aria-hidden="true" />
+            <Gem :size="22" />
+          </button>
         </component>
+        <StagePurse v-if="isPhone && cornerRoom && tabStore.tab !== 'hero'" @get-gems="showTrials = true" />
         <div ref="scrollBody" class="scroll-body" :class="{ 'talents-view': isPhone && tabStore.tab === 'talents', 'hero-view': isPhone && tabStore.tab === 'hero' }">
           <main class="main">
             <div class="tab-panel" :class="{ current: tabStore.tab === 'skills' }"><HabitList /></div>

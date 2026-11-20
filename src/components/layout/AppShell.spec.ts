@@ -4,6 +4,7 @@ import { enableAutoUnmount, shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useCharacterStore } from '../../store/characterStore';
+import { useFocusModeStore } from '../../store/focusModeStore';
 import { useLogVisibleStore } from '../../store/logVisibleStore';
 import { useTabStore } from '../../store/tabStore';
 import Modal from '../ui/Modal.vue';
@@ -198,6 +199,48 @@ describe('AppShell', () => {
       await wrapper.vm.$nextTick();
       expect(wrapper.find('.stage-trials').exists()).toBe(true);
       expect(wrapper.findComponent(AppMenu).props('trialsItem')).toBe(false);
+    });
+
+    describe('the purse and the gem button', () => {
+      const slot = { template: '<div class="stage-menu"><slot /></div>' };
+      const mountReal = () => shallowMount(AppShell, { global: { stubs: { StagePurse: false, FightStage: slot, ShopScene: slot, MenuCorner: slot } } });
+
+      it('hangs the purse outside the corner slot', async () => {
+        const wrapper = mountReal();
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('.layout > .stage-purse').exists()).toBe(true);
+        expect(wrapper.find('.stage-menu .stage-purse').exists()).toBe(false);
+      });
+
+      it('has no purse on the Hero tab, which carries it in its name plate', async () => {
+        const wrapper = mountReal();
+        useTabStore().select('hero');
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('.stage-purse').exists()).toBe(false);
+      });
+
+      it('has no purse and no gem button on the Focus strip', async () => {
+        useFocusModeStore().setOn(true);
+        const wrapper = mountReal();
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('.stage-purse').exists()).toBe(false);
+        expect(wrapper.find('.stage-gems').exists()).toBe(false);
+      });
+
+      it("the strip's gem button opens the Challenges", async () => {
+        const wrapper = mountReal();
+        const gems = wrapper.find('button.stage-trials.stage-gems');
+        expect(gems.attributes('aria-label')).toBe('Gems');
+        expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(false);
+        await gems.trigger('click');
+        expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(true);
+      });
+
+      it("the purse's + opens the Challenges", async () => {
+        const wrapper = mountReal();
+        await wrapper.find('.purse-plus').trigger('click');
+        expect(wrapper.findComponent(TrialsModal).props('modelValue')).toBe(true);
+      });
     });
 
     it('gives Talents a tab of its own, and none on the right', async () => {
