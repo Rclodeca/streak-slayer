@@ -9,11 +9,12 @@ import { useQuestStore } from '../../store/questStore';
 import { useTabStore } from '../../store/tabStore';
 import { useShopNews } from '../../composables/useShopNews';
 import { useTalentPurchase } from '../../composables/useTalentPurchase';
+import GainPopup from '../ui/GainPopup.vue';
 
 // The phone's bottom bar (docs/mockups/pixel-tabs-final.html): which list
 // shows under the stage. Quests counts what's due today or overdue. The Shop
 // took Trials' place; Trials, with its claim count,
-// is the stage's Trials button now (AppShell). The Shop wears a pip while a side
+// is the stage's Trials button now (AppShell). The gain popup floats just above the bar. The Shop wears a pip while a side
 // of it has something new (useShopNews). Talents wears a pip
 // while the gold and gems in hand buy the next rank on some open node. Skills counts the good skills still to do today: the
 // dailies that are due and unchecked, and on a Sunday (the last day of the
@@ -72,6 +73,7 @@ const talentToBuy = computed(() => TALENT_DEFS.some((def) => talentPurchase.canB
 
 <template>
   <div class="tab-bar" role="tablist" aria-label="Lists">
+    <GainPopup />
     <button
       v-for="tab in TABS"
       :key="tab.id"
@@ -100,6 +102,7 @@ const talentToBuy = computed(() => TALENT_DEFS.some((def) => talentPurchase.canB
    with index.html's viewport-fit=cover), and keeps a little air under its
    labels on phones without one. */
 .tab-bar {
+  position: relative;
   display: flex;
   padding: 0 6px max(14px, env(safe-area-inset-bottom, 0px));
   background: var(--bg);
