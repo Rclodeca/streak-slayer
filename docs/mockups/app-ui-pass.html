@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>App UI pass</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The app-wide ideas from the dungeon mock (dungeons.html), tried on the real app:
+   each frame is the dev screen-frame (its own in-memory save), the right one with
+   the changes injected. Dev server only: /streak-slayer/docs/mockups/app-ui-pass.html */
+:root { --bg: #0b0b12; --text: #d3d4e4; --text-h: #ece8de; --line: #22233a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 20px 16px 50px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: var(--text-h); margin: 0 0 6px; text-transform: uppercase; }
+h2 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .22em; color: var(--text-h); margin: 34px 0 6px; text-transform: uppercase; }
+.sub { text-align: center; margin: 0 auto 14px; max-width: 760px; font-size: 14.5px; }
+.sub b { color: var(--text-h); }
+.bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+.bar button { min-height: 44px; padding: 0 14px; font: 700 14px 'Alegreya Sans'; color: var(--text); background: #191a28; border: 2px solid #3f405a; cursor: pointer; }
+.bar button.on { color: #11121b; background: #dfe0f0; border-color: #dfe0f0; }
+.pair { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+.col { width: 390px; max-width: 100%; }
+.col h3 { margin: 0 0 6px; text-align: center; font: 700 12px 'Alegreya Sans'; letter-spacing: .18em; text-transform: uppercase; color: #9a9ab8; }
+.frame { display: block; width: 390px; max-width: 100%; height: 844px; border: 2px solid var(--line); background: #11121b; }
+.slider { display: flex; align-items: center; gap: 10px; font: 700 14px 'Alegreya Sans'; }
+.slider input { width: 200px; }
+.slider b { min-width: 40px; color: var(--text-h); }
+.notes { max-width: 760px; margin: 14px auto 0; font-size: 14px; }
+.notes li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>App UI pass</h1>
+<p class="sub">The real app, today on the left and the changes on the right. Each change has its own switch. Try it: claim the daily purse, then check off habits. The boss starts low, so a couple of checks kill it.</p>
+
+<div class="bar" id="toggles">
+  <button type="button" data-t="gain" class="on">1 · Gain popup</button>
+  <button type="button" data-t="icons">3 · White icons</button>
+  <button type="button" data-t="bars" class="on">4 · Bar plates + purse left</button>
+  <button type="button" data-t="stats" class="on">Boss stats on the plate</button>
+  <button type="button" data-t="nameRight">Hero tab: name plate right</button>
+  <button type="button" data-t="iconsLeft">Icons top-left, in a row</button>
+  <button type="button" data-t="purseBar">Purse on the icon tab</button>
+  <button type="button" data-t="noPlate">No box behind the bars</button>
+  <button type="button" data-t="gemPlus" class="on">+ beside gems</button>
+</div>
+<div class="bar"><label class="slider">Box opacity <input type="range" id="plate-alpha" min="0" max="100" value="75" /> <b id="plate-alpha-v">75%</b></label></div>
+<div class="bar" id="plus-style">
+  <button type="button" data-ps="silver">+ Silver key</button>
+  <button type="button" data-ps="bare">+ Bare</button>
+  <button type="button" data-ps="outline" class="on">+ Outline</button>
+  <button type="button" data-ps="teal">+ Teal</button>
+</div>
+<div class="bar" id="prestige">
+  <button type="button" data-p="0" class="on">No prestige</button>
+  <button type="button" data-p="1">Prestige I</button>
+  <button type="button" data-p="3">Prestige III</button>
+  <button type="button" data-p="5">Prestige V</button>
+  <button type="button" id="reset-stage">Reset both</button>
+</div>
+<div class="pair">
+  <div class="col"><h3>Now</h3><iframe class="frame" id="stage-now" title="Now"></iframe></div>
+  <div class="col"><h3>New</h3><iframe class="frame" id="stage-new" title="New"></iframe></div>
+</div>
+<ul class="notes">
+  <li><b>1 · Gain popup:</b> every gold, gem and EXP gain shows in one small plate above the tab bar, gains that land together share it (a kill shows EXP and gold at once). It replaces the green +N under the purse. The services and potions banner is unchanged.</li>
+  <li><b>3 · White icons:</b> the cog and Challenges drop the indigo tab, white with a dark rim, like the dungeon mock.</li>
+  <li><b>4 · Bar plates:</b> the hero's and boss's names and bars move onto small dark plates at the stage's foot, under each fighter. Thin bars, the HP numbers small on the name row. The purse moves to the top-left corner. Boss stats come off the stage (tap the boss for them), or keep them on the plate with the last switch.</li>
+</ul>
+
+<h2>2 · Death screen</h2>
+<p class="sub">Revive becomes the brass key ("Revive at half HP"), with Rise again under it, like the dungeon fall. What rising costs stays in one card above them.</p>
+<div class="bar" id="death-mode">
+  <button type="button" data-s="fire" class="on">Has gems</button>
+  <button type="button" data-s="fire-short">Short of gems</button>
+</div>
+<div class="pair">
+  <div class="col"><h3>Now</h3><iframe class="frame" id="death-now" title="Death now"></iframe></div>
+  <div class="col"><h3>New</h3><iframe class="frame" id="death-new" title="Death new"></iframe></div>
+</div>
+
+<script>
+const FRAME = '/streak-slayer/screen-frame.html';
+const PX2 = 'polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px))';
+const SVG = (p, c) => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const COIN = SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9 9.5h4.5a1.75 1.75 0 0 1 0 3.5h-3a1.75 1.75 0 0 0 0 3.5H15"/>', '#f0c64e');
+const GEM = SVG('<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>', '#6fd6ea');
+
+const CSS = `
+.dev-toggle { display: none !important; }
+
+/* 1 · The gain popup */
+.mx-gain { position: fixed; left: 50%; z-index: 70; bottom: calc(58px + max(14px, env(safe-area-inset-bottom, 0px)) + 1px + 14px);
+  display: flex; align-items: center; gap: 12px; padding: 8px 14px; white-space: nowrap; pointer-events: none;
+  background: #07080c; clip-path: ${PX2}; box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15;
+  font: 700 14px 'Alegreya Sans', sans-serif; color: #f0f3f7; opacity: 0; transform: translate(-50%, 10px); transition: opacity .2s, transform .2s; }
+.mx-gain.show { opacity: 1; transform: translate(-50%, 0); }
+.mx-gain span { display: inline-flex; align-items: center; gap: 4px; }
+.mx-gain .exp { color: var(--exp-color, #e3c26a); }
+.mx-gain .exp small { font: 800 11px 'Alegreya Sans'; letter-spacing: .1em; }
+html.mx-gain-on .purse-gain { display: none !important; }
+
+/* 3 · White icons, no tab */
+html.mx-icons .stage-menu::before, html.mx-icons .stage-trials::before { display: none !important; }
+html.mx-icons .menu-button, html.mx-icons .stage-trials { color: #eceff6 !important; }
+html.mx-icons .stage-menu .icon-rim { display: block !important; color: #0b0b14 !important; }
+
+/* 4 · Names and bars on plates at the stage's foot; the purse top-left */
+html.mx-bars .stage-purse { position: fixed !important; top: calc(6px + env(safe-area-inset-top, 0px)) !important; left: calc(8px + env(safe-area-inset-left, 0px)) !important; right: auto !important; }
+html.mx-bars .stage-purse .purse-gain { right: auto !important; left: 6px !important; }
+/* With the icons in the right-hand strip: the purse hangs from the screen's top edge
+   at 26px, its left edge in line with the Hero tab's name plate (8px in) on every tab;
+   lines on its three open sides, both bottom corners cut. */
+html.mx-bars:not(.mx-icons-left) .stage-purse { top: 0 !important; left: calc(8px + env(safe-area-inset-left, 0px)) !important; }
+html.mx-bars:not(.mx-icons-left) .stage-purse .purse-plate { height: calc(26px + env(safe-area-inset-top, 0px)) !important;
+  padding: env(safe-area-inset-top, 0px) 12px 0 !important;
+  box-shadow: inset 1px 0 0 #333c52, inset -1px 0 0 #333c52, inset 0 -1px 0 #333c52 !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)) !important; }
+html.mx-bars:not(.mx-icons-left) .stage-purse .purse-gain { top: 30px !important; }
+html.mx-bars:not(.mx-icons-left):not(.mx-name-right) .home-base .home-name { top: 32px !important; }
+/* Hero tab: the name (and prestige) plate under the purse, lined up with it. */
+html.mx-bars .home-base .home-name { top: 36px !important; left: 8px !important; }
+/* Or on the right, level with the purse, just left of the corner icons. */
+html.mx-bars.mx-name-right .home-base .home-name { top: 6px !important; left: auto !important; right: 54px !important; }
+/* The corner icons in a row at the top-left; the purse swaps to the top-right, and the
+   Hero tab's name plate goes under it there. */
+/* A tab run off the screen's top-left corner, in the purse's dark plate: flush to both edges, only its bottom-right
+   corner cut, the white icons on it, a hairline between each. */
+html.mx-icons-left .stage-menu { top: 0 !important; left: 0 !important; right: auto !important; display: flex !important; align-items: center;
+  padding: calc(1px + env(safe-area-inset-top, 0px)) 1px 1px calc(1px + env(safe-area-inset-left, 0px)) !important; }
+html.mx-icons-left .stage-menu::before { content: '' !important; display: block !important; position: absolute !important; z-index: -1 !important; inset: 0 !important;
+  background: rgba(7, 8, 12, .88) !important; box-shadow: inset -1px 0 0 #333c52, inset 0 -1px 0 #333c52 !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 0 100%) !important; }
+/* Shorter than the 44px boxes: 36px tall, still 44px wide. */
+html.mx-icons-left .stage-menu :is(.menu-button, .stage-trials) { height: 36px !important; min-height: 36px !important; width: 44px !important; }
+html.mx-icons-left .stage-menu .icon-rim { display: none !important; }
+html.mx-icons-left .stage-menu .stage-trials { margin: 1px 1px 1px 2px !important; }
+html.mx-icons-left .stage-menu .stage-trials::before { content: '' !important; display: block !important; position: absolute; top: 8px; bottom: 8px; left: -2px; right: auto; width: 1px; height: auto; background: #333c52; }
+/* The menu's panel opens under the cog, flush with the screen's left edge. */
+html.mx-icons-left .menu-panel { left: calc(4px + env(safe-area-inset-left, 0px)) !important; right: auto !important; }
+/* Talents: the word drops under the tab row, still centred. */
+html.mx-icons-left .talent-header:not(.prestige-head) { padding-top: 40px !important; }
+html.mx-icons-left .prestige-head { padding-top: 40px !important; }
+/* The purse, flush to the screen's top-right corner at today's 26px, its bottom-left
+   corner cut to mirror the icon tab's. */
+html.mx-icons-left .stage-purse { top: 0 !important; left: auto !important; right: 0 !important; }
+html.mx-icons-left .stage-purse .purse-plate { height: calc(26px + env(safe-area-inset-top, 0px)) !important;
+  padding: env(safe-area-inset-top, 0px) calc(12px + env(safe-area-inset-right, 0px)) 0 14px !important;
+  box-shadow: inset 1px 0 0 #333c52, inset 0 -1px 0 #333c52 !important;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)) !important; }
+html.mx-icons-left .stage-purse .purse-gain { top: 30px !important; left: auto !important; right: 8px !important; }
+html.mx-icons-left .home-base .home-name { top: 32px !important; left: auto !important; right: 8px !important; }
+/* Or the purse rides the icon tab's right end, after a hairline, still on the top edge. */
+html.mx-icons-left.mx-purse-bar .stage-purse { position: relative !important; top: auto !important; right: auto !important; left: auto !important; order: 10; align-self: stretch;
+  display: flex; align-items: center; margin-left: 2px; padding: 0 12px 0 10px; }
+html.mx-icons-left.mx-purse-bar .stage-purse::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: #333c52; }
+html.mx-icons-left.mx-purse-bar .stage-purse .purse-plate { height: auto !important; padding: 0 !important; background: none !important; box-shadow: none !important; clip-path: none !important; }
+html.mx-icons-left.mx-purse-bar .stage-purse .purse-gain { top: 44px !important; right: auto !important; left: 10px !important; }
+html.mx-icons-left.mx-purse-bar .home-base .home-name { top: 6px !important; }
+/* Talents tab: no banner, just the word, centred at the top, clear of the purse. */
+html.mx-bars .talent-header:not(.prestige-head) { justify-content: center !important; min-height: 44px !important;
+  padding-left: calc(52px + 0.75rem) !important; padding-right: calc(52px + 0.75rem) !important; }
+html.mx-bars .talent-header:not(.prestige-head) .section-title .medal { display: none !important; }
+html.mx-bars .talent-header:not(.prestige-head) .section-title .cloth,
+html.mx-bars .talent-header:not(.prestige-head) .section-title .cloth::before,
+html.mx-bars .talent-header:not(.prestige-head) .section-title .cloth::after { background: none !important; box-shadow: none !important; clip-path: none !important; border: 0 !important; }
+html.mx-bars .talent-header:not(.prestige-head) .section-title .cloth::before,
+html.mx-bars .talent-header:not(.prestige-head) .section-title .cloth::after { display: none !important; }
+html.mx-bars .talent-header:not(.prestige-head) .section-title .cloth { padding: 0 !important; margin: 0 !important; height: auto !important;
+  font: 600 14px 'Cinzel', serif !important; letter-spacing: .28em !important; text-indent: .28em; text-transform: uppercase; color: #ece8de !important; text-shadow: none !important; }
+html.mx-bars .fight-stage .boss-block,
+html.mx-bars .fight-stage .hero-block {
+  top: auto !important; width: calc(50% - 12px) !important; gap: 2px !important; padding: 3px 5px 4px !important;
+  background: rgba(7, 8, 12, var(--mx-plate-alpha, .5)); clip-path: ${PX2}; box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; }
+/* The boss's plate under the boss, at the stage's foot; the hero's above the hero's head. */
+html.mx-bars .fight-stage .boss-figure { translate: 0 -18px; }
+html.mx-bars .fight-stage .boss-block { bottom: 0 !important; left: auto !important; right: 8px !important; width: 52% !important; }
+html.mx-bars .fight-stage .hero-block { bottom: 120px !important; left: 8px !important; right: auto !important; width: 40% !important; }
+html.mx-bars .fight-stage :is(.boss-block, .hero-block),
+html.mx-bars .fight-stage :is(.boss-block, .hero-block) * { text-shadow: none !important; }
+/* Or no plate: the same names and bars straight on the arena, the names outlined
+   in black so they read over the stone. */
+html.mx-bars.mx-no-plate .fight-stage :is(.boss-block, .hero-block) { background: none !important; box-shadow: none !important; clip-path: none !important; }
+html.mx-bars.mx-no-plate .fight-stage :is(.boss-name, .name-line, .stat-summary),
+html.mx-bars.mx-no-plate .fight-stage :is(.boss-name, .name-line, .stat-summary) * {
+  text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000 !important; }
+/* The mock's names: Alegreya, small, no caps; the number and level smaller still. */
+html.mx-bars .fight-stage .boss-name,
+html.mx-bars .fight-stage .name-line { font: 700 12.5px/1.25 'Alegreya', serif !important; letter-spacing: 0 !important; text-transform: none !important; color: #f0f3f7 !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.mx-bars .fight-stage :is(.hero-name, .name-tail) { font: inherit !important; letter-spacing: 0 !important; text-transform: none !important; }
+html.mx-bars .fight-stage .boss-number,
+html.mx-bars .fight-stage .level-number { font: 800 10.5px 'Alegreya Sans', sans-serif !important; letter-spacing: .08em !important; color: #9a9ab8 !important; }
+html.mx-bars .fight-stage .level-number { margin-left: 6px; }
+html.mx-bars .fight-stage .level-number::before { content: 'Lv '; }
+html.mx-bars .fight-stage .name-line::after, html.mx-bars .fight-stage .name-tail::after { width: 5px; height: 5px; margin-left: 6px; }
+/* The prestige numeral before the hero's name. */
+html.mx-bars .fight-stage .hero-block .name-prestige { order: -1; margin: 0 5px 0 0 !important; }
+/* Bars keep their numbers inside; the hero's goes green. */
+html.mx-bars .fight-stage :is(.boss-block, .hero-block) .health-bar { height: 14px !important; }
+html.mx-bars .fight-stage .health-bar-label { font: 800 10.5px/1 'Alegreya Sans', sans-serif !important; }
+html.mx-bars .fight-stage .hero-block .health-bar-fill { background: #3f9a55 !important; box-shadow: inset 0 2px 0 #6fca7f, inset 0 -2px 0 #24603a !important; }
+html.mx-bars .fight-stage .stat-summary { display: none !important; }
+html.mx-bars.mx-stats .fight-stage .stat-summary { display: flex !important; flex-wrap: nowrap !important; gap: 8px; margin: 1px 0 0; font-size: 10.5px !important; overflow: hidden; white-space: nowrap; }
+
+/* A small + key after the gem count: the way to get gems, right where they show.
+   Four looks: silver key (silver = touch), bare +, outline, teal (the first try). */
+.mx-plus { display: none; }
+html.mx-gem-plus .mx-plus { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 3px; padding: 0; border: 0; cursor: pointer; pointer-events: auto;
+  font: 800 15px/1 'Alegreya Sans', sans-serif; clip-path: ${PX2}; }
+html.mx-plus-silver .mx-plus { background: #dfe0f0; color: #11121b; box-shadow: inset 0 -2px 0 #9899b6; }
+html.mx-plus-bare .mx-plus { width: 14px; margin-left: 1px; background: none; color: #dfe0f0; clip-path: none; font-size: 17px; }
+html.mx-plus-bare .mx-plus::before { content: ''; position: absolute; left: -5px; top: 2px; bottom: 2px; width: 1px; background: #333c52; }
+html.mx-plus-bare .mx-plus { margin-left: 8px; }
+html.mx-plus-outline .mx-plus { background: transparent; color: #9a9ab8; box-shadow: inset 0 0 0 1px #5c5d7c; }
+html.mx-plus-teal .mx-plus { background: #1d3640; color: #bff3ff; box-shadow: inset 0 0 0 1px #3f93a6; }
+
+/* 2 · Death: Revive as the brass key, Rise again under it */
+.mx-cost-label { margin: 0 0 -2px; font: 700 11px 'Alegreya Sans', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #9a9ab8; }
+.mx-death .rise-path h3, .mx-death .revive-path, .mx-death .or { display: none !important; }
+.mx-death .setback { min-height: 100%; }
+.mx-acts { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.mx-acts .say { margin: 0 0 2px; text-align: center; font-size: 14px; color: #a6a6c4; }
+.mx-acts .revive-button, .mx-acts .gems-button { min-height: 50px !important; background: #c7a560 !important; color: #231c0c !important; border: 0 !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 #6e5a2f !important; font: 800 16px 'Alegreya Sans', sans-serif !important; letter-spacing: .04em; }
+.mx-acts .revive-price { color: #13505e !important; }
+.mx-acts .revive-price svg { color: #13505e !important; }
+.mx-acts .rise-button { min-height: 48px !important; background: transparent !important; color: #dfe0f0 !important; border: 0 !important; box-shadow: inset 0 0 0 2px #4a4a70 !important; }
+.mx-acts .mx-short { margin: 0; text-align: center; font-size: 14.5px; color: #d3d4e4; }
+.mx-acts .gems-held { justify-content: center; }
+.mx-acts .gems-held .bar { max-width: 160px; height: 10px !important; background: #222338 !important; box-shadow: inset 0 0 0 1px #3a3b5c, inset 0 2px 0 rgba(0,0,0,.35) !important; }
+`;
+
+const ids = (doc) => doc.querySelector('#app')?.__vue_app__?.config.globalProperties.$pinia?._s;
+
+function boot(frame, setup) {
+  frame.addEventListener('load', () => {
+    const tick = setInterval(() => {
+      const doc = frame.contentDocument;
+      const stores = doc && ids(doc);
+      if (!stores || !doc.querySelector('.app-shell, .death-layer')) return;
+      clearInterval(tick);
+      const st = doc.createElement('style'); st.textContent = CSS; doc.head.appendChild(st);
+      setup(doc, stores);
+    }, 100);
+  });
+}
+
+// ---------- Stage frames ----------
+let plateAlpha = 75;
+let plusStyle = 'outline';
+// Defaults = the pick (2026-11-20): gain popup, plates + purse left, boss stats, + (outline) by the gems, 75% boxes.
+let toggles = { gain: true, icons: false, bars: true, stats: true, nameRight: false, iconsLeft: false, purseBar: false, noPlate: false, gemPlus: true };
+function applyToggles() {
+  document.querySelectorAll('#toggles button').forEach((b) => b.classList.toggle('on', toggles[b.dataset.t]));
+  const root = document.getElementById('stage-new').contentDocument?.documentElement;
+  if (!root) return;
+  root.classList.toggle('mx-gain-on', toggles.gain);
+  root.classList.toggle('mx-icons', toggles.icons);
+  root.classList.toggle('mx-bars', toggles.bars);
+  root.classList.toggle('mx-stats', toggles.stats);
+  root.classList.toggle('mx-name-right', toggles.nameRight);
+  root.classList.toggle('mx-icons-left', toggles.iconsLeft);
+  root.classList.toggle('mx-purse-bar', toggles.purseBar);
+  root.classList.toggle('mx-no-plate', toggles.noPlate);
+  root.classList.toggle('mx-gem-plus', toggles.gemPlus);
+  ['silver', 'bare', 'outline', 'teal'].forEach((k) => root.classList.toggle(`mx-plus-${k}`, plusStyle === k));
+  document.querySelectorAll('#plus-style button').forEach((b) => b.classList.toggle('on', b.dataset.ps === plusStyle));
+  root.style.setProperty('--mx-plate-alpha', plateAlpha / 100);
+}
+document.querySelectorAll('#plus-style button').forEach((b) => (b.onclick = () => { plusStyle = b.dataset.ps; toggles.gemPlus = true; applyToggles(); }));
+document.getElementById('plate-alpha').oninput = (e) => { plateAlpha = Number(e.target.value); document.getElementById('plate-alpha-v').textContent = `${plateAlpha}%`; applyToggles(); };
+document.querySelectorAll('#toggles button').forEach((b) => (b.onclick = () => { toggles[b.dataset.t] = !toggles[b.dataset.t]; applyToggles(); }));
+
+// Both frames: the boss starts low so a kill is a check or two away.
+function lowBoss(stores) {
+  const boss = stores.get('boss');
+  boss.$patch((s) => { s.boss.health = Math.round(s.boss.maxHealth * 0.15); });
+}
+
+// The gain popup: watches gold, gems and EXP; gains within 400ms share one plate.
+function gainPopup(doc, stores) {
+  const ch = stores.get('character');
+  const acc = stores.get('account');
+  const el = doc.createElement('div'); el.className = 'mx-gain'; doc.body.appendChild(el);
+  const expMax = () => Number(doc.querySelector('.hero-block .exp-bar')?.getAttribute('aria-valuemax') || 0);
+  let last = { gold: ch.character.gold ?? 0, gems: acc.account.gems, exp: ch.character.exp, level: ch.character.level, max: expMax() };
+  let pend = { gold: 0, gems: 0, exp: 0 }, flush, hide;
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const show = () => {
+    if (!toggles.gain) { pend = { gold: 0, gems: 0, exp: 0 }; return; }
+    const parts = [];
+    if (pend.exp > 0.5) parts.push(`<span class="exp">+${fmt(pend.exp)} <small>EXP</small></span>`);
+    if (pend.gold > 0) parts.push(`<span>${COIN}+${fmt(pend.gold)}</span>`);
+    if (pend.gems > 0) parts.push(`<span>${GEM}+${fmt(pend.gems)}</span>`);
+    pend = { gold: 0, gems: 0, exp: 0 };
+    if (!parts.length) return;
+    el.innerHTML = parts.join('');
+    el.classList.add('show');
+    clearTimeout(hide); hide = setTimeout(() => el.classList.remove('show'), 1900);
+  };
+  const check = () => {
+    const now = { gold: ch.character.gold ?? 0, gems: acc.account.gems, exp: ch.character.exp, level: ch.character.level };
+    if (now.gold > last.gold) pend.gold += now.gold - last.gold;
+    if (now.gems > last.gems) pend.gems += now.gems - last.gems;
+    if (now.level > last.level) pend.exp += (last.max - last.exp) + now.exp;
+    else if (now.level === last.level && now.exp > last.exp) pend.exp += now.exp - last.exp;
+    last = { ...now, max: last.max };
+    setTimeout(() => { last.max = expMax() || last.max; }, 50);
+    clearTimeout(flush); flush = setTimeout(show, 400);
+  };
+  ch.$subscribe(check);
+  acc.$subscribe(check);
+}
+
+const stageNow = document.getElementById('stage-now');
+const stageNew = document.getElementById('stage-new');
+boot(stageNow, (doc, stores) => lowBoss(stores));
+boot(stageNew, (doc, stores) => { lowBoss(stores); applyToggles(); gainPopup(doc, stores); });
+// The prestige rank, set on both frames' saves (the Hero tab's titled plate, the crest on Talents).
+let prestige = 0;
+function applyPrestige() {
+  document.querySelectorAll('#prestige [data-p]').forEach((b) => b.classList.toggle('on', Number(b.dataset.p) === prestige));
+  [stageNow, stageNew].forEach((f) => { const s = f.contentDocument && ids(f.contentDocument); s?.get('account')?.setPrestige(prestige); });
+}
+document.querySelectorAll('#prestige [data-p]').forEach((b) => (b.onclick = () => { prestige = Number(b.dataset.p); applyPrestige(); }));
+// The corner strip with three: menu, Challenges, plus a gem
+// button, copied from the Challenges button so each look styles them like its own.
+const PATHS = {
+  gem: '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+};
+function extraIcons(doc) {
+  setInterval(() => {
+    doc.querySelectorAll('.purse-plate').forEach((plate) => {
+      if (plate.querySelector('.mx-plus')) return;
+      const plus = doc.createElement('button');
+      plus.type = 'button'; plus.className = 'mx-plus'; plus.setAttribute('aria-label', 'Get gems'); plus.textContent = '+';
+      plate.appendChild(plus);
+    });
+    doc.querySelectorAll('.stage-menu').forEach((menu) => {
+      const trials = menu.querySelector('.stage-trials');
+      if (!trials || menu.querySelector('.mx-extra')) return;
+      let after = trials;
+      for (const [name, paths] of Object.entries(PATHS)) {
+        const b = trials.cloneNode(true);
+        b.classList.add('mx-extra');
+        b.setAttribute('aria-label', name === 'castle' ? 'Dungeons' : 'Gems');
+        b.querySelectorAll('.trials-count, .trials-pip').forEach((n) => n.remove());
+        b.querySelectorAll('svg').forEach((svg) => { svg.innerHTML = paths; });
+        after.after(b);
+        after = b;
+      }
+    });
+  }, 300);
+}
+boot(stageNow, (doc) => extraIcons(doc));
+boot(stageNew, (doc) => extraIcons(doc));
+boot(stageNow, () => applyPrestige());
+boot(stageNew, () => applyPrestige());
+const loadStage = () => { const q = `?s=purse&r=${Date.now()}`; stageNow.src = FRAME + q; stageNew.src = FRAME + q; };
+document.getElementById('reset-stage').onclick = loadStage;
+
+// ---------- Death frames ----------
+function newDeath(doc) {
+  const tick = setInterval(() => {
+    const setback = doc.querySelector('.death-layer .setback');
+    if (!setback) return;
+    clearInterval(tick);
+    doc.documentElement.classList.add('mx-death');
+    const rise = setback.querySelector('.rise-path');
+    const label = doc.createElement('p'); label.className = 'mx-cost-label'; label.textContent = 'Rising again costs';
+    rise.insertBefore(label, rise.firstChild);
+    const acts = doc.createElement('div'); acts.className = 'mx-acts';
+    const revive = setback.querySelector('.revive-path .revive-button');
+    const word = revive && [...revive.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+    if (word) word.textContent = 'Revive at half HP';
+    // Short of gems: a line saying why, above the 10 / 15 bar.
+    const held = setback.querySelector('.revive-path .gems-held .count');
+    if (held) {
+      const why = doc.createElement('p'); why.className = 'mx-short';
+      why.textContent = 'Get more gems to revive at half HP';
+      acts.appendChild(why);
+      held.innerHTML = `${held.textContent.trim()} ${GEM}`;
+      held.style.cssText = 'display:inline-flex;align-items:center;gap:4px';
+    }
+    setback.querySelectorAll('.revive-path .gems-held, .revive-path .revive-button, .revive-path .gems-button').forEach((n) => acts.appendChild(n));
+    const riseBtn = rise.querySelector('.rise-button');
+    if (riseBtn) acts.appendChild(riseBtn);
+    setback.appendChild(acts);
+  }, 100);
+}
+let deathScene = 'fire';
+const deathNow = document.getElementById('death-now');
+const deathNew = document.getElementById('death-new');
+boot(deathNow, () => {});
+boot(deathNew, (doc) => newDeath(doc));
+const loadDeath = () => { const q = `?s=${deathScene}&r=${Date.now()}`; deathNow.src = FRAME + q; deathNew.src = FRAME + q; };
+document.querySelectorAll('#death-mode button').forEach((b) => (b.onclick = () => {
+  deathScene = b.dataset.s;
+  document.querySelectorAll('#death-mode button').forEach((x) => x.classList.toggle('on', x === b));
+  loadDeath();
+}));
+
+// ?only=death or ?only=stage loads just that pair (quicker to check one alone).
+const only = new URLSearchParams(location.search).get('only');
+if (only !== 'death') loadStage();
+if (only !== 'stage') loadDeath();
+</script>
+</body>
+</html>

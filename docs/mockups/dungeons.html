@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StreakSlayer — Dungeons</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* Dungeons, three looks for the whole flow: the castle under Challenges, the
+   dungeon list, the gate screen, going in, the stage while inside, the in-dungeon
+   sheet (with Leave), a clear and a fall. Pixel-cut, Midnight. No new art: the
+   dungeon arenas are tinted stand-ins and the bosses are today's sprites. */
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b0b12; color: #b8b6b0; font: 500 16px/1.35 'Alegreya Sans', system-ui, sans-serif; }
+.page { padding: 28px 16px 60px; max-width: 1340px; margin: 0 auto; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: #ece8de; margin: 0 0 6px; }
+.lede { text-align: center; margin: 0 auto 26px; max-width: 860px; }
+.lede b { color: #ece8de; }
+.row { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+.opt { width: 390px; max-width: 100%; }
+.opt h2 { font: 600 13px 'Cinzel', serif; letter-spacing: .2em; color: #ece8de; margin: 0 0 4px; text-transform: uppercase; text-align: center; }
+.opt > p { margin: 0 0 12px; font-size: 14.5px; text-align: center; min-height: 118px; }
+.ctl { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.ctl button { min-height: 40px; padding: 0 14px; background: #1a1a2e; color: #dfe0f0; border: 0; cursor: pointer; font: 700 13px 'Alegreya Sans'; letter-spacing: .04em;
+  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  box-shadow: inset 2px 2px 0 #3a3a62, inset -2px -2px 0 #0c0c16; }
+.ctl button:disabled { opacity: .35; cursor: default; }
+.ctl .dev { width: 100%; text-align: center; font: 700 10.5px 'Alegreya Sans'; letter-spacing: .16em; text-transform: uppercase; color: #6c6c88; }
+
+.phone {
+  --bg: #11121b; --text: #d3d4e4; --text-h: #f4f4fa; --moon: #dfe0f0; --moon-solid: #b0b1cb; --brass: #d2bb85; --brass-solid: #c7a560; --on-brass: #231c0c;
+  --card: #2d2c50; --card-hi: #4d4c7e; --card-lo: #191a28; --card-lip: #0e0e19; --gem: #6fd6ea; --coin: #e9b949; --blood: #c4626a;
+  --field: #0e0e19; --sunk-hi: #050509; --sunk-lo: #2a2a44;
+  --struck-card: #1d1d30; --struck-hi: #2a2a42; --struck-lo: #121220; --struck-ink: #7c7c94;
+  --px2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  --arch: polygon(0 100%, 0 34%, 6% 34%, 6% 22%, 12% 22%, 12% 14%, 20% 14%, 20% 8%, 30% 8%, 30% 4%, 40% 4%, 40% 0, 60% 0, 60% 4%, 70% 4%, 70% 8%, 80% 8%, 80% 14%, 88% 14%, 88% 22%, 94% 22%, 94% 34%, 100% 34%, 100% 100%);
+  position: relative; width: 390px; max-width: 100%; height: 780px; overflow: hidden; background: var(--bg); color: var(--text);
+  outline: 1px solid #000; border-radius: 4px; display: flex; flex-direction: column;
+}
+.phone svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.phone img { image-rendering: pixelated; }
+.sil { filter: brightness(0) drop-shadow(0 0 1px rgba(223,224,240,.5)); opacity: .9; }
+
+/* ---------- The app: stage, cards, tabs ---------- */
+.head { position: relative; flex: none; height: 232px; overflow: hidden; background: #07080c; border-bottom: 3px solid var(--card-lip); transition: box-shadow .3s; }
+.head .room { position: absolute; left: -21px; bottom: 0; width: 432px; max-width: none; transition: filter .3s; }
+.head .hero { position: absolute; left: 40px; bottom: 30px; width: 128px; height: 128px; }
+.head .boss { position: absolute; right: 52px; bottom: 30px; width: 128px; height: 128px; transform: scaleX(-1); transition: opacity .25s; }
+.head .boss.big { width: 150px; height: 150px; right: 44px; }
+.head .boss.hit { opacity: 0; }
+.pl { position: absolute; z-index: 2; background: rgba(7,8,12,.88); clip-path: var(--px2); box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15; color: #f0f3f7; }
+.purse { left: 8px; top: 8px; display: flex; gap: 10px; padding: 7px 10px; font: 700 14px 'Alegreya', serif; }
+.purse span { display: flex; align-items: center; gap: 4px; }
+.purse svg { width: 14px; height: 14px; }
+.purse .g svg { color: var(--coin); } .purse .m svg { color: var(--gem); }
+.strip { position: absolute; z-index: 3; right: 4px; top: 6px; display: flex; flex-direction: column; gap: 0; }
+.strip button { position: relative; width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; color: #dbe2ee; cursor: pointer; padding: 0; }
+.strip button svg { width: 22px; height: 22px; filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000) drop-shadow(0 1px 0 #000); }
+.strip .castle.lit { color: var(--brass); }
+.strip .pip { position: absolute; right: 7px; top: 8px; width: 8px; height: 8px; background: var(--brass); box-shadow: 0 0 0 2px #07080c; }
+.bars { position: absolute; z-index: 2; bottom: 8px; display: flex; flex-direction: column; gap: 3px; padding: 5px 8px 6px; min-width: 132px; }
+.bars.h { left: 8px; } .bars.b { right: 8px; text-align: right; }
+.bars .nm { font: 700 12.5px 'Alegreya', serif; color: #f0f3f7; display: flex; justify-content: space-between; gap: 8px; }
+.bars .nm small { font: 800 10.5px 'Alegreya Sans'; letter-spacing: .08em; color: #9a9ab8; }
+.hp { position: relative; height: 6px; background: #050509; }
+.hp i { position: absolute; left: 0; top: 0; bottom: 0; background: #d9555f; transition: width .3s; }
+.bars.h .hp i { background: #5fbf7a; }
+.behind { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.behind i { height: 58px; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); }
+.tabs { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); height: 60px; background: #0e0e19; border-top: 2px solid #232337; }
+.tabs span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 700 10.5px 'Alegreya Sans'; letter-spacing: .04em; color: #8a8aa6; }
+.tabs span.on { color: var(--moon); }
+
+/* ---------- Shared pieces ---------- */
+.veil { position: absolute; inset: 0; z-index: 10; background: rgba(4,4,10,.72); }
+.modal { position: absolute; z-index: 11; left: 8px; right: 8px; top: calc(env(safe-area-inset-top) + 52px); bottom: calc(env(safe-area-inset-bottom) + 8px);
+  display: flex; flex-direction: column; background: #1a1a2e; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #3a3a62, inset -2px -2px 0 #0c0c16; animation: rise .2s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } }
+.m-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 6px 10px 12px; border-bottom: 2px solid #0e0e19; }
+.medal { width: 38px; height: 38px; display: grid; place-items: center; background: var(--card); color: var(--brass); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); flex: none; }
+.m-head .ttl { flex: 1; font: 600 15px 'Cinzel', serif; letter-spacing: .18em; text-transform: uppercase; color: #f0f3f7; }
+.m-head .ttl small { display: block; font: 700 11px 'Alegreya Sans'; letter-spacing: .14em; color: #9a9ab8; margin-top: 2px; }
+.x { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; color: var(--moon); cursor: pointer; flex: none; }
+.m-body { flex: 1; overflow-y: auto; padding: 12px 12px 18px; display: flex; flex-direction: column; gap: 8px; scrollbar-width: thin; scrollbar-color: #3f405a transparent; }
+.m-body > * { flex-shrink: 0; }
+.label { font: 700 11px 'Alegreya Sans'; letter-spacing: .16em; text-transform: uppercase; color: #9a9ab8; margin: 6px 0 0; }
+.card { position: relative; background: var(--card); clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo); color: var(--text); }
+.nm2 { font: 700 17px/1.2 'Alegreya', serif; color: var(--text-h); }
+.line { font-size: 13.5px; color: #a6a6c4; }
+.st { font: 800 11px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); display: inline-flex; align-items: center; gap: 4px; }
+.st svg { width: 13px; height: 13px; stroke-width: 3; }
+.st.dim { color: #8a8aa6; }
+.pay { display: inline-flex; align-items: center; gap: 8px; font: 700 14px 'Alegreya', serif; color: var(--text-h); white-space: nowrap; }
+.pay span { display: inline-flex; align-items: center; gap: 3px; }
+.pay svg { width: 14px; height: 14px; }
+.m svg, svg.m { color: var(--gem); } .g svg, svg.g { color: var(--coin); }
+.relic-ic { width: 32px; height: 32px; flex: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; cursor: pointer; background: var(--brass-solid); color: var(--on-brass); clip-path: var(--px2);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 color-mix(in srgb, var(--brass-solid) 55%, #000); font: 800 15px 'Alegreya Sans'; letter-spacing: .05em; width: 100%; }
+.btn:active { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--moon); box-shadow: inset 0 0 0 2px #4a4a70; }
+.btn.danger { background: transparent; color: #e2a0a5; box-shadow: inset 0 0 0 2px #6a3a44; }
+.btn.small { min-height: 40px; width: auto; font-size: 13px; padding: 0 12px; }
+.btn .fee { display: inline-flex; align-items: center; gap: 3px; opacity: .85; }
+.btn .fee svg { width: 14px; height: 14px; color: #6b4d0e; }
+.btn .fee.gem svg { color: #135563; }
+
+/* Full screens (gate, clear, fall) */
+.scr { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; gap: 10px; padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 16px); overflow-y: auto; scrollbar-width: none;
+  background: radial-gradient(120% 70% at 50% 18%, #1b1b30 0%, #0c0c15 60%, #07070c 100%); animation: fade .25s ease-out; }
+@keyframes fade { from { opacity: 0; } }
+.scr > * { flex-shrink: 0; }
+.scr .acts { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
+.scr .back { position: absolute; left: 6px; top: calc(env(safe-area-inset-top) + 6px); z-index: 2; }
+.dn { margin: 0; text-align: center; font: 700 22px/1.15 'Cinzel', serif; letter-spacing: .12em; text-transform: uppercase; color: var(--text-h); }
+.dn-line { margin: 0; text-align: center; font: 500 14.5px 'Alegreya', serif; color: #a6a6c4; }
+.prizes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.prize { display: flex; align-items: center; gap: 8px; padding: 8px 10px; }
+.prize svg { width: 20px; height: 20px; }
+.prize b { font: 700 17px 'Alegreya', serif; color: var(--text-h); }
+.prize small { display: block; font: 700 10.5px 'Alegreya Sans'; letter-spacing: .1em; text-transform: uppercase; color: #9a9ab8; }
+.relic { display: flex; align-items: center; gap: 10px; padding: 9px 10px; box-shadow: inset 2px 2px 0 var(--card-hi), inset -2px -2px 0 var(--card-lo), inset 0 0 0 3px color-mix(in srgb, #e58b4a 45%, #000); }
+.relic .rn { font: 700 15px 'Alegreya', serif; color: #f1b483; }
+.relic .rs { font-size: 12.5px; color: #a6a6c4; }
+.relic .rf { font-size: 13px; color: var(--text-h); }
+.relic .tagr { margin-left: auto; align-self: flex-start; }
+.wait { display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; background: #0e0e19; clip-path: var(--px2); box-shadow: inset 2px 2px 0 var(--sunk-hi), inset -2px -2px 0 var(--sunk-lo); }
+.wait img { width: 44px; height: 44px; transform: scaleX(-1); }
+.wait .wt { flex: 1; font-size: 13px; color: #a6a6c4; }
+.wait .wt b { display: block; font: 700 14px 'Alegreya', serif; color: var(--text-h); }
+.wait .hp { width: 64px; }
+.loss { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; }
+.loss div { display: flex; justify-content: space-between; font-size: 14px; }
+.loss div b { color: #e2a0a5; font-weight: 700; }
+.dialog { position: absolute; z-index: 30; left: 24px; right: 24px; top: 50%; transform: translateY(-50%); background: #1a1a2e; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #3a3a62, inset -2px -2px 0 #0c0c16; padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 10px; animation: fade .15s; }
+.dialog h3 { margin: 0; font: 700 18px 'Alegreya', serif; color: var(--text-h); text-align: center; }
+.dialog p { margin: 0; font-size: 14px; text-align: center; color: #a6a6c4; }
+.dialog .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.veil.top { z-index: 29; }
+.toast { position: absolute; left: 50%; bottom: 76px; transform: translateX(-50%); background: #07080c; color: var(--moon); padding: 8px 14px; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #333c52; font: 700 13px 'Alegreya Sans'; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; z-index: 40; display: flex; gap: 6px; align-items: center; }
+.toast svg { width: 14px; height: 14px; }
+.toast.show { opacity: 1; }
+.trans { position: absolute; inset: 0; z-index: 35; pointer-events: none; }
+.trans:empty { display: none; }
+
+/* Dungeon list cards: states shared */
+.dcard { display: flex; gap: 12px; padding: 10px 12px 10px 10px; cursor: pointer; }
+.dcard .mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.dcard .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.dcard .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.dcard.locked { background: var(--struck-card); box-shadow: inset 2px 2px 0 var(--struck-hi), inset -2px -2px 0 var(--struck-lo); cursor: default; }
+.dcard.locked .nm2 { color: var(--struck-ink); }
+.dcard.store { cursor: default; }
+.mini-relic { display: inline-flex; align-items: center; gap: 5px; font: 700 12.5px 'Alegreya', serif; color: #f1b483; }
+.mini-relic img { width: 22px; height: 22px; }
+.mini-relic.held { color: #8a8aa6; }
+.mini-relic.held img { opacity: .5; }
+
+/* ======================= A · THE GATE ======================= */
+/* A doorway per dungeon; the gate screen is a lit arch; stone doors close and
+   open to go in; inside, an arch plate under the purse. */
+.A .door { position: relative; width: 58px; height: 74px; flex: none; clip-path: var(--arch); background: #3c3b63; }
+.A .door::before { content: ''; position: absolute; inset: 4px 4px 0; clip-path: var(--arch); background: radial-gradient(70% 60% at 50% 100%, #1c1c33, #06060b); }
+.A .door img { position: absolute; left: 50%; bottom: 0; width: 52px; height: 52px; transform: translateX(-50%) scaleX(-1); }
+.A .door .lk { position: absolute; inset: 0; display: grid; place-items: center; color: #6c6c88; }
+.A .locked .door { background: #24243a; }
+.A .cleared .door { background: color-mix(in srgb, var(--brass) 55%, #2d2c50); }
+.A .gate { position: relative; width: 210px; height: 190px; margin: 4px auto 0; clip-path: var(--arch); background: #4a4970; }
+.A .gate::before { content: ''; position: absolute; inset: 6px 6px 0; clip-path: var(--arch); background: radial-gradient(80% 70% at 50% 100%, #24243f, #050509 75%); }
+.A .gate .fog { position: absolute; inset: 0; background: radial-gradient(60% 30% at 50% 100%, rgba(150,160,220,.18), transparent); animation: breathe 3s ease-in-out infinite; }
+.A .gate img { position: absolute; left: 50%; bottom: 0; width: 120px; height: 120px; transform: translateX(-50%) scaleX(-1); }
+.A .gate.lit::before { background: radial-gradient(70% 80% at 50% 70%, #fff4d6 0%, #e5c98d 25%, #5c4a2a 60%, #120f0a 100%); }
+.A .gate.lit img { width: 64px; height: 64px; bottom: 50px; transform: translateX(-50%); filter: drop-shadow(0 0 8px #fff2c8); animation: bob 2.4s ease-in-out infinite; }
+.A .gate.shut::before { background: #2a2a40; }
+.A .gate.shut .bricks { position: absolute; inset: 6px 6px 0; clip-path: var(--arch); background-color: #2b2b44; background-image: linear-gradient(#17172a 2px, transparent 2px), linear-gradient(90deg, #17172a 2px, transparent 2px); background-size: 24px 14px, 24px 28px; }
+.A .gate.shut .seam { position: absolute; left: 50%; top: 12px; bottom: 0; width: 2px; background: #0b0b14; }
+@keyframes breathe { 50% { opacity: .45; } }
+@keyframes bob { 50% { transform: translateX(-50%) translateY(-5px); } }
+.A .torch { position: absolute; top: 112px; width: 90px; height: 90px; background: radial-gradient(closest-side, rgba(229,150,74,.35), transparent); animation: flick 1.6s infinite steps(4); pointer-events: none; }
+.A .torch.l { left: 14px; } .A .torch.r { right: 14px; animation-delay: -.7s; }
+@keyframes flick { 25% { opacity: .7; } 50% { opacity: 1; } 75% { opacity: .8; } }
+.A .six { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.A .slot { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.A .slot .s-arch { position: relative; width: 100%; aspect-ratio: 5/6; clip-path: var(--arch); background: #3c3b63; }
+.A .slot .s-arch::before { content: ''; position: absolute; inset: 3px 3px 0; clip-path: var(--arch); background: #0a0a12; }
+.A .slot img { position: absolute; left: 50%; bottom: 0; width: 44px; height: 44px; transform: translateX(-50%) scaleX(-1); }
+.A .slot.now .s-arch { background: var(--moon); }
+.A .slot.slain .s-arch { background: var(--brass-solid); }
+.A .slot.slain img { opacity: .35; filter: grayscale(1); }
+.A .slot.fell .s-arch { background: var(--blood); }
+.A .slot .gp { font: 800 11px 'Alegreya Sans'; color: var(--gem); display: flex; align-items: center; gap: 2px; }
+.A .slot .gp svg { width: 10px; height: 10px; }
+.A .slot.slain .gp { color: #6c6c88; text-decoration: line-through; }
+.A .slot .num { font: 700 11px 'Cinzel', serif; color: #9a9ab8; }
+.A .slot.last .s-arch { box-shadow: none; }
+.A .mark { left: 8px; top: 46px; display: flex; align-items: center; gap: 7px; padding: 5px 9px 5px 6px; font: 700 12.5px 'Alegreya', serif; }
+.A .mark .mk-arch { width: 16px; height: 19px; clip-path: var(--arch); background: var(--brass); }
+.A .mark small { font: 800 11px 'Alegreya Sans'; letter-spacing: .08em; color: var(--brass); }
+.A.inside .head { box-shadow: inset 0 0 60px rgba(0,0,0,.6); }
+/* the doors */
+.A .doors .half { position: absolute; top: 0; bottom: 0; width: 50%; background-color: #2b2b44; background-image: linear-gradient(#17172a 2px, transparent 2px), linear-gradient(90deg, #17172a 2px, transparent 2px); background-size: 32px 18px, 32px 36px; box-shadow: inset 0 0 40px rgba(0,0,0,.6); }
+.A .doors .half.l { left: 0; transform: translateX(-100%); animation: doorL var(--dur) ease-in-out forwards; border-right: 2px solid #0b0b14; }
+.A .doors .half.r { right: 0; transform: translateX(100%); animation: doorR var(--dur) ease-in-out forwards; border-left: 2px solid #0b0b14; }
+.A .doors .ring { position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px; border: 3px solid #5a5a80; border-radius: 50%; }
+.A .doors .half.l .ring { right: 14px; } .A .doors .half.r .ring { left: 14px; }
+.A .doors .ttl { position: absolute; left: 0; right: 0; top: 42%; text-align: center; z-index: 2; opacity: 0; animation: ttlA var(--dur) ease forwards; }
+.A .doors .ttl b { display: inline-block; padding: 10px 18px; background: rgba(7,7,12,.85); font: 700 20px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--text-h); clip-path: var(--px2); box-shadow: inset 0 0 0 2px var(--brass-solid); }
+.A .doors .ttl small { display: block; margin-top: 8px; font: 700 12px 'Alegreya Sans'; letter-spacing: .2em; text-transform: uppercase; color: var(--brass); text-shadow: 0 1px 2px #000; }
+@keyframes doorL { 0% { transform: translateX(-100%); } 28%, 72% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+@keyframes doorR { 0% { transform: translateX(100%); } 28%, 72% { transform: translateX(0); } 100% { transform: translateX(100%); } }
+@keyframes ttlA { 0%, 26% { opacity: 0; } 34%, 66% { opacity: 1; } 74%, 100% { opacity: 0; } }
+.A .doors.thud { animation: thud var(--dur) linear; }
+@keyframes thud { 27% { transform: none; } 29% { transform: translateY(3px); } 31% { transform: translateY(-2px); } 33% { transform: none; } }
+
+/* ======================= B · THE DESCENT ======================= */
+/* The dungeon is a stair of six bosses going down into the dark. Going in lights
+   the stair torch by torch; inside, a small descending stair under the purse. */
+.B .depth { width: 34px; flex: none; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+.B .depth i { width: 10px; height: 8px; background: #14142a; box-shadow: inset 1px 1px 0 #050509, inset -1px -1px 0 #34345a; }
+.B .depth i:nth-child(1) { margin-left: 0; } .B .depth i:nth-child(2) { margin-left: 4px; } .B .depth i:nth-child(3) { margin-left: 8px; }
+.B .depth i:nth-child(4) { margin-left: 12px; } .B .depth i:nth-child(5) { margin-left: 16px; } .B .depth i:nth-child(6) { margin-left: 20px; }
+.B .depth i.r { background: #e58b4a; box-shadow: none; width: 12px; height: 10px; }
+.B .cleared .depth i { background: var(--brass); box-shadow: inset 0 -2px 0 var(--brass-solid); }
+.B .locked .depth i { opacity: .4; }
+.B .stair { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 4px 0 0; }
+.B .step { position: relative; display: flex; align-items: center; gap: 10px; min-height: 46px; }
+.B .step .node { position: relative; width: 46px; height: 46px; flex: none; display: grid; place-items: center; background: #0a0a12; clip-path: var(--px2); box-shadow: inset 2px 2px 0 #050509, inset -2px -2px 0 #2a2a44; }
+.B .step .node img { width: 42px; height: 42px; transform: scaleX(-1); }
+.B .step .sn { flex: 1; font: 700 14.5px 'Alegreya', serif; color: var(--text-h); }
+.B .step .sn small { display: block; font: 800 10.5px 'Alegreya Sans'; letter-spacing: .12em; text-transform: uppercase; color: #8a8aa6; }
+.B .step .gp { font: 700 13px 'Alegreya', serif; display: inline-flex; gap: 3px; align-items: center; color: var(--text-h); }
+.B .step .gp svg { width: 13px; height: 13px; color: var(--gem); }
+.B .step::before { content: ''; position: absolute; left: calc(var(--x) + 22px); top: -6px; width: 2px; height: 8px; background: #3a3a5e; }
+.B .step:first-child::before { display: none; }
+.B .step { padding-left: var(--x); }
+.B .step.now .node { box-shadow: inset 0 0 0 2px var(--moon); }
+.B .step.slain .node { box-shadow: inset 0 0 0 2px var(--brass-solid); }
+.B .step.slain .node img { opacity: .35; filter: grayscale(1); }
+.B .step.slain .sn { color: var(--struck-ink); text-decoration: line-through; text-decoration-color: rgba(223,224,240,.3); }
+.B .step.slain .gp { opacity: .4; }
+.B .step.fell .node { box-shadow: inset 0 0 0 2px var(--blood); }
+.B .step.fell .node::after { content: ''; position: absolute; inset: 0; background: rgba(196,98,106,.25); }
+.B .step.dark { opacity: .45; }
+.B .step.lit .node { animation: light .5s ease-out both; animation-delay: var(--d); }
+@keyframes light { from { box-shadow: inset 0 0 0 2px #e58b4a, 0 0 0 #e58b4a; filter: brightness(2); } }
+.B .descent .bg { position: absolute; inset: 0; background: #050508; animation: bgB var(--dur) ease forwards; }
+@keyframes bgB { 0% { opacity: 0; } 12%, 80% { opacity: 1; } 100% { opacity: 0; } }
+.B .descent .col { position: absolute; left: 50%; top: 150px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 22px; align-items: center; animation: bgB var(--dur) ease forwards; }
+.B .descent .col i { width: 14px; height: 14px; background: #1a1a28; animation: torch .4s steps(2) forwards; animation-delay: var(--d); }
+.B .descent .col i:nth-child(odd) { margin-left: -60px; } .B .descent .col i:nth-child(even) { margin-left: 60px; }
+@keyframes torch { to { background: #e58b4a; box-shadow: 0 0 16px 6px rgba(229,139,74,.45); } }
+.B .descent .ttl { position: absolute; left: 0; right: 0; top: 70px; text-align: center; animation: bgB var(--dur) ease forwards; }
+.B .descent .ttl b { font: 700 20px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--text-h); }
+.B .descent .ttl small { display: block; margin-top: 6px; font: 700 12px 'Alegreya Sans'; letter-spacing: .2em; text-transform: uppercase; color: #e58b4a; }
+.B .mark { left: 8px; top: 46px; display: flex; align-items: center; gap: 8px; padding: 6px 9px 6px 8px; font: 700 12.5px 'Alegreya', serif; }
+.B .mark .depth { width: auto; flex-direction: row; gap: 2px; padding: 0; align-items: flex-start; height: 16px; }
+.B .mark .depth i { margin: 0 !important; width: 7px; height: 6px; }
+.B .mark .depth i:nth-child(2) { margin-top: 2px !important; } .B .mark .depth i:nth-child(3) { margin-top: 4px !important; }
+.B .mark .depth i:nth-child(4) { margin-top: 6px !important; } .B .mark .depth i:nth-child(5) { margin-top: 8px !important; } .B .mark .depth i:nth-child(6) { margin-top: 10px !important; }
+.B .mark .depth i.s { background: var(--brass); box-shadow: none; }
+.B .mark .depth i.n { background: var(--moon); box-shadow: none; }
+.B .gate-head { text-align: center; padding-top: 6px; }
+.B .gate-head .eyebrow { font: 800 11px 'Alegreya Sans'; letter-spacing: .2em; text-transform: uppercase; color: #e58b4a; }
+.B .relic-step { margin-left: calc(var(--x) - 4px); }
+.B.inside .head { box-shadow: inset 0 -40px 40px -20px rgba(229,139,74,.15); }
+
+/* ======================= C · THE TITLE CARD ======================= */
+/* Hanging banners; the gate screen and every arrival are big title cards; inside,
+   the stage wears a brass frame with the boss's numeral. */
+.C .list-c { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.C .pen { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px 34px; min-height: 220px; text-align: center; cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, 100% 86%, 50% 100%, 0 86%); background: linear-gradient(#34335c, #262546); box-shadow: inset 0 3px 0 #5a5990; }
+.C .pen::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: #0e0e19; }
+.C .pen .med { width: 64px; height: 64px; display: grid; place-items: end center; overflow: hidden; background: #0a0a12; clip-path: var(--px2); box-shadow: inset 0 0 0 2px var(--brass-solid); margin-top: 6px; }
+.C .pen .med img { width: 60px; height: 60px; transform: scaleX(-1); }
+.C .pen .pn { font: 700 13.5px/1.2 'Cinzel', serif; letter-spacing: .08em; text-transform: uppercase; color: var(--text-h); }
+.C .pen .line { font-size: 12.5px; }
+.C .pen .pf { margin-top: auto; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.C .pen.cleared { background: linear-gradient(#5a4c2e, #3a3222); box-shadow: inset 0 3px 0 #8f7a4a; }
+.C .pen.locked { background: linear-gradient(#22223a, #1a1a2c); box-shadow: inset 0 3px 0 #2e2e48; cursor: default; }
+.C .pen.locked .pn { color: var(--struck-ink); }
+.C .pen.locked .med { box-shadow: inset 0 0 0 2px #3a3a5e; }
+.C .pen.store { cursor: default; }
+.C .card-t { text-align: center; padding: 8px 0 4px; }
+.C .rule { display: flex; align-items: center; gap: 8px; justify-content: center; color: var(--brass); }
+.C .rule::before, .C .rule::after { content: ''; height: 2px; width: 70px; background: linear-gradient(90deg, transparent, var(--brass-solid)); }
+.C .rule::after { transform: scaleX(-1); }
+.C .rule i { width: 6px; height: 6px; background: var(--brass); transform: rotate(45deg); }
+.C .big { margin: 10px 0; font: 700 30px/1.1 'Cinzel', serif; letter-spacing: .1em; text-transform: uppercase; color: var(--text-h); text-shadow: 0 2px 0 #000; }
+.C .big.brass { color: var(--brass); }
+.C .big.ash { color: #c9a0a4; }
+.C .ledger { display: flex; flex-direction: column; }
+.C .lr { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 2px 4px; border-bottom: 2px solid #1c1c30; }
+.C .lr .rn { width: 26px; font: 700 13px 'Cinzel', serif; color: #8a8aa6; text-align: center; }
+.C .lr .lm { width: 36px; height: 36px; display: grid; place-items: end center; overflow: hidden; background: #0a0a12; clip-path: var(--px2); }
+.C .lr .lm img { width: 34px; height: 34px; transform: scaleX(-1); }
+.C .lr .ln { flex: 1; font: 700 14.5px 'Alegreya', serif; color: var(--text-h); }
+.C .lr .ln.q { color: #6c6c88; letter-spacing: .2em; }
+.C .lr .gp { font: 700 13px 'Alegreya', serif; display: inline-flex; gap: 3px; align-items: center; color: var(--text-h); }
+.C .lr .gp svg { width: 13px; height: 13px; color: var(--gem); }
+.C .lr.now { background: color-mix(in srgb, var(--moon) 8%, transparent); }
+.C .lr.now .rn { color: var(--moon); }
+.C .lr.slain .ln { color: var(--struck-ink); text-decoration: line-through; text-decoration-color: rgba(223,224,240,.3); }
+.C .lr.slain .lm img { opacity: .35; filter: grayscale(1); }
+.C .lr.slain .rn { color: var(--brass); }
+.C .lr.slain .gp { opacity: .4; }
+.C .lr.fell { background: rgba(196,98,106,.12); }
+.C .lr.fell .rn { color: var(--blood); }
+.C .titlec .bg { position: absolute; inset: 0; background: #030305; animation: bgC var(--dur) ease forwards; }
+@keyframes bgC { 0% { opacity: 0; } 15%, 82% { opacity: 1; } 100% { opacity: 0; } }
+.C .titlec .in { position: absolute; left: 0; right: 0; top: 40%; transform: translateY(-50%); text-align: center; opacity: 0; animation: inC var(--dur) ease forwards; }
+@keyframes inC { 0%, 22% { opacity: 0; letter-spacing: .02em; } 45%, 70% { opacity: 1; letter-spacing: .12em; } 82%, 100% { opacity: 0; letter-spacing: .14em; } }
+.C .titlec .in .big { font-size: 28px; }
+.C .titlec .in .rule::before, .C .titlec .in .rule::after { animation: ruleC var(--dur) ease forwards; width: 0; }
+@keyframes ruleC { 0%, 25% { width: 0; } 50%, 100% { width: 90px; } }
+.C .titlec .in small { display: block; margin-top: 10px; font: 700 12px 'Alegreya Sans'; letter-spacing: .24em; text-transform: uppercase; color: #9a9ab8; }
+.C.inside .head { box-shadow: inset 0 0 0 3px var(--brass-solid), inset 0 0 0 5px #07080c, inset 0 0 50px rgba(0,0,0,.55); }
+.C .corner { position: absolute; z-index: 2; width: 12px; height: 12px; background: var(--brass); }
+.C .corner.tl { left: 0; top: 0; } .C .corner.tr { right: 0; top: 0; } .C .corner.bl { left: 0; bottom: 0; } .C .corner.br { right: 0; bottom: 0; }
+.C .mark { left: 50%; top: 10px; transform: translateX(-50%); padding: 4px 12px 5px; text-align: center; font: 700 11px 'Cinzel', serif; letter-spacing: .14em; text-transform: uppercase; color: var(--text-h); box-shadow: inset 0 0 0 2px var(--brass-solid); }
+.C .mark b { display: block; font: 700 15px 'Cinzel', serif; color: var(--brass); letter-spacing: .1em; }
+.C.inside .purse { top: 46px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Dungeons</h1>
+  <p class="lede">Three looks for the whole flow, each a working phone. A player at boss 23 with the <b>Iron Warden</b> half dead. Tap the <b>castle</b> under Challenges: the list, a dungeon's gate, then go in. Inside, the castle opens the dungeon's sheet (with Leave). Use the buttons under each phone to slay a boss or fall. No new art yet: the dungeon arenas are tinted stand-ins, the bosses are today's sprites, and gem and gold numbers are placeholders.</p>
+  <div class="row" id="opts"></div>
+</div>
+<script>
+const S = '../../public/sprites/';
+const I = (p) => `<svg viewBox="0 0 24 24">${p}</svg>`;
+const ICON = {
+  sword: I('<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/>'),
+  scroll: I('<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>'),
+  store: I('<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/>'),
+  anvil: I('<path d="M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4"/><path d="M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z"/><path d="M9 12v5"/><path d="M15 12v5"/><path d="M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1"/>'),
+  user: I('<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
+  menu: I('<path d="M4 6h16M4 12h16M4 18h16"/>'),
+  gift: I('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>'),
+  castle: I('<path d="M10 5V3"/><path d="M14 5V3"/><path d="M15 21v-3a3 3 0 0 0-6 0v3"/><path d="M18 3v8"/><path d="M18 5H6"/><path d="M22 11H2"/><path d="M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9"/><path d="M6 3v8"/>'),
+  gem: I('<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>'),
+  coin: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9 9.5h4.5a1.75 1.75 0 0 1 0 3.5h-3a1.75 1.75 0 0 0 0 3.5H15"/>'),
+  check: I('<path d="M20 6 9 17l-5-5"/>'),
+  x: I('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+  left: I('<path d="m15 18-6-6 6-6"/>'),
+  lock: I('<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+  out: I('<path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>'),
+  heart: I('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'),
+  skull: I('<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>'),
+  repeat: I('<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>'),
+};
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+const KILL = 152;          // one boss kill of gold at boss ~25, climb I
+const FEE = 75;            // replay entry fee (half a kill), placeholder
+const REVIVE = 10;
+
+const DUNGEONS = () => [
+  { id: 'crypt', name: 'The Drowned Crypt', short: 'Crypt', line: 'The bells still ring below.', state: 'open',
+    arena: 'arena3.png', tint: 'hue-rotate(175deg) saturate(.5) brightness(.6)',
+    bosses: [['Drowned Squire', 'wraith/1'], ['Bell Wraith', 'wraith/2'], ['The Weeping Abbot', 'hooded'], ['Lantern Hag', 'wraith/3'], ['Grave Choir', 'wraith/2'], ['The Drowned King', 'wraith/4']],
+    gems: [4, 5, 7, 9, 11, 14],
+    relic: { id: 'soul-lantern', name: 'Soul Lantern', stats: '+22% healing · +12% EXP', fx: 'Heal 30% of max HP when a boss falls.' } },
+  { id: 'deep', name: "Serpent's Deep", short: 'Deep', line: 'Something coils beneath the lake.', state: 'cleared',
+    arena: 'arena5.png', tint: 'hue-rotate(95deg) saturate(.55) brightness(.6)',
+    bosses: [['Reed Lurker', 'serpent/1'], ['Silt Mother', 'serpent/2'], ['Coilwarden', 'serpent/3'], ['The Lakebound', 'serpent/1'], ['Old Coil', 'serpent/2'], ['Deepmaw', 'serpent/4']],
+    gems: [6, 8, 11, 14, 18, 23],
+    relic: { id: 'moonwell', name: 'Moonwell Staff', stats: '+28% healing · +30% magic damage', fx: 'Weekly habits are twice as strong.' } },
+  { id: 'keep', name: 'The Hollow Keep', short: 'Keep', line: 'No banner flies there now.', state: 'locked', lock: 'Prestige III',
+    bosses: [['', 'warlord/1']], relic: { id: 'banner-of-endurance' } },
+  { id: 'ember', name: 'Ember Halls', short: 'Halls', line: 'The forge never cooled.', state: 'store',
+    bosses: [['', 'dragon/1']], relic: { id: 'censer-of-wrath' } },
+];
+
+// ---------- Small shared bits ----------
+const src = (p) => `${S}bosses/${p}.png`;
+const relicImg = (id) => `${S}items/${id}.png`;
+const gemsTotal = (d) => d.gems.reduce((a, b) => a + b, 0);
+const pay = (g, c) => `<span class="pay">${c ? `<span class="g">${ICON.coin}${c}</span>` : ''}${g ? `<span class="m">${ICON.gem}${g}</span>` : ''}</span>`;
+const hpBar = (pct) => `<span class="hp"><i style="width:${pct}%"></i></span>`;
+// Where each of the six stands: slain, now (the one you face), ahead, or fell.
+function slotState(s, i, ctx) {
+  if (ctx === 'preview') return i === 0 ? 'now' : 'ahead';
+  if (ctx === 'clear') return 'slain';
+  if (i < s.k) return 'slain';
+  if (i === s.k) return ctx === 'fall' ? 'fell' : 'now';
+  return 'ahead';
+}
+// Names stay hidden until you reach a boss, unless you've cleared the dungeon.
+const shown = (d, s, i, ctx) => d.state === 'cleared' || ctx === 'clear' || (ctx !== 'preview' && i <= s.k) || (ctx === 'preview' && i === 0);
+const firstClear = (d) => d.state !== 'cleared';
+
+const prizes = (d) => `<div class="prizes">
+  <div class="card prize"><span class="g">${ICON.coin}</span><div><b>${KILL}</b><small>Each boss</small></div></div>
+  <div class="card prize"><span class="m">${ICON.gem}</span><div><b>${firstClear(d) ? gemsTotal(d) : '—'}</b><small>${firstClear(d) ? 'First clear' : 'Already won'}</small></div></div></div>`;
+const relicCard = (d, held) => `<div class="card relic"><img class="relic-ic" src="${relicImg(d.relic.id)}" alt="" /><div><div class="rn">${d.relic.name}</div><div class="rs">${d.relic.stats}</div><div class="rf">${d.relic.fx}</div></div>${held === undefined ? '' : `<span class="st tagr ${held ? 'dim' : ''}">${held ? 'Held' : 'Drops'}</span>`}</div>`;
+const waitCard = (s, text) => `<div class="wait"><img src="${src('armored')}" alt="" /><div class="wt"><b>${s.wait.name}</b>${text}</div>${hpBar(s.wait.pct)}</div>`;
+const enterBtn = (d) => `<button type="button" class="btn" data-go>${d.state === 'cleared' ? `Enter <span class="fee">${ICON.coin}${FEE}</span>` : 'Enter'}</button>`;
+const lossBlock = (s) => `<div class="card loss"><div><span>Level</span><b>−1</b></div><div><span>Gold</span><b>−${Math.round(s.gold * 0.1)}</b></div><div><span>Bloodthorn Blade</span><b>Lost</b></div><div><span>Bosses</span><b>2 back</b></div></div>`;
+const fallActs = (s) => `<div class="acts"><button type="button" class="btn" data-revive>${ICON.heart}Revive <span class="fee gem">${ICON.gem}${REVIVE}</span></button><button type="button" class="btn ghost" data-rise>Rise again</button></div>`;
+
+// ---------- The three looks ----------
+const OPT = {
+  A: {
+    name: 'A · The Gate',
+    note: 'Each dungeon is a doorway. Its gate screen is a torchlit arch with the first boss in the dark and six smaller arches below, each with what it pays. Going in, stone doors slam shut on the name, then open on the dungeon. Inside: an arch plate under the purse. A clear floods the arch with light around the relic; a fall bricks it up.',
+    listCard(d) {
+      const img = d.state === 'locked' || d.state === 'store' ? `<span class="lk">${ICON.lock}</span>` : `<img class="${d.state === 'open' ? 'sil' : ''}" src="${src(d.bosses[d.bosses.length - 1][1])}" alt="" />`;
+      return `<div class="card dcard ${d.state}" data-d="${d.id}"><span class="door">${img}</span><div class="mid">
+        <div class="top"><span class="nm2">${d.name}</span></div><span class="line">${d.line}</span>${listFoot(d)}</div></div>`;
+    },
+    progress(d, s, ctx) {
+      return `<div class="six">${d.bosses.map(([n, p], i) => {
+        const k = slotState(s, i, ctx);
+        const sil = !shown(d, s, i, ctx) || k === 'ahead';
+        return `<div class="slot ${k}"><span class="s-arch"><img class="${sil && k !== 'slain' ? 'sil' : ''}" src="${src(p)}" alt="" /></span>${firstClear(d) && ctx !== 'clear' ? `<span class="gp">${ICON.gem}${d.gems[i]}</span>` : `<span class="num">${ROMAN[i]}</span>`}</div>`;
+      }).join('')}</div>`;
+    },
+    art(d, s, kind) {
+      const b = d.bosses[kind === 'fall' ? s.k : 0];
+      if (kind === 'clear') return `<div class="gate lit"><img src="${relicImg(d.relic.id)}" alt="" /></div><h2 class="dn">${d.name}</h2><p class="dn-line">Cleared.</p>`;
+      if (kind === 'fall') return `<div class="gate shut"><span class="bricks"></span><span class="seam"></span></div><h2 class="dn">The door seals</h2><p class="dn-line">${b[0]} keeps the ${d.short.toLowerCase()}.</p>`;
+      return `<span class="torch l"></span><span class="torch r"></span><div class="gate"><span class="fog"></span><img class="sil" src="${src(b[1])}" alt="" /></div><h2 class="dn">${d.name}</h2><p class="dn-line">${d.line}</p>`;
+    },
+    trans(title, sub) { return { dur: 2600, html: `<div class="doors thud" style="--dur:2600ms"><span class="half l"><span class="ring"></span></span><span class="half r"><span class="ring"></span></span><div class="ttl"><b>${title}</b><small>${sub}</small></div></div>` }; },
+    mark(d, s) { return `<span class="pl mark"><span class="mk-arch"></span>${d.short}<small>${s.k + 1}/6</small></span>`; },
+  },
+  B: {
+    name: 'B · The Descent',
+    note: 'A dungeon is a stair of six bosses going down. The gate screen is the stair itself: each step a boss (names hidden till you reach them), with what it pays, and the relic waiting at the bottom. Going in, torches light the way down one by one. Inside: a small stair under the purse, your step lit. A fall marks the step where you fell.',
+    listCard(d) {
+      const steps = Array.from({ length: 6 }, () => '<i></i>').join('') ;
+      return `<div class="card dcard ${d.state}" data-d="${d.id}"><span class="depth">${steps}</span><div class="mid">
+        <div class="top"><span class="nm2">${d.name}</span></div><span class="line">${d.line}</span>${listFoot(d)}</div></div>`;
+    },
+    progress(d, s, ctx) {
+      const rows = d.bosses.map(([n, p], i) => {
+        const k = slotState(s, i, ctx);
+        const vis = shown(d, s, i, ctx);
+        const lit = ctx === 'preview' ? `lit` : '';
+        const dark = ctx === 'fall' && i > s.k ? 'dark' : '';
+        const label = k === 'fell' ? 'Fell here' : k === 'slain' ? 'Slain' : k === 'now' && ctx !== 'preview' ? 'Now' : `Depth ${i + 1}`;
+        return `<div class="step ${k} ${lit} ${dark}" style="--x:${i * 14}px;--d:${i * 90}ms"><span class="node"><img class="${vis ? '' : 'sil'}" src="${src(p)}" alt="" /></span><span class="sn">${vis ? n : '· · ·'}<small>${label}</small></span>${firstClear(d) && ctx !== 'clear' ? `<span class="gp">${ICON.gem}${d.gems[i]}</span>` : ''}</div>`;
+      }).join('');
+      return `<div class="stair">${rows}</div>`;
+    },
+    art(d, s, kind) {
+      if (kind === 'clear') return `<div class="gate-head"><div class="eyebrow">Risen from the deep</div><h2 class="dn">${d.name}</h2></div>`;
+      if (kind === 'fall') return `<div class="gate-head"><div class="eyebrow" style="color:var(--blood)">Fallen at depth ${s.k + 1}</div><h2 class="dn">${d.name}</h2></div>`;
+      return `<div class="gate-head"><div class="eyebrow">Six below</div><h2 class="dn">${d.name}</h2><p class="dn-line">${d.line}</p></div>`;
+    },
+    progressFirst: true,
+    trans(title, sub) { return { dur: 2800, html: `<div class="descent" style="--dur:2800ms"><span class="bg"></span><div class="ttl"><b>${title}</b><small>${sub}</small></div><div class="col">${Array.from({ length: 6 }, (_, i) => `<i style="--d:${500 + i * 230}ms"></i>`).join('')}</div></div>` }; },
+    mark(d, s) {
+      const steps = Array.from({ length: 6 }, (_, i) => `<i class="${i < s.k ? 's' : i === s.k ? 'n' : ''}"></i>`).join('');
+      return `<span class="pl mark"><span class="depth">${steps}</span>${d.short}</span>`;
+    },
+  },
+  C: {
+    name: 'C · The Title Card',
+    note: 'Dungeons hang as banners. The gate screen is a big title card over a ledger of six (names hidden till reached) with what each pays. Going in, the name fades up on black between two brass rules, game-intro style. Inside, the whole stage wears a brass frame with the boss\'s numeral at the top. Clears and falls get their own title cards.',
+    list(ds) { return `<div class="list-c">${ds.map((d) => this.listCard(d)).join('')}</div>`; },
+    listCard(d) {
+      const locked = d.state === 'locked' || d.state === 'store';
+      const med = locked ? `<span class="med" style="place-items:center;color:#6c6c88">${ICON.lock}</span>` : `<span class="med"><img class="${d.state === 'open' ? 'sil' : ''}" src="${src(d.bosses[d.bosses.length - 1][1])}" alt="" /></span>`;
+      let foot = '';
+      if (d.state === 'open') foot = `${pay(gemsTotal(d))}<span class="mini-relic"><img src="${relicImg(d.relic.id)}" alt="" />Relic</span>`;
+      if (d.state === 'cleared') foot = `<span class="st">${ICON.check}Cleared</span><span class="mini-relic"><img src="${relicImg(d.relic.id)}" alt="" />Drops</span>`;
+      if (d.state === 'locked') foot = `<span class="st dim">${d.lock}</span>`;
+      if (d.state === 'store') foot = `<button type="button" class="btn ghost small" data-store>In the Store</button>`;
+      return `<div class="pen ${d.state}" data-d="${d.id}">${med}<span class="pn">${d.name}</span><span class="line">${d.line}</span><div class="pf">${foot}</div></div>`;
+    },
+    progress(d, s, ctx) {
+      return `<div class="ledger">${d.bosses.map(([n, p], i) => {
+        const k = slotState(s, i, ctx);
+        const vis = shown(d, s, i, ctx);
+        return `<div class="lr ${k}"><span class="rn">${ROMAN[i]}</span><span class="lm"><img class="${vis ? '' : 'sil'}" src="${src(p)}" alt="" /></span><span class="ln ${vis ? '' : 'q'}">${vis ? n : '???'}</span>${firstClear(d) && ctx !== 'clear' ? `<span class="gp">${ICON.gem}${d.gems[i]}</span>` : k === 'slain' ? `<span class="st">${ICON.check}</span>` : ''}</div>`;
+      }).join('')}</div>`;
+    },
+    art(d, s, kind) {
+      const rule = '<div class="rule"><i></i></div>';
+      if (kind === 'clear') return `<div class="card-t">${rule}<div class="big brass">Dungeon<br/>cleared</div>${rule}<p class="dn-line" style="margin-top:8px">${d.name}</p></div>`;
+      if (kind === 'fall') return `<div class="card-t">${rule}<div class="big ash">Fallen</div>${rule}<p class="dn-line" style="margin-top:8px">${d.bosses[s.k][0]} keeps ${d.name.replace('The ', 'the ')}.</p></div>`;
+      return `<div class="card-t">${rule}<div class="big">${d.name.replace('The ', 'The<br/>').replace("'s ", "'s<br/>")}</div>${rule}<p class="dn-line" style="margin-top:8px">${d.line}</p></div>`;
+    },
+    trans(title, sub) { return { dur: 2800, html: `<div class="titlec" style="--dur:2800ms"><span class="bg"></span><div class="in"><div class="rule"><i></i></div><div class="big">${title}</div><div class="rule"><i></i></div><small>${sub}</small></div></div>` }; },
+    mark(d, s) { return `<span class="pl mark">${d.short}<b>${ROMAN[s.k]} · VI</b></span><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>`; },
+  },
+};
+
+// A list card's foot (A and B): what it pays, or why it's shut.
+function listFoot(d) {
+  if (d.state === 'open') return `<div class="foot">${pay(gemsTotal(d))}<span class="mini-relic"><img src="${relicImg(d.relic.id)}" alt="" />${d.relic.name}</span></div>`;
+  if (d.state === 'cleared') return `<div class="foot"><span class="st">${ICON.check}Cleared</span><span class="mini-relic"><img src="${relicImg(d.relic.id)}" alt="" />${d.relic.name} · drops</span></div>`;
+  if (d.state === 'locked') return `<div class="foot"><span class="st dim">${ICON.lock}${d.lock}</span></div>`;
+  return `<div class="foot"><span class="st dim">Dungeon pack</span><button type="button" class="btn ghost small" data-store>In the Store</button></div>`;
+}
+
+// ---------- Building each phone ----------
+const tabs = () => `<nav class="tabs">${[['Habits', ICON.sword], ['Tasks', ICON.scroll], ['Shop', ICON.store], ['Talents', ICON.anvil], ['Hero', ICON.user]].map(([n, i]) => `<span class="${n === 'Habits' ? 'on' : ''}">${i}${n}</span>`).join('')}</nav>`;
+
+const root = document.getElementById('opts');
+for (const key of ['A', 'B', 'C']) {
+  const o = OPT[key];
+  const el = document.createElement('div');
+  el.className = 'opt';
+  el.innerHTML = `<h2>${o.name}</h2><p>${o.note}</p>
+    <div class="phone ${key}"><div class="head"></div><div class="behind">${'<i></i>'.repeat(6)}</div>${tabs()}<div class="layer"></div><div class="trans"></div><div class="toast"></div></div>
+    <div class="ctl"><span class="dev">Stand-ins for days of play</span><button type="button" data-slay>Slay this boss</button><button type="button" data-fall>Fall in battle</button><button type="button" data-reset>Reset</button></div>`;
+  root.appendChild(el);
+  wire(el, o, key);
+}
+
+function wire(el, o, key) {
+  const phone = el.querySelector('.phone');
+  const head = el.querySelector('.head');
+  const layer = el.querySelector('.layer');
+  const transEl = el.querySelector('.trans');
+  const toast = el.querySelector('.toast');
+  let ds, s, timer, busy = false;
+  const reset = () => {
+    ds = DUNGEONS();
+    s = { mode: 'road', screen: null, di: null, k: 0, counter: 23, gold: 340, gems: 68, hp: 80, level: 31,
+      wait: { name: 'Iron Warden', pct: 55 }, earned: { gold: 0, gems: 0 }, pip: true, confirm: false };
+    paint();
+  };
+  const d = () => ds.find((x) => x.id === s.di);
+  const say = (html) => { toast.innerHTML = html; toast.classList.add('show'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 2000); };
+
+  function paintHead() {
+    const inD = s.mode === 'dungeon';
+    const dd = inD ? d() : null;
+    const boss = inD ? dd.bosses[s.k] : ['Iron Warden', 'armored'];
+    const big = inD && s.k === 5;
+    const bossPct = inD ? 100 : s.wait.pct;
+    phone.classList.toggle('inside', inD);
+    head.innerHTML = `<img class="room" src="${S}stage/${inD ? dd.arena : 'arena6b.png'}" style="filter:${inD ? dd.tint : 'none'}" alt="" />
+      <img class="hero" src="${S}player/warrior.png" alt="" /><img class="boss ${big ? 'big' : ''}" src="${src(boss[1])}" alt="" />
+      <span class="pl purse"><span class="g">${ICON.coin}<b>${s.gold}</b></span><span class="m">${ICON.gem}<b>${s.gems}</b></span></span>
+      <div class="strip"><button type="button" aria-label="Menu">${ICON.menu}</button><button type="button" aria-label="Challenges" data-gift>${ICON.gift}</button>
+        <button type="button" class="castle ${inD ? 'lit' : ''}" aria-label="Dungeons" data-castle>${ICON.castle}${s.pip && !inD ? '<span class="pip"></span>' : ''}</button></div>
+      ${inD ? o.mark(dd, s) : ''}
+      <span class="pl bars h"><span class="nm">Warrior<small>Lv ${s.level}</small></span>${hpBar(s.hp)}</span>
+      <span class="pl bars b"><span class="nm"><small>#${s.counter}</small>${boss[0]}</span>${hpBar(bossPct)}</span>`;
+  }
+
+  function screenHtml() {
+    const dd = d();
+    switch (s.screen) {
+      case 'list': {
+        const body = o.list ? o.list(ds) : ds.map((x) => o.listCard(x)).join('');
+        return `<div class="veil" data-close></div><div class="modal" role="dialog" aria-label="Dungeons"><div class="m-head"><span class="medal">${ICON.castle}</span><span class="ttl">Dungeons</span><button type="button" class="x" data-close aria-label="Close">${ICON.x}</button></div>
+          <div class="m-body">${body}</div></div>`;
+      }
+      case 'enter': {
+        const prog = o.progress(dd, s, 'preview');
+        const top = o.art(dd, s, 'enter');
+        const held = dd.state === 'cleared' ? false : undefined;
+        return `<div class="scr"><button type="button" class="x back" data-list aria-label="Back">${ICON.left}</button>
+          ${o.progressFirst ? top + prog : top + prog}${prizes(dd)}${relicCard(dd, held)}${waitCard(s, `Waits for you`)}
+          <div class="acts">${enterBtn(dd)}</div></div>`;
+      }
+      case 'sheet': {
+        return `<div class="veil" data-close></div><div class="modal" role="dialog"><div class="m-head"><span class="medal">${ICON.castle}</span><span class="ttl">${dd.name}<small>Boss ${s.k + 1} of 6</small></span><button type="button" class="x" data-close aria-label="Close">${ICON.x}</button></div>
+          <div class="m-body">${o.progress(dd, s, 'sheet')}<div class="label">The last boss carries</div>${relicCard(dd)}<div class="label">Outside</div>${waitCard(s, 'Waits for you')}
+          <div style="margin-top:6px"><button type="button" class="btn danger" data-leave>${ICON.out}Leave the dungeon</button></div></div></div>
+          ${s.confirm ? `<div class="veil top" data-stay></div><div class="dialog"><h3>Leave ${dd.name.replace('The ', 'the ')}?</h3><p>The next try starts at the first boss. What you've won is yours.</p><div class="two"><button type="button" class="btn ghost" data-stay>Stay</button><button type="button" class="btn danger" data-leave-yes>Leave</button></div></div>` : ''}`;
+      }
+      case 'clear': {
+        return `<div class="scr">${o.art(dd, s, 'clear')}${key === 'B' ? o.progress(dd, s, 'clear') : ''}${relicCard(dd)}
+          <div class="prizes"><div class="card prize"><span class="g">${ICON.coin}</span><div><b>${s.earned.gold}</b><small>Gold won</small></div></div><div class="card prize"><span class="m">${ICON.gem}</span><div><b>${s.earned.gems || '—'}</b><small>Gems won</small></div></div></div>
+          ${waitCard(s, 'Has grown stronger')}<div class="acts"><button type="button" class="btn" data-return>Return</button></div></div>`;
+      }
+      case 'fall': {
+        return `<div class="scr">${o.art(dd, s, 'fall')}${key !== 'A' ? o.progress(dd, s, 'fall') : ''}${lossBlock(s)}${waitCard(s, 'The dungeon ends. You wake here.')}${fallActs(s)}</div>`;
+      }
+      default: return '';
+    }
+  }
+
+  function paint() { paintHead(); layer.innerHTML = screenHtml(); }
+
+  // The going-in / coming-out moment: the look's own transition, the swap halfway.
+  function run(title, sub, mid) {
+    const t = o.trans(title, sub);
+    busy = true;
+    transEl.innerHTML = t.html;
+    setTimeout(() => { mid(); paint(); }, t.dur * 0.45);
+    setTimeout(() => { transEl.innerHTML = ''; busy = false; }, t.dur);
+  }
+  // Out of the dungeon: the waiting boss catches up to the counter.
+  function backToRoad(msg) {
+    s.mode = 'road'; s.screen = null; s.di = null; s.k = 0; s.confirm = false;
+    if (msg) setTimeout(() => say(msg), 300);
+  }
+
+  el.addEventListener('click', (e) => {
+    if (busy) return;
+    const t = e.target;
+    if (t.closest('[data-reset]')) return reset();
+    if (t.closest('[data-slay]')) {
+      if (s.mode !== 'dungeon' || s.screen === 'clear' || s.screen === 'fall') return say('Slay works inside a dungeon');
+      const dd = d();
+      const g = firstClear(dd) ? dd.gems[s.k] : 0;
+      s.gold += KILL; s.gems += g; s.earned.gold += KILL; s.earned.gems += g; s.counter += 1;
+      const bossEl = head.querySelector('.boss'); bossEl.classList.add('hit');
+      say(`<span class="g" style="display:flex">${ICON.coin}</span>+${KILL}${g ? ` <span class="m" style="display:flex">${ICON.gem}</span>+${g}` : ''}`);
+      setTimeout(() => {
+        if (s.k === 5) { s.screen = 'clear'; } else { s.k += 1; }
+        paint();
+      }, 260);
+      return;
+    }
+    if (t.closest('[data-fall]')) {
+      if (s.mode !== 'dungeon' || s.screen === 'clear') return say('Fall works inside a dungeon');
+      s.screen = 'fall'; return paint();
+    }
+    if (t.closest('[data-castle]')) { s.pip = false; s.screen = s.mode === 'dungeon' ? 'sheet' : 'list'; return paint(); }
+    if (t.closest('[data-gift]')) return say('Challenges');
+    if (t.closest('[data-store]')) { e.stopPropagation(); return say('Opens the Store'); }
+    if (t.closest('[data-close]')) { s.screen = null; s.confirm = false; return paint(); }
+    if (t.closest('[data-list]')) { s.screen = 'list'; return paint(); }
+    const card = t.closest('[data-d]');
+    if (card) {
+      const dd = ds.find((x) => x.id === card.dataset.d);
+      if (dd.state === 'locked') return say(`Opens at ${dd.lock}`);
+      if (dd.state === 'store') return;
+      s.di = dd.id; s.screen = 'enter'; return paint();
+    }
+    if (t.closest('[data-go]')) {
+      const dd = d();
+      if (dd.state === 'cleared') s.gold -= FEE;
+      s.screen = null;
+      layer.innerHTML = '';
+      return run(dd.name, 'Boss I', () => { s.mode = 'dungeon'; s.k = 0; s.earned = { gold: 0, gems: 0 }; s.hp = 80; });
+    }
+    if (t.closest('[data-leave]')) { s.confirm = true; return paint(); }
+    if (t.closest('[data-stay]')) { s.confirm = false; return paint(); }
+    if (t.closest('[data-leave-yes]')) {
+      layer.innerHTML = '';
+      return run('The road', `${s.wait.name} waits`, () => backToRoad());
+    }
+    if (t.closest('[data-revive]')) {
+      s.gems -= REVIVE; s.hp = 50; s.screen = null; paint(); return say('Back on your feet');
+    }
+    if (t.closest('[data-rise]')) {
+      s.gold -= Math.round(s.gold * 0.1); s.level -= 1; s.counter = Math.max(1, s.counter - 2); s.hp = 100;
+      layer.innerHTML = '';
+      return run('The road', `${s.wait.name} waits`, () => backToRoad(`Boss #${s.counter} · ${s.wait.name}`));
+    }
+    if (t.closest('[data-return]')) {
+      const dd = d();
+      dd.state = 'cleared';
+      layer.innerHTML = '';
+      return run('The road', `${s.wait.name} has grown stronger`, () => backToRoad(`${s.wait.name} · now boss #${s.counter}`));
+    }
+  });
+  reset();
+}
+</script>
+</body>
+</html>
