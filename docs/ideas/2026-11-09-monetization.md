@@ -1,6 +1,6 @@
 # Monetization brainstorm
 
-Status: hypothetical brainstorm (2026-11-09). Nothing here is decided or built.
+Status: superseded. The model was decided in `docs/ideas/2026-11-13-shop-economy.md` §2 (one-time dungeon and character packs, gems on sale, no ads, no Pro for now). Kept for the reasoning.
 
 ## The rule
 

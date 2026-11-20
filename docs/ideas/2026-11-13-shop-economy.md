@@ -24,6 +24,27 @@ Replaces the earlier drafts `2026-11-10-shop.md` and `2026-11-10-monetization-mo
 | Character packs | One-time unlock | New hero classes. |
 | Gems | Used up | Deliberately worse value than dungeons. For players who want lots of skins. |
 
+**Decided 2026-11-19:**
+- No ads.
+- Gems are on sale from launch day, so the server ships with the app (§10).
+- The web version (GitHub Pages) is retired when the app ships. Everything is sold through Apple/Google, with no web store.
+- Which heroes are free, unlocked by play, or paid (Ranger included) is its own decision, deferred (`docs/todo.md`).
+- Pro mode is parked until after launch, and only if the game does well. Skin packs are a maybe for after launch (§12).
+
+### Store rules (checked 2026-11-19)
+
+From Apple's and Google's own pages where possible, the rest from developer blogs. Re-check before building the purchase flow; both stores changed their rules in 2025–26.
+
+- **Store billing for everything.** Dungeons, heroes and gems are digital goods, so they're sold through Apple In-App Purchase and Google Play Billing. The US now lets apps also link out to a web checkout (Apple since May 2025, Google through its US programs), but with the web version retired there's no web store to link to.
+- **Product types.** Dungeon packs, character packs and any skin pack are non-consumables: the stores restore them on a new phone. Gems are consumables: the stores don't restore them, so the server keeps every player's balance.
+- **Restore Purchases.** Apple requires a way to restore non-consumables, normally a Restore Purchases button in the Store.
+- **Bought currency never expires** (Apple 3.1.1). Gems already don't.
+- **Nothing random is sold.** Apple requires odds to be shown for loot boxes; we sell none, so this doesn't apply.
+- **Fees.** Apple: 15% under the Small Business Program (under $1M a year), which needs enrolling, not automatic. Google: from 2026-06-30 in the US, UK and EEA, a service fee (reported as 10% on the first $1M, 20% above for new installs) plus a 5% billing fee when Play Billing is used. Check the current numbers in the Play Console before pricing.
+- **Accounts (comes with the server).** Apple requires in-app account deletion if the app creates accounts, and Sign in with Apple (or an equal privacy-focused option) if any third-party login like Google is offered.
+
+Sources: [Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/), [Apple In-App Purchase](https://developer.apple.com/in-app-purchase/), [Apple guidelines after the US court order (AppleInsider)](https://appleinsider.com/articles/25/05/02/apples-app-store-guidelines-updated-to-reflect-court-order-over-external-purchases), [Google Play lower service fees](https://support.google.com/googleplay/android-developer/answer/16954621?hl=en), [Android Developers Blog: expanded billing choice](https://android-developers.googleblog.com/2026/06/play-expanded-billing.html), [Apple Small Business Program (Adapty)](https://adapty.io/blog/app-store-small-business-program/).
+
 ---
 
 ## 3. Gems
@@ -158,11 +179,9 @@ The death popup's line ("Your skills keep their power") still fits. A revive (ge
 
 **Cost.** Small. Cloudflare Workers + D1 (next to the planned analytics) has a free tier, with a paid plan around $5 a month. RevenueCat is free up to a revenue threshold. Check current prices before relying on these.
 
-**Two phases:**
-1. **No server.** Sell dungeons and character packs only. Gems are earned in-game, not sold. Back up the save with the phone's own cloud backup (iCloud or Google).
-2. **Server.** Sign-in, cloud save and a gem ledger. Then gem packs go on sale.
+**One phase (decided 2026-11-19).** Gems are on sale from launch day, so the app launches with the server: sign-in, cloud save and a gem ledger. The earlier no-server first phase is dropped.
 
-Saves already go through the store layer, so phase 2 swaps the storage without touching the UI.
+Saves already go through the store layer, so the server swaps the storage without touching the UI.
 
 ---
 
@@ -206,6 +225,7 @@ Keeping real money in its own Store, apart from gold and gems, means players alw
 - **Gold skill.** A rare new habit skill (maybe a 5% roll on a new skill) that earns gold instead of dealing damage or healing. Gold per check would scale with the boss number. Fun, but not planned yet.
 - **Merchant upgrades.** Permanent shop improvements bought with gold, such as one more stock slot or slightly better odds on the daily rare. Kept through death like the tree.
 - **Tree respec.** Refund talent nodes and move them, for a climbing gold fee.
+- **Skin packs (post-launch, maybe).** A set of skins sold as a one-time unlock for real money, next to the gem skins. Like dungeons and heroes, the stores restore it on a new phone with no server.
 
 ---
 
