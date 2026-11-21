@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { characterGold } from '../../game-engine';
 import type { Habit } from '../../game-engine';
 import { useCenteredArt } from '../../composables/useCenteredArt';
 import { useHeroStats } from '../../composables/useHeroStats';
 import { usePrestige } from '../../composables/usePrestige';
 import { useSkins } from '../../composables/useSkins';
+import { useAccountStore } from '../../store/accountStore';
+import { useCharacterStore } from '../../store/characterStore';
 import { useHabitStore } from '../../store/habitStore';
 import { baseSpriteUrl } from '../ui/spriteUrl';
 import PrestigeNumeral from '../ui/PrestigeNumeral.vue';
@@ -14,8 +17,9 @@ import { HERO_STAGE_CANVAS } from './heroArt';
 // The phone's Hero tab banner (docs/mockups/hero-armory.html, option B): the
 // armory, pinned at the top of the screen where the fight stage's Focus strip
 // would be, the hero stood on its clear floor, their name on a plate on the wall
-// and their level and best streak on two plates at its foot. After a prestige the
-// name plate also carries its title above the name and its numeral beside it
+// with the gold and gems under it (docs/mockups/purse-places.html, F), and their level
+// and best streak on two plates at its foot. After a prestige the name plate also
+// carries its title above the name and its numeral beside it
 // (docs/mockups/hero-prestige-4.html). The page's menu rides
 // in its corner through the default slot, as it does on the stage.
 //
@@ -33,6 +37,10 @@ const ART_H = 232;
 const { heroName, displayLevel } = useHeroStats();
 const { mark } = usePrestige();
 const habitStore = useHabitStore();
+const characterStore = useCharacterStore();
+const accountStore = useAccountStore();
+const gold = computed(() => characterGold(characterStore.character));
+const gems = computed(() => accountStore.account.gems);
 // The worn home base and hero skins (the debug menu can swap the room for testing).
 const skins = useSkins();
 const roomUrl = computed(() => `${baseUrl}sprites/${skins.homeArt.value}.png`);
@@ -63,13 +71,19 @@ const offset = useCenteredArt(frame, ART_W);
         <img class="home-room" :src="roomUrl" alt="" />
         <img class="home-hero" :src="baseSpriteUrl(skins.heroArt.value)" alt="" />
       </button>
-      <h2 class="home-name plate" :class="mark && ['titled', mark.rarity]">
-        <span class="home-who">
-          <span v-if="mark" class="home-title">{{ mark.title }}</span>
-          <span class="home-hero-name">{{ heroName }}</span>
-        </span>
-        <PrestigeNumeral v-if="mark" :mark="mark" />
-      </h2>
+      <div class="home-name plate" :class="mark && ['titled', mark.rarity]">
+        <h2 class="home-heading">
+          <span class="home-who">
+            <span v-if="mark" class="home-title">{{ mark.title }}</span>
+            <span class="home-hero-name">{{ heroName }}</span>
+          </span>
+          <PrestigeNumeral v-if="mark" :mark="mark" />
+        </h2>
+        <p class="home-purse" :aria-label="`${gold.toLocaleString('en-US')} gold, ${gems.toLocaleString('en-US')} gems`">
+          <span class="home-count"><StatIcon name="gold" :size="12" />{{ gold.toLocaleString('en-US') }}</span>
+          <span class="home-count"><StatIcon name="gems" :size="12" />{{ gems.toLocaleString('en-US') }}</span>
+        </p>
+      </div>
       <span class="home-stat plate level"><StatIcon name="levelUp" /><small>Level</small><b class="home-value">{{ displayLevel }}</b></span>
       <span class="home-stat plate streak" :aria-label="streakLabel">
         <StatIcon name="streak" /><small>Best streak</small><b class="home-value">{{ streak }}</b>
@@ -155,19 +169,64 @@ const offset = useCenteredArt(frame, ART_W);
   clip-path: var(--px2, none);
 }
 
+/* A grid, so the plate is only as wide as its widest row: the heading, then the purse
+   under it. */
 .home-name {
   left: 12px;
   /* Level with the top of the menu strip's first button (.stage-menu's 6px). */
   top: 6px;
+  display: grid;
+  grid-template-columns: auto;
+  justify-content: start;
+  row-gap: 5px;
+  color: #f0f3f7;
+}
+
+.home-heading {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin: 0;
   font-family: var(--heading);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* Always night, so the bright coin and gem. A hairline across the plate's inner width
+   sets it off from the name. */
+.home-purse {
+  --icon-coin: #f0c64e;
+  --icon-gem: #6fd6ea;
+  position: relative;
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding-top: 5px;
+  font-family: var(--serif);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
   color: #f0f3f7;
+}
+
+.home-purse::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: #333c52;
+}
+
+.home-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* With a prestige: the title in small caps over the name, the numeral to the right

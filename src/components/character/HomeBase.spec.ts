@@ -15,6 +15,8 @@ describe('HomeBase', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     useCharacterStore().character.name = 'Ash';
+    useCharacterStore().character.gold = 1540;
+    useAccountStore().account.gems = 94;
   });
 
   it('draws the armory with the hero stood on it', () => {
@@ -53,10 +55,23 @@ describe('HomeBase', () => {
     habitStore.addHabit('Read', 'daily', 'easy', false, createRng(1)).streakCount = 4;
     habitStore.addHabit('Run', 'daily', 'easy', false, createRng(1)).streakCount = 9;
     const wrapper = mount(HomeBase);
-    expect(wrapper.find('.home-name').text()).toBe('Ash');
+    expect(wrapper.find('.home-heading').text()).toBe('Ash');
     expect(wrapper.find('.home-stat.level .home-value').text()).toBe(String(useCharacterStore().character.level));
     expect(wrapper.find('.home-stat.streak .home-value').text()).toBe('9');
     expect(wrapper.find('.home-stat.streak').attributes('aria-label')).toBe('Best streak 9, Run');
+  });
+
+  it('shows gold and gems in the name plate, under the name', () => {
+    const wrapper = mount(HomeBase);
+    const purse = wrapper.find('.home-name .home-purse');
+    expect(purse.findAll('.home-count').map((count) => count.text())).toEqual(['1,540', '94']);
+    expect(purse.attributes('aria-label')).toBe('1,540 gold, 94 gems');
+    const plate = wrapper.find('.home-name').element;
+    expect(plate.querySelector('.home-heading')!.compareDocumentPosition(purse.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('has no gem key on the Hero tab', () => {
+    expect(mount(HomeBase).find('.purse-plus').exists()).toBe(false);
   });
 
   it('names the streak without a skill when nothing is running', () => {
