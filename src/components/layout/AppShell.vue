@@ -220,18 +220,6 @@ watch(
   opacity: 1;
 }
 
-/* On phones the toggle floats over the page, above the tab bar's right end, instead of
-   taking a strip off the top: that strip kept the stage below the purse hanging from
-   the screen's top edge, instead of under it. */
-@media (max-width: 820px) {
-  .dev-toggle {
-    position: fixed;
-    z-index: 60;
-    right: 8px;
-    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
 /* Under the menu button, in the stage's corner: a way to the Trials. The
    Focus strip is too short to hold both. */
 .stage-trials {
