@@ -968,6 +968,12 @@ $label-lg: 0.95rem; // primary buttons, choice titles
         font: 800 10.5px/1 var(--sans);
       }
 
+      // The bar is 14px here, so the EXP seam rides the very foot of the well, below
+      // the HP numbers instead of over them.
+      .hero-block .exp-bar {
+        bottom: 0;
+      }
+
       .hero-block .health-bar-fill {
         background: #3f9a55;
         box-shadow:
