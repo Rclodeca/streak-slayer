@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import { ChevronLeft, Crown, Lock } from 'lucide-vue-next';
+import { ChevronLeft, Lock } from 'lucide-vue-next';
 import { characterGold, TALENTS_UNLOCK_LEVEL, talentsOpen } from '../../game-engine';
 import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useAccountStore } from '../../store/accountStore';
@@ -14,14 +14,15 @@ import PrestigeLadder from './PrestigeLadder.vue';
 import TalentTree from './TalentTree.vue';
 import { TALENTS_TAB_ICON } from './talentDisplay';
 
-// The Talents tab (docs/mockups/pixel-talents.html, Plinths). On a phone it is the
-// banner (with a word that talents are kept) pinned over the tree (TalentTree) with its plinths
-// pinned under it, only the tree scrolling between; the gold and gems are in the purse
-// beside the menu (StagePurse). On a wider screen the tab is the banner, with the gold
-// and gems, and a button, and the tree opens in a modal. The prestige crest
-// (PrestigeCrest) on the banner opens the prestige page (PrestigeLadder): on a phone
-// in the tree's place, with a way back, closing when the tab is left; on a wider
-// screen in its own modal. Sealed until TALENTS_UNLOCK_LEVEL.
+// The Talents tab (docs/mockups/pixel-talents.html, Plinths; the top is docs/mockups/
+// talents-top.html, C). On a phone one pinned row sits over the tree (TalentTree) with
+// its plinths pinned under it, only the tree scrolling between: the prestige crest at
+// the left and a plain "Talents" centred, under the purse hanging from the top-left
+// (StagePurse). On a wider screen the tab is the banner, with the gold and gems, the
+// crest and a button, and the tree opens in a modal. The prestige crest (PrestigeCrest)
+// opens the prestige page (PrestigeLadder), titled "Prestige" (talents-top.html, A):
+// on a phone in the tree's place, with a way back, closing when the tab is left; on a
+// wider screen in its own modal. Sealed until TALENTS_UNLOCK_LEVEL.
 const characterStore = useCharacterStore();
 const isPhone = usePhoneLayout();
 const open = computed(() => talentsOpen(characterStore.character));
@@ -54,19 +55,24 @@ watch(prestigeOpen, () =>
     <template v-else-if="isPhone && prestigeOpen">
       <div class="talent-header prestige-head">
         <button type="button" class="prestige-back" aria-label="Back to Talents" @click="prestigeOpen = false"><ChevronLeft :size="24" aria-hidden="true" /></button>
-        <SectionTitle title="Prestige"><Crown :size="18" class="section-icon" /></SectionTitle>
+        <h2 class="talent-title prestige-title">Prestige</h2>
       </div>
       <div ref="page" class="prestige-page"><PrestigeLadder /></div>
     </template>
     <template v-else>
-      <div class="talent-header">
-        <SectionTitle title="Talents"><component :is="TALENTS_TAB_ICON" :size="18" class="section-icon" /></SectionTitle>
-        <CurrencyChips v-if="!isPhone" :gold="gold" :gems="accountStore.account.gems" show-zero />
-      </div>
-      <div class="talent-band">
+      <div v-if="isPhone" class="talent-header talent-top">
         <PrestigeCrest @open="prestigeOpen = true" />
-        <p class="talent-kept">Permanent upgrades.</p>
+        <h2 class="talent-title">Talents</h2>
       </div>
+      <template v-else>
+        <div class="talent-header">
+          <SectionTitle title="Talents"><component :is="TALENTS_TAB_ICON" :size="18" class="section-icon" /></SectionTitle>
+          <CurrencyChips :gold="gold" :gems="accountStore.account.gems" show-zero />
+        </div>
+        <div class="talent-band">
+          <PrestigeCrest @open="prestigeOpen = true" />
+        </div>
+      </template>
       <TalentTree v-if="isPhone" />
       <template v-else>
         <button type="button" class="open-tree primary-button" @click="treeOpen = true">Open tree</button>
@@ -113,11 +119,6 @@ watch(prestigeOpen, () =>
   justify-content: space-between;
   gap: 8px;
   margin: 0 0 0.25rem;
-}
-
-.talent-kept {
-  margin: 0;
-  text-align: right;
 }
 
 .prestige-head {

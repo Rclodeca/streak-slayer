@@ -48,13 +48,25 @@ describe('TalentSection', () => {
     expect(wrapper.find('.cell').exists()).toBe(false);
   });
 
-  it('shows that talents are kept, leaving the gold and gems to the purse beside the menu', () => {
+  it('leaves the gold and gems to the purse hanging from the top-left', () => {
     heroAt(9, { might: 2 }, 250, 3);
     const wrapper = mountSection();
-    expect(wrapper.find('.section-title').text()).toContain('Talents');
     expect(wrapper.find('.talent-header .currency').exists()).toBe(false);
-    expect(wrapper.text()).toContain('Permanent upgrades.');
     expect(wrapper.text()).not.toMatch(/points?/i);
+  });
+
+  it('puts the crest and a plain Talents title on the top row', () => {
+    heroAt(9, { might: 2 }, 250, 3);
+    const wrapper = mountSection();
+    expect(wrapper.find('.talent-top .prestige-crest').exists()).toBe(true);
+    expect(wrapper.find('.talent-top .talent-title').text()).toBe('Talents');
+    expect(wrapper.find('.talent-band').exists()).toBe(false);
+    expect(wrapper.find('.section-title').exists()).toBe(false);
+  });
+
+  it('has no Permanent upgrades note', () => {
+    heroAt(9, { might: 2 }, 250, 3);
+    expect(mountSection().text()).not.toContain('Permanent upgrades.');
   });
 
   it('shows the Damage shoot from its top node down, a node each with its name', () => {
@@ -312,7 +324,7 @@ describe('TalentSection — the prestige ladder', () => {
     climber(44, 2);
     const wrapper = mountSection();
     expect(wrapper.findAll('.pl')).toHaveLength(3);
-    expect(wrapper.find('.talent-band .prestige-crest').text()).toContain('Lv 44 / 60');
+    expect(wrapper.find('.talent-top .prestige-crest').text()).toContain('Lv 44 / 60');
   });
 
   it('opens its own page from the crest, in place of the tree, with five ranks', async () => {
@@ -322,6 +334,24 @@ describe('TalentSection — the prestige ladder', () => {
     expect(wrapper.find('.prestige-page').exists()).toBe(true);
     expect(wrapper.find('.talent-tree-view').exists()).toBe(false);
     expect(wrapper.findAll('.ladder-node')).toHaveLength(5);
+  });
+
+  it('gives the Prestige page a plain title and a back key', async () => {
+    climber(44, 2);
+    const wrapper = mountSection();
+    await ladder(wrapper);
+    expect(wrapper.find('.prestige-head .prestige-title').text()).toBe('Prestige');
+    expect(wrapper.find('.prestige-head .section-title').exists()).toBe(false);
+    await wrapper.find('.prestige-head .prestige-back').trigger('click');
+    expect(wrapper.find('.talent-tree-view').exists()).toBe(true);
+  });
+
+  it('keeps the crest in its band, with no note, on a wider screen', () => {
+    layout(false);
+    climber(44, 2);
+    const wrapper = mountSection();
+    expect(wrapper.find('.talent-band .prestige-crest').exists()).toBe(true);
+    expect(wrapper.text()).not.toContain('Permanent upgrades.');
   });
 
   it('goes back to the tree', async () => {
