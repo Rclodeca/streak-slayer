@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { bossNumber, bossSkillMarks, effectiveStat, expToNextLevel, PERSONALITY_NAME } from '../../game-engine';
 import { useCelebration } from '../../composables/useCelebration';
 import { setHitPlayer, useHitFeed } from '../../composables/useHitFeed';
+import { usePhoneLayout } from '../../composables/usePhoneLayout';
 import { useScrolledPast } from '../../composables/useScrolledPast';
 import { useSkins } from '../../composables/useSkins';
 import { useStageFocused } from '../../composables/useStageFocused';
@@ -33,6 +34,7 @@ import { STAGE_SCENES } from './stage/scenes';
 const bossStore = useBossStore();
 const characterStore = useCharacterStore();
 const focused = useStageFocused();
+const isPhone = usePhoneLayout();
 const backdrop = useDebugBackdropStore();
 const skins = useSkins();
 
@@ -69,6 +71,15 @@ const scrolledPast = useScrolledPast(stage, () => (bar.value?.$el as HTMLElement
 const inner = ref<HTMLElement | null>(null);
 const blockEdges = ref<Record<string, string>>({});
 let blockObserver: ResizeObserver | null = null;
+
+// On the phone's full stage the hero's plate sits upper-left and the boss's lower-right,
+// so the diagonal step would hand the hero's plate to the boss's button. There the tap
+// areas split plainly down the middle instead: the hero's half on the left (the
+// hero's block ends at 42% and the boss's starts at 46%). The Focus strip and wider
+// screens keep their own split (see .stage-inner's CSS).
+const tapSplit = computed<Record<string, string>>(() =>
+  isPhone.value && !focused.value ? { '--split-x': '44%', '--split-x2': '44%', '--split-yl': '0px', '--split-ym': '100%', '--split-yr': '100%' } : {},
+);
 
 function measureBlocks() {
   const el = inner.value;
@@ -182,7 +193,7 @@ onBeforeUnmount(() => {
     :style="plinth"
   >
     <div class="stage-bg" aria-hidden="true"><StageScene v-if="!focused" :personality="boss.personality" /></div>
-    <div ref="inner" class="stage-inner" :style="blockEdges">
+    <div ref="inner" class="stage-inner" :style="[blockEdges, tapSplit]">
       <BossPanel />
       <CharacterPanel />
       <div ref="fxLayer" class="fx-layer" aria-hidden="true" />
@@ -311,6 +322,35 @@ onBeforeUnmount(() => {
   .fight-stage.focus :deep(.hero-name),
   .fight-stage.focus :deep(.level-number) {
     display: none;
+  }
+
+  /* The full stage's names and bars sit on dark plates (docs/mockups/app-ui-pass.html,
+     bar plates; the look is in the theme): the hero's above its head, upper-left, the
+     boss's under it at the stage's foot, lower-right. The boss lifts 18px to clear
+     its plate. translate, not transform: the glide above animates transform. */
+  .fight-stage:not(.focus) :deep(.boss-block),
+  .fight-stage:not(.focus) :deep(.hero-block) {
+    top: auto;
+    gap: 2px;
+    padding: 3px 5px 4px;
+  }
+
+  .fight-stage:not(.focus) :deep(.boss-block) {
+    bottom: 0;
+    left: auto;
+    right: 8px;
+    width: 52%;
+  }
+
+  .fight-stage:not(.focus) :deep(.hero-block) {
+    bottom: 120px;
+    left: 8px;
+    right: auto;
+    width: 40%;
+  }
+
+  .fight-stage:not(.focus) :deep(.boss-figure) {
+    translate: 0 -18px;
   }
 }
 

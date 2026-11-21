@@ -64,6 +64,32 @@ describe('FightStage', () => {
     expect(style).toContain('--hero-top: 205px');
   });
 
+  describe('the tap areas', () => {
+    const stubPhone = () => vi.stubGlobal('matchMedia', (media: string) => ({ matches: true, media, addEventListener() {}, removeEventListener() {} }));
+
+    it('split down the middle on the phone full stage, the hero on the left', () => {
+      stubPhone();
+      const style = mountStage().find('.stage-inner').attributes('style');
+      expect(style).toContain('--split-x: 44%');
+      expect(style).toContain('--split-x2: 44%');
+      expect(style).toContain('--split-yl: 0px');
+      expect(style).toContain('--split-ym: 100%');
+      expect(style).toContain('--split-yr: 100%');
+    });
+
+    it('keep the diagonal step on wider screens', () => {
+      expect(mountStage().find('.stage-inner').attributes('style') ?? '').not.toContain('--split-x');
+    });
+
+    it("leave the Focus strip's own split alone", async () => {
+      stubPhone();
+      useFocusModeStore().setOn(true);
+      const wrapper = mountStage();
+      await nextTick();
+      expect(wrapper.find('.stage-inner').attributes('style') ?? '').not.toContain('--split-x');
+    });
+  });
+
   it('takes the page menu into its corner', () => {
     const wrapper = mount(FightStage, { slots: { default: '<span class="menu-stub" />' }, global: { stubs: { teleport: true } } });
     expect(wrapper.find('.stage-menu .menu-stub').exists()).toBe(true);
