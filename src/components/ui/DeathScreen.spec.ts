@@ -120,17 +120,37 @@ describe('DeathScreen', () => {
       characterStore.setCharacter({ ...characterStore.character, currentHealth: 0 });
     }
 
-    it('offers the revive at its gem price, OR rising again, and taking it closes the screen', async () => {
+    it('with gems, Revive at half HP comes first and Rise again under it', async () => {
       fallWith(REVIVE_GEMS);
       mountWith([]);
       await toChoice();
-      expect(reviveButton()!.textContent).toContain(String(REVIVE_GEMS));
-      expect(text('.revive-path .say')).toBe('Fight on at half health. Nothing lost.');
-      expect(text('.or')).toBe('or');
+      const keys = [...document.querySelectorAll('.acts button')].map((button) => button.className);
+      expect(keys).toEqual(['revive-button', 'rise-button']);
+      expect(text('.acts .revive-button')).toContain('Revive at half HP');
+      expect(text('.acts .revive-price')).toBe(String(REVIVE_GEMS));
+      expect(document.querySelector('.acts .revive-price .stat-icon')).not.toBeNull();
+      expect(document.querySelector('.revive-path')).toBeNull();
+      expect(document.querySelector('.or')).toBeNull();
+    });
+
+    it('taking the revive closes the screen and spends the gems', async () => {
+      fallWith(REVIVE_GEMS);
+      mountWith([]);
+      await toChoice();
       reviveButton()!.click();
       await nextTick();
       expect(useDeathScreen().isDead.value).toBe(false);
       expect(useAccountStore().account.gems).toBe(0);
+    });
+
+    it('labels what rising again costs', async () => {
+      const characterStore = useCharacterStore();
+      characterStore.setCharacter({ ...characterStore.character, level: 20, gold: 401, currentHealth: 0 });
+      mountWith([]);
+      await toChoice();
+      expect(text('.rise-path .cost-label')).toBe('Rising again costs');
+      expect(document.querySelector('.rise-path h3')).toBeNull();
+      expect(document.querySelector('.losses')!.getAttribute('aria-label')).toBeNull();
     });
 
     it('short of gems, shows how far off and Get gems opens the Challenges over the screen', async () => {
@@ -138,7 +158,10 @@ describe('DeathScreen', () => {
       mountWith([]);
       await toChoice();
       expect(reviveButton()).toBeNull();
+      expect(text('.acts .short')).toBe('Get more gems to revive at half HP');
       expect(text('.gems-held .count')).toBe(`${REVIVE_GEMS - 5} / ${REVIVE_GEMS}`);
+      expect(document.querySelector('.gems-held .count .stat-icon')).not.toBeNull();
+      expect([...document.querySelectorAll('.acts > *')].map((el) => el.className.split(' ')[0])).toEqual(['short', 'gems-held', 'gems-button', 'rise-button']);
       (document.querySelector('.gems-button') as HTMLElement).click();
       await nextTick();
       expect(document.querySelector('.modal-backdrop.over')).not.toBeNull();

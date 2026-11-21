@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
+import { ChevronsDown } from 'lucide-vue-next';
 import { ITEM_CATALOG, PERSONALITY_NAME, REVIVE_GEMS, bossNumber, deathToll, formatCompact, heroClassFor, reviveState } from '../../game-engine';
 import { lockBodyScroll } from '../../composables/useBodyScrollLock';
 import { useCombatActions } from '../../composables/useCombatActions';
@@ -17,9 +17,10 @@ import { spriteSrcset, spriteUrl } from './spriteUrl';
 import StatIcon from './StatIcon.vue';
 
 // A death opens straight on the choice, over the whole screen
-// (docs/mockups/death-two-paths.html, B2): Revive for gems, or Rise again and
-// take the setback, which names the item it drops. Short of gems, Get gems
-// opens the Challenges over this screen.
+// (docs/mockups/app-ui-pass.html, death): what rising again costs in one card (it names
+// the item it drops), and at the foot the keys: Revive at half HP for gems, brass,
+// with Rise again under it. Short of gems, a line says why and Get gems opens the
+// Challenges over this screen.
 const { isDead, isPreview, dismiss } = useDeathScreen();
 // The screen waits while the daily update or a missed quest is still to land
 // (their popups show first), so a revive never meets a hit queued that day.
@@ -84,26 +85,8 @@ onBeforeUnmount(unlock);
         <h2 class="fell">You fell</h2>
         <p class="by">{{ PERSONALITY_NAME[boss.personality] }} · Boss {{ bossNumber(boss) }}</p>
 
-        <template v-if="revival === 'buy' || revival === 'short'">
-          <section class="path revive-path" aria-label="Revive">
-            <h3><StatIcon name="gems" :size="20" />Revive</h3>
-            <p class="say">Fight on at half health. Nothing lost.</p>
-            <button v-if="revival === 'buy'" type="button" class="revive-button" @click="isPreview ? dismiss() : revive()">
-              Revive<span class="revive-price" :aria-label="`${REVIVE_GEMS} gems`"><StatIcon name="gems" :size="15" />{{ REVIVE_GEMS }}</span>
-            </button>
-            <template v-else>
-              <p class="gems-held">
-                <span class="count">{{ gemsHeld }} / {{ REVIVE_GEMS }}</span>
-                <span class="bar" aria-hidden="true"><i :style="{ width: `${(gemsHeld / REVIVE_GEMS) * 100}%` }" /></span>
-              </p>
-              <button type="button" class="gems-button primary-button" @click="showGems = true">Get gems</button>
-            </template>
-          </section>
-          <p class="or">or</p>
-        </template>
-
-        <section class="path rise-path" aria-label="Rise again">
-          <h3><ChevronsUp :size="20" />Rise again</h3>
+        <section v-if="fallItem || toll.levels || toll.gold || toll.items" class="path rise-path">
+          <p class="cost-label">Rising again costs</p>
           <div v-if="fallItem" class="drop" :style="{ '--rarity': `var(--rarity-${fallItem.rarity})` }">
             <span class="drop-frame"><img :src="`${baseUrl}sprites/${fallItem.icon}.png`" alt="" /></span>
             <span class="drop-text">
@@ -112,13 +95,27 @@ onBeforeUnmount(unlock);
               <span class="drop-tag">Dropped</span>
             </span>
           </div>
-          <ul v-if="toll.levels || toll.gold || (toll.items && !fallItem)" class="losses" aria-label="Rising again costs">
+          <ul v-if="toll.levels || toll.gold || (toll.items && !fallItem)" class="losses">
             <li v-if="toll.levels" class="loss"><ChevronsDown :size="16" />−{{ toll.levels }} level{{ toll.levels === 1 ? '' : 's' }}</li>
             <li v-if="toll.gold" class="loss"><StatIcon name="gold" :size="15" />−{{ formatCompact(toll.gold) }} gold</li>
             <li v-if="toll.items && !fallItem" class="loss">−1 item</li>
           </ul>
-          <button type="button" class="rise-button" @click="isPreview ? dismiss() : restart()">Rise again</button>
         </section>
+
+        <div class="acts">
+          <button v-if="revival === 'buy'" type="button" class="revive-button" @click="isPreview ? dismiss() : revive()">
+            Revive at half HP<span class="revive-price" :aria-label="`${REVIVE_GEMS} gems`"><StatIcon name="gems" :size="15" />{{ REVIVE_GEMS }}</span>
+          </button>
+          <template v-else-if="revival === 'short'">
+            <p class="short">Get more gems to revive at half HP</p>
+            <p class="gems-held">
+              <span class="count">{{ gemsHeld }} / {{ REVIVE_GEMS }}<StatIcon name="gems" :size="15" /></span>
+              <span class="bar" aria-hidden="true"><i :style="{ width: `${(gemsHeld / REVIVE_GEMS) * 100}%` }" /></span>
+            </p>
+            <button type="button" class="gems-button" @click="showGems = true">Get gems</button>
+          </template>
+          <button type="button" class="rise-button" @click="isPreview ? dismiss() : restart()">Rise again</button>
+        </div>
       </div>
     </div>
     <TrialsModal v-if="shown" v-model="showGems" over />
@@ -145,6 +142,7 @@ onBeforeUnmount(unlock);
 .setback {
   display: flex;
   flex-direction: column;
+  min-height: 100%;
   padding: 0 14px calc(18px + env(safe-area-inset-bottom));
 }
 
@@ -218,7 +216,7 @@ onBeforeUnmount(unlock);
   font-size: 13px;
 }
 
-/* The two choices: a card each, gem-lit for the revive. */
+/* What rising again costs, in one card. */
 .path {
   display: flex;
   flex-direction: column;
@@ -232,59 +230,41 @@ onBeforeUnmount(unlock);
   clip-path: var(--px3);
 }
 
-.revive-path {
-  background: #1d3640;
-  box-shadow:
-    inset 2px 2px 0 #3f93a6,
-    inset -2px -2px 0 #133640;
-}
-
-.path h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  color: var(--text-h);
-  font: 700 20px 'Alegreya', Georgia, serif;
-}
-
-.say {
-  margin: 0;
-  font-size: 14.5px;
-}
-
-.or {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 8px 4px;
-  color: var(--brass, #d2bb85);
-  font: 700 13px 'Cinzel', serif;
-  letter-spacing: 0.3em;
+.cost-label {
+  margin: 0 0 -2px;
+  color: #9a9ab8;
+  font: 700 11px 'Alegreya Sans', sans-serif;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.or::before,
-.or::after {
-  content: '';
-  flex: 1;
-  height: 2px;
-  background: #2f2e4f;
+/* The keys at the screen's foot: the brass revive (or, short of gems, why and Get
+   gems), and Rise again under it as a plain outlined key. */
+.acts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
 }
 
-.revive-button {
+.revive-button,
+.gems-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  min-height: 46px;
+  min-height: 50px;
   padding: 0 1rem;
-  color: #effcff;
-  font: 700 16px 'Alegreya Sans', sans-serif;
-  background: #2c6a7a;
+  color: #231c0c;
+  font: 800 16px 'Alegreya Sans', sans-serif;
+  letter-spacing: 0.04em;
+  background: #c7a560;
   border: 0;
-  border-bottom: 3px solid #0c2229;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -3px 0 #6e5a2f;
   clip-path: var(--px2);
   -webkit-tap-highlight-color: transparent;
 }
@@ -293,18 +273,33 @@ onBeforeUnmount(unlock);
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: #bff3ff;
+  color: #13505e;
   font-weight: 800;
+}
+
+.revive-price :deep(.stat-icon) {
+  color: #13505e;
+}
+
+.short {
+  margin: 0;
+  text-align: center;
+  font-size: 14.5px;
+  color: #d3d4e4;
 }
 
 .gems-held {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   margin: 0;
 }
 
 .gems-held .count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--icon-gem);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -313,8 +308,12 @@ onBeforeUnmount(unlock);
 .gems-held .bar {
   position: relative;
   flex: 1;
-  height: 8px;
-  background: #12131c;
+  max-width: 160px;
+  height: 10px;
+  background: #222338;
+  box-shadow:
+    inset 0 0 0 1px #3a3b5c,
+    inset 0 2px 0 rgba(0, 0, 0, 0.35);
   clip-path: var(--px2);
 }
 
@@ -324,22 +323,16 @@ onBeforeUnmount(unlock);
   background: var(--icon-gem);
 }
 
-.gems-button,
-.rise-button {
-  width: 100%;
-  min-height: 46px;
-  font-weight: 700;
-  clip-path: var(--px2);
-}
-
-/* Rising is the plain way on: a dark key, quieter than the revive. */
 .rise-button {
   display: block;
-  color: var(--text-h);
+  width: 100%;
+  min-height: 48px;
+  color: #dfe0f0;
   font: 700 16px 'Alegreya Sans', sans-serif;
-  background: #3a3960;
+  background: transparent;
   border: 0;
-  border-bottom: 3px solid #12121e;
+  box-shadow: inset 0 0 0 2px #4a4a70;
+  clip-path: var(--px2);
 }
 
 /* The item the fall drops, named, in its rarity's colour. */
