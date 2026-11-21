@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addDaysToDayKey, dailyPeriodKey, effectiveStat, formatCompact, ITEM_CATALOG } from '../../game-engine';
+import { useCelebration } from '../../composables/useCelebration';
 import { useBossStore } from '../../store/bossStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useTabStore } from '../../store/tabStore';
@@ -69,6 +70,18 @@ describe('CharacterPanel', () => {
     const wrapper = mount(CharacterPanel);
     expect(wrapper.find('.name-line .hero-name').text()).toBe('Bartholomew Long');
     expect(wrapper.find('.name-line > .level-number').text()).toBe(String(useCharacterStore().character.level));
+  });
+
+  it('floats "Level up" over the hero, outside the clipped name plate', async () => {
+    const wrapper = mount(CharacterPanel);
+    useCelebration().celebrateLevelUp(1);
+    await nextTick();
+    await nextTick();
+    const popup = wrapper.find('.level-up-popup');
+    expect(popup.text()).toBe('Level up');
+    expect(wrapper.find('.hero-block .level-up-popup').exists()).toBe(false);
+    expect(wrapper.find('.hero-figure .level-up-popup').exists()).toBe(true);
+    useCelebration().clear();
   });
 
   it('shows the HP numbers inside the HP bar, with the EXP bar alongside it', () => {

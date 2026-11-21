@@ -66,13 +66,13 @@ const { mark } = usePrestige();
     <div class="hero-figure" :style="placement">
       <PlayerSprite :character="character" stage />
       <span v-if="leveling" class="level-ring" aria-hidden="true" />
+      <span v-if="leveling" class="level-up-popup" role="status">Level up</span>
     </div>
     <div class="hero-block">
       <h2 class="name-line">
         <span class="hero-name">{{ heroName }}</span>
         <PrestigeNumeral v-if="mark" class="name-prestige" :mark="mark" small />
         <span class="level-number">{{ displayLevel }}</span>
-        <span v-if="leveling" class="level-up-popup" role="status">Level up</span>
       </h2>
       <!-- The HP bar carries its own numbers, and the EXP runs along its foot. -->
       <div class="bars">
@@ -314,11 +314,14 @@ const { mark } = usePrestige();
   animation: level-ring 1s ease-out;
 }
 
-/* Just above the name line, clear of a long name that fills it. */
+/* Over the hero's chest, centred on it: the name plate clips whatever floats out of
+   it (phone), so the word rises from the figure instead. */
 .level-up-popup {
   position: absolute;
-  bottom: 100%;
+  bottom: 55%;
+  left: 0;
   right: 0;
+  text-align: center;
   color: var(--accent);
   font-size: 0.8rem;
   font-weight: 800;
