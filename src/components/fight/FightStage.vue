@@ -351,7 +351,12 @@ onBeforeUnmount(() => {
   }
 
   .fight-stage:not(.focus) :deep(.boss-figure) {
-    translate: 0 -18px;
+    translate: -4px -18px;
+  }
+
+  /* The boss's plinth goes 4px (two art pixels) left with it. */
+  .fight-stage:not(.focus) :deep(.boss-plat) {
+    translate: -4px 0;
   }
 
   /* The hero and its plinth stand 10px (five art pixels) further right, clear of the
