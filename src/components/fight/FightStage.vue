@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
   }
 
   .fight-stage:not(.focus) :deep(.hero-block) {
-    bottom: 124px;
+    bottom: 128px;
     left: 8px;
     right: auto;
     width: 40%;
@@ -354,11 +354,11 @@ onBeforeUnmount(() => {
     translate: 0 -18px;
   }
 
-  /* The hero and its plinth stand 6px (three art pixels) further right, clear of the
+  /* The hero and its plinth stand 10px (five art pixels) further right, clear of the
      plate's left edge. */
   .fight-stage:not(.focus) :deep(.hero-figure),
   .fight-stage:not(.focus) :deep(.hero-plat) {
-    translate: 6px 0;
+    translate: 10px 0;
   }
 }
 
