@@ -77,9 +77,10 @@ let blockObserver: ResizeObserver | null = null;
 // areas split plainly down the middle instead: the hero's half on the left (the
 // hero's block ends at 42% and the boss's starts at 46%). The Focus strip and wider
 // screens keep their own split (see .stage-inner's CSS).
-const tapSplit = computed<Record<string, string>>(() =>
-  isPhone.value && !focused.value ? { '--split-x': '44%', '--split-x2': '44%', '--split-yl': '0px', '--split-ym': '100%', '--split-yr': '100%' } : {},
-);
+const tapSplit = computed((): Record<string, string> => {
+  if (!isPhone.value || focused.value) return {};
+  return { '--split-x': '44%', '--split-x2': '44%', '--split-yl': '0px', '--split-ym': '100%', '--split-yr': '100%' };
+});
 
 function measureBlocks() {
   const el = inner.value;
