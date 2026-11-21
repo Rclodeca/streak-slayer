@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Talents top</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap" />
+<style>
+/* The top of the Talents tab and the Prestige page, redrawn round the purse that now
+   hangs top-left on every tab (app-ui-pass.html; the Hero tab carries it in its name
+   plate, purse-places.html F). Real app frames, changes injected.
+   Dev server only: /streak-slayer/docs/mockups/talents-top.html */
+:root { --bg: #0b0b12; --text: #d3d4e4; --text-h: #ece8de; --line: #22233a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 500 15px/1.4 'Alegreya Sans', system-ui, sans-serif; padding: 20px 16px 50px; }
+h1 { text-align: center; font: 600 14px 'Cinzel', serif; letter-spacing: .32em; color: var(--text-h); margin: 0 0 6px; text-transform: uppercase; }
+h2 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .22em; color: var(--text-h); margin: 30px 0 6px; text-transform: uppercase; }
+.sub { text-align: center; margin: 0 auto 14px; max-width: 780px; font-size: 14.5px; }
+.bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.bar button { min-height: 44px; padding: 0 14px; font: 700 14px 'Alegreya Sans'; color: var(--text); background: #191a28; border: 2px solid #3f405a; cursor: pointer; }
+.bar button.on { color: #11121b; background: #dfe0f0; border-color: #dfe0f0; }
+.pair { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+.col { width: 390px; max-width: 100%; }
+.col h3 { margin: 0 0 6px; text-align: center; font: 700 12px 'Alegreya Sans'; letter-spacing: .18em; text-transform: uppercase; color: #9a9ab8; }
+.frame { display: block; width: 390px; max-width: 100%; height: 844px; border: 2px solid var(--line); background: #11121b; }
+.notes { max-width: 780px; margin: 10px auto 0; font-size: 14px; }
+.notes li { margin: 5px 0; }
+</style>
+</head>
+<body>
+<h1>Talents top</h1>
+<p class="sub">The purse stays where it hangs (top-left, 26px), the corner strip on the right. "Permanent upgrades." is gone. Each page needs a title and a way back or a way in; the switch for prestige shows the crest at each rank.</p>
+
+<div class="bar" id="rank">
+  <button type="button" data-p="0" class="on">No prestige</button>
+  <button type="button" data-p="1">Prestige I</button>
+  <button type="button" data-p="3">Prestige III</button>
+  <button type="button" data-p="5">Prestige V</button>
+  <button type="button" id="ready">Ready to prestige</button>
+</div>
+
+<h2>Talents</h2>
+<div class="bar" id="t-opts">
+  <button type="button" data-o="row">A · One row under the purse</button>
+  <button type="button" data-o="crown">B · Crest crowns the tree</button>
+  <button type="button" data-o="medal" class="on">C · Crest left, title centred (picked)</button>
+  <button type="button" data-o="centre">D · Centred pair</button>
+</div>
+
+<h2>Prestige page</h2>
+<div class="bar" id="p-opts">
+  <button type="button" data-o="plain" class="on">A · Centred title, arrow left (picked)</button>
+  <button type="button" data-o="rank">B · Title and your rank</button>
+  <button type="button" data-o="plaque">C · Title plaque</button>
+</div>
+
+<div class="pair">
+  <div class="col"><h3>Talents</h3><iframe class="frame" id="talents" title="Talents"></iframe></div>
+  <div class="col"><h3>Prestige</h3><iframe class="frame" id="prestige" title="Prestige"></iframe></div>
+</div>
+
+<ul class="notes">
+  <li><b>Talents A · One row under the purse:</b> "Talents" on the left, the crest on the right of the same row, just under the purse. One line of chrome, the tree gets the rest.</li>
+  <li><b>Talents B · Crest crowns the tree:</b> the title beside the purse, on its row. The crest sits centred over the trunk, a stem joining it to the tree: prestige is what the tree grows toward. The least chrome of the four.</li>
+  <li><b>Talents C · Crest left, title centred (picked):</b> one row under the purse: the crest as today (its seal, the two lines to its right) at the left, "Talents" centred on the page.</li>
+  <li><b>Talents D · Centred pair:</b> "Talents" centred on the purse's row, the crest centred under it. Symmetrical, a little taller than A.</li>
+  <li><b>Prestige A:</b> under the purse, the back arrow on the left, "Prestige" centred and larger, a short rule under it.</li>
+  <li><b>Prestige B:</b> "‹ Talents" back key under the purse, then a centred title with your rank under it in its colour (or the first bar before any rank).</li>
+  <li><b>Prestige C:</b> a dark plaque across the page under the purse (clear of the strip), the arrow at its left, the title centred on it.</li>
+</ul>
+
+<script>
+const FRAME = '/streak-slayer/screen-frame.html';
+const GEM_PATHS = '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>';
+// prestigeMark / PRESTIGE_RANKS (game-engine/prestige.ts): titles, colours and level bars.
+const MARKS = { 1: ['I', 'Veteran', '#5f95e6'], 2: ['II', 'Veteran', '#5f95e6'], 3: ['III', 'Ascendant', '#b57be8'], 4: ['IV', 'Ascendant', '#b57be8'], 5: ['V', 'Mythic', '#f58a35'] };
+const BARS = [30, 45, 60, 75, 90];
+
+const CSS = `
+.dev-toggle { display: none !important; }
+
+/* ---- The picks (app-ui-pass.html): the purse hanging top-left, bare +; the gem button in the strip. ---- */
+.stage-purse { position: fixed !important; z-index: 10; top: 0 !important; left: calc(8px + env(safe-area-inset-left, 0px)) !important; right: auto !important; }
+.stage-purse .purse-plate { height: calc(26px + env(safe-area-inset-top, 0px)) !important; padding: env(safe-area-inset-top, 0px) 8px 0 12px !important;
+  box-shadow: inset 1px 0 0 #333c52, inset -1px 0 0 #333c52, inset 0 -1px 0 #333c52 !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)) !important; }
+.stage-purse .purse-gain { display: none !important; }
+.mx-plus { position: relative; display: inline-grid; place-items: center; width: 14px; height: 18px; margin-left: 8px; padding: 0; border: 0; cursor: pointer; pointer-events: auto;
+  background: none; color: #dfe0f0; font: 800 17px/1 'Alegreya Sans', sans-serif; }
+.mx-plus::before { content: ''; position: absolute; left: -5px; top: 2px; bottom: 2px; width: 1px; background: #333c52; }
+.mx-plus::after { content: ''; position: absolute; inset: -13px -15px; }
+
+/* ---- Both pages: the titles as plain words (no banner), the note gone, the header sat exactly
+   where it's put (the theme pulls it up 6px). The page starts at the screen's top. ---- */
+.scroll-body.talents-view { padding-top: env(safe-area-inset-top, 0px) !important; }
+.talent-kept { display: none !important; }
+/* (Its solid page colour, there to cover the tree under it, shows as a box once the header is short.) */
+.talent-header { margin: 0 !important; min-height: 0 !important; background: none !important; }
+.talent-header .section-title .medal { display: none !important; }
+.talent-header .section-title .cloth::before, .talent-header .section-title .cloth::after { display: none !important; }
+.talent-header .section-title .cloth { padding: 0 !important; margin: 0 !important; height: auto !important; background: none !important; box-shadow: none !important; clip-path: none !important;
+  font: 600 15px 'Cinzel', serif !important; letter-spacing: .26em !important; text-transform: uppercase; color: #ece8de !important; text-shadow: none !important; overflow: visible !important; }
+.talent-band { margin: 0 !important; }
+
+/* =================== Talents =================== */
+
+/* A · one row under the purse: the title left, the crest right (clear of the strip). */
+html.tA .talent-section:not(:has(.prestige-head)) { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr); column-gap: 8px; padding-top: 32px; }
+html.tA .talent-section > .talent-header:not(.prestige-head) { grid-area: 1 / 1; align-self: center; padding-left: 2px; }
+/* (The theme's 52px right padding clears the strip already; the margin replaces it.) */
+html.tA .talent-section > .talent-band { grid-area: 1 / 2; justify-content: flex-end !important; padding-right: 0 !important; margin-right: calc(46px - 0.75rem + 6px) !important; }
+/* The crest button would otherwise stretch across its column, its seal at the left. */
+html.tA .talent-band .prestige-crest { flex: none !important; width: auto !important; }
+html.tA .talent-section > .talent-tree-view { grid-area: 2 / 1 / 3 / 3; min-height: 0; }
+
+/* B · the title on the purse's row beside it; the crest centred over the trunk, a stem
+   down into the tree. The crest stacks: seal over its line. */
+html.tB .talent-header:not(.prestige-head) { height: 26px; justify-content: flex-start !important; padding: 0 0 0 calc(var(--purse-r, 140px) + 14px) !important; }
+html.tB .talent-header:not(.prestige-head) .section-title .cloth { font-size: 13px !important; }
+html.tB .talent-band { position: relative; justify-content: center !important; margin: 6px 0 4px !important; }
+html.tB .talent-band .prestige-crest { flex-direction: column; gap: 3px; min-height: 0; padding: 0; }
+html.tB .talent-band .crest-text { flex-direction: row !important; align-items: baseline; gap: 6px; }
+html.tB .talent-band::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 2px; height: 8px; margin-left: -1px; background: #3a3b5c; }
+
+/* C (picked) · one row under the purse: the crest as today (seal, its two lines to the
+   right) at the left, "Talents" centred on the page across the same row. */
+html.tC .talent-section:not(:has(.prestige-head)) { display: grid !important; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); padding-top: 32px; }
+html.tC .talent-section > .talent-header:not(.prestige-head) { grid-area: 1 / 1; justify-content: center !important; align-self: center; padding: 0 !important; }
+html.tC .talent-section > .talent-header:not(.prestige-head) .section-title .cloth { text-indent: .26em; }
+html.tC .talent-section > .talent-band { grid-area: 1 / 1; justify-self: start; position: relative; z-index: 1; padding-right: 0 !important; margin-left: -4px !important; }
+html.tC .talent-section > .talent-tree-view { grid-area: 2 / 1; min-height: 0; }
+
+/* D · centred: the title on the purse's row (centred across the screen), the crest centred under it. */
+html.tD .talent-header:not(.prestige-head) { height: 26px; justify-content: center !important; padding: 0 !important; }
+html.tD .talent-header:not(.prestige-head) .section-title .cloth { font-size: 13px !important; text-indent: .26em; }
+html.tD .talent-band { justify-content: center !important; margin: 6px 0 2px !important; }
+
+/* =================== Prestige page =================== */
+
+html.prestige-frame .prestige-head { position: relative; justify-content: center !important; gap: 0 !important; margin: 0 !important; padding: 34px 0 0 !important; }
+html.prestige-frame .prestige-back { color: #dfe0f0; }
+html.prestige-frame .prestige-head .section-title .cloth { font-size: 19px !important; letter-spacing: .3em !important; text-indent: .3em; }
+
+/* A · arrow left, the title centred, a short rule under it. */
+html.pA .prestige-back { position: absolute; left: 0; top: 34px; margin: 0 !important; }
+html.pA .prestige-head { flex-wrap: wrap; min-height: 44px; align-items: center; }
+html.pA .prestige-head .section-title { min-height: 44px; }
+html.pA .prestige-head::after { content: ''; flex: 0 0 100%; height: 1px; margin-top: 4px;
+  background: linear-gradient(90deg, transparent, #8a7340, transparent) center / 150px 1px no-repeat; }
+
+/* B · "‹ Talents" back key under the purse, then the title and your rank centred. */
+html.pB .prestige-head { flex-direction: column; align-items: center; padding-top: 30px !important; }
+html.pB .prestige-back { align-self: flex-start; width: auto !important; height: 44px; margin: 0 0 0 -6px !important; padding: 0 10px 0 2px !important;
+  display: inline-flex !important; align-items: center; gap: 2px; font: 700 14px 'Alegreya Sans', sans-serif; }
+html.pB .prestige-back svg { width: 20px; height: 20px; }
+html.pB .prestige-back::after { content: 'Talents'; }
+html.pB .prestige-head .section-title { margin-top: 2px; }
+.mx-rank { display: none; }
+html.pB .mx-rank { display: block; margin-top: 4px; font: 700 12.5px 'Alegreya Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #9a9ab8; }
+html.pB .mx-rank b { color: var(--rk, #9a9ab8); font-weight: 800; }
+
+/* C · a dark plaque under the purse, stopping short of the strip; the arrow at its left. */
+html.pC .prestige-head { margin: 0 calc(46px - 0.75rem + 6px) 0 0 !important; padding: 0 !important; top: 34px; height: 44px; align-items: center;
+  background: rgba(7, 8, 12, .88) !important; box-shadow: inset 2px 2px 0 #333c52, inset -2px -2px 0 #0c0f15 !important;
+  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)); }
+html.pC .prestige-back { position: absolute; left: 0; top: 0; margin: 0 !important; }
+html.pC .prestige-head .section-title .cloth { font-size: 16px !important; }
+html.pC .prestige-page { margin-top: 34px; }
+`;
+
+const stores = (doc) => doc.querySelector('#app')?.__vue_app__?.config.globalProperties.$pinia?._s;
+
+function boot(frame, setup) {
+  frame.addEventListener('load', () => {
+    const tick = setInterval(() => {
+      const doc = frame.contentDocument;
+      const s = doc && stores(doc);
+      if (!s || !doc.querySelector('.app-shell')) return;
+      clearInterval(tick);
+      const st = doc.createElement('style'); st.textContent = CSS; doc.head.appendChild(st);
+      const claim = setInterval(() => {
+        const b = [...doc.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Claim');
+        if (b) { b.click(); clearInterval(claim); }
+      }, 200);
+      setTimeout(() => clearInterval(claim), 6000);
+      setup(doc, s);
+    }, 100);
+  });
+}
+
+// Every 300ms: the picks' + and gem button, the purse's right edge, and each option's extra bits
+// (put back if Vue's re-render drops them).
+function upkeep(doc, s) {
+  setInterval(() => {
+    doc.querySelectorAll('.stage-purse .purse-plate').forEach((plate) => {
+      if (plate.querySelector('.mx-plus')) return;
+      const plus = doc.createElement('button');
+      plus.type = 'button'; plus.className = 'mx-plus'; plus.setAttribute('aria-label', 'Get gems'); plus.textContent = '+';
+      (plate.querySelectorAll('.purse-count')[1] ?? plate).appendChild(plus);
+    });
+    doc.querySelectorAll('.stage-menu').forEach((menu) => {
+      const trials = menu.querySelector('.stage-trials');
+      if (!trials || menu.querySelector('.mx-extra')) return;
+      const b = trials.cloneNode(true);
+      b.classList.add('mx-extra'); b.setAttribute('aria-label', 'Gems');
+      b.querySelectorAll('.trials-count, .trials-pip').forEach((n) => n.remove());
+      b.querySelectorAll('svg').forEach((svg) => { svg.innerHTML = GEM_PATHS; });
+      trials.after(b);
+    });
+    const plate = doc.querySelector('.stage-purse .purse-plate');
+    if (plate) doc.documentElement.style.setProperty('--purse-r', `${Math.round(plate.getBoundingClientRect().right)}px`);
+    // Prestige B: your rank under the title.
+    const head = doc.querySelector('.prestige-head');
+    if (head) {
+      let r = head.querySelector('.mx-rank');
+      if (!r) { r = doc.createElement('span'); r.className = 'mx-rank'; head.appendChild(r); }
+      const rank = Math.floor(s.get('account').account.prestige ?? 0);
+      const m = MARKS[rank];
+      const html = m ? `<b>${m[1]}</b> · Rank ${m[0]}` : `First rank at Lv ${BARS[0]}`;
+      if (r.innerHTML !== html) r.innerHTML = html;
+      r.style.setProperty('--rk', m ? m[2] : '#9a9ab8');
+    }
+  }, 300);
+}
+
+// Defaults = the picks (2026-11-20): Talents C, Prestige A.
+let tOpt = 'medal', pOpt = 'plain';
+const T = { row: 'tA', crown: 'tB', medal: 'tC', centre: 'tD' };
+const P = { plain: 'pA', rank: 'pB', plaque: 'pC' };
+function apply() {
+  [talents, prestige].forEach((f) => {
+    const root = f.contentDocument?.documentElement;
+    if (!root) return;
+    Object.values(T).forEach((c) => root.classList.toggle(c, c === T[tOpt]));
+    Object.values(P).forEach((c) => root.classList.toggle(c, c === P[pOpt]));
+  });
+}
+
+const talents = document.getElementById('talents');
+const prestige = document.getElementById('prestige');
+boot(talents, (doc, s) => { upkeep(doc, s); s.get('tab').select('talents'); apply(); applyRank(); });
+boot(prestige, (doc, s) => {
+  doc.documentElement.classList.add('prestige-frame');
+  upkeep(doc, s); s.get('tab').select('talents'); apply(); applyRank();
+  const open = setInterval(() => { const c = doc.querySelector('.prestige-crest'); if (doc.querySelector('.prestige-head')) clearInterval(open); else c?.click(); }, 300);
+});
+
+let rank = 0, ready = false;
+function applyRank() {
+  [talents, prestige].forEach((f) => {
+    const s = f.contentDocument && stores(f.contentDocument);
+    if (!s) return;
+    s.get('account').setPrestige(rank);
+    // Ready: the hero at the next rank's bar.
+    const ch = s.get('character');
+    const level = ready ? (BARS[rank] ?? 90) : 14;
+    if (ch.character.level !== level) ch.$patch((st) => { st.character.level = level; });
+  });
+  document.querySelectorAll('#rank [data-p]').forEach((b) => b.classList.toggle('on', Number(b.dataset.p) === rank));
+  document.getElementById('ready').classList.toggle('on', ready);
+}
+document.querySelectorAll('#rank [data-p]').forEach((b) => (b.onclick = () => { rank = Number(b.dataset.p); applyRank(); }));
+document.getElementById('ready').onclick = () => { ready = !ready; applyRank(); };
+
+function bar(id, set) {
+  document.querySelectorAll(`#${id} button`).forEach((b) => (b.onclick = () => {
+    document.querySelectorAll(`#${id} button`).forEach((x) => x.classList.toggle('on', x === b));
+    set(b.dataset.o); apply();
+  }));
+}
+bar('t-opts', (o) => { tOpt = o; });
+bar('p-opts', (o) => { pOpt = o; });
+
+const q = `?s=purse&r=${Date.now()}`;
+talents.src = FRAME + q; prestige.src = FRAME + q;
+</script>
+</body>
+</html>

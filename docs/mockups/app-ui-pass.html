@@ -38,18 +38,18 @@ h2 { text-align: center; font: 600 13px 'Cinzel', serif; letter-spacing: .22em; 
   <button type="button" data-t="gain" class="on">1 · Gain popup</button>
   <button type="button" data-t="icons">3 · White icons</button>
   <button type="button" data-t="bars" class="on">4 · Bar plates + purse left</button>
-  <button type="button" data-t="stats" class="on">Boss stats on the plate</button>
-  <button type="button" data-t="nameRight">Hero tab: name plate right</button>
+  <button type="button" data-t="stats" class="on">Boss stats on the plate</button>  <button type="button" data-t="nameRight">Hero tab: name plate right</button>
   <button type="button" data-t="iconsLeft">Icons top-left, in a row</button>
   <button type="button" data-t="purseBar">Purse on the icon tab</button>
+  <button type="button" data-t="purseStrip">Purse in the corner strip</button>
   <button type="button" data-t="noPlate">No box behind the bars</button>
   <button type="button" data-t="gemPlus" class="on">+ beside gems</button>
 </div>
 <div class="bar"><label class="slider">Box opacity <input type="range" id="plate-alpha" min="0" max="100" value="75" /> <b id="plate-alpha-v">75%</b></label></div>
 <div class="bar" id="plus-style">
   <button type="button" data-ps="silver">+ Silver key</button>
-  <button type="button" data-ps="bare">+ Bare</button>
-  <button type="button" data-ps="outline" class="on">+ Outline</button>
+  <button type="button" data-ps="bare" class="on">+ Bare</button>
+  <button type="button" data-ps="outline">+ Outline</button>
   <button type="button" data-ps="teal">+ Teal</button>
 </div>
 <div class="bar" id="prestige">
@@ -158,6 +158,29 @@ html.mx-icons-left.mx-purse-bar .stage-purse::before { content: ''; position: ab
 html.mx-icons-left.mx-purse-bar .stage-purse .purse-plate { height: auto !important; padding: 0 !important; background: none !important; box-shadow: none !important; clip-path: none !important; }
 html.mx-icons-left.mx-purse-bar .stage-purse .purse-gain { top: 44px !important; right: auto !important; left: 10px !important; }
 html.mx-icons-left.mx-purse-bar .home-base .home-name { top: 6px !important; }
+/* Or the purse at the foot of the right-hand strip, on its indigo tab: a hairline
+   under the icons (as between them), then gold over gems, the + after the gems. */
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu { display: flex !important; flex-direction: column; align-items: center;
+  top: 0 !important; padding-top: env(safe-area-inset-top, 0px) !important; }
+/* Flush with the screen's top: no line along the top, only the bottom-left corner cut. */
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu::before { box-shadow: inset 1px 0 0 #3d3c68, inset 0 -1px 0 #3d3c68 !important;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)) !important; }
+/* Held to the icons' 44px, so the strip never widens: short numbers (1.34K), small. */
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse { position: relative !important; top: auto !important; left: auto !important; right: auto !important;
+  order: 10; width: 44px; box-sizing: border-box; overflow: visible; margin-top: 4px; padding: 3px 2px 6px; }
+/* Its hairline placed as the icons' are (the Trials button's 4px margin, the line 3px up
+   into it), so the gem icon sits as far above it as each icon does above the next line. */
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse::before { content: ''; position: absolute; top: -3px; left: 9px; right: 9px; height: 1px; background: #4a4a74; }
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse .purse-plate { flex-direction: column; align-items: center; gap: 4px;
+  height: auto !important; padding: 0 !important; background: none !important; box-shadow: none !important; clip-path: none !important; }
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse .purse-count { gap: 2px; font-size: 0; font-size-adjust: none; }
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse .purse-count svg { width: 10px; height: 10px; }
+.mx-compact { display: none; }
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse .mx-compact { display: inline; font: 700 11px/1 'Alegreya Sans', sans-serif; font-size-adjust: 0.52; }
+/* No + here: the strip's gem button is the way to gems. */
+html.mx-purse-strip:not(.mx-icons-left) .stage-menu .stage-purse .mx-plus { display: none !important; }
+/* Nothing hangs top-left then: the Hero tab's name plate goes back up. */
+html.mx-purse-strip:not(.mx-icons-left):not(.mx-name-right) .home-base .home-name { top: 6px !important; }
 /* Talents tab: no banner, just the word, centred at the top, clear of the purse. */
 html.mx-bars .talent-header:not(.prestige-head) { justify-content: center !important; min-height: 44px !important;
   padding-left: calc(52px + 0.75rem) !important; padding-right: calc(52px + 0.75rem) !important; }
@@ -202,8 +225,7 @@ html.mx-bars .fight-stage :is(.boss-block, .hero-block) .health-bar { height: 14
 html.mx-bars .fight-stage .health-bar-label { font: 800 10.5px/1 'Alegreya Sans', sans-serif !important; }
 html.mx-bars .fight-stage .hero-block .health-bar-fill { background: #3f9a55 !important; box-shadow: inset 0 2px 0 #6fca7f, inset 0 -2px 0 #24603a !important; }
 html.mx-bars .fight-stage .stat-summary { display: none !important; }
-html.mx-bars.mx-stats .fight-stage .stat-summary { display: flex !important; flex-wrap: nowrap !important; gap: 8px; margin: 1px 0 0; font-size: 10.5px !important; overflow: hidden; white-space: nowrap; }
-
+html.mx-bars.mx-stats .fight-stage .boss-block .stat-summary { display: flex !important; flex-wrap: nowrap !important; gap: 8px; margin: 1px 0 0; font-size: 10.5px !important; overflow: hidden; white-space: nowrap; }
 /* A small + key after the gem count: the way to get gems, right where they show.
    Four looks: silver key (silver = touch), bare +, outline, teal (the first try). */
 .mx-plus { display: none; }
@@ -213,6 +235,10 @@ html.mx-plus-silver .mx-plus { background: #dfe0f0; color: #11121b; box-shadow: 
 html.mx-plus-bare .mx-plus { width: 14px; margin-left: 1px; background: none; color: #dfe0f0; clip-path: none; font-size: 17px; }
 html.mx-plus-bare .mx-plus::before { content: ''; position: absolute; left: -5px; top: 2px; bottom: 2px; width: 1px; background: #333c52; }
 html.mx-plus-bare .mx-plus { margin-left: 8px; }
+/* The bare + ends the plate, so the plate's right padding drops to match the room
+   left of it (its hairline 5px off, the glyph centred in its 14px), the + centred
+   in its own end of the plate. */
+html.mx-gem-plus.mx-plus-bare .stage-purse .purse-plate { padding-right: 8px !important; }
 html.mx-plus-outline .mx-plus { background: transparent; color: #9a9ab8; box-shadow: inset 0 0 0 1px #5c5d7c; }
 html.mx-plus-teal .mx-plus { background: #1d3640; color: #bff3ff; box-shadow: inset 0 0 0 1px #3f93a6; }
 
@@ -249,9 +275,10 @@ function boot(frame, setup) {
 
 // ---------- Stage frames ----------
 let plateAlpha = 75;
-let plusStyle = 'outline';
-// Defaults = the pick (2026-11-20): gain popup, plates + purse left, boss stats, + (outline) by the gems, 75% boxes.
-let toggles = { gain: true, icons: false, bars: true, stats: true, nameRight: false, iconsLeft: false, purseBar: false, noPlate: false, gemPlus: true };
+let plusStyle = 'bare';
+// Defaults = the pick (2026-11-20, round two): gain popup, plates + purse left, boss stats, bare + by the gems, 75% boxes.
+// The Hero tab, Talents and Prestige purse: purse-places.html.
+let toggles = { gain: true, icons: false, bars: true, stats: true, nameRight: false, iconsLeft: false, purseBar: false, purseStrip: false, noPlate: false, gemPlus: true };
 function applyToggles() {
   document.querySelectorAll('#toggles button').forEach((b) => b.classList.toggle('on', toggles[b.dataset.t]));
   const root = document.getElementById('stage-new').contentDocument?.documentElement;
@@ -259,10 +286,10 @@ function applyToggles() {
   root.classList.toggle('mx-gain-on', toggles.gain);
   root.classList.toggle('mx-icons', toggles.icons);
   root.classList.toggle('mx-bars', toggles.bars);
-  root.classList.toggle('mx-stats', toggles.stats);
-  root.classList.toggle('mx-name-right', toggles.nameRight);
+  root.classList.toggle('mx-stats', toggles.stats);  root.classList.toggle('mx-name-right', toggles.nameRight);
   root.classList.toggle('mx-icons-left', toggles.iconsLeft);
   root.classList.toggle('mx-purse-bar', toggles.purseBar);
+  root.classList.toggle('mx-purse-strip', toggles.purseStrip);
   root.classList.toggle('mx-no-plate', toggles.noPlate);
   root.classList.toggle('mx-gem-plus', toggles.gemPlus);
   ['silver', 'bare', 'outline', 'teal'].forEach((k) => root.classList.toggle(`mx-plus-${k}`, plusStyle === k));
@@ -330,13 +357,33 @@ document.querySelectorAll('#prestige [data-p]').forEach((b) => (b.onclick = () =
 const PATHS = {
   gem: '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
 };
+// formatCompact (game-engine/format.ts): whole below 1000, then K/M/B/T to three digits, cut.
+const UNITS = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+function compact(value) {
+  const abs = Math.abs(Math.round(value));
+  for (const [size, suffix] of UNITS) {
+    if (abs < size) continue;
+    const places = abs >= size * 100 ? 1 : abs >= size * 10 ? 10 : 100;
+    return `${Math.trunc(abs / (size / places)) / places}${suffix}`;
+  }
+  return String(abs);
+}
 function extraIcons(doc) {
   setInterval(() => {
+    // The short count for the corner strip's purse, beside the plate's own (hidden there).
+    doc.querySelectorAll('.purse-count').forEach((count) => {
+      const raw = [...count.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').replace(/,/g, '').trim();
+      let short = count.querySelector('.mx-compact');
+      if (!short) { short = doc.createElement('span'); short.className = 'mx-compact'; count.querySelector('.stat-icon')?.after(short); }
+      const text = compact(Number(raw) || 0);
+      if (short.textContent !== text) short.textContent = text;
+    });
     doc.querySelectorAll('.purse-plate').forEach((plate) => {
       if (plate.querySelector('.mx-plus')) return;
       const plus = doc.createElement('button');
       plus.type = 'button'; plus.className = 'mx-plus'; plus.setAttribute('aria-label', 'Get gems'); plus.textContent = '+';
-      plate.appendChild(plus);
+      // In the gems' own count, so it stays beside them when the purse stacks (corner strip).
+      (plate.querySelectorAll('.purse-count')[1] ?? plate).appendChild(plus);
     });
     doc.querySelectorAll('.stage-menu').forEach((menu) => {
       const trials = menu.querySelector('.stage-trials');
