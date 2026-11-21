@@ -462,6 +462,32 @@ describe('useCombatActions', () => {
     expect(result.itemsDropped).toEqual([]);
   });
 
+  it('holds the death screen back until the killing hit has landed on the stage', () => {
+    vi.useFakeTimers();
+    try {
+      setHitPlayer(() => 700);
+      const habitStore = useHabitStore();
+      const characterStore = useCharacterStore();
+      const bossStore = useBossStore();
+      const { isDead, revealed } = useDeathScreen();
+      const habit = habitStore.addHabit('Exercise', 'daily', 'hard', false, createRng());
+      characterStore.character = { ...characterStore.character, currentHealth: 1 };
+      bossStore.setBoss({ ...bossStore.boss, physicalAttack: 1000, magicAttack: 1000 });
+
+      useCombatActions().checkMissedHabit(habit.id);
+
+      // The fall is flagged at once (other popups wait on it), but not shown yet.
+      expect(isDead.value).toBe(true);
+      expect(revealed.value).toBe(false);
+      vi.advanceTimersByTime(700);
+      expect(revealed.value).toBe(false);
+      vi.advanceTimersByTime(600);
+      expect(revealed.value).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('checkMissedHabit flags the death screen instead of resetting immediately when it brings currentHealth to 0', () => {
     const habitStore = useHabitStore();
     const characterStore = useCharacterStore();

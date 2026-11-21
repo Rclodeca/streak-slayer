@@ -3,7 +3,7 @@
 import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useDeathScreen } from '../../composables/useDeathScreen';
 import { createRng } from '../../game-engine';
 import type { Habit } from '../../game-engine';
@@ -87,6 +87,22 @@ describe('DeathScreen', () => {
     await nextTick();
     expect(useDeathScreen().isDead.value).toBe(false);
     expect(document.querySelector('.death-layer')).toBeNull();
+  });
+
+  it('waits for the killing hit to land on the stage, then opens', async () => {
+    vi.useFakeTimers();
+    try {
+      useDeathScreen().dismiss();
+      useDeathScreen().triggerDeath(1100);
+      mountWith([]);
+      await nextTick();
+      expect(document.querySelector('.death-layer')).toBeNull();
+      vi.advanceTimersByTime(1100);
+      await nextTick();
+      expect(document.querySelector('.death-layer')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('waits while a missed quest is still to land, then opens', async () => {

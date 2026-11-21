@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useDeathScreen } from './useDeathScreen';
 
 describe('useDeathScreen', () => {
@@ -7,6 +7,7 @@ describe('useDeathScreen', () => {
   // also persists across `it()` blocks in this file. Reset it after each.
   afterEach(() => {
     useDeathScreen().dismiss();
+    vi.useRealTimers();
   });
 
   it('starts false', () => {
@@ -18,6 +19,30 @@ describe('useDeathScreen', () => {
     const { isDead, triggerDeath } = useDeathScreen();
     triggerDeath();
     expect(isDead.value).toBe(true);
+  });
+
+  it('is revealed at once, unless the fall is held back for a hit still landing', () => {
+    vi.useFakeTimers();
+    const { isDead, revealed, triggerDeath } = useDeathScreen();
+    triggerDeath();
+    expect(revealed.value).toBe(true);
+    useDeathScreen().dismiss();
+    triggerDeath(900);
+    expect(isDead.value).toBe(true);
+    expect(revealed.value).toBe(false);
+    vi.advanceTimersByTime(899);
+    expect(revealed.value).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(revealed.value).toBe(true);
+  });
+
+  it('dismissing before a held-back fall is revealed cancels the reveal', () => {
+    vi.useFakeTimers();
+    const { revealed, triggerDeath, dismiss } = useDeathScreen();
+    triggerDeath(900);
+    dismiss();
+    vi.advanceTimersByTime(2000);
+    expect(revealed.value).toBe(false);
   });
 
   it('dismiss sets isDead back to false', () => {

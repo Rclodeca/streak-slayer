@@ -21,12 +21,12 @@ import StatIcon from './StatIcon.vue';
 // the item it drops), and at the foot the keys: Revive at half HP for gems, brass,
 // with Rise again under it. Short of gems, a line says why and Get gems opens the
 // Challenges over this screen.
-const { isDead, isPreview, dismiss } = useDeathScreen();
+const { isDead, isPreview, revealed, dismiss } = useDeathScreen();
 // The screen waits while the daily update or a missed quest is still to land
 // (their popups show first), so a revive never meets a hit queued that day.
 const { hasPending: habitMissPending } = useMissedSkillsGate();
 const { hasPending: questMissPending } = useQuestMissGate();
-const shown = computed(() => isDead.value && !habitMissPending.value && !questMissPending.value);
+const shown = computed(() => isDead.value && revealed.value && !habitMissPending.value && !questMissPending.value);
 const { restart, revive } = useCombatActions();
 const accountStore = useAccountStore();
 const bossStore = useBossStore();

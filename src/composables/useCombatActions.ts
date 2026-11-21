@@ -115,6 +115,8 @@ export interface RewardResult {
 // code (not `game-engine/`), so an unseeded Math.random()-backed Rng is
 // acceptable here.
 const rng = createRng();
+// After a killing hit lands, the death screen waits this long for the hero's bar to empty.
+const FALL_BEAT_MS = 500;
 
 export function useCombatActions() {
   const characterStore = useCharacterStore();
@@ -420,7 +422,7 @@ export function useCombatActions() {
     }
 
     const dealt = healthBefore - result.character.currentHealth;
-    playHit({
+    const landsInMs = playHit({
       kind: 'strike',
       by: 'boss',
       type: result.attackType,
@@ -444,7 +446,7 @@ export function useCombatActions() {
     // Math.round(currentHealth), so a tiny positive remainder (e.g. 0.3)
     // would otherwise show as "0 HP" without actually triggering death.
     if (Math.round(result.character.currentHealth) <= 0) {
-      fall();
+      fall(landsInMs);
       return true;
     }
     return false;
@@ -594,10 +596,14 @@ export function useCombatActions() {
     if (Math.round(characterStore.character.currentHealth) <= 0) fall();
   }
 
-  /** The hero is down: the item the fall will take is picked now (markFallItem), so the death screen can name it. */
-  function fall(): void {
+  /**
+   * The hero is down: the item the fall will take is picked now (markFallItem), so the
+   * death screen can name it. `landsInMs` is how long the killing hit still has to
+   * land on the stage; the screen shows after it, and a beat for the bar to empty.
+   */
+  function fall(landsInMs = 0): void {
     characterStore.setCharacter(markFallItem(characterStore.character, rng));
-    triggerDeath();
+    triggerDeath(landsInMs > 0 ? landsInMs + FALL_BEAT_MS : 0);
   }
 
   /**
