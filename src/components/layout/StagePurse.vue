@@ -49,6 +49,8 @@ const gems = computed(() => accountStore.account.gems);
 .purse-plate {
   --icon-coin: #f0c64e;
   --icon-gem: #6fd6ea;
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -56,17 +58,26 @@ const gems = computed(() => accountStore.account.gems);
   padding: env(safe-area-inset-top, 0px) 8px 0 12px;
   box-sizing: border-box;
   white-space: nowrap;
+  color: #f0f3f7;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* The plate's look is drawn on a layer behind it, so the cut corners clip only the
+   paint: a clip-path on the plate itself would also clip the + key's 44px tap box. */
+.purse-plate::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
   background: rgba(7, 8, 12, 0.88);
   box-shadow:
     inset 1px 0 0 #333c52,
     inset -1px 0 0 #333c52,
     inset 0 -1px 0 #333c52;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
-  color: #f0f3f7;
-  font-family: var(--serif);
-  font-size: 14.5px;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .purse-count {
