@@ -220,6 +220,15 @@ watch(
   opacity: 1;
 }
 
+/* On phones the purse hangs over the top-left, so the toggle sits at the right, just
+   left of the menu strip. */
+@media (max-width: 820px) {
+  .dev-toggle {
+    align-self: flex-end;
+    margin-right: 54px;
+  }
+}
+
 /* Under the menu button, in the stage's corner: a way to the Trials. The
    Focus strip is too short to hold both. */
 .stage-trials {
